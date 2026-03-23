@@ -284,6 +284,17 @@
             font-weight: 700;
         }
 
+        .g-brand,
+        .g-nav-link,
+        .g-menu-btn,
+        .g-btn,
+        .g-mobile-link,
+        .g-mobile-cta,
+        .g-topbar-link {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .g-mobile-link span:last-child {
             font-size: 0;
         }
@@ -440,6 +451,7 @@
             .g-nav { min-height: 74px; }
             .g-brand-copy span { display: none; }
             .g-footer-grid { grid-template-columns: 1fr; }
+            .g-content { padding-bottom: 22px; }
         }
     </style>
 </head>

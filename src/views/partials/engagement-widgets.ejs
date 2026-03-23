@@ -14,6 +14,7 @@
     gap: 12px;
     align-items: end;
     justify-items: end;
+    pointer-events: none;
   }
 
   .eng-fixed-left {
@@ -21,6 +22,7 @@
     left: 18px;
     bottom: 26px;
     z-index: 78;
+    pointer-events: none;
   }
 
   .eng-phone,
@@ -48,10 +50,12 @@
 
   .eng-phone {
     background: linear-gradient(135deg, #ff7a59 0%, #ff5d8f 100%);
+    pointer-events: auto;
   }
 
   .eng-chat-toggle {
     background: linear-gradient(135deg, #2f78ed 0%, #5aa4ff 100%);
+    pointer-events: auto;
   }
 
   .eng-phone:hover,
@@ -72,6 +76,7 @@
     background: linear-gradient(135deg, rgba(255, 122, 89, 0.96) 0%, rgba(255, 93, 143, 0.96) 100%);
     color: #fff;
     box-shadow: 0 22px 34px rgba(255, 93, 143, 0.22);
+    pointer-events: auto;
   }
 
   .eng-discount strong {
@@ -198,6 +203,17 @@
     background: linear-gradient(135deg, #2f78ed 0%, #5aa4ff 100%);
     color: #fff;
     font-weight: 800;
+    pointer-events: auto;
+  }
+
+  @media (max-width: 1024px) {
+    .eng-fixed-left {
+      display: none;
+    }
+
+    .eng-fixed-stack {
+      display: none;
+    }
   }
 
   @media (max-width: 720px) {
@@ -206,20 +222,9 @@
       bottom: 18px;
     }
 
-    .eng-fixed-stack {
-      right: 12px;
-      bottom: 18px;
-    }
-
     .eng-discount {
       min-height: 56px;
       padding: 0 16px;
-    }
-
-    .eng-phone,
-    .eng-chat-toggle {
-      width: 58px;
-      height: 58px;
     }
   }
 </style>

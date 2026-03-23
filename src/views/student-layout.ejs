@@ -135,6 +135,9 @@
 
         .s-link {
             position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             flex: 0 0 auto;
             padding: 10px 6px;
             border-radius: 999px;
@@ -274,12 +277,22 @@
 
         .s-mobile {
             display: none;
+            position: relative;
+            z-index: 120;
             border-top: 1px solid rgba(17, 24, 39, .06);
             background: rgba(255, 255, 255, .98)
         }
 
         body.menu-open .s-mobile {
             display: block
+        }
+        body.menu-open .s-header {
+            z-index: 140
+        }
+        body.menu-open .eng-fixed-left,
+        body.menu-open .eng-fixed-stack {
+            opacity: 0;
+            pointer-events: none
         }
 
         .s-mobile-inner {
@@ -293,7 +306,20 @@
         .s-mobile .s-link,
         .s-mobile .s-logout {
             width: 100%;
-            justify-content: center
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+            touch-action: manipulation
+        }
+
+        .s-brand,
+        .s-link,
+        .s-profile,
+        .s-logout,
+        .s-menu {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent
         }
 
         .s-stage {
