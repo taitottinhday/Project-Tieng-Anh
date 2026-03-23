@@ -1,0 +1,270 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const normalizeClass = (item) => ({
+    phase: {
+      label: item?.phase?.label || 'Đang vận hành',
+      tone: item?.phase?.tone || 'blue',
+      progress: typeof item?.phase?.progress === 'number' ? item.phase.progress : 18,
+      supportingText: item?.phase?.supportingText || 'Theo dõi tiến độ lớp học theo từng buổi dạy.'
+    },
+    total_students: Number(item?.total_students || 0),
+    total_comments: Number(item?.total_comments || 0),
+    ...item
+  });
+  const safeClasses = (Array.isArray(typeof classes !== 'undefined' ? classes : null) ? classes : []).map(normalizeClass);
+  const safeClassId = Number(typeof classId !== 'undefined' ? classId : 0);
+  const safeSelectedClass = (typeof selectedClass !== 'undefined' && selectedClass)
+    ? normalizeClass(selectedClass)
+    : (safeClasses.find((item) => Number(item.id) === safeClassId) || null);
+  const safeStudents = Array.isArray(typeof students !== 'undefined' ? students : null) ? students : [];
+  const safeComments = Array.isArray(typeof comments !== 'undefined' ? comments : null) ? comments : [];
+  const safeCommentStats = (typeof commentStats !== 'undefined' && commentStats)
+    ? commentStats
+    : { total: safeComments.length, thisMonth: 0 };
+  const safeSkillSummary = Array.isArray(typeof skillSummary !== 'undefined' ? skillSummary : null) ? skillSummary : [];
+  const safeDefaultLessonDate = typeof defaultLessonDate !== 'undefined' ? defaultLessonDate : '';
+  const dateLabel = (value) => {
+    if (!value) return 'Chưa gắn ngày học';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa gắn ngày học' : parsed.toLocaleDateString('vi-VN');
+  };
+  const previewComment = (value, limit = 170) => {
+    const text = String(value || '').trim();
+    return text.length > limit ? `${text.slice(0, limit)}...` : text;
+  };
+%>
+
+<div class="teacher-shell" data-comment-root>
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Feedback Flow</p>
+        <h1 class="teacher-hero-title">Nhận xét học viên với trải nghiệm tinh gọn và rõ ràng</h1>
+        <p class="teacher-hero-text">
+          Ghi lại tiến bộ, kỹ năng trọng tâm và định hướng cải thiện của học viên bằng một giao diện hiện đại,
+          giúp teacher flow vừa nhanh vừa đủ chiều sâu chuyên môn.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= safeClasses.length %> lớp có thể nhận xét</span>
+          <% if (safeSelectedClass) { %>
+            <span class="teacher-pill soft"><%= Number(safeCommentStats.total || 0) %> nhận xét trong lớp</span>
+            <span class="teacher-pill soft"><%= Number(safeCommentStats.thisMonth || 0) %> nhận xét tháng này</span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Gợi ý vận hành</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">
+          Viết nhận xét theo cấu trúc: điểm mạnh, điểm cần cải thiện, hành động tiếp theo. Cách này giúp phụ huynh
+          và học viên hiểu ngay điều gì đang tiến bộ.
+        </p>
+        <div class="teacher-hero-actions" style="margin-top: 18px;">
+          <a href="#comment-form" class="teacher-link-button secondary">Viết nhận xét</a>
+          <% if (safeSelectedClass) { %>
+            <a href="<%= baseUrl %>/teacher/attendance/<%= safeSelectedClass.id %>" class="teacher-link-button ghost" style="background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.16);">Mở điểm danh lớp</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <% if (success) { %>
+    <div class="teacher-alert">Đã lưu nhận xét thành công. Bạn có thể tiếp tục thêm phản hồi cho học viên khác ngay tại đây.</div>
+  <% } %>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Chọn lớp để nhận xét</h2>
+        <p class="teacher-panel-desc">Bộ lọc lớp học giúp bạn chuyển đúng ngữ cảnh trước khi nhập phản hồi.</p>
+      </div>
+    </div>
+
+    <form method="GET" action="<%= baseUrl %>/teacher/comments" class="teacher-form-grid cols-3" style="margin-top: 20px;">
+      <div class="teacher-field" style="grid-column: span 2;">
+        <label class="teacher-label" for="comment-class-id">Lớp học</label>
+        <select id="comment-class-id" name="class_id" class="teacher-select">
+          <option value="">Chọn lớp học</option>
+          <% safeClasses.forEach((item) => { %>
+            <option value="<%= item.id %>" <%= Number(safeClassId) === Number(item.id) ? 'selected' : '' %>>
+              <%= item.course_name %> · <%= item.code %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+      <button class="teacher-button" style="align-self: end;">Mở lớp này</button>
+    </form>
+  </section>
+
+  <% if (safeSelectedClass) { %>
+    <section class="teacher-grid four">
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Học viên</span>
+        <strong class="teacher-stat-value"><%= Number(safeSelectedClass.total_students || 0) %></strong>
+        <p class="teacher-stat-note">Sĩ số hiện có trong lớp bạn đang nhận xét.</p>
+      </article>
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Nhận xét lớp</span>
+        <strong class="teacher-stat-value"><%= Number(safeCommentStats.total || 0) %></strong>
+        <p class="teacher-stat-note">Tổng phản hồi đã lưu cho lớp học này.</p>
+      </article>
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Tháng này</span>
+        <strong class="teacher-stat-value"><%= Number(safeCommentStats.thisMonth || 0) %></strong>
+        <p class="teacher-stat-note">Số nhận xét đã được ghi trong tháng hiện tại.</p>
+      </article>
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Trạng thái lớp</span>
+        <strong class="teacher-stat-value" style="font-size: 1.7rem;"><%= safeSelectedClass.phase.label %></strong>
+        <p class="teacher-stat-note"><%= safeSelectedClass.phase.supportingText %></p>
+      </article>
+    </section>
+
+    <section class="teacher-grid two">
+      <article class="teacher-panel" id="comment-form">
+        <div class="teacher-panel-head">
+          <div>
+            <h2 class="teacher-panel-title">Thêm nhận xét mới</h2>
+            <p class="teacher-panel-desc">Viết nhận xét có dấu, rõ ràng và đủ hành động tiếp theo cho học viên.</p>
+          </div>
+        </div>
+
+        <form method="POST" action="<%= baseUrl %>/teacher/comments" class="teacher-form-grid" style="margin-top: 20px;">
+          <input type="hidden" name="class_id" value="<%= safeClassId %>">
+
+          <div class="teacher-form-grid cols-3">
+            <div class="teacher-field">
+              <label class="teacher-label" for="student-id">Học viên</label>
+              <select id="student-id" name="student_id" class="teacher-select" required>
+                <option value="">Chọn học viên</option>
+                <% safeStudents.forEach((item) => { %>
+                  <option value="<%= item.student_id %>"><%= item.full_name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="teacher-field">
+              <label class="teacher-label" for="lesson-date">Ngày học</label>
+              <input id="lesson-date" type="date" name="lesson_date" value="<%= safeDefaultLessonDate %>" class="teacher-input">
+            </div>
+
+            <div class="teacher-field">
+              <label class="teacher-label" for="skill-focus">Kỹ năng trọng tâm</label>
+              <select id="skill-focus" name="skill_focus" class="teacher-select">
+                <option value="">Tổng quát</option>
+                <option value="Speaking">Speaking</option>
+                <option value="Listening">Listening</option>
+                <option value="Reading">Reading</option>
+                <option value="Writing">Writing</option>
+                <option value="Grammar">Grammar</option>
+                <option value="Vocabulary">Vocabulary</option>
+                <option value="Pronunciation">Pronunciation</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="teacher-field">
+            <label class="teacher-label" for="comment-body">Nội dung nhận xét</label>
+            <div class="teacher-template-buttons">
+              <button type="button" class="teacher-button secondary" data-comment-template="Học viên có tinh thần học tập tích cực và tham gia lớp đều. ">Mẫu tích cực</button>
+              <button type="button" class="teacher-button secondary" data-comment-template="Cần tăng thêm thời lượng luyện tập tại nhà để củng cố phản xạ và độ chính xác. ">Mẫu cải thiện</button>
+              <button type="button" class="teacher-button secondary" data-comment-template="Khuyến nghị tuần tới tập trung thêm vào phát âm, từ vựng theo chủ đề và tốc độ xử lý bài. ">Mẫu định hướng</button>
+            </div>
+            <textarea id="comment-body" name="comment" class="teacher-textarea" rows="7" placeholder="Ví dụ: Học viên phát âm rõ hơn so với các buổi trước, phản xạ speaking đã tốt hơn. Cần tiếp tục mở rộng vốn từ theo chủ đề và luyện nghe ngắn mỗi ngày để tăng tốc độ xử lý..." required></textarea>
+          </div>
+
+          <div class="teacher-card-actions">
+            <button class="teacher-button pink">Lưu nhận xét</button>
+            <a href="<%= baseUrl %>/teacher/classes/<%= safeSelectedClass.id %>" class="teacher-link-button secondary">Xem chi tiết lớp</a>
+          </div>
+        </form>
+      </article>
+
+      <article class="teacher-panel">
+        <div class="teacher-panel-head">
+          <div>
+            <h2 class="teacher-panel-title">Insight nhanh của lớp</h2>
+            <p class="teacher-panel-desc">Bảng tóm tắt giúp bạn nhận ra kỹ năng nào đang được phản hồi nhiều nhất.</p>
+          </div>
+        </div>
+
+        <div class="teacher-class-card" style="margin-top: 18px; padding: 18px;">
+          <div class="teacher-class-top">
+            <div>
+              <h3 class="teacher-card-title"><%= safeSelectedClass.course_name %></h3>
+              <p class="teacher-card-text"><%= safeSelectedClass.code %> · <%= safeSelectedClass.schedule_text || 'Chưa cập nhật lịch học' %></p>
+            </div>
+            <span class="teacher-pill <%= safeSelectedClass.phase.tone %>"><%= safeSelectedClass.phase.label %></span>
+          </div>
+          <p class="teacher-note" style="margin-top: 14px;"><%= safeSelectedClass.phase.supportingText %></p>
+        </div>
+
+        <div class="teacher-stack" style="margin-top: 18px;">
+          <% if (safeSkillSummary.length) { %>
+            <% safeSkillSummary.forEach((item) => { %>
+              <article class="teacher-profile-card" style="padding: 18px;">
+                <div class="teacher-class-top">
+                  <div>
+                    <h3 class="teacher-card-title"><%= item.skill_focus %></h3>
+                    <p class="teacher-card-text">Kỹ năng đang được quan tâm trong lớp.</p>
+                  </div>
+                  <span class="teacher-pill blue"><%= item.total %> ghi nhận</span>
+                </div>
+              </article>
+            <% }) %>
+          <% } else { %>
+            <div class="teacher-empty">Chưa có dữ liệu phân bổ kỹ năng trong lớp này.</div>
+          <% } %>
+        </div>
+      </article>
+    </section>
+  <% } %>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Nhận xét gần đây</h2>
+        <p class="teacher-panel-desc">Dòng phản hồi mới nhất để bạn rà nhanh nội dung đã trao đổi với học viên.</p>
+      </div>
+    </div>
+
+    <% if (safeComments.length) { %>
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <% safeComments.forEach((item) => { %>
+          <article class="teacher-comment-card">
+              <div class="teacher-class-top">
+                <div>
+                  <h3 class="teacher-card-title"><%= item.full_name %></h3>
+                  <p class="teacher-card-text"><%= dateLabel(item.lesson_date) %></p>
+                </div>
+                <span class="teacher-pill pink"><%= item.skill_focus || 'Tổng quát' %></span>
+              </div>
+            <p class="teacher-card-text" style="margin-top: 14px;"><%= previewComment(item.comment) %></p>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 18px;">Chưa có nhận xét nào để hiển thị. Hãy chọn lớp và tạo phản hồi đầu tiên.</div>
+    <% } %>
+  </section>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector('[data-comment-root]');
+    if (!root) return;
+
+    const textarea = root.querySelector('#comment-body');
+    const templateButtons = Array.from(root.querySelectorAll('[data-comment-template]'));
+    if (!textarea || !templateButtons.length) return;
+
+    templateButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const snippet = button.getAttribute('data-comment-template') || '';
+        textarea.value = `${textarea.value || ''}${snippet}`;
+        textarea.focus();
+      });
+    });
+  })();
+</script>

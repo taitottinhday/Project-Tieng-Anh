@@ -1,0 +1,803 @@
+<%
+const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const guestSections = [
+  {
+    title: 'Khóa học TOEIC theo mục tiêu',
+    text: 'Xem lộ trình, đầu ra và nhóm lớp phù hợp với trình độ hiện tại của bạn.',
+    href: `${safeBaseUrl}/courses-blog`,
+    action: 'Khám phá khóa học',
+    tone: 'blue'
+  },
+  {
+    title: 'Lịch khai giảng linh hoạt',
+    text: 'Theo dõi lớp sắp mở, khung giờ học và lựa chọn lịch phù hợp với quỹ thời gian của bạn.',
+    href: `${safeBaseUrl}/lich-khai-giang`,
+    action: 'Xem lịch khai giảng',
+    tone: 'pink'
+  },
+  {
+    title: 'Thi thử và kiểm tra đầu vào',
+    text: 'Làm placement test hoặc full test online để xác định điểm bắt đầu rõ ràng hơn.',
+    href: `${safeBaseUrl}/placement-tests`,
+    action: 'Bắt đầu thi thử',
+    tone: 'dark'
+  },
+  {
+    title: 'Tư vấn và góc học tập',
+    text: 'Nhận hướng dẫn nhanh từ trung tâm và truy cập các điểm bắt đầu quan trọng cho hành trình TOEIC.',
+    href: `${safeBaseUrl}/goc-hoc-tap`,
+    action: 'Mở góc học tập',
+    tone: 'light'
+  }
+];
+
+const featureHighlights = [
+  {
+    badge: 'Ấn tượng đầu tiên',
+    title: 'Nền tảng vững chắc',
+    text: 'Học từ gốc phát âm, từ vựng đến ngữ pháp giúp bạn hiểu bản chất thay vì học thuộc máy móc.'
+  },
+  {
+    badge: 'Vững vàng ôn luyện',
+    title: 'Chiến lược làm bài hiệu quả',
+    text: 'Nắm vững mẹo làm bài, phân bổ thời gian hợp lý và xử lý nhanh các dạng câu hỏi thường gặp trong đề thi TOEIC.'
+  },
+  {
+    badge: 'Chuyên nghiệp hơn',
+    title: 'Giảng viên đồng hành sát sao',
+    text: 'Được hỗ trợ liên tục, chữa bài chi tiết và theo dõi tiến độ để đảm bảo bạn luôn đi đúng hướng.'
+  }
+];
+
+const roadmap = [
+  {
+    index: '01',
+    title: 'Khám phá tổng quan',
+    text: 'Bắt đầu từ trang chủ để nhìn nhanh các lựa chọn quan trọng nhất mà không bị quá tải thông tin.'
+  },
+  {
+    index: '02',
+    title: 'Xác định trình độ',
+    text: 'Làm placement test hoặc thi thử để biết vị trí hiện tại trước khi chọn lộ trình.'
+  },
+  {
+    index: '03',
+    title: 'Chọn khóa học phù hợp',
+    text: 'So sánh mục tiêu đầu ra, cách học và lịch học để tìm nhóm lớp hợp với bạn.'
+  },
+  {
+    index: '04',
+    title: 'Kết nối tư vấn',
+    text: 'Gửi thông tin để nhận tư vấn cá nhân hóa và bước vào lộ trình học rõ ràng hơn.'
+  }
+];
+%>
+
+<style>
+  .gh-page {
+    --gh-bg-deep: #081525;
+    --gh-bg-navy: #102a43;
+    --gh-blue: #2f78ed;
+    --gh-blue-soft: #bad7ff;
+    --gh-pink: #f2a9d2;
+    --gh-pink-soft: #ffd6ea;
+    --gh-violet-soft: #dbcfff;
+    --gh-surface: linear-gradient(145deg, rgba(205, 226, 255, 0.84) 0%, rgba(255, 214, 234, 0.88) 100%);
+    --gh-surface-strong: linear-gradient(155deg, rgba(19, 38, 70, 0.96) 0%, rgba(36, 88, 165, 0.94) 52%, rgba(240, 129, 188, 0.9) 100%);
+    --gh-ink: #0f1728;
+    --gh-muted: #5b6c81;
+    --gh-line: rgba(83, 98, 182, 0.18);
+    --gh-shadow: 0 26px 60px rgba(36, 58, 110, 0.16);
+    display: grid;
+    gap: 34px;
+  }
+
+  .gh-page * {
+    box-sizing: border-box;
+  }
+
+  .gh-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 44px);
+    border-radius: 38px;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(121, 191, 255, 0.28), transparent 24%),
+      radial-gradient(circle at 82% 22%, rgba(242, 169, 210, 0.36), transparent 26%),
+      radial-gradient(circle at 72% 78%, rgba(203, 174, 255, 0.22), transparent 24%),
+      linear-gradient(135deg, #061628 0%, #163767 40%, #2f78ed 72%, #f2a9d2 100%);
+    color: #fff;
+    border: 1px solid rgba(173, 201, 255, 0.14);
+    box-shadow: 0 34px 70px rgba(15, 31, 60, 0.24);
+    isolation: isolate;
+  }
+
+  .gh-hero::before,
+  .gh-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(8px);
+    pointer-events: none;
+    animation: ghFloat 16s ease-in-out infinite;
+  }
+
+  .gh-hero::before {
+    width: 220px;
+    height: 220px;
+    top: -70px;
+    right: 8%;
+    background: radial-gradient(circle, rgba(120, 191, 255, 0.28), transparent 72%);
+  }
+
+  .gh-hero::after {
+    width: 280px;
+    height: 280px;
+    bottom: -120px;
+    left: -40px;
+    animation-duration: 20s;
+    background: radial-gradient(circle, rgba(242, 169, 210, 0.2), transparent 74%);
+  }
+
+  .gh-hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.88fr);
+    align-items: end;
+  }
+
+  .gh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(113, 181, 255, 0.18) 0%, rgba(242, 169, 210, 0.2) 100%);
+    border: 1px solid rgba(173, 201, 255, 0.2);
+    color: rgba(243, 246, 255, 0.92);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .gh-hero-copy h1,
+  .gh-section-head h2,
+  .gh-cta h2,
+  .gh-story-card h3,
+  .gh-card h3,
+  .gh-roadmap-card h3,
+  .gh-showcase-card h3 {
+    font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+  }
+
+  .gh-hero-copy h1 {
+    margin: 18px 0 0;
+    max-width: 12ch;
+    font-size: clamp(2.8rem, 6vw, 5.3rem);
+    line-height: 0.95;
+    letter-spacing: -0.08em;
+  }
+
+  .gh-hero-copy p {
+    max-width: 64ch;
+    margin: 18px 0 0;
+    font-size: 1.06rem;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .gh-actions,
+  .gh-chip-row,
+  .gh-hero-highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .gh-actions {
+    margin-top: 26px;
+  }
+
+  .gh-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 54px;
+    padding: 0 20px;
+    border-radius: 18px;
+    font-weight: 800;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+  }
+
+  .gh-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .gh-btn-primary {
+    background: linear-gradient(135deg, #6db4ff 0%, #f49ac7 100%);
+    color: #081525;
+    box-shadow: 0 18px 34px rgba(80, 130, 255, 0.24);
+  }
+
+  .gh-btn-secondary {
+    background: linear-gradient(135deg, rgba(88, 143, 233, 0.18) 0%, rgba(242, 169, 210, 0.18) 100%);
+    border: 1px solid rgba(190, 208, 255, 0.18);
+    color: #fff;
+  }
+
+  .gh-btn-soft {
+    background: rgba(191, 219, 254, 0.18);
+    border: 1px solid rgba(191, 219, 254, 0.18);
+    color: #eff6ff;
+  }
+
+  .gh-hero-highlights {
+    margin-top: 20px;
+  }
+
+  .gh-highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(111, 182, 255, 0.15) 0%, rgba(242, 169, 210, 0.15) 100%);
+    color: rgba(243, 246, 255, 0.92);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .gh-hero-side {
+    display: grid;
+    gap: 16px;
+  }
+
+  .gh-glass-card {
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    border-radius: 28px;
+    background: linear-gradient(145deg, rgba(18, 40, 76, 0.62) 0%, rgba(39, 87, 158, 0.42) 52%, rgba(242, 169, 210, 0.3) 100%);
+    border: 1px solid rgba(177, 203, 255, 0.18);
+    backdrop-filter: blur(18px);
+    box-shadow: inset 0 1px 0 rgba(196, 215, 255, 0.08);
+  }
+
+  .gh-glass-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -36px -60px auto;
+    width: 140px;
+    height: 140px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(242, 169, 210, 0.24), transparent 72%);
+    pointer-events: none;
+  }
+
+  .gh-glass-card strong {
+    display: block;
+    font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+    font-size: 1.12rem;
+    letter-spacing: -0.04em;
+    color: #fff;
+  }
+
+  .gh-glass-card span,
+  .gh-glass-card p {
+    display: block;
+    margin-top: 10px;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .gh-metrics {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gh-metric {
+    padding: 24px;
+    border-radius: 30px;
+    background: var(--gh-surface);
+    border: 1px solid var(--gh-line);
+    box-shadow: var(--gh-shadow);
+  }
+
+  .gh-metric strong {
+    display: block;
+    font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1;
+    letter-spacing: -0.07em;
+    color: var(--gh-ink);
+  }
+
+  .gh-metric span {
+    display: block;
+    margin-top: 10px;
+    color: var(--gh-muted);
+    line-height: 1.75;
+  }
+
+  .gh-section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .gh-section-head h2 {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1;
+    letter-spacing: -0.06em;
+    color: var(--gh-ink);
+  }
+
+  .gh-section-head p {
+    max-width: 720px;
+    margin: 0;
+    color: var(--gh-muted);
+    line-height: 1.82;
+  }
+
+  .gh-story-grid,
+  .gh-card-grid,
+  .gh-roadmap,
+  .gh-showcase {
+    display: grid;
+    gap: 18px;
+  }
+
+  .gh-story-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gh-story-card,
+  .gh-card,
+  .gh-roadmap-card,
+  .gh-showcase-card,
+  .gh-cta {
+    position: relative;
+    overflow: hidden;
+    border-radius: 32px;
+    border: 1px solid var(--gh-line);
+    box-shadow: var(--gh-shadow);
+  }
+
+  .gh-story-card,
+  .gh-card,
+  .gh-roadmap-card,
+  .gh-showcase-card {
+    background: var(--gh-surface);
+    padding: 24px;
+  }
+
+  .gh-story-card::before,
+  .gh-card::before,
+  .gh-roadmap-card::before,
+  .gh-showcase-card::before {
+    content: "";
+    position: absolute;
+    inset: auto auto 0 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(47, 120, 237, 0.64), rgba(242, 183, 207, 0.72));
+    opacity: 0.8;
+  }
+
+  .gh-story-card h3,
+  .gh-card h3,
+  .gh-roadmap-card h3,
+  .gh-showcase-card h3 {
+    margin: 14px 0 0;
+    font-size: 1.36rem;
+    line-height: 1.16;
+    letter-spacing: -0.04em;
+    color: var(--gh-ink);
+  }
+
+  .gh-story-card p,
+  .gh-card p,
+  .gh-roadmap-card p,
+  .gh-showcase-card p {
+    margin: 12px 0 0;
+    color: var(--gh-muted);
+    line-height: 1.82;
+  }
+
+  .gh-story-badge,
+  .gh-card-badge,
+  .gh-step-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .gh-story-badge,
+  .gh-card-badge {
+    background: linear-gradient(135deg, rgba(120, 191, 255, 0.26) 0%, rgba(255, 214, 234, 0.8) 100%);
+    color: #1a4d8f;
+  }
+
+  .gh-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .gh-card.dark {
+    background: var(--gh-surface-strong);
+    border-color: rgba(190, 208, 255, 0.16);
+  }
+
+  .gh-card.dark h3,
+  .gh-card.dark p,
+  .gh-card.dark .gh-link {
+    color: #f8fbff;
+  }
+
+  .gh-card.dark p {
+    color: rgba(248, 251, 255, 0.8);
+  }
+
+  .gh-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+    font-weight: 800;
+    color: #1d4ed8;
+  }
+
+  .gh-link::after {
+    content: "→";
+    transition: transform 0.2s ease;
+  }
+
+  .gh-card:hover .gh-link::after,
+  .gh-showcase-link:hover::after {
+    transform: translateX(4px);
+  }
+
+  .gh-roadmap {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .gh-step-index {
+    width: 46px;
+    padding: 0;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #9accff 0%, #ffc3e1 100%);
+    color: #15427b;
+    font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+  }
+
+  .gh-showcase {
+    grid-template-columns: minmax(0, 1.14fr) minmax(320px, 0.86fr);
+  }
+
+  .gh-showcase-card.primary {
+    padding: 30px;
+    background:
+      radial-gradient(circle at top right, rgba(242, 169, 210, 0.18), transparent 26%),
+      radial-gradient(circle at 12% 16%, rgba(120, 191, 255, 0.2), transparent 24%),
+      linear-gradient(135deg, #0a1e37 0%, #1f4d91 54%, #f2a9d2 100%);
+    color: #fff;
+    border-color: rgba(190, 208, 255, 0.14);
+  }
+
+  .gh-showcase-card.primary h3,
+  .gh-showcase-card.primary p {
+    color: #fff;
+  }
+
+  .gh-showcase-card.primary p {
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .gh-chip-row {
+    margin-top: 18px;
+  }
+
+  .gh-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(111, 182, 255, 0.16) 0%, rgba(242, 169, 210, 0.2) 100%);
+    border: 1px solid rgba(197, 214, 255, 0.14);
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .gh-showcase-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .gh-showcase-link::after {
+    content: "→";
+    transition: transform 0.2s ease;
+  }
+
+  .gh-quick-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .gh-quick-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(184, 213, 255, 0.66) 0%, rgba(255, 210, 231, 0.7) 100%);
+    border: 1px solid rgba(105, 126, 204, 0.14);
+    color: var(--gh-ink);
+    font-weight: 700;
+  }
+
+  .gh-quick-item span:last-child {
+    color: #1d4ed8;
+  }
+
+  .gh-cta {
+    padding: 38px 30px;
+    background:
+      radial-gradient(circle at 12% 12%, rgba(120, 191, 255, 0.28), transparent 24%),
+      radial-gradient(circle at 82% 18%, rgba(242, 169, 210, 0.32), transparent 28%),
+      linear-gradient(135deg, #0b1f39 0%, #214d91 52%, #f2a9d2 100%);
+    text-align: center;
+  }
+
+  .gh-cta h2 {
+    margin: 0;
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    letter-spacing: -0.07em;
+    color: #fff;
+  }
+
+  .gh-cta p {
+    max-width: 760px;
+    margin: 16px auto 0;
+    color: rgba(246, 249, 255, 0.84);
+    line-height: 1.86;
+  }
+
+  @keyframes ghFloat {
+    0%, 100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, 12px, 0);
+    }
+  }
+
+  @media (max-width: 1180px) {
+    .gh-hero-grid,
+    .gh-card-grid,
+    .gh-story-grid,
+    .gh-roadmap,
+    .gh-showcase {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .gh-hero-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .gh-page {
+      gap: 24px;
+    }
+
+    .gh-metrics,
+    .gh-card-grid,
+    .gh-story-grid,
+    .gh-roadmap,
+    .gh-showcase {
+      grid-template-columns: 1fr;
+    }
+
+    .gh-hero,
+    .gh-story-card,
+    .gh-card,
+    .gh-roadmap-card,
+    .gh-showcase-card,
+    .gh-cta {
+      border-radius: 26px;
+    }
+
+    .gh-hero {
+      padding: 22px 18px;
+    }
+
+    .gh-actions {
+      gap: 10px;
+    }
+
+    .gh-btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="gh-page">
+  <section class="gh-hero">
+    <div class="gh-hero-grid">
+      <div class="gh-hero-copy">
+        <span class="gh-kicker">TOEIC Learning Experience</span>
+        <h1>Chinh phục TOEIC dễ dàng  Mở rộng cơ hội sự nghiệp ngay hôm nay.</h1>
+        <p>
+          Lộ trình học rõ ràng, phương pháp thực chiến và đội ngũ giảng viên giàu kinh nghiệm giúp bạn đạt mục tiêu 650+, 750+ hay
+          900+ nhanh chóng và bền vững.
+        </p>
+
+        <div class="gh-hero-highlights">
+          <span class="gh-highlight">Lộ trình rõ ràng</span>
+          <span class="gh-highlight">Phương pháp thực chiến</span>
+          <span class="gh-highlight">Tối ưu điểm số</span>
+        </div>
+
+        <div class="gh-actions">
+          <a href="<%= safeBaseUrl %>/courses-blog" class="gh-btn gh-btn-primary">Xem khóa học</a>
+          <a href="<%= safeBaseUrl %>/placement-tests" class="gh-btn gh-btn-secondary">Làm bài kiểm tra đầu vào</a>
+          <a href="<%= safeBaseUrl %>/contact" class="gh-btn gh-btn-soft">Nhận tư vấn nhanh</a>
+        </div>
+      </div>
+
+      <aside class="gh-hero-side">
+        <article class="gh-glass-card">
+          <strong>Lộ trình học rõ ràng và hiệu quả</strong>
+          <span>Mỗi học viên được định hướng từ đầu với lộ trình cụ thể, giúp bạn biết mình đang ở đâu và cần làm gì để đạt mục tiêu
+          điểm số.</span>
+        </article>
+        <article class="gh-glass-card">
+          <strong>Phương pháp học dễ hiểu, dễ áp dụng</strong>
+          <span>Bài giảng được thiết kế ngắn gọn, trọng tâm, kết hợp luyện tập thực tế giúp bạn nắm chắc kiến thức và cải thiện nhanh kỹ
+          năng làm bài.</span>
+        </article>
+        <article class="gh-glass-card">
+          <strong>Định hướng học tập và thi cử rõ ràng</strong>
+          <span>Từ khóa học, lịch học đến luyện đề và thi thử đều được sắp xếp hợp lý, giúp bạn luôn chủ động và không bị mất phương
+          hướng.</span>
+        </article>
+      </aside>
+    </div>
+  </section>
+
+  <section class="gh-metrics">
+    <article class="gh-metric">
+      <strong>04 bước học tập rõ ràng</strong>
+      <span>Mỗi học viên có mục tiêu riêng – chúng tôi xây dựng lộ trình phù hợp để bạn tiến bộ nhanh nhất.</span>
+    </article>
+    <article class="gh-metric">
+      <strong>01 lộ trình cá nhân hóa</strong>
+      <span>Ngôn ngữ thiết kế thống nhất để người xem cảm thấy website được đầu tư và đáng tin cậy</span>
+    </article>
+    <article class="gh-metric">
+      <strong>360° trải nghiệm học TOEIC</strong>
+      <span>Học – luyện – kiểm tra – sửa lỗi toàn diện giúp bạn không chỉ đạt điểm cao mà còn sử dụng tiếng Anh thực tế.</span>
+    </article>
+  </section>
+
+  <section>
+    <div class="gh-section-head">
+      <div>
+        <h2>Những yếu tố giúp bạn đạt điểm TOEIC nhanh và bền vững</h2>
+        <p>Không chỉ là học kiến thức, chúng tôi tập trung vào chiến lược làm bài, kỹ năng và tư duy để bạn tự tin trong mọi kỳ
+        thi.</p>
+      </div>
+    </div>
+
+    <div class="gh-story-grid" style="margin-top: 20px;">
+      <% featureHighlights.forEach((item) => { %>
+        <article class="gh-story-card">
+          <span class="gh-story-badge"><%= item.badge %></span>
+          <h3><%= item.title %></h3>
+          <p><%= item.text %></p>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section>
+    <div class="gh-section-head">
+      <div>
+        <h2>Các điểm bắt đầu nổi bật</h2>
+        <p>Mỗi khối nội dung được thiết kế như một cánh cửa vào hệ sinh thái TOEIC, giúp khách truy cập chọn đúng điều họ cần chỉ sau vài giây đầu tiên.</p>
+      </div>
+    </div>
+
+    <div class="gh-card-grid" style="margin-top: 20px;">
+      <% guestSections.forEach((item) => { %>
+        <article class="gh-card <%= item.tone === 'dark' ? 'dark' : '' %>">
+          <span class="gh-card-badge"><%= item.tone === 'pink' ? 'Linh hoạt' : item.tone === 'blue' ? 'Nổi bật' : item.tone === 'dark' ? 'Thực chiến' : 'Hữu ích' %></span>
+          <div>
+            <h3><%= item.title %></h3>
+            <p><%= item.text %></p>
+          </div>
+          <a href="<%= item.href %>" class="gh-link"><%= item.action %></a>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section>
+    <div class="gh-section-head">
+      <div>
+        <h2>Lộ trình người mới thường đi qua</h2>
+        <p>Thay vì để khách truy cập tự mò, trang chủ mới gợi ý sẵn một hành trình tự nhiên và dễ chịu từ tìm hiểu ban đầu đến hành động rõ ràng.</p>
+      </div>
+    </div>
+
+    <div class="gh-roadmap" style="margin-top: 20px;">
+      <% roadmap.forEach((item) => { %>
+        <article class="gh-roadmap-card">
+          <span class="gh-step-index"><%= item.index %></span>
+          <h3><%= item.title %></h3>
+          <p><%= item.text %></p>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="gh-showcase">
+    <article class="gh-showcase-card primary">
+      <h3>Một môi trường học tập chuyên nghiệp giúp bạn tự tin đạt mục tiêu TOEIC</h3>
+      <p>
+      Chúng tôi xây dựng trải nghiệm học tập hiện đại, rõ ràng và hiệu quả, giúp bạn tập trung vào mục tiêu điểm số. Lộ trình
+      khoa học, phương pháp dễ hiểu và sự đồng hành sát sao giúp bạn tiến bộ từng ngày và đạt kết quả bền vững.
+      </p>
+      <div class="gh-chip-row">
+        <span class="gh-chip">lộ trình rõ ràng</span>
+        <span class="gh-chip">phương pháp thực chiến</span>
+        <span class="gh-chip">giảng viên tận tâm</span>
+        <span class="gh-chip">môi trường học hiện đại</span>
+      </div>
+      <a href="<%= safeBaseUrl %>/ve-chung-toi" class="gh-showcase-link">Tìm hiểu thêm về trung tâm</a>
+    </article>
+
+    <article class="gh-showcase-card">
+      <h3>Đi nhanh đến các mục khách thường quan tâm nhất</h3>
+      <p>Những đường dẫn này được đặt như các “điểm chạm vàng” để khách mới có thể đi tiếp ngay mà không bị chững lại.</p>
+      <div class="gh-quick-list">
+        <a href="<%= safeBaseUrl %>/courses-blog" class="gh-quick-item"><span>Khóa học TOEIC</span><span>→</span></a>
+        <a href="<%= safeBaseUrl %>/lich-khai-giang" class="gh-quick-item"><span>Lịch khai giảng</span><span>→</span></a>
+        <a href="<%= safeBaseUrl %>/placement-tests" class="gh-quick-item"><span>Đề thi online</span><span>→</span></a>
+        <a href="<%= safeBaseUrl %>/contact" class="gh-quick-item"><span>Liên hệ tư vấn</span><span>→</span></a>
+      </div>
+    </article>
+  </section>
+
+  <section class="gh-cta">
+    <h2>Sẵn sàng đạt mục tiêu TOEIC của bạn?</h2>
+    <p>
+    Đăng ký ngay hôm nay để được tư vấn lộ trình miễn phí và bắt đầu hành trình chinh phục điểm số mơ ước.
+    </p>
+    <div class="gh-actions" style="justify-content: center; margin-top: 24px;">
+      <a href="<%= safeBaseUrl %>/courses-blog" class="gh-btn gh-btn-secondary">Xem khóa học</a>
+      <a href="<%= safeBaseUrl %>/contact" class="gh-btn gh-btn-primary">Nhận tư vấn</a>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> - Thầy Tài Toeic
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg: #f6f2eb;
+            --surface: rgba(255, 255, 255, .94);
+            --line: rgba(17, 24, 39, .08);
+            --text: #1f2937;
+            --muted: #667085;
+            --brand: #c91f30;
+            --brand-soft: rgba(201, 31, 48, .08);
+            --dark: #111
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Be Vietnam Pro", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, rgba(201, 31, 48, .08), transparent 24%), radial-gradient(circle at bottom right, rgba(183, 177, 241, .18), transparent 25%), linear-gradient(180deg, #fbf8f4 0%, #f6f2eb 100%)
+        }
+
+        body.menu-open {
+            overflow: hidden
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit
+        }
+
+        .s-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, .92);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(17, 24, 39, .06)
+        }
+
+        .s-wrap {
+            width: min(1780px, calc(100% - 14px));
+            margin: 0 auto
+        }
+
+        .s-bar {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0
+        }
+
+        .s-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex: 0 0 auto
+        }
+
+        .s-brand-mark {
+            width: 72px;
+            height: 46px;
+            border-radius: 16px;
+            border: 1px solid rgba(201, 31, 48, .12);
+            background: linear-gradient(135deg, rgba(255, 255, 255, .9) 0%, rgba(255, 241, 243, .92) 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 14px 28px rgba(201, 31, 48, .08);
+            overflow: hidden
+        }
+
+        .s-brand-mark img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            padding: 3px
+        }
+
+        .s-brand-copy {
+            display: grid;
+            gap: 1px
+        }
+
+        .s-brand-copy strong {
+            font-family: "Sora", "Be Vietnam Pro", sans-serif;
+            font-size: .82rem;
+            line-height: 1.08;
+            letter-spacing: -.02em;
+            color: #b01224;
+            text-transform: uppercase
+        }
+
+        .s-brand-copy span {
+            font-size: .72rem;
+            color: var(--muted)
+        }
+
+        .s-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            min-width: 0;
+            overflow-x: auto;
+            scrollbar-width: none
+        }
+
+        .s-nav::-webkit-scrollbar {
+            display: none
+        }
+
+        .s-link {
+            position: relative;
+            flex: 0 0 auto;
+            padding: 10px 6px;
+            border-radius: 999px;
+            color: #4b5563;
+            font-size: .84rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: .2s ease
+        }
+
+        .s-link:hover {
+            transform: translateY(-1px);
+            color: #111827;
+            background: rgba(17, 24, 39, .04)
+        }
+
+        .s-link.active {
+            color: #111827;
+            background: rgba(37, 99, 235, .08)
+        }
+
+        .s-link.active::after {
+            content: "";
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            bottom: 2px;
+            height: 3px;
+            border-radius: 999px;
+            background: #3b82f6
+        }
+
+        .s-link-label-short {
+            display: none
+        }
+
+        .s-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto
+        }
+
+        .s-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: var(--brand-soft);
+            color: var(--brand);
+            font-size: .82rem;
+            font-weight: 700
+        }
+
+        .s-profile {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px;
+            border-radius: 999px;
+            background: rgba(17, 24, 39, .04);
+            border: 1px solid rgba(17, 24, 39, .06)
+        }
+
+        .s-profile-meta {
+            display: grid;
+            gap: 2px;
+            max-width: 138px;
+            padding-left: 4px
+        }
+
+        .s-profile-meta strong,
+        .s-profile-meta span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .s-profile-meta strong {
+            font-size: .84rem;
+            line-height: 1.1
+        }
+
+        .s-profile-meta span {
+            font-size: .72rem;
+            color: var(--muted)
+        }
+
+        .s-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+            color: #fff;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(17, 24, 39, .22)
+        }
+
+        .s-logout {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--dark);
+            color: #fff;
+            font-size: .94rem;
+            font-weight: 700;
+            box-shadow: 0 16px 30px rgba(17, 17, 17, .16);
+            transition: transform .2s ease
+        }
+
+        .s-logout:hover {
+            transform: translateY(-1px)
+        }
+
+        .s-menu {
+            display: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            border: 1px solid rgba(17, 24, 39, .08);
+            background: #fff;
+            align-items: center;
+            justify-content: center
+        }
+
+        .s-mobile {
+            display: none;
+            border-top: 1px solid rgba(17, 24, 39, .06);
+            background: rgba(255, 255, 255, .98)
+        }
+
+        body.menu-open .s-mobile {
+            display: block
+        }
+
+        .s-mobile-inner {
+            width: min(1380px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 14px 0 18px;
+            display: grid;
+            gap: 10px
+        }
+
+        .s-mobile .s-link,
+        .s-mobile .s-logout {
+            width: 100%;
+            justify-content: center
+        }
+
+        .s-stage {
+            min-height: calc(100vh - 80px)
+        }
+
+        .s-stage :is(h1, h2) {
+            font-family: "Sora", "Be Vietnam Pro", sans-serif;
+            letter-spacing: -0.05em;
+            background: linear-gradient(90deg, #ff7a59 0%, #ff5d8f 46%, #ffb14a 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .s-flash {
+            width: min(1380px, calc(100% - 32px));
+            margin: 18px auto 0;
+            display: grid;
+            gap: 12px
+        }
+
+        .s-flash-card {
+            padding: 14px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, .9);
+            box-shadow: 0 12px 28px rgba(17, 24, 39, .06)
+        }
+
+        .s-flash-card.success {
+            color: #166534;
+            border-color: rgba(22, 101, 52, .12)
+        }
+
+        .s-flash-card.error {
+            color: #b91c1c;
+            border-color: rgba(185, 28, 28, .12)
+        }
+
+        .s-flash-card.info {
+            color: #1d4ed8;
+            border-color: rgba(29, 78, 216, .12)
+        }
+
+        .s-footer {
+            margin-top: 48px;
+            background: rgba(255, 255, 255, .95);
+            border-top: 1px solid rgba(17, 24, 39, .06)
+        }
+
+        .s-footer-inner {
+            width: min(1380px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 38px 0 28px
+        }
+
+        .s-footer-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr 1.1fr;
+            gap: 28px
+        }
+
+        .s-footer-col h3 {
+            margin: 0 0 16px;
+            font-family: "Sora", "Be Vietnam Pro", sans-serif;
+            font-size: 1.05rem;
+            letter-spacing: -.02em
+        }
+
+        .s-footer-col p,
+        .s-footer-col a {
+            display: block;
+            margin: 0 0 10px;
+            color: #2563eb;
+            line-height: 1.55
+        }
+
+        .s-footer-col .lead {
+            color: #4b5563
+        }
+
+        .s-footer-col strong {
+            color: #111827
+        }
+
+        .s-legal {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(17, 24, 39, .06);
+            color: #4b5563;
+            font-size: .95rem
+        }
+
+        @media (max-width:1780px) {
+
+            .s-badge,
+            .s-brand-copy span {
+                display: none
+            }
+
+            .s-link {
+                padding: 10px 5px;
+                font-size: .81rem
+            }
+
+            .s-profile-meta {
+                max-width: 112px
+            }
+
+            .s-logout {
+                padding: 10px 12px;
+                font-size: .9rem
+            }
+        }
+
+        @media (max-width:1620px) {
+            .s-bar {
+                gap: 7px
+            }
+
+            .s-brand {
+                gap: 8px
+            }
+
+            .s-brand-mark {
+                width: 66px;
+                height: 42px
+            }
+
+            .s-brand-copy strong {
+                font-size: .76rem
+            }
+
+            .s-link {
+                padding: 9px 4px;
+                font-size: .78rem
+            }
+
+            .s-profile {
+                gap: 6px
+            }
+
+            .s-profile-meta {
+                max-width: 96px
+            }
+
+            .s-profile-meta strong {
+                font-size: .8rem
+            }
+
+            .s-avatar {
+                width: 38px;
+                height: 38px
+            }
+
+            .s-logout {
+                padding: 9px 11px;
+                font-size: .86rem
+            }
+        }
+
+        @media (max-width:1460px) {
+            .s-link-label-full.is-long {
+                display: none
+            }
+
+            .s-link-label-short {
+                display: inline
+            }
+        }
+
+        @media (max-width:1440px) {
+
+            .s-nav,
+            .s-badge,
+            .s-profile-meta,
+            .s-logout {
+                display: none
+            }
+
+            .s-menu {
+                display: inline-flex
+            }
+
+            .s-footer-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+        }
+
+        @media (max-width:720px) {
+
+            .s-wrap,
+            .s-flash,
+            .s-footer-inner,
+            .s-mobile-inner {
+                width: min(100% - 20px, 1380px)
+            }
+
+            .s-brand-copy span {
+                display: none
+            }
+
+            .s-footer-grid {
+                grid-template-columns: 1fr
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <% const normalizePath=(value)=> {
+        const raw = String(value || '/').split('?')[0].split('#')[0];
+        const trimmed = raw.replace(/\/+$/, '');
+        return trimmed || '/';
+        };
+
+        const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+        const buildHref = (path) => `${safeBaseUrl}${path}`;
+        const currentRoute = normalizePath(typeof currentPath !== 'undefined' ? currentPath : '/');
+
+        const safeSuccessMessages = typeof success_msg !== 'undefined' ? success_msg : [];
+        const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
+        const safeInfoMessages = typeof error !== 'undefined' ? error : [];
+
+        const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
+
+        const safeStudentName =
+        typeof studentName !== 'undefined' && studentName
+        ? studentName
+        : 'Học viên';
+
+        const studentInitial = safeStudentName.trim().charAt(0).toUpperCase() || 'H';
+
+        const navItems = [
+        { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
+        { label: 'Classroom', shortLabel: 'Classroom', href: buildHref('/student/classroom'), matches: ['/student/classroom'] },
+        { label: 'Thi Thử Full Test', href: buildHref('/placement-tests'), matches: ['/placement-tests', '/test-start',
+        '/test-result'] },
+        { label: 'Luyện Tập Theo Part', shortLabel: 'Theo Part', href: buildHref('/student/practice/parts'), matches:
+        ['/student/practice/parts'] },
+        { label: 'Luyện Tập Reading', shortLabel: 'Reading', href: buildHref('/student/practice/reading'), matches:
+        ['/student/practice/reading'] },
+        { label: 'Nghe - Chép chính tả', shortLabel: 'Nghe-Chép', href: buildHref('/student/dictation'), matches:
+        ['/student/dictation'] },
+        { label: 'Khóa học', href: buildHref('/student/courses'), matches: ['/student/courses'] },
+        { label: 'Lịch Khai Giảng', href: buildHref('/student/schedule'), matches: ['/student/schedule'] },
+        { label: 'Liên Hệ', href: buildHref('/student/contact'), matches: ['/student/contact'] },
+        { label: 'Góp Ý', href: buildHref('/student/feedback'), matches: ['/student/feedback'] },
+        { label: 'Đăng ký khóa học', shortLabel: 'Đăng ký', href: buildHref('/register-course'), matches:
+        ['/register-course', '/payment'] }
+        ];
+
+        const isActive = (item) => (item.matches || []).some((target) => {
+        const normalized = normalizePath(safeBaseUrl + target);
+        if (normalized === '/') return currentRoute === '/';
+        return currentRoute === normalized || currentRoute.startsWith(normalized + '/');
+        });
+        %>
+
+        <header class="s-header">
+            <div class="s-wrap s-bar">
+                <a href="<%= buildHref('/') %>" class="s-brand">
+                    <span class="s-brand-mark" aria-hidden="true">
+                        <img src="<%= brandLogo %>" alt="Logo Thầy Tài Toeic">
+                    </span>
+                    <span class="s-brand-copy">
+                        <strong>THẦY TÀI TOEIC</strong>
+                        <span>Luyện thi và học trực tuyến</span>
+                    </span>
+                </a>
+
+                <nav class="s-nav" aria-label="Điều hướng học viên">
+                    <% navItems.forEach((item)=> { %>
+                        <a href="<%= item.href %>" class="s-link <%= isActive(item) ? 'active' : '' %>">
+                            <span class="s-link-label-full <%= item.shortLabel ? 'is-long' : '' %>">
+                                <%= item.label %>
+                            </span>
+                            <% if (item.shortLabel) { %>
+                                <span class="s-link-label-short">
+                                    <%= item.shortLabel %>
+                                </span>
+                                <% } %>
+                        </a>
+                        <% }) %>
+                </nav>
+
+                <div class="s-actions">
+                    <span class="s-badge">Tài khoản học viên</span>
+
+                    <div class="s-profile" aria-label="Tài khoản đang đăng nhập">
+                        <div class="s-profile-meta">
+                            <strong>
+                                <%= safeStudentName %>
+                            </strong>
+                            <span>Đang học TOEIC online</span>
+                        </div>
+                        <span class="s-avatar">
+                            <%= studentInitial %>
+                        </span>
+                    </div>
+
+                    <a href="<%= buildHref('/logout') %>" class="s-logout">Đăng xuất</a>
+
+                    <button type="button" class="s-menu" id="studentMenuToggle" aria-label="Mở menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 7H20"></path>
+                            <path d="M4 12H20"></path>
+                            <path d="M4 17H20"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="s-mobile" id="studentMobilePanel">
+                <div class="s-mobile-inner">
+                    <% navItems.forEach((item)=> { %>
+                        <a href="<%= item.href %>" class="s-link <%= isActive(item) ? 'active' : '' %>">
+                            <%= item.label %>
+                        </a>
+                        <% }) %>
+                            <a href="<%= buildHref('/logout') %>" class="s-logout">Đăng xuất</a>
+                </div>
+            </div>
+        </header>
+
+        <% if (safeSuccessMessages.length || safeErrorMessages.length || safeInfoMessages.length) { %>
+            <section class="s-flash">
+                <% safeSuccessMessages.forEach((msg)=> { %>
+                    <div class="s-flash-card success">
+                        <%= msg %>
+                    </div>
+                    <% }) %>
+
+                        <% safeErrorMessages.forEach((msg)=> { %>
+                            <div class="s-flash-card error">
+                                <%= msg %>
+                            </div>
+                            <% }) %>
+
+                                <% safeInfoMessages.forEach((msg)=> { %>
+                                    <div class="s-flash-card info">
+                                        <%= msg %>
+                                    </div>
+                                    <% }) %>
+            </section>
+            <% } %>
+
+                <main class="s-stage"><%- content %></main>
+
+                <footer class="s-footer">
+                    <div class="s-footer-inner">
+                        <div class="s-footer-grid">
+                            <section class="s-footer-col">
+                                <h3>Thầy Tài Toeic</h3>
+                                <p class="lead">Thầy Tài Toeic đào tạo và luyện thi TOEIC. Chất lượng luôn là ưu tiên
+                                    hàng đầu cho học viên.</p>
+                                <a href="<%= buildHref('/student/feedback') %>">Quy định lớp học</a>
+                                <a href="<%= buildHref('/student/contact') %>">Chính sách quyền riêng tư</a>
+                            </section>
+
+                            <section class="s-footer-col">
+                                <h3>Khóa học</h3>
+                                <a href="<%= buildHref('/student/courses') %>">Thư viện khóa học</a>
+                                <a href="<%= buildHref('/student/courses') %>">Khóa học TOEIC A</a>
+                                <a href="<%= buildHref('/student/courses') %>">Khóa học TOEIC B</a>
+                                <a href="<%= buildHref('/register-course') %>">Lớp Tập Sự</a>
+                            </section>
+
+                            <section class="s-footer-col">
+                                <h3>Liên hệ</h3>
+                                <p><strong>Email:</strong> realtoeiccentral@gmail.com</p>
+                                <a href="<%= buildHref('/student/contact') %>">Fanpage: Thầy Tài Toeic</a>
+                                <a href="<%= buildHref('/student/feedback') %>">Cộng đồng học TOEIC Thầy Tài Toeic</a>
+                                <a href="<%= buildHref('/student/courses') %>">Góc học tập TOEIC Speaking &amp;
+                                    Writing</a>
+                            </section>
+
+                            <section class="s-footer-col">
+                                <h3>Địa chỉ</h3>
+                                <p><strong>Cs1:</strong> Hồ Tùng Mậu</p>
+                                <p>ĐC: Số 17, Ngõ 20 Đường Hồ Tùng Mậu, Cầu Giấy</p>
+                                <p><strong>Hotline:</strong> 0344772436</p>
+                                <p><strong>Cs2:</strong> Lê Đức Thọ</p>
+                                <p>ĐC: Số 9 Ngách 59 Ngõ 21 Lê Đức Thọ, Nam Từ Liêm, Hà Nội</p>
+                            </section>
+                        </div>
+
+                        <div class="s-legal">Copyright © Thầy Tài Toeic - v1.4.8</div>
+                    </div>
+                </footer>
+
+                <script>
+                    (() => {
+                        const toggle = document.getElementById('studentMenuToggle');
+                        if (!toggle) return;
+
+                        const closeMenu = () => document.body.classList.remove('menu-open');
+
+                        toggle.addEventListener('click', () => {
+                            document.body.classList.toggle('menu-open');
+                        });
+
+                        document.querySelectorAll('#studentMobilePanel a').forEach((link) => {
+                            link.addEventListener('click', closeMenu);
+                        });
+
+                        window.addEventListener('resize', () => {
+                            if (window.innerWidth > 1440) closeMenu();
+                        });
+                    })();
+                </script>
+                <%- include('partials/engagement-widgets', { scope: 'student' }) %>
+</body>
+
+</html>

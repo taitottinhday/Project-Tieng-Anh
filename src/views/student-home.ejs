@@ -1,0 +1,704 @@
+<%
+const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const stats = [
+  { value: '2.000+', label: 'học viên luyện đề TOEIC mỗi tháng' },
+  { value: '90%', label: 'mô phỏng sát trải nghiệm phòng thi thật' },
+  { value: '24/7', label: 'có thể vào làm đề và ôn tập bất cứ lúc nào' }
+];
+
+const portalCards = [
+  {
+    eyebrow: 'Khóa học',
+    title: 'Tổng hợp khóa học',
+    desc: 'Xem thư viện bài học, tìm nhanh theo tên khóa và đi thẳng vào nội dung cần học.',
+    href: `${safeBaseUrl}/student/courses`,
+    cta: 'Mở khóa học',
+    tone: 'sun'
+  },
+  {
+    eyebrow: 'Lịch học',
+    title: 'Lịch khai giảng',
+    desc: 'Theo dõi lịch mở lớp mới theo từng cơ sở để chọn ca học phù hợp với mục tiêu của bạn.',
+    href: `${safeBaseUrl}/student/schedule`,
+    cta: 'Xem lịch mới',
+    tone: 'sky'
+  },
+  {
+    eyebrow: 'Liên hệ',
+    title: 'Trò chuyện với trung tâm',
+    desc: 'Gửi câu hỏi về lộ trình, lịch học, học phí hoặc đăng ký để được hỗ trợ nhanh hơn.',
+    href: `${safeBaseUrl}/student/contact`,
+    cta: 'Gửi câu hỏi',
+    tone: 'rose'
+  },
+  {
+    eyebrow: 'Góp ý',
+    title: 'Phản hồi trải nghiệm',
+    desc: 'Đóng góp ý kiến về học liệu, giao diện và cách hỗ trợ để đội ngũ cải thiện liên tục.',
+    href: `${safeBaseUrl}/student/feedback`,
+    cta: 'Gửi góp ý',
+    tone: 'mint'
+  }
+];
+
+const practiceCards = [
+  {
+    title: 'Thi thử Full Test',
+    desc: 'Vào làm bộ đề hoàn chỉnh 200 câu với giao diện mô phỏng hiện đại và chấm điểm ngay.',
+    href: `${safeBaseUrl}/placement-tests`
+  },
+  {
+    title: 'Luyện tập theo Part',
+    desc: 'Tách trực tiếp từ kho full test để bạn ôn đúng Part đang yếu và bám sát dạng thi thật.',
+    href: `${safeBaseUrl}/student/practice/parts`
+  },
+  {
+    title: 'Luyện tập Reading',
+    desc: 'Gom sẵn Part 5, 6, 7 thành một phiên Reading 75 phút để tăng tốc độ đọc và độ chính xác.',
+    href: `${safeBaseUrl}/student/practice/reading`
+  }
+];
+
+const schedules = [
+  { date: '24/03', title: 'Khai giảng TOEIC A', meta: 'Ca tối 19:00 - 21:00 | Online + offline' },
+  { date: '27/03', title: 'Full test cuối tuần', meta: 'Mô phỏng đề thật, chữa bài chi tiết sau buổi thi' },
+  { date: '31/03', title: 'Speaking & Writing miễn phí', meta: 'Livestream hướng dẫn trên kênh Youtube của lớp' }
+];
+
+const feedbackChannels = [
+  'Góp ý trực tiếp về trải nghiệm luyện đề và tốc độ chữa bài.',
+  'Đề xuất thêm dạng bài bạn muốn luyện riêng trong tuần.',
+  'Nhờ tư vấn lộ trình nếu chưa biết nên học Tập Sự, TOEIC A hay TOEIC B.'
+];
+%>
+
+<style>
+  .h-home {
+    display: grid;
+    gap: 28px;
+    padding: 24px 0 46px;
+  }
+
+  .h-wrap {
+    width: min(1380px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+
+  .h-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 34px;
+    border: 1px solid rgba(17, 24, 39, 0.06);
+    box-shadow: 0 24px 54px rgba(17, 24, 39, 0.08);
+  }
+
+  .h-hero {
+    min-height: 620px;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: center;
+    padding: 72px 70px 0;
+    background:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 34%),
+      linear-gradient(135deg, #d8dde4 0%, #cfd7e7 46%, #dce6f4 100%);
+  }
+
+  .h-copy {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+    padding-bottom: 72px;
+  }
+
+  .h-badge {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: #1f2937;
+    font-weight: 700;
+    backdrop-filter: blur(16px);
+  }
+
+  .h-badge::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.15);
+  }
+
+  .h-hero h1,
+  .h-section-title,
+  .h-panel h2,
+  .h-offer-copy h2 {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: #202939;
+  }
+
+  .h-hero h1 {
+    max-width: 11ch;
+    font-size: clamp(2.8rem, 4.4vw, 4.5rem);
+    line-height: 1.02;
+  }
+
+  .h-hero p {
+    max-width: 34rem;
+    margin: 0;
+    font-size: 1.14rem;
+    line-height: 1.8;
+    color: #344054;
+  }
+
+  .h-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .h-btn,
+  .h-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 0 28px;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 800;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .h-btn {
+    background: #111827;
+    color: #ffffff;
+    box-shadow: 0 18px 36px rgba(17, 24, 39, 0.18);
+  }
+
+  .h-btn-ghost {
+    background: rgba(255, 255, 255, 0.82);
+    color: #111827;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .h-btn:hover,
+  .h-btn-ghost:hover {
+    transform: translateY(-2px);
+  }
+
+  .h-visual {
+    align-self: end;
+    display: flex;
+    justify-content: center;
+  }
+
+  .h-visual img,
+  .h-visual svg,
+  .h-offer-visual img,
+  .h-offer-visual svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .h-shell {
+    padding: 34px;
+    background: rgba(255, 255, 255, 0.86);
+  }
+
+  .h-shell-head {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .h-kicker {
+    display: inline-flex;
+    width: fit-content;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb;
+    font-weight: 800;
+    font-size: 0.88rem;
+  }
+
+  .h-shell-head p {
+    margin: 0;
+    max-width: 46rem;
+    color: #667085;
+    line-height: 1.75;
+  }
+
+  .h-section-title {
+    font-size: clamp(2rem, 3.2vw, 3.4rem);
+    line-height: 1.04;
+  }
+
+  .h-portal-grid,
+  .h-stats,
+  .h-grid,
+  .h-duo {
+    display: grid;
+    gap: 18px;
+  }
+
+  .h-portal-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .h-portal-card {
+    position: relative;
+    display: grid;
+    gap: 16px;
+    min-height: 250px;
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(17, 24, 39, 0.05);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .h-portal-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.95;
+    z-index: -2;
+  }
+
+  .h-portal-card::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    bottom: -48px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.38);
+    filter: blur(6px);
+    z-index: -1;
+  }
+
+  .h-portal-card.sun::before {
+    background: linear-gradient(135deg, #fff6cf 0%, #ffe08f 100%);
+  }
+
+  .h-portal-card.sky::before {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  }
+
+  .h-portal-card.rose::before {
+    background: linear-gradient(135deg, #ffe3ea 0%, #fecdd3 100%);
+  }
+
+  .h-portal-card.mint::before {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  }
+
+  .h-portal-mark {
+    display: inline-flex;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: #1f2937;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .h-portal-card h3 {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: 1.5rem;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    color: #1f2937;
+  }
+
+  .h-portal-card p {
+    margin: 0;
+    color: #475467;
+    line-height: 1.7;
+  }
+
+  .h-portal-link {
+    margin-top: auto;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.92);
+    color: #ffffff;
+    font-weight: 800;
+    box-shadow: 0 14px 28px rgba(17, 24, 39, 0.16);
+  }
+
+  .h-portal-link::after {
+    content: ">";
+    font-size: 0.95rem;
+  }
+
+  .h-stats,
+  .h-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .h-stat,
+  .h-mini,
+  .h-panel {
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(17, 24, 39, 0.05);
+  }
+
+  .h-stat {
+    padding: 26px 24px;
+    box-shadow: 0 14px 32px rgba(17, 24, 39, 0.04);
+  }
+
+  .h-stat strong {
+    display: block;
+    margin-bottom: 10px;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: 2.3rem;
+    color: #c91f30;
+    letter-spacing: -0.05em;
+  }
+
+  .h-stat span {
+    color: #475467;
+    line-height: 1.7;
+  }
+
+  .h-grid {
+    margin-top: 22px;
+  }
+
+  .h-mini {
+    padding: 22px;
+  }
+
+  .h-mini h3 {
+    margin: 0 0 10px;
+    font-size: 1.12rem;
+    color: #111827;
+  }
+
+  .h-mini p {
+    margin: 0 0 16px;
+    color: #475467;
+    line-height: 1.7;
+  }
+
+  .h-mini a {
+    color: #2563eb;
+    font-weight: 800;
+  }
+
+  .h-offer {
+    min-height: 410px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    align-items: center;
+    padding: 0 72px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #c91f30 0%, #ec5b6a 100%);
+  }
+
+  .h-offer-copy {
+    display: grid;
+    gap: 14px;
+  }
+
+  .h-offer-copy h2 {
+    max-width: 11ch;
+    font-size: clamp(2.2rem, 3.4vw, 3.6rem);
+    line-height: 1.06;
+  }
+
+  .h-offer-copy p {
+    max-width: 28rem;
+    margin: 0;
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .h-price {
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: clamp(2.7rem, 4vw, 4.2rem);
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .h-save {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .h-duo {
+    grid-template-columns: 1.08fr 0.92fr;
+  }
+
+  .h-panel {
+    padding: 30px;
+    box-shadow: 0 18px 42px rgba(17, 24, 39, 0.06);
+  }
+
+  .h-panel h2 {
+    margin-bottom: 14px;
+    font-size: 2rem;
+    line-height: 1.08;
+  }
+
+  .h-panel p {
+    margin: 0 0 18px;
+    color: #475467;
+    line-height: 1.75;
+  }
+
+  .h-schedule,
+  .h-feedback {
+    display: grid;
+    gap: 14px;
+  }
+
+  .h-schedule-item,
+  .h-feedback-item {
+    display: grid;
+    gap: 6px;
+    padding: 18px 20px;
+    border-radius: 22px;
+    background: #f8fafc;
+    border: 1px solid rgba(17, 24, 39, 0.05);
+  }
+
+  .h-schedule-date {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb;
+    font-weight: 800;
+  }
+
+  .h-schedule-item strong {
+    color: #111827;
+  }
+
+  .h-schedule-item span,
+  .h-feedback-item span {
+    color: #475467;
+    line-height: 1.6;
+  }
+
+  .h-feedback-item {
+    grid-template-columns: 34px 1fr;
+    align-items: start;
+  }
+
+  .h-feedback-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(201, 31, 48, 0.08);
+    color: #c91f30;
+    font-weight: 800;
+  }
+
+  @media (max-width: 1180px) {
+    .h-hero,
+    .h-offer,
+    .h-portal-grid,
+    .h-stats,
+    .h-grid,
+    .h-duo {
+      grid-template-columns: 1fr;
+    }
+
+    .h-hero,
+    .h-offer {
+      min-height: auto;
+      padding: 54px 28px 0;
+    }
+
+    .h-offer {
+      padding-bottom: 0;
+    }
+
+    .h-copy {
+      padding-bottom: 26px;
+    }
+
+    .h-shell {
+      padding: 26px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .h-wrap {
+      width: min(100% - 20px, 1380px);
+    }
+
+    .h-home {
+      gap: 20px;
+    }
+
+    .h-hero h1,
+    .h-offer-copy h2,
+    .h-section-title,
+    .h-panel h2 {
+      max-width: none;
+    }
+  }
+</style>
+
+<div class="h-home">
+  <section class="h-wrap h-card h-hero">
+    <div class="h-copy">
+      <span class="h-badge">Tài khoản học viên TOEIC</span>
+      <h1>Luyện đề TOEIC Online</h1>
+      <p>
+        Từ đây bạn có thể vào full test, luyện tập theo Part, luyện Reading,
+        xem khóa học, theo dõi lịch khai giảng mới và liên hệ trung tâm mà không cần rời khỏi tài khoản học viên.
+      </p>
+      <div class="h-actions">
+        <a href="<%= safeBaseUrl %>/placement-tests" class="h-btn">Làm full test</a>
+        <a href="<%= safeBaseUrl %>/student/practice/parts" class="h-btn-ghost">Luyện theo part</a>
+      </div>
+    </div>
+    <div class="h-visual" aria-hidden="true">
+      <img src="https://i.pinimg.com/736x/38/19/8a/38198af108c15339fff04c4c5d93c5e1.jpg" alt="" />
+    </div>
+  </section>
+
+  <section class="h-wrap h-card h-shell">
+    <div class="h-shell-head">
+      <span class="h-kicker">Cổng học viên</span>
+      <h2 class="h-section-title">4 mục mới ngay trong tài khoản</h2>
+      <p>
+        Mình gom các phần quan trọng nhất vào một cụm điều hướng nhanh để học viên
+        có thể chuyển trang mượt hơn và thao tác ít hơn trên cả desktop lẫn mobile.
+      </p>
+    </div>
+    <div class="h-portal-grid">
+      <% portalCards.forEach((item) => { %>
+        <article class="h-portal-card <%= item.tone %>">
+          <span class="h-portal-mark"><%= item.eyebrow %></span>
+          <h3><%= item.title %></h3>
+          <p><%= item.desc %></p>
+          <a href="<%= item.href %>" class="h-portal-link"><%= item.cta %></a>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="h-wrap h-card h-shell">
+    <div class="h-shell-head">
+      <span class="h-kicker">Hiệu quả học tập</span>
+      <h2 class="h-section-title">Thành tích và nhịp học rõ ràng</h2>
+      <p>
+        Hệ thống học viên không chỉ để làm đề mà còn đóng vai trò như một dashboard
+        theo dõi lộ trình, khóa học và các cơ hội khai giảng gần nhất.
+      </p>
+    </div>
+    <div class="h-stats">
+      <% stats.forEach((item) => { %>
+        <article class="h-stat">
+          <strong><%= item.value %></strong>
+          <span><%= item.label %></span>
+        </article>
+      <% }) %>
+    </div>
+    <div class="h-grid">
+      <% practiceCards.forEach((item) => { %>
+        <article class="h-mini">
+          <h3><%= item.title %></h3>
+          <p><%= item.desc %></p>
+          <a href="<%= item.href %>">Truy cập ngay</a>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="h-wrap h-card h-offer">
+    <div class="h-offer-copy">
+      <h2>Combo Tập Sự + TOEIC A</h2>
+      <div class="h-price">6.000.000đ</div>
+      <div class="h-save">tiết kiệm 700.000đ khi đăng ký sớm</div>
+      <p>
+        Nếu bạn đang bắt đầu từ nền tảng cơ bản, đây vẫn là lộ trình gọn và hiệu quả
+        nhất để đi từ mất gốc tới mốc điểm đầu tiên một cách có hệ thống.
+      </p>
+      <div class="h-actions">
+        <a href="<%= safeBaseUrl %>/register-course" class="h-btn">Tìm hiểu ngay</a>
+      </div>
+    </div>
+    <div class="h-offer-visual" aria-hidden="true">
+      <img src="https://i.pinimg.com/736x/3c/9a/33/3c9a33606ea73cc1e60475c559e7239f.jpg" alt="" />
+    </div>
+  </section>
+
+  <section class="h-wrap h-duo">
+    <article class="h-panel">
+      <h2>Lịch khai giảng gần nhất</h2>
+      <p>
+        Bạn có thể xem nhanh những mốc khai giảng tiêu biểu bên dưới hoặc mở trang
+        lịch chi tiết để xem đầy đủ theo từng cơ sở.
+      </p>
+      <div class="h-schedule">
+        <% schedules.forEach((item) => { %>
+          <div class="h-schedule-item">
+            <span class="h-schedule-date"><%= item.date %></span>
+            <strong><%= item.title %></strong>
+            <span><%= item.meta %></span>
+          </div>
+        <% }) %>
+      </div>
+      <div class="h-actions" style="margin-top:20px">
+        <a href="<%= safeBaseUrl %>/student/schedule" class="h-btn">Xem lịch chi tiết</a>
+        <a href="<%= safeBaseUrl %>/register-course" class="h-btn-ghost">Giữ chỗ ngay</a>
+      </div>
+    </article>
+
+    <article class="h-panel">
+      <h2>Liên hệ và góp ý</h2>
+      <p>
+        Hai mục mới này giúp học viên gửi câu hỏi hoặc phản hồi ngay trong tài khoản,
+        không cần quay lại trang ngoài.
+      </p>
+      <div class="h-feedback">
+        <% feedbackChannels.forEach((item, index) => { %>
+          <div class="h-feedback-item">
+            <span class="h-feedback-icon"><%= index + 1 %></span>
+            <span><%= item %></span>
+          </div>
+        <% }) %>
+      </div>
+      <div class="h-actions" style="margin-top:20px">
+        <a href="<%= safeBaseUrl %>/student/contact" class="h-btn">Liên hệ trung tâm</a>
+        <a href="<%= safeBaseUrl %>/student/feedback" class="h-btn-ghost">Gửi góp ý</a>
+      </div>
+    </article>
+  </section>
+</div>

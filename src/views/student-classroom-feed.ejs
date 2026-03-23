@@ -1,0 +1,112 @@
+<%- include('partials/student-classroom-style') %>
+<%
+  const safeClassInfo = typeof classInfo !== 'undefined' && classInfo ? classInfo : {};
+  const safePosts = Array.isArray(typeof posts !== 'undefined' ? posts : null) ? posts : [];
+  const formatDate = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleString('vi-VN');
+  };
+  const shortText = (value, limit = 180) => {
+    const text = String(value || '').trim();
+    return text.length > limit ? `${text.slice(0, limit)}...` : text || 'Không có mô tả bổ sung.';
+  };
+  const pendingAssignments = safePosts.filter((item) => item.post_type === 'assignment' && !['submitted', 'completed', 'reviewed'].includes(item.my_status));
+%>
+
+<div class="sc-page">
+  <section class="sc-hero">
+    <span class="sc-kicker">Bảng tin lớp học</span>
+    <h1><%= safeClassInfo.code || 'Classroom' %> - <%= safeClassInfo.course_name || 'Lớp học' %></h1>
+    <p>
+      Đây là bảng tin classroom của lớp. Mỗi bài giảng và bài tập từ giáo viên sẽ xuất hiện tại đây ngay khi được đăng lên.
+    </p>
+    <div class="sc-post-meta" style="margin-top: 18px;">
+      <span class="sc-pill soft">Giáo viên: <%= safeClassInfo.teacher_name || 'Đang cập nhật' %></span>
+      <span class="sc-pill blue">Lịch học: <%= safeClassInfo.schedule_text || 'Đang cập nhật' %></span>
+      <span class="sc-pill pink"><%= safePosts.filter((item) => item.post_type === 'assignment').length %> bài tập</span>
+    </div>
+  </section>
+
+  <section class="sc-feed-layout">
+    <div class="sc-panel">
+      <h2>Bảng tin classroom</h2>
+      <p>Chọn từng bài đăng để xem tài liệu, nộp bài, đánh dấu hoàn thành và xem nhận xét từ giáo viên.</p>
+
+      <% if (safePosts.length) { %>
+        <div class="sc-post-list" style="margin-top: 22px;">
+          <% safePosts.forEach((item) => { %>
+            <article class="sc-post-card">
+              <span class="sc-pill <%= item.post_type === 'assignment' ? 'pink' : 'blue' %>"><%= item.post_type === 'assignment' ? 'Bài tập trên lớp' : 'Thông báo / Bài giảng' %></span>
+              <h3><%= item.title %></h3>
+              <p><%= shortText(item.description) %></p>
+
+              <div class="sc-post-meta">
+                <span class="sc-pill soft">Đăng: <%= formatDate(item.created_at) %></span>
+                <span class="sc-pill blue"><%= item.material_count || 0 %> tài liệu</span>
+                <% if (item.post_type === 'assignment' && item.due_date) { %>
+                  <span class="sc-pill pink">Hạn nộp: <%= formatDate(item.due_date) %></span>
+                <% } %>
+                <% if (item.post_type === 'assignment') { %>
+                  <span class="sc-pill <%= item.my_status === 'reviewed' ? 'green' : (['submitted', 'completed'].includes(item.my_status) ? 'blue' : 'soft') %>">Trạng thái: <%= item.my_status %></span>
+                <% } %>
+              </div>
+
+              <% if (item.materials && item.materials.length) { %>
+                <div class="sc-attachment-list" style="margin-top: 16px;">
+                  <% item.materials.slice(0, 2).forEach((file) => { %>
+                    <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="sc-attachment">
+                      <span><%= file.original_name %></span>
+                      <span>Mở tài liệu</span>
+                    </a>
+                  <% }) %>
+                </div>
+              <% } %>
+
+              <div class="sc-actions">
+                <a href="<%= baseUrl %>/student/classroom/<%= safeClassInfo.id %>/posts/<%= item.id %>" class="sc-btn">
+                  <%= item.post_type === 'assignment' ? 'Mở bài tập' : 'Xem chi tiết' %>
+                </a>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="sc-empty" style="margin-top: 22px;">
+          Giáo viên chưa đăng bài nào cho lớp này. Khi có bài giảng hoặc bài tập mới, bảng tin sẽ cập nhật tại đây.
+        </div>
+      <% } %>
+    </div>
+
+    <aside class="sc-grid">
+      <article class="sc-panel">
+        <h2>Việc cần làm</h2>
+        <p>Những bài tập học viên chưa nộp hoặc chưa đánh dấu hoàn thành.</p>
+        <% if (pendingAssignments.length) { %>
+          <div class="sc-side-list" style="margin-top: 18px;">
+            <% pendingAssignments.slice(0, 5).forEach((item) => { %>
+              <a href="<%= baseUrl %>/student/classroom/<%= safeClassInfo.id %>/posts/<%= item.id %>" class="sc-attachment">
+                <span><%= item.title %></span>
+                <span><%= item.due_date ? formatDate(item.due_date) : 'Mở ngay' %></span>
+              </a>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Tuyệt vời, hiện tại không có bài tập nào đang chờ xử lý.</div>
+        <% } %>
+      </article>
+
+      <article class="sc-panel">
+        <h2>Thông tin lớp</h2>
+        <p>
+          <strong style="color:#1a3552;">Giáo viên:</strong> <%= safeClassInfo.teacher_name || 'Đang cập nhật' %><br>
+          <strong style="color:#1a3552;">Phòng / kênh:</strong> <%= safeClassInfo.room || 'Đang cập nhật' %><br>
+          <strong style="color:#1a3552;">Khối học:</strong> <%= safeClassInfo.category || 'Tổng hợp' %>
+        </p>
+        <div class="sc-actions">
+          <a href="<%= baseUrl %>/student/classroom" class="sc-btn-secondary">Tất cả lớp</a>
+        </div>
+      </article>
+    </aside>
+  </section>
+</div>

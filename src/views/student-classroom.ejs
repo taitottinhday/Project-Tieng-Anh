@@ -1,0 +1,72 @@
+<%- include('partials/student-classroom-style') %>
+<%
+  const safeStudent = typeof student !== 'undefined' && student ? student : {};
+  const safeClassrooms = Array.isArray(typeof classrooms !== 'undefined' ? classrooms : null) ? classrooms : [];
+  const formatDate = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleDateString('vi-VN');
+  };
+%>
+
+<div class="sc-page">
+  <section class="sc-hero">
+    <span class="sc-kicker">Classroom của học viên</span>
+    <h1><%= safeStudent.full_name || studentName || 'Học viên' %></h1>
+    <p>
+      Tất cả bài giảng, bài tập, tài liệu và luồng nộp bài được gom vào một khu classroom riêng theo từng lớp, giống trải nghiệm classroom để theo dõi rõ hơn.
+    </p>
+    <div class="sc-actions">
+      <a href="<%= baseUrl %>/student/classroom" class="sc-btn-secondary">Lớp của tôi</a>
+      <a href="<%= baseUrl %>/student/contact" class="sc-btn">Cần hỗ trợ nhanh</a>
+    </div>
+  </section>
+
+  <section class="sc-grid three">
+    <article class="sc-panel">
+      <h2><%= safeClassrooms.length %> lớp đang hiện</h2>
+      <p>Mỗi lớp sẽ tự động nhận bài giảng và bài tập khi giáo viên đăng lên.</p>
+    </article>
+    <article class="sc-panel">
+      <h2><%= safeClassrooms.reduce((sum, item) => sum + Number(item.assignment_count || 0), 0) %> bài tập</h2>
+      <p>Số bài tập đang được giao trên toàn bộ các lớp của học viên.</p>
+    </article>
+    <article class="sc-panel">
+      <h2><%= safeClassrooms.reduce((sum, item) => sum + Number(item.submitted_count || 0), 0) %> đã xử lý</h2>
+      <p>Số bài tập học viên đã nộp, hoàn thành hoặc đã được giáo viên đánh giá.</p>
+    </article>
+  </section>
+
+  <section class="sc-panel">
+    <h2>Danh sách lớp học đang tham gia</h2>
+    <p>Chọn từng lớp để vào bảng tin classroom và xem chi tiết bài giảng, bài tập đang được giao.</p>
+
+    <% if (safeClassrooms.length) { %>
+      <div class="sc-card-grid" style="margin-top: 22px;">
+        <% safeClassrooms.forEach((item) => { %>
+          <article class="sc-card">
+            <span class="sc-pill blue"><%= item.code %></span>
+            <h3 style="margin-top: 14px;"><%= item.course_name || 'Lớp học' %></h3>
+            <p>
+              <strong style="color:#1a3552;">Giáo viên:</strong> <%= item.teacher_name || 'Đang cập nhật' %><br>
+              <strong style="color:#1a3552;">Lịch học:</strong> <%= item.schedule_text || 'Đang cập nhật' %><br>
+              <strong style="color:#1a3552;">Bài mới nhất:</strong> <%= formatDate(item.latest_post_at) %>
+            </p>
+            <div class="sc-post-meta">
+              <span class="sc-pill soft"><%= item.lecture_count || 0 %> bài giảng</span>
+              <span class="sc-pill pink"><%= item.assignment_count || 0 %> bài tập</span>
+              <span class="sc-pill green"><%= item.submitted_count || 0 %> đã xử lý</span>
+            </div>
+            <div class="sc-actions">
+              <a href="<%= baseUrl %>/student/classroom/<%= item.id %>" class="sc-btn">Mở lớp học</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="sc-empty" style="margin-top: 22px;">
+        Tài khoản này chưa có lớp nào được đồng bộ. Khi trung tâm gắn email của bạn vào lớp học, classroom sẽ hiển thị tại đây.
+      </div>
+    <% } %>
+  </section>
+</div>

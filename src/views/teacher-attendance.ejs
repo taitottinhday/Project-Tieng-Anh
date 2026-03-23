@@ -1,0 +1,251 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const normalizeClass = (item) => ({
+    phase: {
+      label: item?.phase?.label || 'Đang vận hành',
+      tone: item?.phase?.tone || 'blue',
+      progress: typeof item?.phase?.progress === 'number' ? item.phase.progress : 18,
+      supportingText: item?.phase?.supportingText || 'Theo dõi tiến độ lớp học theo từng buổi dạy.'
+    },
+    total_students: Number(item?.total_students || 0),
+    total_comments: Number(item?.total_comments || 0),
+    ...item
+  });
+  const safeClasses = (Array.isArray(typeof classes !== 'undefined' ? classes : null) ? classes : []).map(normalizeClass);
+  const safeSelectedClass = (typeof selectedClass !== 'undefined' && selectedClass) ? normalizeClass(selectedClass) : null;
+  const safeStudents = (Array.isArray(typeof students !== 'undefined' ? students : null) ? students : []).map((item) => ({
+    selected_status: item?.selected_status || item?.attendance_status || 'present',
+    attendance_note: item?.attendance_note || '',
+    has_saved_attendance: typeof item?.has_saved_attendance === 'boolean' ? item.has_saved_attendance : Boolean(item?.attendance_status),
+    ...item
+  }));
+  const safeAttendanceSummary = (typeof attendanceSummary !== 'undefined' && attendanceSummary)
+    ? attendanceSummary
+    : { present: 0, late: 0, absent: 0, excused: 0, draft: 0, total: safeStudents.length };
+  const safeLessonDate = typeof lessonDate !== 'undefined' && lessonDate ? lessonDate : '';
+  const selectedDateLabel = safeLessonDate ? new Date(`${safeLessonDate}T00:00:00`).toLocaleDateString('vi-VN') : 'Hôm nay';
+%>
+
+<div class="teacher-shell" data-attendance-root>
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Attendance Flow</p>
+        <h1 class="teacher-hero-title">Điểm danh học viên theo cách nhanh, rõ và chuyên nghiệp</h1>
+        <p class="teacher-hero-text">
+          Chọn lớp, chọn ngày học, cập nhật trạng thái chuyên cần cho từng học viên và lưu lại ghi chú ngay trên
+          cùng một không gian tối ưu cho giáo viên.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= safeClasses.length %> lớp sẵn sàng điểm danh</span>
+          <span class="teacher-pill soft">Ngày học: <%= selectedDateLabel %></span>
+          <% if (safeSelectedClass) { %>
+            <span class="teacher-pill soft"><%= Number(safeSelectedClass.total_students || 0) %> học viên trong lớp</span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Điểm danh thông minh</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">
+          Chuyển nhanh toàn bộ lớp sang Có mặt, Đi muộn hoặc Vắng, sau đó tinh chỉnh từng trường hợp cần ghi chú chi tiết.
+        </p>
+        <div class="teacher-hero-actions" style="margin-top: 18px;">
+          <% if (safeSelectedClass) { %>
+            <button type="button" class="teacher-button secondary" data-bulk-status="present">Đánh dấu cả lớp có mặt</button>
+            <button type="button" class="teacher-button ghost" data-bulk-status="late" style="background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.16);">Đánh dấu đi muộn</button>
+          <% } else { %>
+            <a href="#attendance-class-picker" class="teacher-link-button secondary">Chọn lớp bắt đầu</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <% if (success) { %>
+    <div class="teacher-alert">Đã lưu điểm danh thành công. Bạn có thể tiếp tục cập nhật ghi chú hoặc chuyển sang lớp khác.</div>
+  <% } %>
+
+  <section class="teacher-panel" id="attendance-class-picker">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Chọn lớp để điểm danh</h2>
+        <p class="teacher-panel-desc">Mỗi lớp hiển thị sĩ số, trạng thái và ngày điểm danh gần nhất để bạn vào đúng luồng.</p>
+      </div>
+    </div>
+
+    <% if (safeClasses.length) { %>
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <% safeClasses.forEach((item) => { %>
+          <a href="<%= baseUrl %>/teacher/attendance/<%= item.id %>?date=<%= safeLessonDate %>" class="teacher-action-card" style="text-decoration: none;">
+            <div class="teacher-class-top">
+              <div>
+                <h3 class="teacher-card-title"><%= item.course_name %></h3>
+                <p class="teacher-card-text"><%= item.code %> · <%= item.room || 'Chưa gán phòng' %></p>
+              </div>
+              <span class="teacher-pill <%= item.phase.tone %>"><%= item.phase.label %></span>
+            </div>
+            <div class="teacher-kpi-strip">
+              <div class="teacher-mini-kpi">
+                <strong><%= item.total_students %></strong>
+                <span>Học viên</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.last_attendance_label || 'Chưa có' %></strong>
+                <span>Điểm danh gần nhất</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.total_comments %></strong>
+                <span>Nhận xét</span>
+              </div>
+            </div>
+            <p class="teacher-card-text" style="margin-top: 14px;">Lịch học: <%= item.schedule_text || 'Chưa cập nhật' %></p>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 18px;">Bạn chưa được phân công lớp nào nên chưa thể bắt đầu điểm danh.</div>
+    <% } %>
+  </section>
+
+  <% if (safeSelectedClass) { %>
+    <section class="teacher-grid four">
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Có mặt</span>
+        <strong class="teacher-stat-value" data-counter="present"><%= Number(safeAttendanceSummary.present || 0) %></strong>
+        <p class="teacher-stat-note">Số học viên hiện được đánh dấu có mặt trong biểu mẫu.</p>
+      </article>
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Đi muộn</span>
+        <strong class="teacher-stat-value" data-counter="late"><%= Number(safeAttendanceSummary.late || 0) %></strong>
+        <p class="teacher-stat-note">Các trường hợp cần lưu ý về giờ vào lớp.</p>
+      </article>
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Vắng / Có phép</span>
+        <strong class="teacher-stat-value"><span data-counter="absent"><%= Number(safeAttendanceSummary.absent || 0) %></span> / <span data-counter="excused"><%= Number(safeAttendanceSummary.excused || 0) %></span></strong>
+        <p class="teacher-stat-note">Theo dõi vắng mặt để hỗ trợ và nhắc nhở đúng lúc.</p>
+      </article>
+      <article class="teacher-stat-card">
+        <span class="teacher-stat-label">Chưa lưu</span>
+        <strong class="teacher-stat-value"><%= Number(safeAttendanceSummary.draft || 0) %></strong>
+        <p class="teacher-stat-note">Số hồ sơ đang ở trạng thái nhập mới và chưa từng được lưu ở ngày này.</p>
+      </article>
+    </section>
+
+    <section class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title"><%= safeSelectedClass.course_name %> · <%= safeSelectedClass.code %></h2>
+          <p class="teacher-panel-desc">Lịch học: <%= safeSelectedClass.schedule_text || 'Chưa cập nhật' %> · Phòng học: <%= safeSelectedClass.room || 'Chưa gán phòng' %></p>
+        </div>
+
+        <form method="GET" action="<%= baseUrl %>/teacher/attendance/<%= safeSelectedClass.id %>" class="teacher-form-grid">
+          <div class="teacher-field">
+            <label class="teacher-label" for="attendance-date">Ngày học</label>
+            <input id="attendance-date" type="date" name="date" value="<%= safeLessonDate %>" class="teacher-input">
+          </div>
+          <button class="teacher-button" style="align-self: end;">Xem ngày này</button>
+        </form>
+      </div>
+
+      <form method="POST" action="<%= baseUrl %>/teacher/attendance/<%= safeSelectedClass.id %>" class="teacher-form-grid" style="margin-top: 22px;">
+        <input type="hidden" name="lesson_date" value="<%= safeLessonDate %>">
+
+        <div class="teacher-template-buttons">
+          <button type="button" class="teacher-button secondary" data-bulk-status="present">Tất cả có mặt</button>
+          <button type="button" class="teacher-button secondary" data-bulk-status="late">Tất cả đi muộn</button>
+          <button type="button" class="teacher-button secondary" data-bulk-status="absent">Tất cả vắng</button>
+          <button type="button" class="teacher-button secondary" data-bulk-status="excused">Tất cả có phép</button>
+        </div>
+
+        <% if (safeStudents.length) { %>
+          <div class="teacher-student-grid">
+            <% safeStudents.forEach((item) => { %>
+              <article class="teacher-student-card">
+                <div class="teacher-student-head">
+                  <div>
+                    <h3 class="teacher-card-title"><%= item.full_name %></h3>
+                    <p class="teacher-card-text"><%= item.email || 'Chưa có email' %> · <%= item.phone || 'Chưa có số điện thoại' %></p>
+                  </div>
+                  <span class="teacher-pill <%= item.has_saved_attendance ? 'green' : 'gold' %>">
+                    <%= item.has_saved_attendance ? 'Đã lưu' : 'Bản nháp' %>
+                  </span>
+                </div>
+
+                <div class="teacher-form-grid" style="margin-top: 18px;">
+                  <div class="teacher-field">
+                    <label class="teacher-label">Trạng thái chuyên cần</label>
+                    <select name="status_<%= item.student_id %>" class="teacher-select" data-attendance-status data-saved="<%= item.has_saved_attendance ? '1' : '0' %>">
+                      <option value="present" <%= item.selected_status === 'present' ? 'selected' : '' %>>Có mặt</option>
+                      <option value="late" <%= item.selected_status === 'late' ? 'selected' : '' %>>Đi muộn</option>
+                      <option value="absent" <%= item.selected_status === 'absent' ? 'selected' : '' %>>Vắng</option>
+                      <option value="excused" <%= item.selected_status === 'excused' ? 'selected' : '' %>>Có phép</option>
+                    </select>
+                  </div>
+
+                  <div class="teacher-field">
+                    <label class="teacher-label">Ghi chú</label>
+                    <textarea name="note_<%= item.student_id %>" class="teacher-textarea" rows="3" placeholder="Ví dụ: vào lớp muộn 10 phút, xin phép vì lý do sức khỏe, cần nhắc làm bài tập..."><%= item.attendance_note %></textarea>
+                  </div>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+
+          <div class="teacher-card-actions" style="margin-top: 24px;">
+            <button class="teacher-button">Lưu điểm danh</button>
+            <a href="<%= baseUrl %>/teacher/comments?class_id=<%= safeSelectedClass.id %>" class="teacher-link-button secondary">Chuyển sang nhận xét</a>
+          </div>
+        <% } else { %>
+          <div class="teacher-empty">Lớp này chưa có học viên nào để điểm danh.</div>
+        <% } %>
+      </form>
+    </section>
+  <% } %>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector('[data-attendance-root]');
+    if (!root) return;
+
+    const selects = Array.from(root.querySelectorAll('[data-attendance-status]'));
+    const buttons = Array.from(root.querySelectorAll('[data-bulk-status]'));
+    const counters = {
+      present: root.querySelector('[data-counter="present"]'),
+      late: root.querySelector('[data-counter="late"]'),
+      absent: root.querySelector('[data-counter="absent"]'),
+      excused: root.querySelector('[data-counter="excused"]')
+    };
+
+    const updateCounters = () => {
+      if (!selects.length) return;
+      const summary = { present: 0, late: 0, absent: 0, excused: 0 };
+      selects.forEach((select) => {
+        summary[select.value] = (summary[select.value] || 0) + 1;
+      });
+
+      Object.entries(counters).forEach(([key, element]) => {
+        if (element) {
+          element.textContent = summary[key] || 0;
+        }
+      });
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const status = button.getAttribute('data-bulk-status');
+        selects.forEach((select) => {
+          select.value = status;
+        });
+        updateCounters();
+      });
+    });
+
+    selects.forEach((select) => {
+      select.addEventListener('change', updateCounters);
+    });
+
+    updateCounters();
+  })();
+</script>

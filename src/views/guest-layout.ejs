@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Th&#7847;y T&#224;i Toeic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Lexend:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg: #e8eeff;
+            --surface: linear-gradient(145deg, rgba(219, 233, 255, 0.78) 0%, rgba(255, 214, 234, 0.78) 100%);
+            --surface-soft: linear-gradient(145deg, rgba(202, 222, 255, 0.6) 0%, rgba(255, 214, 234, 0.62) 100%);
+            --ink: #0f1d32;
+            --ink-soft: #5d6e84;
+            --line: rgba(89, 106, 191, 0.16);
+            --brand: #2f78ed;
+            --accent: #f2a9d2;
+            --accent-soft: rgba(242, 169, 210, 0.18);
+            --shadow-lg: 0 28px 54px rgba(39, 62, 122, 0.14);
+            --shadow-sm: 0 16px 30px rgba(39, 62, 122, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Be Vietnam Pro", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(47, 120, 237, 0.28), transparent 24%),
+                radial-gradient(circle at top right, rgba(242, 169, 210, 0.32), transparent 24%),
+                radial-gradient(circle at bottom left, rgba(177, 154, 255, 0.22), transparent 30%),
+                linear-gradient(180deg, #eaf0ff 0%, #f9deef 52%, var(--bg) 100%);
+        }
+
+        body.menu-open { overflow: hidden; }
+        a { color: inherit; text-decoration: none; }
+
+        .g-topbar {
+            background: linear-gradient(90deg, #102845 0%, #2f78ed 48%, #e89bbc 100%);
+            color: #eff6ff;
+            font-size: 0.92rem;
+        }
+
+        .g-topbar-inner,
+        .g-wrap,
+        .g-footer-inner,
+        .g-mobile-inner {
+            width: min(1480px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .g-topbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-height: 46px;
+        }
+
+        .g-topbar-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .g-topbar-copy strong { font-weight: 800; }
+
+        .g-topbar-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(120, 191, 255, 0.18) 0%, rgba(242, 169, 210, 0.22) 100%);
+            font-weight: 700;
+            transition: transform .2s ease, background .2s ease;
+        }
+
+        .g-topbar-link:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, rgba(120, 191, 255, 0.28) 0%, rgba(242, 169, 210, 0.3) 100%);
+        }
+
+        .g-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            isolation: isolate;
+            backdrop-filter: blur(18px);
+            background: linear-gradient(135deg, rgba(222, 236, 255, 0.78) 0%, rgba(255, 219, 237, 0.7) 100%);
+            border-bottom: 1px solid rgba(89, 106, 191, 0.12);
+            box-shadow: 0 10px 30px rgba(39, 62, 122, 0.08);
+        }
+
+        .g-nav {
+            position: relative;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto auto;
+            align-items: center;
+            gap: 18px;
+            min-height: 82px;
+        }
+
+        .g-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+
+        .g-brand-mark {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(152, 204, 255, 0.28) 0%, rgba(255, 193, 223, 0.36) 100%);
+            border: 1px solid rgba(89,106,191,.14);
+            box-shadow: 0 16px 34px rgba(47,120,237,.16);
+        }
+
+        .g-brand-mark img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            padding: 4px;
+        }
+
+        .g-brand-copy { display: grid; gap: 2px; }
+
+        .g-brand-copy strong {
+            font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+            font-size: .96rem;
+            letter-spacing: -.04em;
+            color: #101828;
+        }
+
+        .g-brand-copy span {
+            color: var(--ink-soft);
+            font-size: .78rem;
+        }
+
+        .g-nav-links {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+            justify-self: stretch;
+        }
+
+        .g-nav-links::-webkit-scrollbar { display: none; }
+
+        .g-nav-link {
+            position: relative;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 13px;
+            border-radius: 999px;
+            color: #344054;
+            font-size: .89rem;
+            font-weight: 700;
+            transition: color .2s ease, background .2s ease, transform .2s ease;
+        }
+
+        .g-nav-link:hover {
+            color: #111827;
+            background: linear-gradient(135deg, rgba(47,120,237,.08) 0%, rgba(242,169,210,.12) 100%);
+            transform: translateY(-1px);
+        }
+
+        .g-nav-link.is-active {
+            color: var(--brand);
+            background: linear-gradient(135deg, rgba(47,120,237,.10) 0%, rgba(242,183,207,.16) 100%);
+        }
+
+        .g-actions {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 0 0 auto;
+            min-width: max-content;
+            justify-self: end;
+        }
+
+        .g-btn {
+            position: relative;
+            z-index: 4;
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 999px;
+            font-size: .92rem;
+            font-weight: 800;
+            transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+
+        .g-btn:hover { transform: translateY(-1px); }
+
+        .g-btn-primary {
+            color: #fff;
+            background: linear-gradient(135deg, #2f78ed 0%, #e89bbc 100%);
+            box-shadow: 0 18px 32px rgba(47,120,237,.22);
+        }
+
+        .g-btn-secondary {
+            color: #173f73;
+            background: linear-gradient(135deg, rgba(194, 220, 255, 0.88) 0%, rgba(255, 210, 231, 0.9) 100%);
+            border: 1px solid rgba(89,106,191,.14);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .g-menu-btn {
+            display: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            border: 1px solid rgba(89,106,191,.12);
+            background: linear-gradient(135deg, rgba(212, 230, 255, 0.88) 0%, rgba(255, 214, 234, 0.88) 100%);
+            align-items: center;
+            justify-content: center;
+            color: #111827;
+            justify-self: end;
+        }
+
+        .g-mobile-panel {
+            display: none;
+            border-top: 1px solid rgba(89,106,191,.1);
+            background: linear-gradient(180deg, rgba(229, 240, 255, 0.94) 0%, rgba(255, 223, 239, 0.94) 100%);
+        }
+
+        body.menu-open .g-mobile-panel { display: block; }
+
+        .g-mobile-inner {
+            padding: 14px 0 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .g-mobile-link,
+        .g-mobile-cta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(201, 223, 255, 0.72) 0%, rgba(255, 214, 234, 0.74) 100%);
+            border: 1px solid rgba(89,106,191,.1);
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .g-mobile-link span:last-child {
+            font-size: 0;
+        }
+
+        .g-mobile-link span:last-child::after {
+            content: "->";
+            font-size: 1rem;
+        }
+
+        .g-mobile-cta { justify-content: center; }
+        .g-stage { min-height: calc(100vh - 130px); }
+
+        .g-content {
+            width: min(1360px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 30px 0 40px;
+        }
+
+        .g-content :is(h1, h2) {
+            font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+            letter-spacing: -0.05em;
+            background: linear-gradient(90deg, #ff7a59 0%, #ff5d8f 46%, #ffb14a 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .g-flash-stack {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .g-flash {
+            padding: 15px 18px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .g-flash.success { color: #067647; border-color: rgba(6,118,71,.12); }
+        .g-flash.error { color: #b42318; border-color: rgba(180,35,24,.12); }
+        .g-flash.info { color: #175cd3; border-color: rgba(23,92,211,.12); }
+
+        .g-footer {
+            background:
+                radial-gradient(circle at top right, rgba(242, 183, 207, 0.12), transparent 24%),
+                linear-gradient(180deg, #0f2138 0%, #091627 100%);
+            color: #e5e7eb;
+            margin-top: 34px;
+        }
+
+        .g-footer-inner { padding: 38px 0 26px; }
+
+        .g-footer-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+            gap: 28px;
+        }
+
+        .g-footer-col h3 {
+            margin: 0 0 16px;
+            font-family: "Lexend", "Be Vietnam Pro", sans-serif;
+            font-size: 1.02rem;
+            letter-spacing: -.02em;
+            color: #fff;
+        }
+
+        .g-footer-col p,
+        .g-footer-col a {
+            display: block;
+            margin: 0 0 10px;
+            color: #cbd5e1;
+            line-height: 1.65;
+        }
+
+        .g-footer-col a:hover { color: #fff; }
+
+        .g-footer-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(120, 191, 255, 0.12) 0%, rgba(242, 169, 210, 0.14) 100%);
+            color: #fff;
+            font-size: .86rem;
+            font-weight: 700;
+            margin: 0 8px 8px 0;
+        }
+
+        .g-footer-bottom {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(147, 197, 253, .14);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: #94a3b8;
+            font-size: .92rem;
+        }
+
+        .g-footer-bottom span:last-child {
+            font-size: 0;
+        }
+
+        .g-footer-bottom span:last-child::after {
+            content: "Copyright (c) Th\1ea7y T\00e0i Toeic";
+            font-size: .92rem;
+        }
+
+        @media (max-width: 1380px) {
+            .g-nav { gap: 14px; }
+            .g-brand-copy strong { font-size: .88rem; }
+            .g-brand-copy span { font-size: .75rem; }
+            .g-nav-link { padding: 0 11px; font-size: .84rem; }
+            .g-btn { padding: 0 14px; font-size: .88rem; }
+        }
+
+        @media (max-width: 1180px) {
+            .g-nav {
+                grid-template-columns: auto minmax(0, 1fr) auto;
+            }
+
+            .g-nav-links,
+            .g-actions .g-btn {
+                display: none;
+            }
+
+            .g-menu-btn { display: inline-flex; }
+            .g-footer-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        }
+
+        @media (max-width: 760px) {
+            .g-topbar-inner,
+            .g-wrap,
+            .g-footer-inner,
+            .g-mobile-inner,
+            .g-content {
+                width: min(100% - 20px, 1480px);
+            }
+
+            .g-topbar-inner {
+                min-height: 56px;
+                flex-direction: column;
+                justify-content: center;
+                padding: 10px 0;
+            }
+
+            .g-nav { min-height: 74px; }
+            .g-brand-copy span { display: none; }
+            .g-footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <%
+    const normalizePath = (value) => {
+        const raw = String(value || '/').split('?')[0].split('#')[0];
+        const trimmed = raw.replace(/\/+$/, '');
+        return trimmed || '/';
+    };
+    const safeBaseUrl = baseUrl || '';
+    const buildHref = (path) => `${safeBaseUrl}${path}`;
+    const currentRoute = normalizePath(currentPath || '/');
+    const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
+    const safeSuccessMessages = typeof success_msg !== 'undefined' ? success_msg : [];
+    const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
+    const safeInfoMessages = typeof error !== 'undefined' ? error : [];
+    const guestNavItems = [
+        { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
+        { label: 'Về chúng tôi', href: buildHref('/ve-chung-toi'), matches: ['/ve-chung-toi'] },
+        { label: 'Khóa học', href: buildHref('/courses-blog'), matches: ['/courses-blog', '/course-detail', '/register-course', '/payment'] },
+        { label: 'Lịch khai giảng', href: buildHref('/lich-khai-giang'), matches: ['/lich-khai-giang'] },
+        { label: 'Đề thi online', href: buildHref('/placement-tests'), matches: ['/placement-tests'] },
+        { label: 'Góc học tập', href: buildHref('/goc-hoc-tap'), matches: ['/goc-hoc-tap'] },
+        { label: 'Liên hệ', href: buildHref('/contact'), matches: ['/contact'] }
+    ];
+    const isActive = (item) => (item.matches || []).some((target) => {
+        const normalized = normalizePath(safeBaseUrl + target);
+        if (normalized === '/') return currentRoute === '/';
+        return currentRoute === normalized || currentRoute.startsWith(normalized + '/');
+    });
+    %>
+
+    <div class="g-topbar">
+        <div class="g-topbar-inner">
+            <div class="g-topbar-copy">
+                <strong>Thông tin nhanh</strong>
+                <span>Xem khóa học, lịch khai giảng, đề thi online, chatbot tức thời và ưu đãi giảm 25% tại đây.</span>
+            </div>
+            <a href="<%= buildHref('/courses-blog') %>" class="g-topbar-link">Nhận ưu đãi 25%</a>
+        </div>
+    </div>
+
+    <header class="g-header">
+        <div class="g-wrap g-nav">
+            <a href="<%= buildHref('/') %>" class="g-brand">
+                <span class="g-brand-mark">
+                    <img src="<%= brandLogo %>" alt="Logo Thầy Tài Toeic">
+                </span>
+                <span class="g-brand-copy">
+                    <strong>Th&#7847;y T&#224;i Toeic</strong>
+                    <span>Trung t&#226;m luy&#7879;n thi TOEIC tr&#7921;c tuy&#7871;n</span>
+                </span>
+            </a>
+
+            <nav class="g-nav-links" aria-label="Điều hướng khách">
+                <% guestNavItems.forEach((item) => { %>
+                    <a href="<%= item.href %>" class="g-nav-link <%= isActive(item) ? 'is-active' : '' %>"><%= item.label %></a>
+                <% }) %>
+            </nav>
+
+            <div class="g-actions">
+                <a href="<%= buildHref('/placement-tests') %>" class="g-btn g-btn-secondary">Kiểm tra đầu vào</a>
+                <a href="<%= buildHref('/login') %>" class="g-btn g-btn-primary">Đăng nhập</a>
+            </div>
+
+            <button type="button" class="g-menu-btn" id="guestMenuToggle" aria-label="Mở menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7h16"></path>
+                    <path d="M4 12h16"></path>
+                    <path d="M4 17h16"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="g-mobile-panel" id="guestMobilePanel">
+            <div class="g-mobile-inner">
+                <% guestNavItems.forEach((item) => { %>
+                    <a href="<%= item.href %>" class="g-mobile-link">
+                        <span><%= item.label %></span>
+                        <span>→</span>
+                    </a>
+                <% }) %>
+                <a href="<%= buildHref('/placement-tests') %>" class="g-mobile-cta">Kiểm tra đầu vào</a>
+                <a href="<%= buildHref('/login') %>" class="g-mobile-cta">Đăng nhập</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="g-stage">
+        <div class="g-content">
+            <% if (safeSuccessMessages.length || safeErrorMessages.length || safeInfoMessages.length) { %>
+                <section class="g-flash-stack">
+                    <% safeSuccessMessages.forEach((msg) => { %><div class="g-flash success"><%= msg %></div><% }) %>
+                    <% safeErrorMessages.forEach((msg) => { %><div class="g-flash error"><%= msg %></div><% }) %>
+                    <% safeInfoMessages.forEach((msg) => { %><div class="g-flash info"><%= msg %></div><% }) %>
+                </section>
+            <% } %>
+            <%- content %>
+        </div>
+    </main>
+
+    <footer class="g-footer">
+        <div class="g-footer-inner">
+            <div class="g-footer-grid">
+                <section class="g-footer-col">
+                    <h3>Th&#7847;y T&#224;i Toeic</h3>
+                    <p>Kh&#244;ng gian th&#244;ng tin TOEIC d&#224;nh cho ng&#432;&#7901;i m&#7899;i b&#7855;t &#273;&#7847;u: t&#236;m hi&#7875;u trung t&#226;m, kh&#243;a h&#7885;c, l&#7883;ch khai gi&#7843;ng, &#273;&#7873; thi online v&#224; t&#432; v&#7845;n l&#7897; tr&#236;nh.</p>
+                    <a href="<%= buildHref('/ve-chung-toi') %>">V&#7873; ch&#250;ng t&#244;i</a>
+                    <a href="<%= buildHref('/lich-khai-giang') %>">L&#7883;ch khai gi&#7843;ng</a>
+                    <a href="<%= buildHref('/goc-hoc-tap') %>">Góc học tập</a>
+                </section>
+                <section class="g-footer-col">
+                    <h3>Danh mục</h3>
+                    <a href="<%= buildHref('/') %>">Trang chủ</a>
+                    <a href="<%= buildHref('/courses-blog') %>">Khóa học</a>
+                    <a href="<%= buildHref('/placement-tests') %>">Đề thi online</a>
+                    <a href="<%= buildHref('/contact') %>">Liên hệ</a>
+                    <a href="<%= buildHref('/register-course') %>">Đăng ký khóa học</a>
+                </section>
+                <section class="g-footer-col">
+                    <h3>Liên kết nhanh</h3>
+                    <span class="g-footer-chip">TOEIC A</span>
+                    <span class="g-footer-chip">TOEIC B</span>
+                    <span class="g-footer-chip">Speaking & Writing</span>
+                    <span class="g-footer-chip">Full Test</span>
+                    <span class="g-footer-chip">Tư vấn đầu vào</span>
+                </section>
+                <section class="g-footer-col">
+                    <h3>Thông tin liên hệ</h3>
+                    <p><strong>Hotline:</strong> 0344772436</p>
+                    <p><strong>Email:</strong> realtoeiccentral@gmail.com</p>
+                    <p><strong>CS1:</strong> Số 17, ngõ 20 Hồ Tùng Mậu, Cầu Giấy</p>
+                    <p><strong>CS2:</strong> Số 9 ngách 59 ngõ 21 Lê Đức Thọ, Nam Từ Liêm</p>
+                </section>
+            </div>
+            <div class="g-footer-bottom">
+                <span>Th&#7847;y T&#224;i Toeic | H&#7885;c, luy&#7879;n &#273;&#7873; v&#224; &#273;&#259;ng k&#253; l&#7897; tr&#236;nh trong c&#249;ng m&#7897;t h&#7879; th&#7889;ng.</span>
+                <span>Copyright &#169; Th&#7847;y T&#224;i Toeic</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (() => {
+            const toggle = document.getElementById('guestMenuToggle');
+            if (!toggle) return;
+            const closeMenu = () => document.body.classList.remove('menu-open');
+            toggle.addEventListener('click', () => document.body.classList.toggle('menu-open'));
+            document.querySelectorAll('#guestMobilePanel a').forEach((link) => link.addEventListener('click', closeMenu));
+            window.addEventListener('resize', () => { if (window.innerWidth > 1180) closeMenu(); });
+        })();
+    </script>
+    <%- include('partials/engagement-widgets', { scope: 'guest' }) %>
+</body>
+</html>

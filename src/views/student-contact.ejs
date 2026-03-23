@@ -1,0 +1,97 @@
+<%
+const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const studentName = user && user.username ? user.username : '';
+const studentEmail = user && user.email ? user.email : '';
+const channels = [
+  { label: 'Hotline tư vấn', value: '0344772436', note: 'Phản hồi nhanh giờ hành chính' },
+  { label: 'Email', value: 'realtoeiccentral@gmail.com', note: 'Phù hợp cho câu hỏi chi tiết' },
+  { label: 'Fanpage', value: 'Lớp TOEIC thầy Tài', note: 'Nhắn trực tiếp để được hỗ trợ' }
+];
+%>
+
+<style>
+  .st-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px;display:grid;gap:24px}
+  .st-hero,.st-form-shell,.st-channel-grid article{padding:30px;border-radius:34px;background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.06);box-shadow:0 24px 44px rgba(17,24,39,.08)}
+  .st-hero{display:grid;gap:16px;background:linear-gradient(135deg,#fff 0%,#eff6ff 55%,#eef2ff 100%)}
+  .st-hero h1,.st-form-shell h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.05em;color:#111827}
+  .st-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1.02}
+  .st-hero p,.st-form-shell p,.st-channel-grid span{margin:0;color:#667085;line-height:1.8}
+  .st-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .st-channel-grid strong{display:block;font-size:1.15rem;color:#111827}
+  .st-channel-grid span{display:block;margin-top:10px}
+  .st-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
+  .st-field{display:grid;gap:8px}
+  .st-field.full{grid-column:1 / -1}
+  .st-field label{font-weight:700;color:#344054}
+  .st-field input,.st-field select,.st-field textarea{width:100%;min-height:52px;padding:0 16px;border-radius:18px;border:1px solid rgba(17,24,39,.10);background:#fff;font:inherit;color:#111827}
+  .st-field textarea{min-height:150px;padding:14px 16px;resize:vertical}
+  .st-actions{display:flex;justify-content:flex-start;margin-top:20px}
+  .st-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
+  .st-success{padding:14px 16px;border-radius:18px;background:rgba(34,197,94,.10);color:#166534;border:1px solid rgba(34,197,94,.16)}
+  @media (max-width:980px){.st-channel-grid,.st-form-grid{grid-template-columns:1fr}}
+  @media (max-width:720px){.st-page{width:min(100% - 20px,1380px);padding:22px 0 28px}.st-hero,.st-form-shell,.st-channel-grid article{padding:20px;border-radius:24px}}
+</style>
+
+<div class="st-page">
+  <section class="st-hero">
+    <h1>Liên hệ trong tài khoản học viên</h1>
+    <p>Học viên có thể gửi câu hỏi về lịch học, khóa học, thanh toán hoặc cần đội ngũ tư vấn hỗ trợ nhanh ngay trong khu vực tài khoản.</p>
+    <% if (success) { %>
+      <div class="st-success">Tin nhắn của bạn đã được gửi thành công. Đội ngũ sẽ phản hồi sớm nhất có thể.</div>
+    <% } %>
+  </section>
+
+  <section class="st-channel-grid">
+    <% channels.forEach((item) => { %>
+      <article>
+        <strong><%= item.label %></strong>
+        <span><%= item.value %></span>
+        <span><%= item.note %></span>
+      </article>
+    <% }) %>
+  </section>
+
+  <section class="st-form-shell">
+    <h2>Gửi câu hỏi đến trung tâm</h2>
+    <p>Điền nhanh thông tin bên dưới, hệ thống sẽ chuyển trực tiếp đến phần tin nhắn để đội ngũ hỗ trợ xử lý.</p>
+
+    <form action="<%= safeBaseUrl %>/contact" method="POST" class="st-form-grid">
+      <input type="hidden" name="return_to" value="/student/contact">
+      <div class="st-field">
+        <label>Họ tên</label>
+        <input type="text" name="name" value="<%= studentName %>" required>
+      </div>
+      <div class="st-field">
+        <label>Email</label>
+        <input type="email" name="email" value="<%= studentEmail %>" required>
+      </div>
+      <div class="st-field">
+        <label>Số điện thoại</label>
+        <input type="text" name="phone" placeholder="Nhập số điện thoại">
+      </div>
+      <div class="st-field">
+        <label>Mục tiêu hỗ trợ</label>
+        <select name="goal">
+          <option value="Tư vấn khóa học học viên">Tư vấn khóa học</option>
+          <option value="Hỏi lịch khai giảng">Hỏi lịch khai giảng</option>
+          <option value="Hỗ trợ tài khoản">Hỗ trợ tài khoản</option>
+        </select>
+      </div>
+      <div class="st-field">
+        <label>Khóa học quan tâm</label>
+        <input type="text" name="course_interest" placeholder="Ví dụ: TOEIC A, TOEIC B, Tập Sự">
+      </div>
+      <div class="st-field">
+        <label>Khung giờ mong muốn</label>
+        <input type="text" name="schedule_preference" placeholder="Ví dụ: Tối 2-4-6">
+      </div>
+      <div class="st-field full">
+        <label>Nội dung</label>
+        <textarea name="message" placeholder="Mô tả câu hỏi hoặc nhu cầu của bạn..." required></textarea>
+      </div>
+      <div class="st-actions">
+        <button type="submit" class="st-btn">Gửi liên hệ</button>
+      </div>
+    </form>
+  </section>
+</div>

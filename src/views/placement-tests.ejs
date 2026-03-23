@@ -1,0 +1,357 @@
+<%
+const safeCollections = Array.isArray(collections) ? collections : [];
+const safeTests = Array.isArray(tests) ? tests : [];
+const initialCollection = safeCollections.length ? safeCollections[0].key : 'all';
+%>
+
+<style>
+    .ft-page{padding-bottom:54px}
+    .ft-wrap{width:min(1220px,calc(100% - 32px));margin:0 auto}
+    .ft-hero{padding:54px 0 34px;background:linear-gradient(180deg,#eef6ff 0%,#dbeafe 100%);border-bottom:1px solid rgba(37,99,235,.12)}
+    .ft-hero-inner{display:grid;gap:22px}
+    .ft-eyebrow{margin:0;color:#1d4ed8;font-size:.96rem;font-weight:700;letter-spacing:.02em}
+    .ft-hero h1{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;font-size:clamp(2.8rem,5vw,4.35rem);line-height:1.05;letter-spacing:-.05em;color:#102a43}
+    .ft-summary{display:flex;flex-wrap:wrap;gap:12px 18px;color:#4b6382}
+    .ft-summary-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.88);border:1px solid rgba(37,99,235,.10);font-weight:600}
+    .ft-tabs{display:flex;flex-wrap:wrap;gap:12px}
+    .ft-tab{border:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 18px;border-radius:999px;background:transparent;color:#344054;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s ease}
+    .ft-tab:hover{background:rgba(37,99,235,.08)}
+    .ft-tab.is-active{background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.24)}
+    .ft-tab-count{font-size:.82rem;opacity:.78}
+    .ft-search{display:grid;grid-template-columns:minmax(0,1fr) 156px;max-width:920px}
+    .ft-search input{min-height:54px;padding:0 20px;border:1px solid rgba(37,99,235,.12);border-right:0;border-radius:16px 0 0 16px;background:#fff;color:#102a43;font-size:1.02rem;outline:none}
+    .ft-search input:focus{border-color:rgba(37,99,235,.34);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+    .ft-search button{min-height:54px;border:0;border-radius:0 16px 16px 0;background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);color:#fff;font-size:1.08rem;font-weight:700;cursor:pointer}
+    .ft-note{margin:0;max-width:920px;color:#58708f;font-size:.98rem;line-height:1.7}
+    .ft-note code{padding:2px 8px;border-radius:999px;background:rgba(17,24,39,.06);font-size:.9em}
+    .ft-body{padding:32px 0 0}
+    .ft-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}
+    .ft-toolbar-copy{display:grid;gap:4px}
+    .ft-toolbar-copy strong{font-size:1.08rem;color:#102a43}
+    .ft-toolbar-copy span{color:#58708f}
+    .ft-toolbar-badge{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;background:#eff6ff;border:1px solid rgba(37,99,235,.12);color:#1d4ed8;font-weight:700}
+    .ft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+    .ft-card{position:relative;display:grid;gap:18px;padding:30px;border-radius:20px;background:rgba(255,255,255,.98);border:1px solid rgba(37,99,235,.10);box-shadow:0 16px 34px rgba(15,23,42,.05)}
+    .ft-ribbon{position:absolute;top:8px;right:-10px;display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:28px;padding:0 10px;background:#2563eb;color:#fff;font-size:1rem;font-weight:800;border-radius:4px 4px 0 0}
+    .ft-ribbon::after{content:"";position:absolute;right:0;bottom:-10px;border-width:10px 10px 0 0;border-style:solid;border-color:#1d4ed8 transparent transparent transparent}
+    .ft-card h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;font-size:2rem;line-height:1.18;letter-spacing:-.04em;color:#173f73}
+    .ft-card p{margin:0;color:#58708f;line-height:1.7}
+    .ft-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+    .ft-meta-item{display:grid;gap:4px}
+    .ft-meta-item span{color:#4b6382;font-size:1.02rem}
+    .ft-meta-item strong{color:#102a43;font-size:1.18rem}
+    .ft-pills{display:flex;flex-wrap:wrap;gap:10px}
+    .ft-pill{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:12px;background:#dbeafe;color:#1d4ed8;font-weight:800}
+    .ft-status{display:inline-flex;align-items:center;padding:8px 12px;border-radius:12px;font-size:.94rem;font-weight:700}
+    .ft-status--ready{background:rgba(37,99,235,.10);color:#1d4ed8}
+    .ft-status--demo{background:rgba(245,158,11,.13);color:#b45309}
+    .ft-status--coming-soon{background:rgba(71,85,105,.1);color:#475569}
+    .ft-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .ft-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;border:0;text-decoration:none;font-size:1rem;font-weight:800;transition:.2s ease}
+    .ft-btn:hover{transform:translateY(-1px)}
+    .ft-btn-primary{background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);color:#fff;box-shadow:0 14px 26px rgba(37,99,235,.24)}
+    .ft-btn-secondary{background:#eff6ff;color:#1d4ed8}
+    .ft-btn.is-disabled{cursor:not-allowed;opacity:.82}
+    .ft-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:32px}
+    .ft-page-arrow,.ft-page-number{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(37,99,235,.12);background:#fff;color:#64748b;cursor:pointer;transition:.2s ease}
+    .ft-page-arrow{width:40px;height:40px;border-radius:999px}
+    .ft-page-arrow:hover,.ft-page-number:hover{transform:translateY(-1px);border-color:rgba(37,99,235,.24);color:#102a43}
+    .ft-page-arrow[disabled]{opacity:.46;cursor:not-allowed;transform:none}
+    .ft-page-list{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+    .ft-page-number{min-width:40px;height:40px;padding:0 12px;border-radius:999px;font-size:1rem;font-weight:700}
+    .ft-page-number.is-active{background:#2563eb;border-color:#2563eb;color:#fff}
+    .ft-page-dots{color:#98a2b3;font-weight:700}
+    .ft-empty{padding:34px;border-radius:24px;background:#fff;border:1px dashed rgba(37,99,235,.22);text-align:center;color:#58708f}
+    .ft-empty strong{display:block;margin-bottom:8px;color:#102a43;font-size:1.08rem}
+    .ft-card[hidden],.ft-pagination[hidden]{display:none}
+    @media (max-width:960px){
+        .ft-grid{grid-template-columns:1fr}
+        .ft-search{grid-template-columns:1fr}
+        .ft-search input{border-right:1px solid rgba(17,24,39,.1);border-radius:16px}
+        .ft-search button{border-radius:16px;margin-top:10px}
+    }
+    @media (max-width:720px){
+        .ft-wrap{width:min(100% - 20px,1220px)}
+        .ft-hero{padding:36px 0 26px}
+        .ft-card{padding:24px 18px 20px}
+        .ft-card h2{font-size:1.55rem}
+        .ft-meta{grid-template-columns:1fr}
+    }
+</style>
+
+<div class="ft-page">
+    <section class="ft-hero">
+        <div class="ft-wrap">
+            <div class="ft-hero-inner">
+                <p class="ft-eyebrow">Thi thử TOEIC Full Test</p>
+                <h1><%= pageTitle || 'Tổng hợp đề thi' %></h1>
+
+
+
+                <div class="ft-tabs" id="ftTabs">
+                    <% safeCollections.forEach((collection, index) => { %>
+                        <button
+                            type="button"
+                            class="ft-tab <%= index === 0 ? 'is-active' : '' %>"
+                            data-filter="<%= collection.key %>">
+                            <span><%= collection.label %></span>
+                            <span class="ft-tab-count"><%= collection.total %></span>
+                        </button>
+                    <% }) %>
+                </div>
+
+                <div class="ft-search">
+                    <input
+                        id="ftSearchInput"
+                        type="search"
+                        placeholder="Nhập tên đề muốn tìm..."
+                        aria-label="Tìm đề thi full test">
+                    <button type="button" id="ftSearchButton">Tìm kiếm</button>
+                </div>
+
+              
+            </div>
+        </div>
+    </section>
+
+    <section class="ft-body">
+        <div class="ft-wrap">
+            <div class="ft-toolbar">
+            
+                <span class="ft-toolbar-badge">120 phút · 200 câu · 7 phần · 990 điểm</span>
+            </div>
+
+            <% if (safeTests.length) { %>
+                <div class="ft-grid" id="ftGrid">
+                    <% safeTests.forEach((test) => { %>
+                        <article
+                            class="ft-card"
+                            data-collection="<%= test.collectionKey %>"
+                            data-search="<%= [test.title, test.badgeLabel, test.collectionLabel, test.description, test.statusText].filter(Boolean).join(' ').toLowerCase() %>">
+                            <span class="ft-ribbon"><%= test.accessLabel || 'Free' %></span>
+
+                            <div class="ft-card-head">
+                                <h2><%= test.title %></h2>
+                                <p><%= test.description %></p>
+                            </div>
+
+                            <div class="ft-meta">
+                                <div class="ft-meta-item">
+                                    <span>Thời gian</span>
+                                    <strong><%= test.durationMinutes %> phút</strong>
+                                </div>
+                                <div class="ft-meta-item">
+                                    <span>Câu hỏi</span>
+                                    <strong><%= test.totalQuestions %> câu</strong>
+                                </div>
+                                <div class="ft-meta-item">
+                                    <span>Phần thi</span>
+                                    <strong><%= test.partsCount %> phần</strong>
+                                </div>
+                                <div class="ft-meta-item">
+                                    <span>Điểm tối đa</span>
+                                    <strong><%= test.maxScore %> điểm</strong>
+                                </div>
+                            </div>
+
+                            <div class="ft-pills">
+                                <span class="ft-pill"><%= test.badgeLabel || test.collectionLabel %></span>
+                                <span class="ft-status ft-status--<%= test.statusTone %>"><%= test.statusText %></span>
+                            </div>
+
+                            <div class="ft-actions">
+                                <% if (test.isAvailable && test.href) { %>
+                                    <a href="<%= test.href %>" class="ft-btn ft-btn-primary">Làm bài</a>
+                                <% } else { %>
+                                    <button type="button" class="ft-btn ft-btn-secondary is-disabled" disabled><%= test.actionLabel || 'Sắp cập nhật' %></button>
+                                <% } %>
+                            </div>
+                        </article>
+                    <% }) %>
+                </div>
+
+                <div class="ft-empty" id="ftEmpty" hidden>
+                    <strong>Chưa tìm thấy đề phù hợp</strong>
+                    <span>Hãy thử đổi từ khóa tìm kiếm hoặc chuyển sang nhóm đề khác.</span>
+                </div>
+                <nav class="ft-pagination" id="ftPagination" aria-label="Phân trang đề thi">
+                    <button type="button" class="ft-page-arrow" id="ftPrevPage" aria-label="Trang trước">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M15 18L9 12L15 6"></path>
+                        </svg>
+                    </button>
+                    <div class="ft-page-list" id="ftPageList"></div>
+                    <button type="button" class="ft-page-arrow" id="ftNextPage" aria-label="Trang sau">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 18L15 12L9 6"></path>
+                        </svg>
+                    </button>
+                </nav>
+            <% } else { %>
+                <div class="ft-empty">
+                    <strong>Chưa có đề trong danh mục</strong>
+                    <span>Khi bạn thêm file đề mới, danh sách full test sẽ hiển thị tại đây.</span>
+                </div>
+            <% } %>
+        </div>
+    </section>
+</div>
+
+<script>
+    (() => {
+        const tabs = Array.from(document.querySelectorAll('#ftTabs .ft-tab'));
+        const cards = Array.from(document.querySelectorAll('#ftGrid .ft-card'));
+        const searchInput = document.getElementById('ftSearchInput');
+        const searchButton = document.getElementById('ftSearchButton');
+        const resultCount = document.getElementById('ftResultCount');
+        const resultLabel = document.getElementById('ftResultLabel');
+        const emptyState = document.getElementById('ftEmpty');
+        const pagination = document.getElementById('ftPagination');
+        const prevPageButton = document.getElementById('ftPrevPage');
+        const nextPageButton = document.getElementById('ftNextPage');
+        const pageList = document.getElementById('ftPageList');
+
+        if (!tabs.length || !cards.length || !searchInput || !searchButton || !resultCount || !resultLabel || !emptyState || !pagination || !prevPageButton || !nextPageButton || !pageList) {
+            return;
+        }
+
+        const ITEMS_PER_PAGE = 10;
+        const normalize = (value) => String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+
+        let activeFilter = <%- JSON.stringify(initialCollection) %>;
+        let currentPage = 1;
+
+        const buildPageWindow = (totalPages, activePage) => {
+            if (totalPages <= 7) {
+                return Array.from({ length: totalPages }, (_, index) => index + 1);
+            }
+
+            const pages = [1];
+            const start = Math.max(2, activePage - 1);
+            const end = Math.min(totalPages - 1, activePage + 1);
+
+            if (start > 2) {
+                pages.push('dots-left');
+            }
+
+            for (let page = start; page <= end; page += 1) {
+                pages.push(page);
+            }
+
+            if (end < totalPages - 1) {
+                pages.push('dots-right');
+            }
+
+            pages.push(totalPages);
+            return pages;
+        };
+
+        const renderPagination = (totalPages) => {
+            pageList.innerHTML = '';
+            pagination.hidden = totalPages <= 1;
+            prevPageButton.disabled = currentPage <= 1;
+            nextPageButton.disabled = currentPage >= totalPages;
+
+            buildPageWindow(totalPages, currentPage).forEach((item) => {
+                if (typeof item !== 'number') {
+                    const dots = document.createElement('span');
+                    dots.className = 'ft-page-dots';
+                    dots.textContent = '...';
+                    pageList.appendChild(dots);
+                    return;
+                }
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `ft-page-number${item === currentPage ? ' is-active' : ''}`;
+                button.dataset.page = String(item);
+                button.setAttribute('aria-label', `Trang ${item}`);
+                button.textContent = String(item);
+                pageList.appendChild(button);
+            });
+        };
+
+        const getFilteredCards = (keyword) => cards.filter((card) => {
+            const matchesCollection = activeFilter === 'all' || card.dataset.collection === activeFilter;
+            const matchesKeyword = !keyword || normalize(card.dataset.search).includes(keyword);
+
+            return matchesCollection && matchesKeyword;
+        });
+
+        const applyFilters = ({ resetPage = false } = {}) => {
+            const keyword = normalize(searchInput.value);
+            const filteredCards = getFilteredCards(keyword);
+            const totalPages = Math.max(1, Math.ceil(filteredCards.length / ITEMS_PER_PAGE));
+
+            if (resetPage) {
+                currentPage = 1;
+            } else if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const visibleCards = filteredCards.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+            cards.forEach((card) => {
+                card.hidden = !visibleCards.includes(card);
+            });
+
+            resultCount.textContent = String(filteredCards.length);
+            resultLabel.textContent = keyword
+                ? `Kết quả cho từ khóa "${searchInput.value.trim()}".`
+                : `Bạn có thể lọc theo năm hoặc tìm theo tên đề. Trang ${currentPage}/${totalPages}, tối đa ${ITEMS_PER_PAGE} đề/trang.`;
+            emptyState.hidden = filteredCards.length !== 0;
+            renderPagination(totalPages);
+        };
+
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+                activeFilter = tab.dataset.filter || 'all';
+                tabs.forEach((item) => item.classList.toggle('is-active', item === tab));
+                applyFilters({ resetPage: true });
+            });
+        });
+
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                applyFilters();
+            }
+        });
+
+        nextPageButton.addEventListener('click', () => {
+            const totalPages = Math.max(1, Math.ceil(getFilteredCards(normalize(searchInput.value)).length / ITEMS_PER_PAGE));
+
+            if (currentPage < totalPages) {
+                currentPage += 1;
+                applyFilters();
+            }
+        });
+
+        pageList.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-page]');
+
+            if (!target) {
+                return;
+            }
+
+            currentPage = Number(target.dataset.page || 1);
+            applyFilters();
+        });
+
+        searchButton.addEventListener('click', () => applyFilters({ resetPage: true }));
+        searchInput.addEventListener('input', () => applyFilters({ resetPage: true }));
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyFilters({ resetPage: true });
+            }
+        });
+
+        applyFilters({ resetPage: true });
+    })();
+</script>

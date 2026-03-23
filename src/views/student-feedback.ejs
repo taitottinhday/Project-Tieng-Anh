@@ -1,0 +1,91 @@
+<%
+const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const studentName = user && user.username ? user.username : '';
+const studentEmail = user && user.email ? user.email : '';
+const feedbackTopics = [
+  'Góp ý giao diện và trải nghiệm tài khoản học viên',
+  'Góp ý về lịch học hoặc lịch khai giảng',
+  'Đề xuất thêm nội dung luyện tập',
+  'Báo lỗi trong quá trình sử dụng'
+];
+%>
+
+<style>
+  .sf-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px;display:grid;gap:24px}
+  .sf-hero,.sf-form-shell,.sf-topic-shell{padding:30px;border-radius:34px;background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.06);box-shadow:0 24px 44px rgba(17,24,39,.08)}
+  .sf-hero{display:grid;gap:14px;background:linear-gradient(135deg,#fff 0%,#fff1f3 50%,#fdf2f8 100%)}
+  .sf-hero h1,.sf-form-shell h2,.sf-topic-shell h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.05em;color:#111827}
+  .sf-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1.02}
+  .sf-hero p,.sf-form-shell p,.sf-topic-shell p{margin:0;color:#667085;line-height:1.8}
+  .sf-success{padding:14px 16px;border-radius:18px;background:rgba(34,197,94,.10);color:#166534;border:1px solid rgba(34,197,94,.16)}
+  .sf-topic-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+  .sf-topic-item{padding:18px;border-radius:22px;background:#f8fafc;border:1px solid rgba(17,24,39,.06);font-weight:600;color:#344054}
+  .sf-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
+  .sf-field{display:grid;gap:8px}
+  .sf-field.full{grid-column:1 / -1}
+  .sf-field label{font-weight:700;color:#344054}
+  .sf-field input,.sf-field select,.sf-field textarea{width:100%;min-height:52px;padding:0 16px;border-radius:18px;border:1px solid rgba(17,24,39,.10);background:#fff;font:inherit;color:#111827}
+  .sf-field textarea{min-height:170px;padding:14px 16px;resize:vertical}
+  .sf-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
+  @media (max-width:980px){.sf-topic-list,.sf-form-grid{grid-template-columns:1fr}}
+  @media (max-width:720px){.sf-page{width:min(100% - 20px,1380px);padding:22px 0 28px}.sf-hero,.sf-form-shell,.sf-topic-shell{padding:20px;border-radius:24px}}
+</style>
+
+<div class="sf-page">
+  <section class="sf-hero">
+    <h1>Góp ý từ học viên</h1>
+    <p>Mọi góp ý đều giúp đội ngũ cải thiện trải nghiệm học tập, nội dung luyện đề và cách hỗ trợ trong tài khoản học viên.</p>
+    <% if (success) { %>
+      <div class="sf-success">Góp ý của bạn đã được gửi thành công. Cảm ơn bạn đã giúp chúng mình cải thiện nền tảng.</div>
+    <% } %>
+  </section>
+
+  <section class="sf-topic-shell">
+    <h2>Những nhóm góp ý thường gặp</h2>
+    <p>Bạn có thể phản hồi nhanh theo một trong các nhóm dưới đây hoặc viết chi tiết hơn trong form.</p>
+    <div class="sf-topic-list">
+      <% feedbackTopics.forEach((item) => { %>
+        <div class="sf-topic-item"><%= item %></div>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="sf-form-shell">
+    <h2>Gửi góp ý ngay</h2>
+    <p>Thông tin sẽ được chuyển đến hệ thống tiếp nhận tin nhắn để đội ngũ hỗ trợ phản hồi và cải thiện sớm nhất.</p>
+
+    <form action="<%= safeBaseUrl %>/contact" method="POST" class="sf-form-grid">
+      <input type="hidden" name="return_to" value="/student/feedback">
+      <input type="hidden" name="course_interest" value="Góp ý từ tài khoản học viên">
+      <input type="hidden" name="schedule_preference" value="Student feedback portal">
+      <div class="sf-field">
+        <label>Họ tên</label>
+        <input type="text" name="name" value="<%= studentName %>" required>
+      </div>
+      <div class="sf-field">
+        <label>Email</label>
+        <input type="email" name="email" value="<%= studentEmail %>" required>
+      </div>
+      <div class="sf-field">
+        <label>Số điện thoại</label>
+        <input type="text" name="phone" placeholder="Có thể để trống nếu không cần gọi lại">
+      </div>
+      <div class="sf-field">
+        <label>Loại góp ý</label>
+        <select name="goal">
+          <option value="Góp ý trải nghiệm học viên">Góp ý trải nghiệm học viên</option>
+          <option value="Báo lỗi giao diện">Báo lỗi giao diện</option>
+          <option value="Đề xuất nội dung mới">Đề xuất nội dung mới</option>
+          <option value="Phản hồi lịch học">Phản hồi lịch học</option>
+        </select>
+      </div>
+      <div class="sf-field full">
+        <label>Nội dung góp ý</label>
+        <textarea name="message" placeholder="Viết chi tiết điều bạn muốn góp ý hoặc cải thiện..." required></textarea>
+      </div>
+      <div>
+        <button type="submit" class="sf-btn">Gửi góp ý</button>
+      </div>
+    </form>
+  </section>
+</div>

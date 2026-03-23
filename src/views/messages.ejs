@@ -1,0 +1,193 @@
+<div class="max-w-7xl mx-auto space-y-8">
+
+  <section class="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 md:p-10 text-white shadow-lg">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <h1 class="text-4xl font-bold">📩 Yêu cầu tư vấn từ học viên</h1>
+        <p class="mt-3 text-white/85 text-lg leading-8 max-w-3xl">
+          Danh sách học viên đã gửi yêu cầu tư vấn khóa học. Admin có thể đọc nhu cầu,
+          đánh dấu đã xem, lưu ghi chú và xác nhận đã liên hệ.
+        </p>
+      </div>
+
+      <div class="bg-white/10 rounded-2xl px-6 py-5 min-w-[180px]">
+        <p class="text-sm text-white/70">Tổng yêu cầu</p>
+        <p class="text-4xl font-bold">
+          <%= messages.length %>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-6 md:grid-cols-3">
+    <div class="bg-gray-800 rounded-2xl p-6 shadow">
+      <p class="text-sm text-gray-400">Mới gửi</p>
+      <p class="text-4xl font-bold text-blue-400 mt-2">
+        <%= messages.filter(m=> (m.status || 'new') === 'new').length %>
+      </p>
+    </div>
+
+    <div class="bg-gray-800 rounded-2xl p-6 shadow">
+      <p class="text-sm text-gray-400">Đã xem</p>
+      <p class="text-4xl font-bold text-yellow-300 mt-2">
+        <%= messages.filter(m=> m.status === 'viewed').length %>
+      </p>
+    </div>
+
+    <div class="bg-gray-800 rounded-2xl p-6 shadow">
+      <p class="text-sm text-gray-400">Đã liên hệ</p>
+      <p class="text-4xl font-bold text-green-400 mt-2">
+        <%= messages.filter(m=> m.status === 'contacted').length %>
+      </p>
+    </div>
+  </section>
+
+  <section class="bg-gray-800 rounded-2xl p-6 md:p-8 shadow space-y-6">
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h2 class="text-2xl font-bold">Danh sách yêu cầu tư vấn</h2>
+        <p class="text-gray-400 mt-1">
+          Mỗi yêu cầu được gửi từ form Contact trên website.
+        </p>
+      </div>
+
+      <div class="bg-gray-900 rounded-xl px-4 py-3">
+        <span class="text-sm text-gray-400">Quản trị viên:</span>
+        <span class="font-semibold text-white ml-2">
+          <%= username || 'Admin' %>
+        </span>
+      </div>
+    </div>
+
+    <% if (messages && messages.length> 0) { %>
+      <div class="space-y-5">
+
+        <% messages.forEach(function(m, index) { %>
+          <article
+            class="bg-gray-900 rounded-2xl p-6 border border-gray-700 shadow hover:border-blue-500/50 transition">
+
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+
+              <div class="space-y-4 flex-1">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span
+                    class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600/20 text-blue-300 font-bold">
+                    <%= index + 1 %>
+                  </span>
+
+                  <div>
+                    <h3 class="text-xl font-bold">
+                      <%= m.name || 'Chưa có tên' %>
+                    </h3>
+                    <p class="text-sm text-gray-400">
+                      <%= m.email || 'Chưa có email' %>
+                    </p>
+                  </div>
+
+                  <% if ((m.status || 'new' )==='new' ) { %>
+                    <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-sm font-semibold">
+                      Mới gửi
+                    </span>
+                    <% } else if (m.status==='viewed' ) { %>
+                      <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300 text-sm font-semibold">
+                        Đã xem
+                      </span>
+                      <% } else if (m.status==='contacted' ) { %>
+                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm font-semibold">
+                          Đã liên hệ
+                        </span>
+                        <% } %>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="bg-gray-800 rounded-xl p-4">
+                    <p class="text-sm text-gray-400 mb-1">Thông tin liên hệ</p>
+                    <p class="text-white font-medium">
+                      <%= m.email || 'Không có email' %>
+                    </p>
+                  </div>
+
+                  <div class="bg-gray-800 rounded-xl p-4">
+                    <p class="text-sm text-gray-400 mb-1">Thời gian gửi</p>
+                    <p class="text-white font-medium">
+                      <%= m.created_at ? new Date(m.created_at).toLocaleString("vi-VN") : "Không rõ" %>
+                    </p>
+                  </div>
+                </div>
+
+                <% if (m.contacted_at) { %>
+                  <div class="bg-gray-800 rounded-xl p-4">
+                    <p class="text-sm text-gray-400 mb-1">Đã liên hệ lúc</p>
+                    <p class="text-white font-medium">
+                      <%= new Date(m.contacted_at).toLocaleString("vi-VN") %>
+                    </p>
+                  </div>
+                  <% } %>
+
+                    <div class="bg-gray-800 rounded-xl p-5">
+                      <p class="text-sm text-gray-400 mb-3">Nội dung yêu cầu tư vấn</p>
+                      <pre
+                        class="whitespace-pre-wrap break-words text-gray-200 leading-7 font-sans"><%= m.message || 'Không có nội dung' %></pre>
+                    </div>
+              </div>
+
+              <div class="lg:w-[280px] shrink-0">
+                <div class="bg-gray-800 rounded-2xl p-5 space-y-4">
+                  <h4 class="font-semibold text-lg">Thao tác quản lý</h4>
+
+                  <form method="POST" action="/messages/<%= m.id %>/contacted">
+                    <button type="submit"
+                      class="w-full rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-3 font-semibold">
+                      Liên hệ tư vấn
+                    </button>
+                  </form>
+
+                  <form method="POST" action="/messages/<%= m.id %>/viewed">
+                    <button type="submit"
+                      class="w-full rounded-xl bg-yellow-600 hover:bg-yellow-500 px-4 py-3 font-semibold">
+                      Đánh dấu đã xem
+                    </button>
+                  </form>
+
+                  <form method="POST" action="/messages/<%= m.id %>/note" class="space-y-3">
+                    <textarea name="admin_note" rows="4" placeholder="Nhập ghi chú của admin..."
+                      class="w-full rounded-xl bg-gray-900 border border-gray-700 px-4 py-3 outline-none focus:border-blue-500"><%= m.admin_note || '' %></textarea>
+
+                    <button type="submit"
+                      class="w-full rounded-xl bg-green-600 hover:bg-green-500 px-4 py-3 font-semibold">
+                      Lưu ghi chú
+                    </button>
+                  </form>
+
+                  <div class="pt-2 border-t border-gray-700">
+                    <p class="text-xs text-gray-400 leading-6">
+                      Gợi ý: Sau khi gọi điện hoặc nhắn tin cho học viên, hãy bấm
+                      <b>Liên hệ tư vấn</b> để cập nhật trạng thái.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </article>
+          <% }) %>
+
+      </div>
+      <% } else { %>
+
+        <div class="bg-gray-900 rounded-2xl p-10 text-center">
+          <div class="text-6xl mb-4">📭</div>
+          <h3 class="text-2xl font-bold mb-2">Chưa có yêu cầu tư vấn nào</h3>
+          <p class="text-gray-400 max-w-2xl mx-auto leading-7">
+            Khi học viên gửi thông tin tại trang Contact, các yêu cầu tư vấn sẽ xuất hiện tại đây
+            để admin dễ dàng theo dõi và xử lý.
+          </p>
+        </div>
+
+        <% } %>
+
+  </section>
+
+</div>

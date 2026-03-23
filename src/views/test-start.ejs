@@ -1,0 +1,92 @@
+<%
+const exam = test || {};
+const noteItems = [
+    'Hãy sử dụng Google Chrome để làm bài ổn định hơn.',
+    'Thời gian sẽ bắt đầu tính ngay khi bạn vào trang làm bài.',
+    'Sau khi nộp bài, hệ thống sẽ hiển thị kết quả ngay.'
+];
+%>
+
+<style>
+    .ts-start-page{padding:36px 0 54px}
+    .ts-shell{width:min(980px,100%);margin:0 auto}
+    .ts-card{background:linear-gradient(180deg,#ffffff 0%,#f4f9ff 100%);border:1px solid rgba(37,99,235,.12);border-radius:34px;box-shadow:0 24px 54px rgba(37,99,235,.10);padding:34px 34px 30px}
+    .ts-head{text-align:center;display:grid;gap:18px}
+    .ts-head h1{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;font-size:clamp(2rem,5vw,3.5rem);line-height:1.08;letter-spacing:-.04em;color:#173f73}
+    .ts-copy{max-width:700px;margin:0 auto;color:#58708f;line-height:1.85}
+    .ts-pills{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+    .ts-pill{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;font-weight:800}
+    .ts-pill-primary{background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);color:#fff}
+    .ts-pill-soft{background:#dbeafe;color:#1d4ed8}
+    .ts-stats{width:min(400px,100%);margin:0 auto;display:grid;gap:10px;text-align:left}
+    .ts-stat{display:flex;justify-content:space-between;gap:18px;color:#4b6382;font-size:1.02rem}
+    .ts-stat strong{color:#102a43}
+    .ts-note{margin-top:26px;padding:22px 24px;border-radius:24px;background:linear-gradient(180deg,#eff6ff 0%,#e0f2fe 100%);border:1px solid rgba(37,99,235,.12)}
+    .ts-note-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .ts-note-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:1px solid rgba(37,99,235,.28);color:#2563eb;font-weight:800}
+    .ts-note-head strong{font-size:1.15rem;color:#173f73}
+    .ts-note ul{margin:0;padding-left:20px;display:grid;gap:8px;color:#4f6684;line-height:1.75}
+    .ts-actions{margin-top:28px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+    .ts-btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;text-decoration:none;font-size:1.02rem;font-weight:800;transition:.2s ease}
+    .ts-btn:hover{transform:translateY(-1px)}
+    .ts-btn-primary{background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);color:#fff;box-shadow:0 18px 30px rgba(37,99,235,.24)}
+    .ts-btn-secondary{background:#173f73;color:#fff;box-shadow:0 18px 30px rgba(23,63,115,.18)}
+    .ts-foot{margin-top:18px;text-align:center;color:#58708f;line-height:1.75}
+    @media (max-width:720px){
+        .ts-start-page{padding:20px 0 34px}
+        .ts-card{padding:24px 16px 22px;border-radius:26px}
+        .ts-note{padding:18px 16px}
+        .ts-actions{flex-direction:column}
+        .ts-btn{width:100%}
+    }
+</style>
+
+<section class="ts-start-page">
+    <div class="ts-shell">
+        <article class="ts-card">
+            <div class="ts-head">
+                <h1><%= exam.title || pageTitle || 'TOEIC Full Test' %></h1>
+
+                <div class="ts-pills">
+                    <span class="ts-pill ts-pill-primary"><%= exam.accessLabel || 'Free' %></span>
+                    <span class="ts-pill ts-pill-soft"><%= exam.badgeLabel || exam.bookName || 'ETS' %></span>
+                </div>
+
+                <% if (exam.description) { %>
+                    <p class="ts-copy"><%= exam.description %></p>
+                <% } %>
+
+                <div class="ts-stats">
+                    <div class="ts-stat"><span>Thời gian:</span><strong><%= exam.durationMinutes || 120 %> phút</strong></div>
+                    <div class="ts-stat"><span>Phần thi:</span><strong><%= exam.partsCount || 7 %> phần</strong></div>
+                    <div class="ts-stat"><span>Câu hỏi:</span><strong><%= exam.totalQuestions || 200 %> câu</strong></div>
+                    <div class="ts-stat"><span>Điểm tối đa:</span><strong><%= exam.maxScore || 990 %> điểm</strong></div>
+                    <% if (exam.listeningCount || exam.readingCount) { %>
+                        <div class="ts-stat"><span>Kỹ năng:</span><strong>Listening <%= exam.listeningCount || 0 %> | Reading <%= exam.readingCount || 0 %></strong></div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="ts-note">
+                <div class="ts-note-head">
+                    <span class="ts-note-icon">i</span>
+                    <strong>Lưu ý</strong>
+                </div>
+                <ul>
+                    <% noteItems.forEach((item) => { %>
+                        <li><%= item %></li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="ts-actions">
+                <a href="<%= exam.startHref || '#' %>" class="ts-btn ts-btn-primary">Bắt đầu thi</a>
+                <a href="<%= exam.listHref || '/placement-tests' %>" class="ts-btn ts-btn-secondary">Về danh sách đề</a>
+            </div>
+
+            <% if (exam.statusText) { %>
+                <p class="ts-foot"><%= exam.statusText %></p>
+            <% } %>
+        </article>
+    </div>
+</section>

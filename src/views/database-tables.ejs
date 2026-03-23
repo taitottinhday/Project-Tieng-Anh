@@ -1,0 +1,471 @@
+<style>
+  .db-page {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .db-title {
+    color: #17314c;
+    letter-spacing: -0.03em;
+  }
+
+  .db-tabs {
+    border-color: rgba(148, 163, 184, 0.22);
+  }
+
+  .db-tab-btn {
+    border-color: transparent;
+    color: #94a3b8;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .db-tab-btn:hover,
+  .db-tab-btn.is-active {
+    color: #17314c;
+    border-color: #4f7db3;
+  }
+
+  .db-card {
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(180deg, rgba(27, 40, 59, 0.97) 0%, rgba(34, 48, 69, 0.97) 100%);
+    box-shadow: 0 22px 44px rgba(15, 23, 42, 0.18);
+    color: #e6eef8;
+  }
+
+  .db-card h2 {
+    color: #f8fbff;
+  }
+
+  .db-card .db-muted,
+  .db-card .text-gray-400 {
+    color: #a9bbcf !important;
+  }
+
+  .db-card .bg-primary {
+    background: rgba(95, 132, 194, 0.2) !important;
+  }
+
+  .db-card table {
+    color: #e6eef8;
+  }
+
+  .db-card th {
+    color: #dce7f3;
+  }
+
+  .db-card td {
+    color: #edf4fb;
+  }
+
+  .db-card th,
+  .db-card td {
+    border-color: rgba(148, 163, 184, 0.24) !important;
+  }
+
+  .db-card tbody tr:hover {
+    background: rgba(95, 132, 194, 0.12) !important;
+  }
+</style>
+
+<div class="max-w-7xl mx-auto db-page">
+  <h1 class="text-4xl font-bold mb-8 db-title">Database Tables</h1>
+
+  <% const _courses=(typeof courses !=="undefined" && courses) ? courses : []; const _students=(typeof students
+    !=="undefined" && students) ? students : []; const _teachers=(typeof teachers !=="undefined" && teachers) ? teachers
+    : []; const _classes=(typeof classes !=="undefined" && classes) ? classes : []; const _enrollments=(typeof
+    enrollments !=="undefined" && enrollments) ? enrollments : []; const _payments=(typeof payments !=="undefined" &&
+    payments) ? payments : []; %>
+
+    <!-- Navigation Tabs -->
+    <div class="flex gap-4 mb-8 border-b overflow-x-auto db-tabs">
+      <button onclick="showTable('courses', event)"
+        class="tab-btn db-tab-btn is-active px-6 py-2 border-b-2 font-bold whitespace-nowrap">Courses</button>
+      <button onclick="showTable('students', event)"
+        class="tab-btn db-tab-btn px-6 py-2 border-b-2 font-bold whitespace-nowrap">Students</button>
+      <button onclick="showTable('teachers', event)"
+        class="tab-btn db-tab-btn px-6 py-2 border-b-2 font-bold whitespace-nowrap">Teachers</button>
+      <button onclick="showTable('classes', event)"
+        class="tab-btn db-tab-btn px-6 py-2 border-b-2 font-bold whitespace-nowrap">Classes</button>
+      <button onclick="showTable('enrollments', event)"
+        class="tab-btn db-tab-btn px-6 py-2 border-b-2 font-bold whitespace-nowrap">Enrollments</button>
+      <button onclick="showTable('payments', event)"
+        class="tab-btn db-tab-btn px-6 py-2 border-b-2 font-bold whitespace-nowrap">Payments</button>
+    </div>
+
+    <!-- Courses Table -->
+    <div id="courses-table" class="mb-8 bg-gray-800 p-6 rounded-lg db-card">
+      <h2 class="text-2xl font-bold mb-4">Courses (<%= _courses.length %> records)</h2>
+      <% if (_courses.length> 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left text-sm">
+            <thead class="bg-primary">
+              <tr>
+                <th class="border border-gray-600 p-3">ID</th>
+                <th class="border border-gray-600 p-3">Course Name</th>
+                <th class="border border-gray-600 p-3">Category</th>
+                <th class="border border-gray-600 p-3">Fee</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% _courses.slice(0, 200).forEach(c=> { %>
+                <tr class="hover:bg-gray-700 transition">
+                  <td class="border border-gray-600 p-3">
+                    <%= c.id %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= c.name ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= c.category ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= (typeof c.fee !=='undefined' && c.fee !==null) ? (c.fee + ' đ' ) : 'N/A' %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% if (_courses.length> 200) { %>
+          <p class="text-gray-400 mt-4">Showing first 200 of <%= _courses.length %> courses</p>
+          <% } %>
+            <% } else { %>
+              <p class="text-gray-400">No courses found</p>
+              <% } %>
+    </div>
+
+    <!-- Students Table -->
+    <div id="students-table" style="display:none;" class="mb-8 bg-gray-800 p-6 rounded-lg db-card">
+      <h2 class="text-2xl font-bold mb-4">Students (<%= _students.length %> records)</h2>
+      <% if (_students.length> 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left text-sm">
+            <thead class="bg-primary">
+              <tr>
+                <th class="border border-gray-600 p-3">ID</th>
+                <th class="border border-gray-600 p-3">Full Name</th>
+                <th class="border border-gray-600 p-3">Phone</th>
+                <th class="border border-gray-600 p-3">Email</th>
+                <th class="border border-gray-600 p-3">DOB</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% _students.slice(0, 200).forEach(s=> { %>
+                <tr class="hover:bg-gray-700 transition">
+                  <td class="border border-gray-600 p-3">
+                    <%= s.id ?? s.student_id ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= s.full_name ?? s.name ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= s.phone ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= s.email ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= s.dob ?? 'N/A' %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% if (_students.length> 200) { %>
+          <p class="text-gray-400 mt-4">Showing first 200 of <%= _students.length %> students</p>
+          <% } %>
+            <% } else { %>
+              <p class="text-gray-400">No students found</p>
+              <% } %>
+    </div>
+
+    <!-- Teachers Table -->
+    <div id="teachers-table" style="display:none;" class="mb-8 bg-gray-800 p-6 rounded-lg db-card">
+      <h2 class="text-2xl font-bold mb-4">Teachers (<%= _teachers.length %> records)</h2>
+      <% if (_teachers.length> 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left text-sm">
+            <thead class="bg-primary">
+              <tr>
+                <th class="border border-gray-600 p-3">ID</th>
+                <th class="border border-gray-600 p-3">Full Name</th>
+                <th class="border border-gray-600 p-3">Phone</th>
+                <th class="border border-gray-600 p-3">Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% _teachers.slice(0, 200).forEach(t=> { %>
+                <tr class="hover:bg-gray-700 transition">
+                  <td class="border border-gray-600 p-3">
+                    <%= t.id %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= t.full_name ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= t.phone ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= t.email ?? 'N/A' %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% if (_teachers.length> 200) { %>
+          <p class="text-gray-400 mt-4">Showing first 200 of <%= _teachers.length %> teachers</p>
+          <% } %>
+            <% } else { %>
+              <p class="text-gray-400">No teachers found</p>
+              <% } %>
+    </div>
+
+    <!-- Classes Table -->
+    <div id="classes-table" style="display:none;" class="mb-8 bg-gray-800 p-6 rounded-lg db-card">
+      <h2 class="text-2xl font-bold mb-4">Classes (<%= _classes.length %> records)</h2>
+      <% if (_classes.length> 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left text-sm">
+            <thead class="bg-primary">
+              <tr>
+                <th class="border border-gray-600 p-3">ID</th>
+                <th class="border border-gray-600 p-3">Class Code</th>
+                <th class="border border-gray-600 p-3">Course</th>
+                <th class="border border-gray-600 p-3">Teacher</th>
+                <th class="border border-gray-600 p-3">Schedule</th>
+                <th class="border border-gray-600 p-3">Room</th>
+                <th class="border border-gray-600 p-3">Start</th>
+                <th class="border border-gray-600 p-3">End</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% _classes.slice(0, 200).forEach(cl=> { %>
+                <tr class="hover:bg-gray-700 transition">
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.id %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.code ?? cl.class_code ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.course_name ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.teacher_name ?? 'Chưa có' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.schedule_text ?? cl.schedule ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.room ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.start_date ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= cl.end_date ?? 'N/A' %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% if (_classes.length> 200) { %>
+          <p class="text-gray-400 mt-4">Showing first 200 of <%= _classes.length %> classes</p>
+          <% } %>
+            <% } else { %>
+              <p class="text-gray-400">No classes found</p>
+              <% } %>
+    </div>
+<div class="flex justify-between items-center mb-4">
+ 
+
+
+
+    <!-- Enrollments Table -->
+<div id="enrollments-table" style="display:none;" class="mb-8 bg-gray-800 p-6 rounded-lg db-card">
+
+  <div class="flex justify-between items-center mb-4">
+
+    <h2 class="text-2xl font-bold">
+      Enrollments (<%= _enrollments.length %> records)
+    </h2>
+
+    <a href="/enroll" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white">
+      + Đăng ký học viên
+    </a>
+
+  </div>
+
+  <% if (_enrollments.length> 0) { %>
+
+    <div class="overflow-x-auto">
+
+      <table class="w-full border-collapse text-left text-sm">
+
+        <thead class="bg-primary">
+          <tr>
+            <th class="border border-gray-600 p-3">ID</th>
+            <th class="border border-gray-600 p-3">Student</th>
+            <th class="border border-gray-600 p-3">Phone</th>
+            <th class="border border-gray-600 p-3">Class</th>
+            <th class="border border-gray-600 p-3">Course</th>
+            <th class="border border-gray-600 p-3">Teacher</th>
+            <th class="border border-gray-600 p-3">Status</th>
+            <th class="border border-gray-600 p-3">Enrolled At</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% _enrollments.slice(0, 200).forEach(e=> { %>
+
+            <tr class="hover:bg-gray-700 transition">
+
+              <td class="border border-gray-600 p-3">
+                <%= e.id %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.student_name ?? 'N/A' %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.student_phone ?? 'N/A' %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.class_code ?? 'N/A' %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.course_name ?? 'N/A' %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.teacher_name ?? 'Chưa có' %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.status ?? 'N/A' %>
+              </td>
+
+              <td class="border border-gray-600 p-3">
+                <%= e.enrolled_at ?? 'N/A' %>
+              </td>
+
+            </tr>
+
+            <% }); %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <% if (_enrollments.length> 200) { %>
+      <p class="text-gray-400 mt-4">
+        Showing first 200 of <%= _enrollments.length %> enrollments
+      </p>
+      <% } %>
+
+        <% } else { %>
+
+          <p class="text-gray-400">No enrollments found</p>
+
+          <% } %>
+
+</div>
+
+    <!-- Payments Table -->
+    <div id="payments-table" style="display:none;" class="mb-8 bg-gray-800 p-6 rounded-lg db-card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">Payments (<%= _payments.length %> records)</h2>
+      
+        <a href="/payments" class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 rounded text-white font-semibold">
+          Đi tới trang xác nhận thanh toán
+        </a>
+      </div>
+      <% if (_payments.length> 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left text-sm">
+            <thead class="bg-primary">
+              <tr>
+                <th class="border border-gray-600 p-3">ID</th>
+                <th class="border border-gray-600 p-3">Student</th>
+                <th class="border border-gray-600 p-3">Class</th>
+                <th class="border border-gray-600 p-3">Course</th>
+                <th class="border border-gray-600 p-3">Amount</th>
+                <th class="border border-gray-600 p-3">Method</th>
+                <th class="border border-gray-600 p-3">Paid At</th>
+                <th class="border border-gray-600 p-3">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% _payments.slice(0, 200).forEach(p=> { %>
+                <tr class="hover:bg-gray-700 transition">
+                  <td class="border border-gray-600 p-3">
+                    <%= p.id %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= p.student_name ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= p.class_code ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= p.course_name ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= (typeof p.amount !=='undefined' && p.amount !==null) ? (p.amount + ' đ' ) : 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= p.method ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= p.paid_at ?? 'N/A' %>
+                  </td>
+                  <td class="border border-gray-600 p-3">
+                    <%= p.note ?? '' %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% if (_payments.length> 200) { %>
+          <p class="text-gray-400 mt-4">Showing first 200 of <%= _payments.length %> payments</p>
+          <% } %>
+            <% } else { %>
+              <p class="text-gray-400">No payments found</p>
+              <% } %>
+    </div>
+</div>
+
+<script>
+  function showTable(tableName, ev) {
+    const ids = ['courses', 'students', 'teachers', 'classes', 'enrollments', 'payments'];
+
+    // Hide all tables
+    ids.forEach(id => {
+      const el = document.getElementById(id + '-table');
+      if (el) el.style.display = 'none';
+    });
+
+    // Show selected table
+    const selected = document.getElementById(tableName + '-table');
+    if (selected) selected.style.display = 'block';
+
+    // Update button styles
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('is-active'));
+
+    const target = ev?.target;
+    if (target) {
+      target.classList.add('is-active');
+    }
+  }
+</script>

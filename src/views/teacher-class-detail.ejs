@@ -1,0 +1,204 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const safeClassInfo = (() => {
+    const raw = (typeof classInfo !== 'undefined' && classInfo) ? classInfo : {};
+    return {
+      phase: {
+        label: raw?.phase?.label || 'Đang vận hành',
+        tone: raw?.phase?.tone || 'blue',
+        progress: typeof raw?.phase?.progress === 'number' ? raw.phase.progress : 18,
+        supportingText: raw?.phase?.supportingText || 'Theo dõi tiến độ lớp học theo từng buổi dạy.'
+      },
+      total_students: Number(raw?.total_students || 0),
+      total_comments: Number(raw?.total_comments || 0),
+      ...raw
+    };
+  })();
+  const safeClassMetrics = (typeof classMetrics !== 'undefined' && classMetrics)
+    ? classMetrics
+    : {
+        totalStudents: Array.isArray(typeof students !== 'undefined' ? students : null) ? students.length : Number(safeClassInfo.total_students || 0),
+        activeStudents: Array.isArray(typeof students !== 'undefined' ? students : null)
+          ? students.filter((item) => item.status === 'active').length
+          : 0,
+        totalComments: Number(safeClassInfo.total_comments || 0),
+        attendanceEntries: 0
+      };
+  const safeStudents = Array.isArray(typeof students !== 'undefined' ? students : null) ? students : [];
+  const safeRecentComments = Array.isArray(typeof recentComments !== 'undefined' ? recentComments : null) ? recentComments : [];
+  const formatCurrency = (value) => Number(value || 0).toLocaleString('vi-VN');
+  const dateLabel = (value) => {
+    if (!value) return 'Chưa gắn ngày học';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa gắn ngày học' : parsed.toLocaleDateString('vi-VN');
+  };
+  const previewComment = (value, limit = 150) => {
+    const text = String(value || '').trim();
+    return text.length > limit ? `${text.slice(0, limit)}...` : text;
+  };
+%>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Class Detail</p>
+        <h1 class="teacher-hero-title"><%= safeClassInfo.course_name || 'Chi tiết lớp học' %> · <%= safeClassInfo.code || 'Chưa có mã lớp' %></h1>
+        <p class="teacher-hero-text">
+          Chi tiết lớp học được gom gọn theo hướng vận hành: sĩ số, tiến độ, nhận xét mới nhất và các chỉ số
+          chuyên cần quan trọng để bạn điều phối lớp tốt hơn.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= safeClassInfo.phase.label %></span>
+          <span class="teacher-pill soft"><%= Number(safeClassInfo.total_students || 0) %> học viên</span>
+          <span class="teacher-pill soft"><%= Number(safeClassInfo.total_comments || 0) %> nhận xét</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Nhịp lớp học</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);"><%= safeClassInfo.phase.supportingText %></p>
+        <div class="teacher-progress" style="margin-top: 18px; background: rgba(255,255,255,0.22);">
+          <div class="teacher-progress-bar" style="width: <%= safeClassInfo.phase.progress || 18 %>%; background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.68)); box-shadow: none;"></div>
+        </div>
+        <div class="teacher-hero-actions" style="margin-top: 18px;">
+          <a href="<%= baseUrl %>/teacher/attendance/<%= safeClassInfo.id %>" class="teacher-link-button secondary">Điểm danh lớp</a>
+          <a href="<%= baseUrl %>/teacher/comments?class_id=<%= safeClassInfo.id %>" class="teacher-link-button ghost" style="background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.16);">Nhận xét lớp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Sĩ số</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassMetrics.totalStudents || 0) %></strong>
+      <p class="teacher-stat-note">Tổng số học viên hiện có trong lớp.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Đang học</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassMetrics.activeStudents || 0) %></strong>
+      <p class="teacher-stat-note">Số học viên có trạng thái ghi danh đang hoạt động.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Nhận xét</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassMetrics.totalComments || 0) %></strong>
+      <p class="teacher-stat-note">Toàn bộ phản hồi đã ghi cho lớp này.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Lượt điểm danh</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassMetrics.attendanceEntries || 0) %></strong>
+      <p class="teacher-stat-note">Số lần ghi chuyên cần tích lũy theo các buổi học.</p>
+    </article>
+  </section>
+
+  <section class="teacher-grid two">
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Thông tin vận hành lớp</h2>
+          <p class="teacher-panel-desc">Những mốc và thông tin cốt lõi để dạy lớp một cách nhất quán.</p>
+        </div>
+      </div>
+
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Khóa học</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= safeClassInfo.course_name || 'Chưa cập nhật' %></strong>
+          <p class="teacher-card-text"><%= safeClassInfo.category || 'Đa kỹ năng' %></p>
+        </div>
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Phòng học</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= safeClassInfo.room || 'Chưa gán phòng' %></strong>
+          <p class="teacher-card-text">Kiểm tra trước buổi dạy để tránh gián đoạn.</p>
+        </div>
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Lịch học</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= safeClassInfo.schedule_text || 'Chưa cập nhật' %></strong>
+          <p class="teacher-card-text">Dùng làm mốc điều phối điểm danh và phản hồi.</p>
+        </div>
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Học phí</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= formatCurrency(safeClassInfo.fee) %> đ</strong>
+          <p class="teacher-card-text">Thông tin giá trị lớp học ở góc nhìn vận hành.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Phản hồi mới nhất trong lớp</h2>
+          <p class="teacher-panel-desc">Những nhận xét gần nhất để bạn giữ mạch theo dõi học viên.</p>
+        </div>
+      </div>
+
+      <% if (safeRecentComments.length) { %>
+        <div class="teacher-stack" style="margin-top: 18px;">
+          <% safeRecentComments.forEach((item) => { %>
+            <article class="teacher-comment-card" style="padding: 18px;">
+              <div class="teacher-class-top">
+                <div>
+                  <h3 class="teacher-card-title"><%= item.full_name %></h3>
+                  <p class="teacher-card-text">Buổi học: <%= dateLabel(item.lesson_date) %></p>
+                </div>
+                <span class="teacher-pill pink"><%= item.skill_focus || 'Tổng quát' %></span>
+              </div>
+              <p class="teacher-card-text" style="margin-top: 14px;"><%= previewComment(item.comment) %></p>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 18px;">Chưa có nhận xét nào cho lớp này. Bạn có thể thêm nhận xét để theo dõi tiến bộ học viên sát hơn.</div>
+      <% } %>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Danh sách học viên</h2>
+        <p class="teacher-panel-desc">Mỗi học viên đều có snapshot nhỏ về chuyên cần và phản hồi để bạn nắm nhanh.</p>
+      </div>
+    </div>
+
+    <% if (safeStudents.length) { %>
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <% safeStudents.forEach((item) => { %>
+          <article class="teacher-student-card">
+            <div class="teacher-student-head">
+              <div>
+                <h3 class="teacher-card-title"><%= item.full_name %></h3>
+                <p class="teacher-card-text"><%= item.email || 'Chưa có email' %> · <%= item.phone || 'Chưa có số điện thoại' %></p>
+              </div>
+              <span class="teacher-pill <%= item.status === 'active' ? 'green' : 'soft' %>"><%= item.status || 'pending' %></span>
+            </div>
+
+            <div class="teacher-kpi-strip">
+              <div class="teacher-mini-kpi">
+                <strong><%= item.present_count %></strong>
+                <span>Có mặt</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.absent_count %></strong>
+                <span>Vắng</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.comment_count %></strong>
+                <span>Nhận xét</span>
+              </div>
+            </div>
+
+            <div class="teacher-class-meta">
+              <p class="teacher-muted">Đi muộn: <%= item.late_count %> buổi</p>
+              <p class="teacher-muted">Ngày ghi danh: <%= item.enrolled_label || 'Chưa rõ' %></p>
+              <p class="teacher-muted">Nhận xét gần nhất: <%= item.last_comment_label || 'Chưa có' %></p>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 18px;">Lớp này chưa có học viên nào trong danh sách ghi danh.</div>
+    <% } %>
+  </section>
+</div>

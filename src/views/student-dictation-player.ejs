@@ -1,0 +1,772 @@
+<%
+const data = detail || {};
+const topic = data.topic || {};
+const lesson = data.lesson || {};
+const breadcrumbs = Array.isArray(data.breadcrumbs) ? data.breadcrumbs : [];
+const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
+%>
+
+<style>
+  .dplayer-page {
+    --dplayer-line: rgba(15, 23, 42, 0.08);
+    --dplayer-text: #1f2937;
+    --dplayer-muted: #667085;
+    --dplayer-dark: #152538;
+    --dplayer-accent: #2563eb;
+    --dplayer-accent-soft: rgba(37, 99, 235, 0.12);
+    --dplayer-good: #0f766e;
+    --dplayer-warn: #d97706;
+    display: grid;
+    gap: 22px;
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 56px;
+  }
+
+  .dplayer-breadcrumb,
+  .dplayer-breadcrumb a,
+  .dplayer-breadcrumb span,
+  .dplayer-lead,
+  .dplayer-pill,
+  .dplayer-textarea,
+  .dplayer-note,
+  .dplayer-feedback p,
+  .dplayer-scoreboard span {
+    color: var(--dplayer-muted);
+  }
+
+  .dplayer-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-weight: 600;
+  }
+
+  .dplayer-breadcrumb .sep {
+    color: rgba(37, 99, 235, 0.5);
+  }
+
+  .dplayer-top {
+    display: grid;
+    gap: 16px;
+  }
+
+  .dplayer-kicker,
+  .dplayer-pill,
+  .dplayer-score {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    border-radius: 999px;
+    font-weight: 800;
+  }
+
+  .dplayer-kicker {
+    padding: 10px 16px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--dplayer-accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.84rem;
+  }
+
+  .dplayer-title {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: clamp(2.1rem, 4.2vw, 3.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.05em;
+    color: var(--dplayer-dark);
+  }
+
+  .dplayer-lead {
+    margin: 0;
+    line-height: 1.8;
+  }
+
+  .dplayer-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dplayer-pill {
+    padding: 10px 14px;
+    background: rgba(21, 37, 56, 0.05);
+    color: var(--dplayer-dark);
+  }
+
+  .dplayer-panel {
+    border-radius: 34px;
+    border: 1px solid var(--dplayer-line);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 24px 52px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .dplayer-panel-inner {
+    display: grid;
+    gap: 20px;
+    padding: 30px;
+  }
+
+  .dplayer-progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .dplayer-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dplayer-nav-btn,
+  .dplayer-speed,
+  .dplayer-primary,
+  .dplayer-secondary,
+  .dplayer-ghost {
+    border: 1px solid var(--dplayer-line);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .dplayer-nav-btn,
+  .dplayer-speed {
+    min-width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: #fff;
+    color: var(--dplayer-dark);
+    font-weight: 800;
+  }
+
+  .dplayer-progress-copy {
+    display: grid;
+    gap: 4px;
+  }
+
+  .dplayer-progress-copy strong {
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    letter-spacing: -0.05em;
+    color: var(--dplayer-dark);
+  }
+
+  .dplayer-audio-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .dplayer-play {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    border: 1px solid rgba(21, 37, 56, 0.24);
+    background: #fff;
+    color: #374151;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .dplayer-wave {
+    position: relative;
+    height: 100px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(249, 250, 252, 0.98) 100%);
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+  }
+
+  .dplayer-wave-bars {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(32, minmax(0, 1fr));
+    gap: 6px;
+    align-items: center;
+    padding: 0 24px;
+  }
+
+  .dplayer-wave-bars span {
+    display: block;
+    width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(203, 213, 225, 0.95) 0%, rgba(148, 163, 184, 0.85) 100%);
+    transform-origin: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .dplayer-panel[data-playing="true"] .dplayer-wave-bars span {
+    animation: dplayerPulse 1s ease-in-out infinite;
+  }
+
+  .dplayer-wave-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.18) 0%, rgba(59, 130, 246, 0.06) 100%);
+  }
+
+  .dplayer-wave-line {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    top: 50%;
+    height: 2px;
+    background: rgba(148, 163, 184, 0.36);
+    transform: translateY(-50%);
+  }
+
+  .dplayer-textarea {
+    width: 100%;
+    min-height: 154px;
+    padding: 20px 18px;
+    border-radius: 24px;
+    border: 1px solid var(--dplayer-line);
+    background: rgba(255, 255, 255, 0.94);
+    resize: vertical;
+    outline: 0;
+    font: inherit;
+    color: var(--dplayer-text);
+  }
+
+  .dplayer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .dplayer-primary,
+  .dplayer-secondary,
+  .dplayer-ghost {
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 14px;
+    font-weight: 800;
+  }
+
+  .dplayer-primary {
+    background: #2f2f32;
+    color: #fff;
+    border-color: #2f2f32;
+  }
+
+  .dplayer-secondary {
+    background: #fff;
+    color: var(--dplayer-dark);
+  }
+
+  .dplayer-ghost {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--dplayer-accent);
+    border-color: rgba(37, 99, 235, 0.12);
+  }
+
+  .dplayer-feedback {
+    display: none;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    background: rgba(247, 250, 252, 0.96);
+  }
+
+  .dplayer-feedback.is-visible {
+    display: grid;
+  }
+
+  .dplayer-feedback.good {
+    border-color: rgba(15, 118, 110, 0.15);
+    background: rgba(240, 253, 250, 0.96);
+  }
+
+  .dplayer-feedback.warn {
+    border-color: rgba(217, 119, 6, 0.18);
+    background: rgba(255, 251, 235, 0.96);
+  }
+
+  .dplayer-feedback strong {
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: 1.16rem;
+    color: var(--dplayer-dark);
+  }
+
+  .dplayer-score {
+    padding: 9px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--dplayer-accent);
+  }
+
+  .dplayer-feedback.good .dplayer-score {
+    background: rgba(15, 118, 110, 0.12);
+    color: var(--dplayer-good);
+  }
+
+  .dplayer-feedback.warn .dplayer-score {
+    background: rgba(217, 119, 6, 0.12);
+    color: var(--dplayer-warn);
+  }
+
+  .dplayer-note {
+    margin: 0;
+    font-size: 0.96rem;
+    line-height: 1.75;
+  }
+
+  .dplayer-feedback-answer {
+    margin: 0;
+    line-height: 1.7;
+    color: var(--dplayer-text);
+  }
+
+  .dplayer-scoreboard {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .dplayer-scorecard {
+    display: grid;
+    gap: 6px;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid var(--dplayer-line);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .dplayer-scorecard strong {
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--dplayer-dark);
+  }
+
+  @keyframes dplayerPulse {
+    0%, 100% { transform: scaleY(0.92); opacity: 0.72; }
+    50% { transform: scaleY(1.12); opacity: 1; }
+  }
+
+  @media (max-width: 860px) {
+    .dplayer-audio-row,
+    .dplayer-scoreboard {
+      grid-template-columns: 1fr;
+    }
+
+    .dplayer-progress-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .dplayer-page {
+      width: min(100% - 20px, 1180px);
+      padding-top: 18px;
+    }
+
+    .dplayer-panel-inner {
+      padding: 22px 18px;
+    }
+  }
+</style>
+
+<div class="dplayer-page" data-dictation-player>
+  <nav class="dplayer-breadcrumb" aria-label="Breadcrumb">
+    <% breadcrumbs.forEach((item, index) => { %>
+      <% if (index > 0) { %><span class="sep">/</span><% } %>
+      <% if (item.href) { %>
+        <a href="<%= item.href %>"><%= item.label %></a>
+      <% } else { %>
+        <span><%= item.label %></span>
+      <% } %>
+    <% }) %>
+  </nav>
+
+  <section class="dplayer-top">
+    <span class="dplayer-kicker">Listen &amp; Type</span>
+    <h1 class="dplayer-title"><%= lesson.title || "WORD 1" %></h1>
+    <p class="dplayer-lead">Nghe audio, g&#245; l&#7841;i nguy&#234;n c&#226;u b&#7841;n nghe &#273;&#432;&#7907;c, sau &#273;&#243; b&#7845;m <strong>Check</strong> &#273;&#7875; xem &#273;&#7897; kh&#7899;p.</p>
+    <div class="dplayer-row">
+      <span class="dplayer-pill"><%= topic.title %></span>
+      <span class="dplayer-pill"><%= topic.categoryLabel %></span>
+      <span class="dplayer-pill"><%= entries.length %> c&#226;u dictation</span>
+    </div>
+  </section>
+
+  <section class="dplayer-panel" data-player-panel data-playing="false">
+    <div class="dplayer-panel-inner">
+      <div class="dplayer-progress-row">
+        <div class="dplayer-nav">
+          <button type="button" class="dplayer-nav-btn" data-prev-entry>&larr;</button>
+          <div class="dplayer-progress-copy">
+            <strong data-progress-label>1 / <%= entries.length %></strong>
+            <span data-entry-id>Sentence 1</span>
+          </div>
+          <button type="button" class="dplayer-nav-btn" data-next-entry>&rarr;</button>
+        </div>
+        <div class="dplayer-row">
+          <span class="dplayer-pill">Audio local</span>
+          <span class="dplayer-pill">Playback training</span>
+        </div>
+      </div>
+
+      <div class="dplayer-audio-row">
+        <button type="button" class="dplayer-play" data-play-toggle>&#9658;</button>
+        <div class="dplayer-wave">
+          <div class="dplayer-wave-progress" data-wave-progress></div>
+          <div class="dplayer-wave-line"></div>
+          <div class="dplayer-wave-bars" aria-hidden="true">
+            <% [20,42,58,32,24,18,66,44,30,22,54,36,26,20,64,40,28,18,72,46,30,20,68,42,28,18,52,34,24,18,40,26].forEach((height, index) => { %>
+              <span style="height:<%= height %>px;animation-delay:<%= (index * 0.04).toFixed(2) %>s"></span>
+            <% }) %>
+          </div>
+        </div>
+        <button type="button" class="dplayer-speed" data-speed-toggle>1x</button>
+      </div>
+
+      <textarea class="dplayer-textarea" data-answer-input placeholder="Type what you hear..."></textarea>
+
+      <div class="dplayer-actions">
+        <button type="button" class="dplayer-primary" data-check-answer>Check</button>
+        <button type="button" class="dplayer-secondary" data-skip-answer>Skip</button>
+        <button type="button" class="dplayer-ghost" data-replay-audio>Nghe l&#7841;i</button>
+      </div>
+
+      <section class="dplayer-feedback" data-feedback>
+        <div class="dplayer-row">
+          <span class="dplayer-score" data-score-badge>0%</span>
+        </div>
+        <strong data-feedback-title>Ready</strong>
+        <p class="dplayer-note" data-feedback-note>Nghe audio v&#224; nh&#7853;p c&#226;u b&#7841;n nghe &#273;&#432;&#7907;c.</p>
+        <p class="dplayer-feedback-answer" data-feedback-answer></p>
+      </section>
+
+      <div class="dplayer-scoreboard">
+        <div class="dplayer-scorecard">
+          <span>&#272;&#227; check</span>
+          <strong data-checked-count>0</strong>
+        </div>
+        <div class="dplayer-scorecard">
+          <span>&#272;&#250;ng / g&#7847;n &#273;&#250;ng</span>
+          <strong data-correct-count>0</strong>
+        </div>
+        <div class="dplayer-scorecard">
+          <span>B&#7887; qua</span>
+          <strong data-skipped-count>0</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <audio data-audio-player preload="auto"></audio>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector("[data-dictation-player]");
+    if (!root) return;
+
+    const entries = <%- JSON.stringify(entries) %>;
+    if (!entries.length) return;
+
+    const storageKey = "dictation-progress:" + <%- JSON.stringify(`${topic.id || "topic"}:${lesson.id || "lesson"}`) %>;
+    const speeds = [1, 1.25, 1.5];
+    const audio = root.querySelector("[data-audio-player]");
+    const panel = root.querySelector("[data-player-panel]");
+    const progressLabel = root.querySelector("[data-progress-label]");
+    const entryId = root.querySelector("[data-entry-id]");
+    const answerInput = root.querySelector("[data-answer-input]");
+    const feedback = root.querySelector("[data-feedback]");
+    const feedbackTitle = root.querySelector("[data-feedback-title]");
+    const feedbackNote = root.querySelector("[data-feedback-note]");
+    const feedbackAnswer = root.querySelector("[data-feedback-answer]");
+    const scoreBadge = root.querySelector("[data-score-badge]");
+    const checkedCount = root.querySelector("[data-checked-count]");
+    const correctCount = root.querySelector("[data-correct-count]");
+    const skippedCount = root.querySelector("[data-skipped-count]");
+    const waveProgress = root.querySelector("[data-wave-progress]");
+    const playButton = root.querySelector("[data-play-toggle]");
+    const replayButton = root.querySelector("[data-replay-audio]");
+    const speedButton = root.querySelector("[data-speed-toggle]");
+    const prevButton = root.querySelector("[data-prev-entry]");
+    const nextButton = root.querySelector("[data-next-entry]");
+    const checkButton = root.querySelector("[data-check-answer]");
+    const skipButton = root.querySelector("[data-skip-answer]");
+
+    const initialState = (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+      } catch (error) {
+        return {};
+      }
+    })();
+
+    const state = {
+      index: Number.isInteger(initialState.index) ? Math.max(0, Math.min(initialState.index, entries.length - 1)) : 0,
+      speedIndex: Number.isInteger(initialState.speedIndex) ? Math.max(0, Math.min(initialState.speedIndex, speeds.length - 1)) : 0,
+      results: initialState.results && typeof initialState.results === "object" ? initialState.results : {}
+    };
+
+    const persist = () => {
+      sessionStorage.setItem(storageKey, JSON.stringify({
+        index: state.index,
+        speedIndex: state.speedIndex,
+        results: state.results
+      }));
+    };
+
+    const normalizeAnswer = (value) => String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const levenshtein = (a, b) => {
+      const rows = a.length + 1;
+      const cols = b.length + 1;
+      const matrix = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+      for (let row = 0; row < rows; row += 1) matrix[row][0] = row;
+      for (let col = 0; col < cols; col += 1) matrix[0][col] = col;
+
+      for (let row = 1; row < rows; row += 1) {
+        for (let col = 1; col < cols; col += 1) {
+          const cost = a[row - 1] === b[col - 1] ? 0 : 1;
+          matrix[row][col] = Math.min(
+            matrix[row - 1][col] + 1,
+            matrix[row][col - 1] + 1,
+            matrix[row - 1][col - 1] + cost
+          );
+        }
+      }
+
+      return matrix[rows - 1][cols - 1];
+    };
+
+    const similarity = (source, target) => {
+      if (!source && !target) return 1;
+      if (!source || !target) return 0;
+      const distance = levenshtein(source, target);
+      return Math.max(0, 1 - distance / Math.max(source.length, target.length));
+    };
+
+    const getCurrentEntry = () => entries[state.index];
+
+    const updateWaveProgress = () => {
+      if (!waveProgress || !audio.duration) {
+        if (waveProgress) waveProgress.style.width = "0%";
+        return;
+      }
+
+      waveProgress.style.width = `${Math.min((audio.currentTime / audio.duration) * 100, 100)}%`;
+    };
+
+    const updateScoreboard = () => {
+      const values = Object.values(state.results);
+      const checked = values.filter((item) => item && item.type === "checked").length;
+      const correct = values.filter((item) => item && item.type === "checked" && item.correct).length;
+      const skipped = values.filter((item) => item && item.type === "skipped").length;
+
+      checkedCount.textContent = String(checked);
+      correctCount.textContent = String(correct);
+      skippedCount.textContent = String(skipped);
+    };
+
+    const setFeedback = (payload = null) => {
+      if (!payload) {
+        feedback.className = "dplayer-feedback";
+        feedbackTitle.textContent = "Ready";
+        feedbackNote.innerHTML = "Nghe audio v&#224; nh&#7853;p c&#226;u b&#7841;n nghe &#273;&#432;&#7907;c.";
+        feedbackAnswer.textContent = "";
+        scoreBadge.textContent = "0%";
+        return;
+      }
+
+      feedback.className = "dplayer-feedback is-visible " + (payload.correct ? "good" : "warn");
+      feedbackTitle.innerHTML = payload.correct ? "R&#7845;t t&#7889;t, b&#7841;n nghe kh&#225; s&#225;t." : "G&#7847;n &#273;&#250;ng r&#7891;i, xem l&#7841;i c&#226;u chu&#7849;n.";
+      feedbackNote.textContent = payload.note;
+      feedbackAnswer.innerHTML = `<strong>Transcript:</strong> ${payload.answer}`;
+      scoreBadge.textContent = `${payload.score}%`;
+    };
+
+    const stopAudio = () => {
+      audio.pause();
+      audio.currentTime = 0;
+      panel.dataset.playing = "false";
+      playButton.innerHTML = "&#9658;";
+      updateWaveProgress();
+    };
+
+    const playAudio = () => {
+      audio.playbackRate = speeds[state.speedIndex];
+      audio.play().then(() => {
+        panel.dataset.playing = "true";
+        playButton.innerHTML = "&#9632;";
+      }).catch(() => {
+        setFeedback({
+          correct: false,
+          score: 0,
+          note: "Audio chua san sang. Minh se cap nhat sau khi sinh xong file.",
+          answer: getCurrentEntry().transcript
+        });
+      });
+    };
+
+    const render = () => {
+      const entry = getCurrentEntry();
+      const stored = state.results[entry.id] || null;
+
+      progressLabel.textContent = `${entry.order} / ${entries.length}`;
+      entryId.textContent = entry.id.toUpperCase();
+      prevButton.disabled = state.index <= 0;
+      nextButton.disabled = state.index >= entries.length - 1;
+      audio.src = entry.audioUrl;
+      audio.playbackRate = speeds[state.speedIndex];
+      speedButton.textContent = `${speeds[state.speedIndex]}x`;
+      answerInput.value = stored && stored.attempt ? stored.attempt : "";
+
+      stopAudio();
+      if (stored) {
+        if (stored.type === "checked") {
+          setFeedback({
+            correct: stored.correct,
+            score: stored.score,
+            note: stored.correct
+              ? "Ban da nghe dung hoac rat gan transcript."
+              : "Doc lai transcript de ghi nho tu khoa va cum tu.",
+            answer: entry.transcript
+          });
+        } else {
+          setFeedback({
+            correct: false,
+            score: 0,
+            note: "Cau nay da duoc bo qua. Ban co the nghe lai va thu them lan nua.",
+            answer: entry.transcript
+          });
+        }
+      } else {
+        setFeedback(null);
+      }
+
+      updateScoreboard();
+      persist();
+    };
+
+    playButton.addEventListener("click", () => {
+      if (!audio.src) return;
+      if (audio.paused) {
+        playAudio();
+      } else {
+        stopAudio();
+      }
+    });
+
+    replayButton.addEventListener("click", () => {
+      stopAudio();
+      playAudio();
+    });
+
+    speedButton.addEventListener("click", () => {
+      state.speedIndex = (state.speedIndex + 1) % speeds.length;
+      audio.playbackRate = speeds[state.speedIndex];
+      speedButton.textContent = `${speeds[state.speedIndex]}x`;
+      persist();
+    });
+
+    prevButton.addEventListener("click", () => {
+      if (state.index > 0) {
+        state.index -= 1;
+        render();
+      }
+    });
+
+    nextButton.addEventListener("click", () => {
+      if (state.index < entries.length - 1) {
+        state.index += 1;
+        render();
+      }
+    });
+
+    checkButton.addEventListener("click", () => {
+      const entry = getCurrentEntry();
+      const answer = answerInput.value || "";
+      const normalizedAnswer = normalizeAnswer(answer);
+      const normalizedTranscript = normalizeAnswer(entry.transcript);
+
+      if (!normalizedAnswer) {
+        setFeedback({
+          correct: false,
+          score: 0,
+          note: "Ban hay nhap cau nghe duoc truoc khi bam Check.",
+          answer: entry.transcript
+        });
+        return;
+      }
+
+      const rawScore = similarity(normalizedAnswer, normalizedTranscript);
+      const score = Math.round(rawScore * 100);
+      const correct = normalizedAnswer === normalizedTranscript || rawScore >= 0.9;
+
+      state.results[entry.id] = {
+        type: "checked",
+        attempt: answer,
+        score,
+        correct
+      };
+
+      setFeedback({
+        correct,
+        score,
+        note: correct
+          ? "Ban da bat duoc nhieu tu khoa quan trong trong cau nay."
+          : "Thu nghe lai, chu y cac tu noi am nhanh va dau cau cuoi cau.",
+        answer: entry.transcript
+      });
+
+      updateScoreboard();
+      persist();
+    });
+
+    skipButton.addEventListener("click", () => {
+      const entry = getCurrentEntry();
+      state.results[entry.id] = {
+        type: "skipped",
+        attempt: answerInput.value || "",
+        score: 0,
+        correct: false
+      };
+
+      updateScoreboard();
+      persist();
+
+      if (state.index < entries.length - 1) {
+        state.index += 1;
+      }
+
+      render();
+    });
+
+    audio.addEventListener("timeupdate", updateWaveProgress);
+    audio.addEventListener("ended", () => {
+      panel.dataset.playing = "false";
+      playButton.innerHTML = "&#9658;";
+      updateWaveProgress();
+    });
+    audio.addEventListener("loadedmetadata", updateWaveProgress);
+    audio.addEventListener("error", () => {
+      panel.dataset.playing = "false";
+      playButton.innerHTML = "&#9658;";
+      updateWaveProgress();
+    });
+
+    render();
+  })();
+</script>

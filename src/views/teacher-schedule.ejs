@@ -1,0 +1,198 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const normalizeClass = (item) => ({
+    phase: {
+      label: item?.phase?.label || 'Đang vận hành',
+      tone: item?.phase?.tone || 'blue',
+      progress: typeof item?.phase?.progress === 'number' ? item.phase.progress : 18,
+      supportingText: item?.phase?.supportingText || 'Theo dõi tiến độ lớp học theo từng buổi dạy.'
+    },
+    total_students: Number(item?.total_students || 0),
+    total_comments: Number(item?.total_comments || 0),
+    ...item
+  });
+  const safeSchedule = (Array.isArray(typeof schedule !== 'undefined' ? schedule : null) ? schedule : []).map(normalizeClass);
+  const safeScheduleGroups = Array.isArray(typeof scheduleGroups !== 'undefined' ? scheduleGroups : null)
+    ? scheduleGroups.map((group) => ({ ...group, items: (Array.isArray(group?.items) ? group.items : []).map(normalizeClass) }))
+    : [];
+  const safeScheduleStats = (typeof scheduleStats !== 'undefined' && scheduleStats)
+    ? scheduleStats
+    : {
+        total: safeSchedule.length,
+        active: safeSchedule.length,
+        upcoming: 0,
+        completed: 0
+      };
+  const safeWeekdayLoad = Array.isArray(typeof weekdayLoad !== 'undefined' ? weekdayLoad : null) ? weekdayLoad : [];
+  const safeNextClass = (typeof nextClass !== 'undefined' && nextClass) ? normalizeClass(nextClass) : (safeSchedule[0] || null);
+  const weeklyPeak = safeWeekdayLoad.length ? Math.max(...safeWeekdayLoad.map((item) => item.count), 1) : 1;
+%>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Teaching Schedule</p>
+        <h1 class="teacher-hero-title">Lịch dạy hiện đại, sáng rõ và dễ kiểm soát</h1>
+        <p class="teacher-hero-text">
+          Theo dõi lịch giảng dạy theo trạng thái vận hành, theo tháng và theo tải dạy trong tuần để chuẩn bị bài,
+          điểm danh và nhận xét học viên đúng nhịp hơn.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= Number(safeScheduleStats.total || 0) %> lớp trong lịch</span>
+          <span class="teacher-pill soft"><%= Number(safeScheduleStats.active || 0) %> lớp đang vận hành</span>
+          <span class="teacher-pill soft"><%= Number(safeScheduleStats.upcoming || 0) %> lớp sắp mở</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Điểm chạm tiếp theo</h2>
+        <% if (safeNextClass) { %>
+          <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">
+            <strong style="color: white;"><%= safeNextClass.course_name %></strong> · <%= safeNextClass.code %><br>
+            <%= safeNextClass.schedule_text || 'Chưa cập nhật lịch học' %>
+          </p>
+          <div class="teacher-hero-badges" style="margin-top: 16px;">
+            <span class="teacher-pill soft"><%= safeNextClass.start_label || 'Chưa có ngày bắt đầu' %></span>
+            <span class="teacher-pill soft"><%= safeNextClass.room || 'Chưa gán phòng' %></span>
+          </div>
+        <% } else { %>
+          <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">Chưa có lớp nào trong lịch để hiển thị điểm chạm tiếp theo.</p>
+        <% } %>
+        <div class="teacher-hero-actions" style="margin-top: 18px;">
+          <a href="<%= baseUrl %>/teacher/attendance" class="teacher-link-button secondary">Mở điểm danh</a>
+          <a href="<%= baseUrl %>/teacher/classes" class="teacher-link-button ghost" style="background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.16);">Mở lớp học</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Tổng lịch</span>
+      <strong class="teacher-stat-value"><%= Number(safeScheduleStats.total || 0) %></strong>
+      <p class="teacher-stat-note">Tất cả lớp đã có trong roadmap giảng dạy của bạn.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Đang vận hành</span>
+      <strong class="teacher-stat-value"><%= Number(safeScheduleStats.active || 0) %></strong>
+      <p class="teacher-stat-note">Những lớp đang ở giữa hành trình và cần theo dõi đều đặn.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Sắp khai giảng</span>
+      <strong class="teacher-stat-value"><%= Number(safeScheduleStats.upcoming || 0) %></strong>
+      <p class="teacher-stat-note">Các lớp sắp bắt đầu để bạn chuẩn bị tài liệu và quy trình vận hành.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Đã kết thúc</span>
+      <strong class="teacher-stat-value"><%= Number(safeScheduleStats.completed || 0) %></strong>
+      <p class="teacher-stat-note">Những lớp nên được tổng kết, lưu trữ phản hồi và kết quả học tập.</p>
+    </article>
+  </section>
+
+  <section class="teacher-grid two">
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Tải dạy theo ngày trong tuần</h2>
+          <p class="teacher-panel-desc">Biểu đồ nhỏ giúp nhìn nhanh mật độ lớp theo từng ngày dạy.</p>
+        </div>
+      </div>
+
+      <% if (safeWeekdayLoad.length) { %>
+        <div class="teacher-bar-list" style="margin-top: 20px;">
+          <% safeWeekdayLoad.forEach((item) => { %>
+            <div class="teacher-bar-row">
+              <div class="teacher-bar-top">
+                <span><%= item.label %></span>
+                <strong><%= item.count %> lớp</strong>
+              </div>
+              <div class="teacher-bar-track">
+                <div class="teacher-bar-fill" style="width: <%= Math.max(18, Math.round((item.count / weeklyPeak) * 100)) %>%;"></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 18px;">Chưa có đủ dữ liệu lịch để phân bổ theo ngày trong tuần.</div>
+      <% } %>
+    </article>
+
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Các lớp nổi bật theo trạng thái</h2>
+          <p class="teacher-panel-desc">Snapshot nhanh để biết lớp nào đang hoạt động, lớp nào cần chuẩn bị kỹ hơn.</p>
+        </div>
+      </div>
+
+      <% if (safeSchedule.length) { %>
+        <div class="teacher-stack" style="margin-top: 18px;">
+          <% safeSchedule.slice(0, 4).forEach((item) => { %>
+            <article class="teacher-class-card" style="padding: 18px;">
+              <div class="teacher-class-top">
+                <div>
+                  <h3 class="teacher-card-title"><%= item.course_name %></h3>
+                  <p class="teacher-card-text"><%= item.code %> · <%= item.room || 'Chưa gán phòng' %></p>
+                </div>
+                <span class="teacher-pill <%= item.phase.tone %>"><%= item.phase.label %></span>
+              </div>
+              <p class="teacher-card-text" style="margin-top: 14px;">Lịch học: <%= item.schedule_text || 'Chưa cập nhật' %></p>
+              <p class="teacher-note" style="margin-top: 10px;"><%= item.phase.supportingText %></p>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 18px;">Chưa có lớp nào trong lịch dạy.</div>
+      <% } %>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Lịch dạy theo tháng</h2>
+        <p class="teacher-panel-desc">Timeline được gom nhóm theo tháng để bạn nhìn tổng thể học kỳ một cách gọn gàng.</p>
+      </div>
+    </div>
+
+    <% if (safeScheduleGroups.length) { %>
+      <div class="teacher-stack" style="margin-top: 20px;">
+        <% safeScheduleGroups.forEach((group) => { %>
+          <article class="teacher-panel highlight" style="padding: 20px;">
+            <div class="teacher-panel-head">
+              <div>
+                <h3 class="teacher-panel-title"><%= group.label %></h3>
+                <p class="teacher-panel-desc"><%= group.items.length %> lớp trong giai đoạn này.</p>
+              </div>
+            </div>
+
+            <div class="teacher-grid two" style="margin-top: 18px;">
+              <% group.items.forEach((item) => { %>
+                <article class="teacher-class-card" style="padding: 18px;">
+                  <div class="teacher-class-top">
+                    <div>
+                      <h4 class="teacher-card-title"><%= item.course_name %></h4>
+                      <p class="teacher-card-text"><%= item.code %> · <%= item.room || 'Chưa gán phòng' %></p>
+                    </div>
+                    <span class="teacher-pill <%= item.phase.tone %>"><%= item.phase.label %></span>
+                  </div>
+                  <div class="teacher-class-meta" style="margin-top: 14px;">
+                    <p class="teacher-muted">Lịch học: <%= item.schedule_text || 'Chưa cập nhật' %></p>
+                    <p class="teacher-muted">Từ <%= item.start_label || 'chưa xác định' %> đến <%= item.end_label || 'chưa xác định' %></p>
+                    <p class="teacher-muted"><%= item.total_students %> học viên · <%= item.total_comments %> nhận xét</p>
+                  </div>
+                  <div class="teacher-card-actions" style="margin-top: 16px;">
+                    <a href="<%= baseUrl %>/teacher/classes/<%= item.id %>" class="teacher-link-button secondary">Chi tiết lớp</a>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 18px;">Chưa có dữ liệu lịch dạy theo tháng để hiển thị.</div>
+    <% } %>
+  </section>
+</div>

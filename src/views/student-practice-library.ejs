@@ -1,0 +1,659 @@
+<%
+const data = library || {};
+const cards = Array.isArray(data.cards) ? data.cards : [];
+const primaryFilters = Array.isArray(data.primaryFilters) ? data.primaryFilters : [];
+const secondaryFilters = Array.isArray(data.secondaryFilters) ? data.secondaryFilters : [];
+const pageKey = data.pageKey || 'parts';
+const toneClass = pageKey === 'reading' ? 'reading' : 'parts';
+%>
+
+<style>
+  .plib-page {
+    --plib-bg: #f5f1ea;
+    --plib-surface: rgba(255, 255, 255, 0.9);
+    --plib-line: rgba(15, 23, 42, 0.08);
+    --plib-text: #1f2937;
+    --plib-muted: #5f6b7a;
+    --plib-accent: #c63a31;
+    --plib-accent-soft: rgba(198, 58, 49, 0.12);
+    --plib-dark: #132238;
+    --plib-chip: rgba(19, 34, 56, 0.05);
+    --plib-shadow: 0 24px 52px rgba(15, 23, 42, 0.08);
+    display: grid;
+    gap: 24px;
+    width: min(1380px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 26px 0 46px;
+  }
+
+  .plib-page.reading {
+    --plib-accent: #0f6a72;
+    --plib-accent-soft: rgba(15, 106, 114, 0.12);
+  }
+
+  .plib-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 32px;
+    border: 1px solid var(--plib-line);
+    background: var(--plib-surface);
+    box-shadow: var(--plib-shadow);
+    backdrop-filter: blur(18px);
+  }
+
+  .plib-hero {
+    padding: 38px 40px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.72), transparent 34%),
+      linear-gradient(135deg, rgba(255, 245, 237, 0.96) 0%, rgba(248, 250, 252, 0.98) 48%, rgba(228, 238, 255, 0.96) 100%);
+  }
+
+  .plib-page.reading .plib-hero {
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.7), transparent 34%),
+      linear-gradient(135deg, rgba(230, 248, 247, 0.98) 0%, rgba(248, 250, 252, 0.98) 54%, rgba(223, 242, 245, 0.98) 100%);
+  }
+
+  .plib-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--plib-accent);
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .plib-kicker::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 7px var(--plib-accent-soft);
+  }
+
+  .plib-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 24px;
+    align-items: end;
+    margin-top: 18px;
+  }
+
+  .plib-copy {
+    display: grid;
+    gap: 14px;
+  }
+
+  .plib-copy h1,
+  .plib-stats strong,
+  .plib-card h3,
+  .plib-empty strong {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: var(--plib-dark);
+  }
+
+  .plib-copy h1 {
+    font-size: clamp(2.45rem, 4.6vw, 4.2rem);
+    line-height: 1.02;
+    max-width: 14ch;
+  }
+
+  .plib-copy p,
+  .plib-stats span,
+  .plib-card p,
+  .plib-meta,
+  .plib-empty span {
+    color: var(--plib-muted);
+    line-height: 1.78;
+  }
+
+  .plib-stats {
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+  }
+
+  .plib-stats strong {
+    font-size: 3rem;
+    line-height: 0.95;
+  }
+
+  .plib-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .plib-stat {
+    padding: 16px;
+    border-radius: 22px;
+    background: rgba(19, 34, 56, 0.04);
+  }
+
+  .plib-stat strong {
+    font-size: 1.35rem;
+    letter-spacing: -0.04em;
+  }
+
+  .plib-toolbar {
+    padding: 26px 30px;
+    display: grid;
+    gap: 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 248, 244, 0.96) 100%);
+  }
+
+  .plib-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .plib-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: var(--plib-chip);
+    color: var(--plib-text);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .plib-filter:hover {
+    transform: translateY(-1px);
+  }
+
+  .plib-filter.is-active {
+    background: var(--plib-accent);
+    color: #fff;
+    box-shadow: 0 16px 30px rgba(17, 24, 39, 0.12);
+  }
+
+  .plib-search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .plib-search-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid var(--plib-line);
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  .plib-search-shell input {
+    width: 100%;
+    min-height: 58px;
+    padding: 0 20px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--plib-text);
+    font: inherit;
+  }
+
+  .plib-search-shell button {
+    min-width: 136px;
+    border: 0;
+    background: var(--plib-dark);
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .plib-result-copy {
+    justify-self: end;
+    color: var(--plib-muted);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .plib-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .plib-card {
+    position: relative;
+    display: grid;
+    gap: 18px;
+    min-height: 288px;
+    padding: 26px;
+    border-radius: 30px;
+    border: 1px solid var(--plib-line);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.05);
+  }
+
+  .plib-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .plib-badge,
+  .plib-level,
+  .plib-ribbon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .plib-badge {
+    background: var(--plib-accent-soft);
+    color: var(--plib-accent);
+  }
+
+  .plib-level {
+    background: rgba(19, 34, 56, 0.06);
+    color: var(--plib-dark);
+  }
+
+  .plib-ribbon {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: #b78b74;
+    color: #fff;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 4px;
+  }
+
+  .plib-card h3 {
+    font-size: clamp(1.48rem, 2vw, 2rem);
+    line-height: 1.08;
+    max-width: 15ch;
+  }
+
+  .plib-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+    font-weight: 600;
+  }
+
+  .plib-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .plib-action {
+    margin-top: auto;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: var(--plib-dark);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 16px 32px rgba(17, 24, 39, 0.16);
+  }
+
+  .plib-empty {
+    display: none;
+    place-items: center;
+    gap: 10px;
+    padding: 32px;
+    text-align: center;
+  }
+
+  .plib-empty strong {
+    font-size: 1.8rem;
+  }
+
+  .plib-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .plib-page-btn {
+    min-width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid var(--plib-line);
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--plib-text);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .plib-page-btn.is-current {
+    background: var(--plib-dark);
+    border-color: var(--plib-dark);
+    color: #fff;
+  }
+
+  .plib-page-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 1080px) {
+    .plib-hero-grid,
+    .plib-grid,
+    .plib-search-row {
+      grid-template-columns: 1fr;
+    }
+
+    .plib-result-copy {
+      justify-self: start;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .plib-page {
+      width: min(100% - 20px, 1380px);
+      padding-top: 18px;
+    }
+
+    .plib-hero,
+    .plib-toolbar {
+      padding: 22px 18px;
+    }
+
+    .plib-stats-grid,
+    .plib-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .plib-search-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .plib-search-shell button {
+      min-height: 52px;
+    }
+
+    .plib-card {
+      min-height: auto;
+      padding: 22px 18px;
+    }
+  }
+</style>
+
+<div class="plib-page <%= toneClass %>" data-library-page data-page-size="6">
+  <section class="plib-panel plib-hero">
+    <span class="plib-kicker"><%= data.eyebrow || 'Practice Hub' %></span>
+    <div class="plib-hero-grid">
+      <div class="plib-copy">
+        <h1><%= data.heroTitle || data.title || 'Practice Library' %></h1>
+        <p><%= data.heroDescription || '' %></p>
+      </div>
+      <aside class="plib-stats">
+        <div>
+          <span>Tổng bộ luyện</span>
+          <strong data-total-count><%= cards.length %></strong>
+        </div>
+      
+      </aside>
+    </div>
+  </section>
+
+  <section class="plib-panel plib-toolbar">
+    <% if (primaryFilters.length) { %>
+      <div class="plib-filter-group" data-filter-group="primary">
+        <% primaryFilters.forEach((filter, index) => { %>
+          <button
+            type="button"
+            class="plib-filter <%= index === 0 ? 'is-active' : '' %>"
+            data-filter-value="<%= filter.key %>">
+            <%= filter.label %>
+          </button>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (secondaryFilters.length > 1) { %>
+      <div class="plib-filter-group" data-filter-group="secondary">
+        <% secondaryFilters.forEach((filter, index) => { %>
+          <button
+            type="button"
+            class="plib-filter <%= index === 0 ? 'is-active' : '' %>"
+            data-filter-value="<%= filter.key %>">
+            <%= filter.label %>
+          </button>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="plib-search-row">
+      <div class="plib-search-shell">
+        <input
+          type="search"
+          placeholder="<%= data.searchPlaceholder || 'Tìm kiếm...' %>"
+          data-library-search>
+        <button type="button" data-search-trigger>Tìm kiếm</button>
+      </div>
+      <span class="plib-result-copy">Hiển thị <strong data-visible-count><%= cards.length %></strong> bộ luyện</span>
+    </div>
+  </section>
+
+  <section class="plib-grid" data-card-grid>
+    <% cards.forEach((card) => { %>
+      <article
+        class="plib-card"
+        data-library-card
+        data-primary="<%= card.primaryKey %>"
+        data-secondary="<%= card.secondaryKey %>"
+        data-search="<%= card.searchText %>">
+        <span class="plib-ribbon"><%= card.ribbon %></span>
+        <div class="plib-card-top">
+          <div class="plib-tags">
+            <span class="plib-badge"><%= card.badge %></span>
+            <% if (card.levelBadge) { %>
+              <span class="plib-level"><%= card.levelBadge %></span>
+            <% } %>
+          </div>
+        </div>
+        <div>
+          <h3><%= card.title %></h3>
+          <p><%= card.summary %></p>
+        </div>
+        <div class="plib-meta">
+          <% (card.metaItems || []).forEach((item) => { %>
+            <span><%= item %></span>
+          <% }) %>
+        </div>
+        <a href="<%= card.actionHref %>" class="plib-action"><%= card.actionLabel || 'Làm bài' %></a>
+      </article>
+    <% }) %>
+  </section>
+
+  <section class="plib-panel plib-empty" data-empty-state>
+    <strong>Chưa có bộ luyện phù hợp</strong>
+    <span>Thử đổi filter hoặc nhập lại từ khóa ngắn hơn để tìm đúng bộ đề bạn cần.</span>
+  </section>
+
+  <nav class="plib-pager" aria-label="Phân trang" data-library-pager>
+    <button type="button" class="plib-page-btn" data-page-nav="prev">&lt;</button>
+    <div data-page-list></div>
+    <button type="button" class="plib-page-btn" data-page-nav="next">&gt;</button>
+  </nav>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector('[data-library-page]');
+    if (!root) return;
+
+    const cards = Array.from(root.querySelectorAll('[data-library-card]'));
+    const searchInput = root.querySelector('[data-library-search]');
+    const searchTrigger = root.querySelector('[data-search-trigger]');
+    const visibleCountEl = root.querySelector('[data-visible-count]');
+    const totalCountEl = root.querySelector('[data-total-count]');
+    const emptyState = root.querySelector('[data-empty-state]');
+    const pager = root.querySelector('[data-library-pager]');
+    const pageList = root.querySelector('[data-page-list]');
+    const prevButton = root.querySelector('[data-page-nav="prev"]');
+    const nextButton = root.querySelector('[data-page-nav="next"]');
+    const primaryButtons = Array.from(root.querySelectorAll('[data-filter-group="primary"] [data-filter-value]'));
+    const secondaryButtons = Array.from(root.querySelectorAll('[data-filter-group="secondary"] [data-filter-value]'));
+    const pageSize = Number(root.dataset.pageSize || 6);
+
+    let activePrimary = primaryButtons[0] ? primaryButtons[0].dataset.filterValue : 'all';
+    let activeSecondary = secondaryButtons[0] ? secondaryButtons[0].dataset.filterValue : 'all';
+    let currentPage = 1;
+
+    const normalize = (value) => String(value || '').trim().toLowerCase();
+
+    const setActiveButton = (buttons, value) => {
+      buttons.forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.filterValue === value);
+      });
+    };
+
+    const getFilteredCards = () => {
+      const keyword = normalize(searchInput ? searchInput.value : '');
+
+      return cards.filter((card) => {
+        const matchPrimary = activePrimary === 'all' || card.dataset.primary === activePrimary;
+        const matchSecondary = activeSecondary === 'all' || card.dataset.secondary === activeSecondary;
+        const matchSearch = !keyword || normalize(card.dataset.search).includes(keyword);
+        return matchPrimary && matchSecondary && matchSearch;
+      });
+    };
+
+    const buildPageButtons = (pageCount) => {
+      if (!pageList) return;
+      pageList.innerHTML = '';
+
+      for (let page = 1; page <= pageCount; page += 1) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'plib-page-btn' + (page === currentPage ? ' is-current' : '');
+        button.textContent = String(page);
+        button.addEventListener('click', () => {
+          currentPage = page;
+          render();
+        });
+        pageList.appendChild(button);
+      }
+    };
+
+    const render = () => {
+      const filteredCards = getFilteredCards();
+      const pageCount = Math.max(Math.ceil(filteredCards.length / pageSize), 1);
+      if (currentPage > pageCount) {
+        currentPage = pageCount;
+      }
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageCards = filteredCards.slice(startIndex, startIndex + pageSize);
+
+      cards.forEach((card) => {
+        card.style.display = pageCards.includes(card) ? '' : 'none';
+      });
+
+      if (visibleCountEl) {
+        visibleCountEl.textContent = String(filteredCards.length);
+      }
+
+      if (totalCountEl) {
+        totalCountEl.textContent = String(cards.length);
+      }
+
+      if (emptyState) {
+        emptyState.style.display = filteredCards.length ? 'none' : 'grid';
+      }
+
+      if (pager) {
+        pager.style.display = filteredCards.length > pageSize ? 'flex' : 'none';
+      }
+
+      if (prevButton) {
+        prevButton.disabled = currentPage <= 1;
+      }
+
+      if (nextButton) {
+        nextButton.disabled = currentPage >= pageCount;
+      }
+
+      buildPageButtons(pageCount);
+    };
+
+    primaryButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activePrimary = button.dataset.filterValue;
+        currentPage = 1;
+        setActiveButton(primaryButtons, activePrimary);
+        render();
+      });
+    });
+
+    secondaryButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeSecondary = button.dataset.filterValue;
+        currentPage = 1;
+        setActiveButton(secondaryButtons, activeSecondary);
+        render();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        currentPage = 1;
+        render();
+      });
+    }
+
+    if (searchTrigger) {
+      searchTrigger.addEventListener('click', render);
+    }
+
+    if (prevButton) {
+      prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage -= 1;
+          render();
+        }
+      });
+    }
+
+    if (nextButton) {
+      nextButton.addEventListener('click', () => {
+        const filteredCards = getFilteredCards();
+        const pageCount = Math.max(Math.ceil(filteredCards.length / pageSize), 1);
+        if (currentPage < pageCount) {
+          currentPage += 1;
+          render();
+        }
+      });
+    }
+
+    render();
+  })();
+</script>

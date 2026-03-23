@@ -1,0 +1,98 @@
+<%
+const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const campuses = [
+  {
+    name: 'Cơ sở Hồ Tùng Mậu',
+    address: 'Số 17, ngõ 20 Hồ Tùng Mậu, Cầu Giấy, Hà Nội',
+    classes: [
+      { code: 'TẬP SỰ TS20', time: 'Tối 3-5-7 | 18h-19h30', opening: '31/03', teacher: 'Ms. Thu Linh' },
+      { code: 'TOEIC A23', time: 'Tối 3-5-7 | 18h-19h30', opening: '24/03', teacher: 'Ms. Mỹ Ngọc' },
+      { code: 'TOEIC B88', time: 'Tối 2-4-6 | 20h15-21h45', opening: '01/04', teacher: 'Ms. Trang Trang' }
+    ]
+  },
+  {
+    name: 'Cơ sở Lê Đức Thọ',
+    address: 'Số 9 ngách 59 ngõ 21 Lê Đức Thọ, Nam Từ Liêm, Hà Nội',
+    classes: [
+      { code: 'TẬP SỰ LT01', time: 'Tối 3-5 | 17h45-19h15', opening: '06/04', teacher: 'Ms. Minh Hạnh' },
+      { code: 'TOEIC A LT02', time: 'Tối 3-5-CN | 19h15-20h45', opening: '10/04', teacher: 'Ms. Thu Linh' },
+      { code: 'TOEIC SW82', time: 'Thứ 7-CN | 09h-11h', opening: '17/04', teacher: 'Ms. Trang Vũ' }
+    ]
+  },
+  {
+    name: 'Cơ sở Hà Đông',
+    address: '197 Trần Phú, Văn Quán, Hà Đông, Hà Nội',
+    classes: [
+      { code: 'TẬP SỰ SH10', time: 'Tối 2-4-6 | 20h-21h30', opening: '01/04', teacher: 'Mr. Mạnh Huy' },
+      { code: 'TOEIC AH09', time: 'Tối 3-5-7 | 18h-19h30', opening: '07/04', teacher: 'Mr. Minh Trí' },
+      { code: 'TOEIC AH11', time: 'Tối 2-4-6 | 18h-19h30', opening: '27/03', teacher: 'Mr. Mạnh Huy' }
+    ]
+  }
+];
+%>
+
+<style>
+  .ss-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px;display:grid;gap:26px}
+  .ss-hero,.ss-campus{padding:30px;border-radius:34px;background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.06);box-shadow:0 24px 44px rgba(17,24,39,.08)}
+  .ss-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;background:linear-gradient(135deg,#ffffff 0%,#f5f3ff 52%,#eef2ff 100%)}
+  .ss-title,.ss-campus h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.05em;color:#111827}
+  .ss-title{font-size:clamp(2.5rem,5vw,4rem);line-height:1.02}
+  .ss-hero p,.ss-campus p{margin:0;color:#667085;line-height:1.8}
+  .ss-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+  .ss-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:999px;text-decoration:none;font-weight:800;transition:transform .2s ease}
+  .ss-btn:hover{transform:translateY(-1px)}
+  .ss-btn-dark{background:#111827;color:#fff}
+  .ss-btn-soft{background:#eef2ff;color:#3730a3}
+  .ss-next{display:grid;gap:12px;padding:22px;border-radius:28px;background:#111827;color:#fff}
+  .ss-next strong{font-size:1.15rem}
+  .ss-next span{color:rgba(255,255,255,.78);line-height:1.7}
+  .ss-grid{display:grid;gap:18px}
+  .ss-table{display:grid;gap:12px;margin-top:18px}
+  .ss-row{display:grid;grid-template-columns:1.2fr 1.4fr .7fr 1fr;gap:12px;padding:16px 18px;border-radius:22px;background:#f8fafc;border:1px solid rgba(17,24,39,.06)}
+  .ss-row.head{background:#1f2937;color:#fff;font-weight:800}
+  .ss-code{font-weight:800;color:#1d4ed8}
+  @media (max-width:980px){.ss-hero,.ss-row{grid-template-columns:1fr}.ss-row.head{display:none}}
+  @media (max-width:720px){.ss-page{width:min(100% - 20px,1380px);padding:22px 0 28px}.ss-hero,.ss-campus{padding:20px;border-radius:24px}}
+</style>
+
+<div class="ss-page">
+  <section class="ss-hero">
+    <div>
+      <h1 class="ss-title">Lịch khai giảng cho học viên</h1>
+      <p>Theo dõi nhanh các lớp sắp mở theo từng cơ sở, so sánh thời gian học và giữ chỗ ngay trong tài khoản học viên.</p>
+      <div class="ss-actions">
+        <a href="<%= safeBaseUrl %>/register-course" class="ss-btn ss-btn-dark">Giữ chỗ ngay</a>
+        <a href="<%= safeBaseUrl %>/student/courses" class="ss-btn ss-btn-soft">Xem khóa học</a>
+      </div>
+    </div>
+    <aside class="ss-next">
+      <strong>Mốc gần nhất</strong>
+      <span>Tập Sự TS20 khai giảng ngày 31/03 tại cơ sở Hồ Tùng Mậu. Bạn có thể đăng ký sớm để được ưu tiên xếp lớp.</span>
+    </aside>
+  </section>
+
+  <section class="ss-grid">
+    <% campuses.forEach((campus) => { %>
+      <article class="ss-campus">
+        <h2><%= campus.name %></h2>
+        <p><%= campus.address %></p>
+        <div class="ss-table">
+          <div class="ss-row head">
+            <div>Mã lớp</div>
+            <div>Thời gian học</div>
+            <div>Khai giảng</div>
+            <div>Giáo viên</div>
+          </div>
+          <% campus.classes.forEach((item) => { %>
+            <div class="ss-row">
+              <div><span class="ss-code"><%= item.code %></span></div>
+              <div><%= item.time %></div>
+              <div><strong><%= item.opening %></strong></div>
+              <div><%= item.teacher %></div>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+    <% }) %>
+  </section>
+</div>

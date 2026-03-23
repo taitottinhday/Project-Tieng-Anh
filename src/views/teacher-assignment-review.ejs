@@ -1,0 +1,233 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const safePost = typeof post !== 'undefined' && post ? post : {};
+  const safeStudents = Array.isArray(typeof students !== 'undefined' ? students : null) ? students : [];
+  const formatDateTime = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleString('vi-VN');
+  };
+  const shortText = (value, limit = 180) => {
+    const text = String(value || '').trim();
+    return text.length > limit ? `${text.slice(0, limit)}...` : text || 'Không có ghi chú.';
+  };
+%>
+
+<style>
+  .teacher-review-materials {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .teacher-review-material {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(233, 243, 255, 0.82);
+    border: 1px solid rgba(123, 156, 210, 0.16);
+    color: #18416e;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .teacher-review-grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .teacher-review-card {
+    padding: 22px;
+    border-radius: 28px;
+    border: 1px solid rgba(136, 166, 215, 0.18);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,250,255,0.94));
+    box-shadow: 0 24px 54px rgba(53, 92, 153, 0.12);
+  }
+
+  .teacher-review-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .teacher-review-head h3 {
+    margin: 0;
+    font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+    font-size: 1.34rem;
+    letter-spacing: -0.04em;
+    color: #16304a;
+  }
+
+  .teacher-review-meta {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .teacher-review-file-list {
+    margin-top: 16px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .teacher-review-form {
+    margin-top: 18px;
+    display: grid;
+    gap: 14px;
+  }
+</style>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Assignment Review</p>
+        <h1 class="teacher-hero-title"><%= safePost.title || 'Chấm bài học viên' %></h1>
+        <p class="teacher-hero-text">
+          Theo dõi bài nộp của từng học viên, xem file kèm theo, chấm điểm và để lại nhận xét để đẩy ngược về luồng học viên.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill pink">Lớp: <%= safePost.class_code || 'Chưa cập nhật' %></span>
+          <span class="teacher-pill blue">Hạn nộp: <%= safePost.due_date ? formatDateTime(safePost.due_date) : 'Không đặt hạn' %></span>
+          <span class="teacher-pill soft"><%= safeStudents.length %> học viên</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color:white;">Tóm tắt bài tập</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.84);">
+          <%= shortText(safePost.description, 220) %>
+        </p>
+        <div class="teacher-hero-actions" style="margin-top:18px;">
+          <a href="<%= baseUrl %>/teacher/classroom/<%= classId %>" class="teacher-link-button secondary">Quay lại classroom</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid two">
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Tài liệu giáo viên đã đăng</h2>
+          <p class="teacher-panel-desc">Học viên nhìn thấy đúng các tài liệu này trong bài tập.</p>
+        </div>
+      </div>
+
+      <% if (safePost.materials && safePost.materials.length) { %>
+        <div class="teacher-review-materials">
+          <% safePost.materials.forEach((file) => { %>
+            <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="teacher-review-material">
+              <span><%= file.original_name %></span>
+              <span>Mở tệp</span>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 18px;">Bài tập này chưa có tài liệu đính kèm.</div>
+      <% } %>
+    </article>
+
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Nhịp nộp bài</h2>
+          <p class="teacher-panel-desc">Trạng thái nộp bài được cập nhật theo từng học viên và đồng bộ về luồng học viên.</p>
+        </div>
+      </div>
+      <div class="teacher-bar-list" style="margin-top:18px;">
+        <div class="teacher-bar-row">
+          <div class="teacher-bar-top">
+            <span>Đã nộp hoặc hoàn thành</span>
+            <strong><%= safeStudents.filter((item) => ['submitted', 'completed', 'reviewed'].includes(item.submission_status)).length %>/<%= safeStudents.length %></strong>
+          </div>
+          <div class="teacher-bar-track">
+            <div class="teacher-bar-fill" style="width: <%= safeStudents.length ? Math.round((safeStudents.filter((item) => ['submitted', 'completed', 'reviewed'].includes(item.submission_status)).length / safeStudents.length) * 100) : 0 %>%;"></div>
+          </div>
+        </div>
+        <div class="teacher-bar-row">
+          <div class="teacher-bar-top">
+            <span>Đã được giáo viên đánh giá</span>
+            <strong><%= safeStudents.filter((item) => item.submission_status === 'reviewed').length %>/<%= safeStudents.length %></strong>
+          </div>
+          <div class="teacher-bar-track">
+            <div class="teacher-bar-fill" style="width: <%= safeStudents.length ? Math.round((safeStudents.filter((item) => item.submission_status === 'reviewed').length / safeStudents.length) * 100) : 0 %>%;"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Bảng chấm bài theo học viên</h2>
+        <p class="teacher-panel-desc">Mọi nhận xét và điểm sẽ được hiển thị ngược về trang bài tập của học viên ngay sau khi lưu.</p>
+      </div>
+    </div>
+
+    <% if (safeStudents.length) { %>
+      <div class="teacher-review-grid" style="margin-top: 22px;">
+        <% safeStudents.forEach((item) => { %>
+          <article class="teacher-review-card">
+            <div class="teacher-review-head">
+              <div>
+                <h3><%= item.full_name %></h3>
+                <p class="teacher-card-text"><%= item.email || 'Chưa cập nhật email' %> · <%= item.phone || 'Chưa cập nhật số điện thoại' %></p>
+              </div>
+              <span class="teacher-pill <%= item.submission_status === 'reviewed' ? 'green' : (['submitted', 'completed'].includes(item.submission_status) ? 'pink' : 'soft') %>"><%= item.submission_status %></span>
+            </div>
+
+            <div class="teacher-review-meta">
+              <span class="teacher-pill soft">Nộp bài: <%= formatDateTime(item.submitted_at) %></span>
+              <span class="teacher-pill blue">Hoàn thành: <%= formatDateTime(item.completed_at) %></span>
+              <span class="teacher-pill gold">Đánh giá: <%= formatDateTime(item.reviewed_at) %></span>
+            </div>
+
+            <p class="teacher-card-text" style="margin-top: 16px;">
+              <strong style="color:#16304a;">Ghi chú học viên:</strong> <%= shortText(item.student_note) %>
+            </p>
+
+            <% if (item.files && item.files.length) { %>
+              <div class="teacher-review-file-list">
+                <% item.files.forEach((file) => { %>
+                  <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="teacher-review-material">
+                    <span><%= file.original_name %></span>
+                    <span>Xem bài nộp</span>
+                  </a>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <form action="<%= baseUrl %>/teacher/classroom/<%= classId %>/posts/<%= safePost.id %>/review/<%= item.student_id %>" method="POST" class="teacher-review-form">
+              <div class="teacher-form-grid cols-2">
+                <div class="teacher-field">
+                  <label class="teacher-label">Điểm / Mốc đánh giá</label>
+                  <input class="teacher-input" type="number" step="0.1" min="0" max="100" name="teacher_score" value="<%= item.teacher_score || '' %>" placeholder="Ví dụ: 8.5">
+                </div>
+                <div class="teacher-field">
+                  <label class="teacher-label">Trạng thái hiện tại</label>
+                  <input class="teacher-input" type="text" value="<%= item.submission_status %>" readonly>
+                </div>
+              </div>
+              <div class="teacher-field">
+                <label class="teacher-label">Nhận xét giáo viên</label>
+                <textarea class="teacher-textarea" name="teacher_feedback" placeholder="Nhận xét điểm mạnh, điểm cần sửa, hướng dẫn sửa bài..."><%= item.teacher_feedback || '' %></textarea>
+              </div>
+              <div class="teacher-panel-actions">
+                <button type="submit" class="teacher-button pink">Lưu đánh giá</button>
+              </div>
+            </form>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 22px;">Chưa có học viên nào trong bảng chấm bài này.</div>
+    <% } %>
+  </section>
+</div>

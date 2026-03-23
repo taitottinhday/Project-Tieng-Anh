@@ -1,0 +1,445 @@
+<%
+const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const learningCards = [
+  {
+    title: 'Chữa đề thi TOEIC Part 5',
+    teacher: 'Ms. Minh Hạnh',
+    subtitle: 'Chữa đề thi',
+    image: 'https://i.postimg.cc/YCV0Dd4J/t8.png',
+    placeholder: 'Ảnh học phần 01',
+    href: `${safeBaseUrl}/placement-tests`,
+    tone: 'gold'
+  },
+  {
+    title: 'Ngữ pháp trong bài thi TOEIC',
+    teacher: 'Ms. Khánh Huyền',
+    subtitle: 'Ngữ pháp',
+    image: 'https://i.postimg.cc/9MBW2bMf/t9.png',
+    placeholder: 'Ảnh học phần 02',
+    href: `${safeBaseUrl}/courses-blog`,
+    tone: 'gray'
+  },
+  {
+    title: 'Ôn tập từ vựng lớp Tập Sự',
+    teacher: 'Ms. Kim Liên',
+    subtitle: 'Ôn tập từ vựng',
+    image: 'https://i.postimg.cc/7ZTwhw6z/t10.png',
+    placeholder: 'Ảnh học phần 03',
+    href: `${safeBaseUrl}/courses-blog`,
+    tone: 'soft'
+  },
+
+];
+
+function renderMedia(url, alt, placeholder, className) {
+  if (url) {
+    return `<div class="${className}"><img src="${url}" alt="${alt}"></div>`;
+  }
+
+  return `
+    <div class="${className}">
+      <div class="sc-media-placeholder">
+        <span>${placeholder}</span>
+        <small>Bạn gắn link ảnh sau tại đây</small>
+      </div>
+    </div>
+  `;
+}
+%>
+
+<style>
+  .sc-page {
+    width: min(1380px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 34px 0 46px;
+    display: grid;
+    gap: 28px;
+  }
+
+  .sc-shell {
+    padding: 34px;
+    border-radius: 34px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(17, 24, 39, 0.06);
+    box-shadow: 0 28px 50px rgba(17, 24, 39, 0.08);
+  }
+
+  .sc-head {
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .sc-head h1,
+  .sc-card-title {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: #344054;
+  }
+
+  .sc-head h1 {
+    font-size: clamp(2.5rem, 5vw, 4.1rem);
+    line-height: 1.02;
+  }
+
+  .sc-head p {
+    max-width: 760px;
+    margin: 0;
+    color: #667085;
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .sc-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 140px;
+    gap: 0;
+    overflow: hidden;
+    margin-top: 10px;
+    border-radius: 18px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: #ffffff;
+  }
+
+  .sc-search input,
+  .sc-search button {
+    border: 0;
+    outline: 0;
+    font: inherit;
+  }
+
+  .sc-search input {
+    min-height: 58px;
+    padding: 0 18px;
+    color: #111827;
+  }
+
+  .sc-search input::placeholder {
+    color: #98a2b3;
+  }
+
+  .sc-search button {
+    min-height: 58px;
+    background: #2f2f34;
+    color: #ffffff;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .sc-status {
+    min-height: 24px;
+    margin-top: 12px;
+    color: #667085;
+    font-size: 0.96rem;
+    text-align: center;
+  }
+
+  .sc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 26px;
+  }
+
+  .sc-card {
+    display: grid;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 24px;
+    background: #f8fafc;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    box-shadow: 0 16px 36px rgba(17, 24, 39, 0.06);
+  }
+
+  .sc-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+
+  .sc-media {
+    min-height: 214px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .sc-card.gold .sc-media {
+    background: linear-gradient(135deg, #fff0bf 0%, #ffe299 100%);
+  }
+
+  .sc-card.gray .sc-media {
+    background: linear-gradient(135deg, #f2f4f7 0%, #e4e7ec 100%);
+  }
+
+  .sc-card.soft .sc-media {
+    background: linear-gradient(135deg, #f4f4f5 0%, #ebecef 100%);
+  }
+
+  .sc-card.blue .sc-media {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  }
+
+  .sc-card.mint .sc-media {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  }
+
+  .sc-card.violet .sc-media {
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  }
+
+  .sc-media img,
+  .sc-media-placeholder {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .sc-media img {
+    object-fit: cover;
+  }
+
+  .sc-media-placeholder {
+    position: relative;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+    color: #344054;
+  }
+
+  .sc-media-placeholder::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border-radius: 16px;
+    border: 1.5px dashed rgba(17, 24, 39, 0.18);
+  }
+
+  .sc-media-placeholder span,
+  .sc-media-placeholder small {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sc-media-placeholder span {
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+
+  .sc-meta {
+    display: grid;
+    gap: 8px;
+  }
+
+  .sc-kicker {
+    color: #667085;
+    font-size: 0.96rem;
+  }
+
+  .sc-card-title {
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+    line-height: 1.16;
+  }
+
+  .sc-teacher {
+    color: #475467;
+    font-size: 1rem;
+  }
+
+  .sc-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #2f2f34;
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .sc-link:hover,
+  .sc-pager button:hover {
+    transform: translateY(-1px);
+  }
+
+  .sc-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .sc-pager button {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #667085;
+    font: inherit;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+
+  .sc-pager button.is-active {
+    background: #2f2f34;
+    color: #ffffff;
+  }
+
+  @media (max-width: 1100px) {
+    .sc-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .sc-page {
+      width: min(100% - 20px, 1380px);
+      padding: 22px 0 28px;
+    }
+
+    .sc-shell {
+      padding: 20px;
+      border-radius: 24px;
+    }
+
+    .sc-search {
+      grid-template-columns: 1fr;
+    }
+
+    .sc-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="sc-page">
+  <section class="sc-shell">
+    <div class="sc-head">
+      <h1>Tổng hợp khóa học</h1>
+      <p>Tra cứu nhanh học phần, chuyên đề và nội dung bổ trợ mà học viên có thể mở ngay trong tài khoản học tập.</p>
+    </div>
+
+    <div class="sc-search">
+      <input id="courseSearchInput" type="search" placeholder="Nhập tên để muốn tìm..." aria-label="Tìm khóa học">
+      <button type="button" id="courseSearchButton">Tìm kiếm</button>
+    </div>
+    <div id="courseSearchStatus" class="sc-status"></div>
+
+    <div id="courseGrid" class="sc-grid">
+      <% learningCards.forEach((item, index) => { %>
+        <article
+          class="sc-card <%= item.tone %>"
+          data-card
+          data-index="<%= index %>"
+          data-title="<%= `${item.title} ${item.subtitle} ${item.teacher}`.toLowerCase() %>">
+          <%- renderMedia(item.image, item.title, item.placeholder, 'sc-media') %>
+          <div class="sc-meta">
+            <span class="sc-kicker"><%= item.subtitle %></span>
+            <h2 class="sc-card-title"><%= item.title %></h2>
+            <span class="sc-teacher"><%= item.teacher %></span>
+          </div>
+          <a href="<%= item.href %>" class="sc-link">Xem chi tiết</a>
+        </article>
+      <% }) %>
+    </div>
+
+    <div id="coursePager" class="sc-pager" aria-label="Phân trang khóa học"></div>
+  </section>
+</div>
+
+<script>
+  (() => {
+    const input = document.getElementById('courseSearchInput');
+    const button = document.getElementById('courseSearchButton');
+    const status = document.getElementById('courseSearchStatus');
+    const pager = document.getElementById('coursePager');
+    const cards = Array.from(document.querySelectorAll('[data-card]'));
+    const perPage = 3;
+    let page = 1;
+    let filtered = cards;
+
+    const applyVisibility = () => {
+      const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+      page = Math.min(page, totalPages);
+
+      cards.forEach((card) => {
+        card.hidden = !filtered.includes(card);
+      });
+
+      filtered.forEach((card, index) => {
+        const visible = index >= (page - 1) * perPage && index < page * perPage;
+        card.style.display = visible ? '' : 'none';
+      });
+
+      if (!filtered.length) {
+        status.textContent = 'Không tìm thấy học phần phù hợp.';
+      } else {
+        status.textContent = `Hiển thị ${Math.min(perPage, filtered.length - (page - 1) * perPage)} / ${filtered.length} học phần phù hợp.`;
+      }
+
+      pager.innerHTML = '';
+
+      const prev = document.createElement('button');
+      prev.type = 'button';
+      prev.textContent = '<';
+      prev.disabled = page === 1;
+      prev.addEventListener('click', () => {
+        page -= 1;
+        applyVisibility();
+      });
+      pager.appendChild(prev);
+
+      for (let index = 1; index <= totalPages; index += 1) {
+        const pageButton = document.createElement('button');
+        pageButton.type = 'button';
+        pageButton.textContent = String(index);
+        if (index === page) {
+          pageButton.classList.add('is-active');
+        }
+        pageButton.addEventListener('click', () => {
+          page = index;
+          applyVisibility();
+        });
+        pager.appendChild(pageButton);
+      }
+
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.textContent = '>';
+      next.disabled = page === totalPages;
+      next.addEventListener('click', () => {
+        page += 1;
+        applyVisibility();
+      });
+      pager.appendChild(next);
+    };
+
+    const runSearch = () => {
+      const keyword = (input.value || '').trim().toLowerCase();
+      filtered = !keyword
+        ? cards
+        : cards.filter((card) => String(card.dataset.title || '').includes(keyword));
+      page = 1;
+      applyVisibility();
+    };
+
+    button.addEventListener('click', runSearch);
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        runSearch();
+      }
+    });
+
+    applyVisibility();
+  })();
+</script>

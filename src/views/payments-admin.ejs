@@ -1,0 +1,310 @@
+<%
+const list = Array.isArray(payments) ? payments : [];
+const pendingTotal = Number(pendingCount || 0);
+
+const moneyFmt = (value) => `${Number(value || 0).toLocaleString("vi-VN")} đ`;
+const methodLabel = (value) => {
+  const map = {
+    bank: "Ngân hàng",
+    bank_transfer: "Chuyển khoản",
+    transfer: "Chuyển khoản",
+    cash: "Tiền mặt",
+    momo: "MoMo",
+    zalo_pay: "ZaloPay",
+    card: "Thẻ",
+  };
+  return map[value] || value || "Khác";
+};
+const statusLabel = (value) => {
+  const map = {
+    pending: "Chờ duyệt",
+    confirmed: "Đã xác nhận",
+    rejected: "Từ chối",
+  };
+  return map[value] || value || "Chưa cập nhật";
+};
+const statusClass = (value) => {
+  if (value === "pending") return "pay-badge is-pending";
+  if (value === "confirmed") return "pay-badge is-confirmed";
+  if (value === "rejected") return "pay-badge is-rejected";
+  return "pay-badge";
+};
+const timeFmt = (value) => {
+  if (!value) return "Chưa cập nhật";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+};
+%>
+
+<style>
+  .pay-admin {
+    display: grid;
+    gap: 24px;
+  }
+
+  .pay-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .pay-title {
+    margin: 0;
+    color: #17314c;
+    font-size: clamp(2rem, 3vw, 2.5rem);
+    letter-spacing: -0.04em;
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  .pay-copy {
+    margin: 10px 0 0;
+    color: #6b8096;
+    line-height: 1.65;
+  }
+
+  .pay-stat {
+    min-width: 220px;
+    padding: 18px 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(180deg, rgba(26, 40, 58, 0.97) 0%, rgba(35, 51, 73, 0.97) 100%);
+    box-shadow: 0 22px 44px rgba(15, 23, 42, 0.16);
+  }
+
+  .pay-stat span {
+    display: block;
+    color: #a9bbcf;
+    font-size: 0.9rem;
+  }
+
+  .pay-stat strong {
+    display: block;
+    margin-top: 8px;
+    color: #fde68a;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .pay-card {
+    border-radius: 26px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(180deg, rgba(24, 36, 53, 0.98) 0%, rgba(29, 43, 62, 0.98) 100%);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+    color: #e7eef8;
+  }
+
+  .pay-table-wrap {
+    overflow: auto;
+    padding: 18px 22px 12px;
+  }
+
+  .pay-table {
+    width: 100%;
+    min-width: 1120px;
+    border-collapse: collapse;
+    color: #e7eef8;
+  }
+
+  .pay-table th,
+  .pay-table td {
+    padding: 15px 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .pay-table th {
+    color: #cbd8e6;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .pay-table td {
+    color: #edf4fb;
+    font-size: 0.98rem;
+  }
+
+  .pay-table tbody tr {
+    transition: background 0.2s ease;
+  }
+
+  .pay-table tbody tr:hover {
+    background: rgba(95, 132, 194, 0.1);
+  }
+
+  .pay-subtle {
+    color: #a9bbcf;
+  }
+
+  .pay-money {
+    color: #93f3bc;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .pay-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 110px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.18);
+    color: #e5eef8;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .pay-badge.is-pending {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fde68a;
+  }
+
+  .pay-badge.is-confirmed {
+    background: rgba(16, 185, 129, 0.18);
+    color: #a7f3d0;
+  }
+
+  .pay-badge.is-rejected {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fecaca;
+  }
+
+  .pay-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .pay-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    padding: 11px 14px;
+    border: 0;
+    border-radius: 12px;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .pay-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+
+  .pay-btn.confirm {
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  }
+
+  .pay-btn.reject {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  }
+
+  .pay-empty {
+    padding: 26px 18px 30px;
+    color: #a9bbcf;
+    text-align: center;
+  }
+
+  .pay-note {
+    color: #6f8499;
+    font-size: 0.94rem;
+    line-height: 1.7;
+  }
+
+  .pay-note b {
+    color: #17314c;
+  }
+
+  @media (max-width: 900px) {
+    .pay-table-wrap {
+      padding-inline: 16px;
+    }
+  }
+</style>
+
+<div class="max-w-7xl mx-auto pay-admin">
+  <div class="pay-header">
+    <div>
+      <h1 class="pay-title">Xác nhận thanh toán</h1>
+      <p class="pay-copy">Danh sách chuyển khoản đang chờ admin xác nhận hoặc từ chối, hiển thị rõ theo học viên, lớp học và thời gian giao dịch.</p>
+    </div>
+
+    <div class="pay-stat">
+      <span>Đang chờ xác nhận</span>
+      <strong><%= pendingTotal.toLocaleString("vi-VN") %></strong>
+    </div>
+  </div>
+
+  <section class="pay-card">
+    <div class="pay-table-wrap">
+      <table class="pay-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Học viên</th>
+            <th>SĐT</th>
+            <th>Khóa học</th>
+            <th>Lớp</th>
+            <th>Số tiền</th>
+            <th>PTTT</th>
+            <th>Trạng thái</th>
+            <th>Thời gian</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!list.length) { %>
+            <tr>
+              <td colspan="10" class="pay-empty">Chưa có giao dịch nào cần xử lý.</td>
+            </tr>
+          <% } %>
+
+          <% list.forEach((p) => { %>
+            <tr>
+              <td class="pay-subtle"><%= p.id %></td>
+              <td><%= p.student_name || "Chưa cập nhật" %></td>
+              <td class="pay-subtle"><%= p.student_phone || "Chưa có" %></td>
+              <td><%= p.course_name || "Chưa có khóa học" %></td>
+              <td class="pay-subtle"><%= p.class_code || "Chưa có lớp" %></td>
+              <td class="pay-money"><%= moneyFmt(p.amount) %></td>
+              <td class="pay-subtle"><%= methodLabel(p.method) %></td>
+              <td><span class="<%= statusClass(p.status) %>"><%= statusLabel(p.status) %></span></td>
+              <td class="pay-subtle"><%= timeFmt(p.paid_at) %></td>
+              <td>
+                <% if (p.status === "pending") { %>
+                  <div class="pay-actions">
+                    <form method="POST" action="/payments/<%= p.id %>/confirm">
+                      <button class="pay-btn confirm" type="submit">Xác nhận</button>
+                    </form>
+                    <form method="POST" action="/payments/<%= p.id %>/reject">
+                      <button class="pay-btn reject" type="submit">Từ chối</button>
+                    </form>
+                  </div>
+                <% } else { %>
+                  <span class="pay-subtle">Đã xử lý</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="pay-note">
+    Gợi ý: học viên bấm “Tôi đã chuyển khoản”, hệ thống tạo giao dịch ở trạng thái <b>chờ duyệt</b>, sau đó admin vào đây để xác nhận.
+  </p>
+</div>

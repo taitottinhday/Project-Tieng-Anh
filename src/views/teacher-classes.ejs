@@ -1,0 +1,159 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const normalizeClass = (item) => ({
+    phase: {
+      label: item?.phase?.label || 'Đang vận hành',
+      tone: item?.phase?.tone || 'blue',
+      progress: typeof item?.phase?.progress === 'number' ? item.phase.progress : 18,
+      supportingText: item?.phase?.supportingText || 'Theo dõi tiến độ lớp học theo từng buổi dạy.'
+    },
+    attention_flags: Array.isArray(item?.attention_flags) ? item.attention_flags : [],
+    total_students: Number(item?.total_students || 0),
+    total_comments: Number(item?.total_comments || 0),
+    ...item
+  });
+  const safeClasses = (Array.isArray(typeof classes !== 'undefined' ? classes : null) ? classes : []).map(normalizeClass);
+  const safeClassSummary = (typeof classSummary !== 'undefined' && classSummary)
+    ? classSummary
+    : {
+        totalClasses: safeClasses.length,
+        totalStudents: safeClasses.reduce((sum, item) => sum + Number(item.total_students || 0), 0),
+        activeClasses: safeClasses.length,
+        upcomingClasses: 0,
+        totalComments: safeClasses.reduce((sum, item) => sum + Number(item.total_comments || 0), 0)
+      };
+  const formatCurrency = (value) => Number(value || 0).toLocaleString('vi-VN');
+%>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Class Management</p>
+        <h1 class="teacher-hero-title">Danh mục lớp học bạn đang phụ trách</h1>
+        <p class="teacher-hero-text">
+          Mỗi lớp đều được hiển thị với trạng thái vận hành, sĩ số, mức độ phản hồi và các hành động quan trọng
+          để bạn xử lý nhanh trong cùng một giao diện.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= Number(safeClassSummary.totalClasses || 0) %> lớp</span>
+          <span class="teacher-pill soft"><%= Number(safeClassSummary.totalStudents || 0) %> học viên</span>
+          <span class="teacher-pill soft"><%= Number(safeClassSummary.totalComments || 0) %> nhận xét đã ghi</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Toàn cảnh vận hành</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">Tỷ trọng lớp đang dạy, sắp khai giảng và nhịp phản hồi học viên.</p>
+        <div class="teacher-kpi-strip" style="margin-top: 18px;">
+          <div class="teacher-mini-kpi" style="background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.1);">
+            <strong style="color: white;"><%= Number(safeClassSummary.activeClasses || 0) %></strong>
+            <span style="color: rgba(255,255,255,0.78);">Đang vận hành</span>
+          </div>
+          <div class="teacher-mini-kpi" style="background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.1);">
+            <strong style="color: white;"><%= Number(safeClassSummary.upcomingClasses || 0) %></strong>
+            <span style="color: rgba(255,255,255,0.78);">Sắp khai giảng</span>
+          </div>
+          <div class="teacher-mini-kpi" style="background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.1);">
+            <strong style="color: white;"><%= Number(safeClassSummary.totalComments || 0) %></strong>
+            <span style="color: rgba(255,255,255,0.78);">Nhận xét</span>
+          </div>
+        </div>
+        <div class="teacher-hero-actions" style="margin-top: 18px;">
+          <a href="<%= baseUrl %>/teacher/attendance" class="teacher-link-button secondary">Mở điểm danh</a>
+          <a href="<%= baseUrl %>/teacher/comments" class="teacher-link-button ghost" style="background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.16);">Mở nhận xét</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Tổng lớp</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassSummary.totalClasses || 0) %></strong>
+      <p class="teacher-stat-note">Tất cả lớp đang được bạn dẫn dắt hoặc theo dõi trong hệ thống.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Đang vận hành</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassSummary.activeClasses || 0) %></strong>
+      <p class="teacher-stat-note">Những lớp đã vào guồng và cần cập nhật tiến độ thường xuyên.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Sắp khai giảng</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassSummary.upcomingClasses || 0) %></strong>
+      <p class="teacher-stat-note">Các lớp nên được rà soát lịch học, phòng học và danh sách học viên trước giờ mở lớp.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Tổng học viên</span>
+      <strong class="teacher-stat-value"><%= Number(safeClassSummary.totalStudents || 0) %></strong>
+      <p class="teacher-stat-note">Sĩ số hiện đang phân bổ trong toàn bộ lớp bạn phụ trách.</p>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Danh sách lớp học</h2>
+        <p class="teacher-panel-desc">Từng lớp được gói theo dạng card để bạn nắm rõ trạng thái, dữ liệu còn thiếu và các thao tác nhanh.</p>
+      </div>
+    </div>
+
+    <% if (safeClasses.length) { %>
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <% safeClasses.forEach((item) => { %>
+          <article class="teacher-class-card">
+            <div class="teacher-class-top">
+              <div>
+                <h3 class="teacher-card-title"><%= item.course_name %></h3>
+                <p class="teacher-card-text">Mã lớp <strong><%= item.code %></strong> · <%= item.category || 'Đa kỹ năng' %></p>
+              </div>
+              <span class="teacher-pill <%= item.phase.tone %>"><%= item.phase.label %></span>
+            </div>
+
+            <div class="teacher-kpi-strip">
+              <div class="teacher-mini-kpi">
+                <strong><%= item.total_students %></strong>
+                <span>Học viên</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.total_comments %></strong>
+                <span>Nhận xét</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.room || 'Chưa gán' %></strong>
+                <span>Phòng học</span>
+              </div>
+            </div>
+
+            <div class="teacher-class-meta">
+              <p class="teacher-muted">Lịch học: <%= item.schedule_text || 'Chưa cập nhật' %></p>
+              <p class="teacher-muted">Thời gian: <%= item.start_label || 'Chưa có ngày bắt đầu' %> đến <%= item.end_label || 'Chưa có ngày kết thúc' %></p>
+              <p class="teacher-muted">Học phí: <%= formatCurrency(item.fee) %> đ</p>
+            </div>
+
+            <div class="teacher-progress">
+              <div class="teacher-progress-bar" style="width: <%= item.phase.progress || 18 %>%;"></div>
+            </div>
+            <p class="teacher-note" style="margin-top: 12px;"><%= item.phase.supportingText %></p>
+
+            <% if (item.attention_flags.length) { %>
+              <div class="teacher-chip-group" style="margin-top: 14px;">
+                <% item.attention_flags.forEach((flag) => { %>
+                  <span class="teacher-pill pink"><%= flag %></span>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <div class="teacher-card-actions" style="margin-top: 18px;">
+              <a href="<%= baseUrl %>/teacher/classes/<%= item.id %>" class="teacher-link-button">Xem chi tiết</a>
+              <a href="<%= baseUrl %>/teacher/attendance/<%= item.id %>" class="teacher-link-button secondary">Điểm danh</a>
+              <a href="<%= baseUrl %>/teacher/comments?class_id=<%= item.id %>" class="teacher-link-button ghost">Nhận xét</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 18px;">Bạn chưa được phân công lớp nào. Khi lớp được gán, toàn bộ thông tin sẽ xuất hiện tại đây theo dạng dashboard hiện đại.</div>
+    <% } %>
+  </section>
+</div>

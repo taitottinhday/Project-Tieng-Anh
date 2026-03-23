@@ -1,0 +1,71 @@
+<div class="max-w-3xl mx-auto space-y-6">
+    <h1 class="text-3xl font-bold">Đăng ký khóa học</h1>
+
+    <form method="POST" action="/enroll" class="bg-gray-800 p-6 rounded-xl space-y-4">
+        <div>
+            <label class="block text-sm text-gray-300 mb-2">Chọn học viên</label>
+            <select name="student_id" class="w-full p-3 rounded bg-gray-900 border border-gray-700" required>
+                <option value="">-- Chọn học viên --</option>
+                <% students.forEach(s=> { %>
+                    <option value="<%= s.id %>">
+                        <%= s.full_name %> (<%= s.phone || 'no phone' %>)
+                    </option>
+                    <% }) %>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm text-gray-300 mb-2">Chọn khóa học</label>
+            <select id="course" class="w-full p-3 rounded bg-gray-900 border border-gray-700" required>
+                <option value="">-- Chọn khóa học --</option>
+                <% courses.forEach(c=> { %>
+                    <option value="<%= c.id %>">
+                        <%= c.name %>
+                    </option>
+                    <% }) %>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm text-gray-300 mb-2">Chọn lớp (theo khóa học)</label>
+            <select name="class_id" id="class" class="w-full p-3 rounded bg-gray-900 border border-gray-700" required>
+                <option value="">-- Chọn lớp --</option>
+            </select>
+            <p id="classHint" class="text-xs text-gray-400 mt-2"></p>
+        </div>
+
+        <button class="px-5 py-3 rounded bg-blue-600 hover:bg-blue-500 font-semibold">
+            Đăng ký
+        </button>
+    </form>
+</div>
+
+<script>
+    const courseEl = document.getElementById("course");
+    const classEl = document.getElementById("class");
+    const hintEl = document.getElementById("classHint");
+
+    async function loadClasses(courseId) {
+        classEl.innerHTML = '<option value="">-- Chọn lớp --</option>';
+        hintEl.textContent = "";
+
+        if (!courseId) return;
+
+        const res = await fetch(`/enroll/classes?courseId=${courseId}`);
+        const classes = await res.json();
+
+        if (!classes.length) {
+            hintEl.textContent = "Khóa học này chưa có lớp nào. Hãy tạo lớp trước.";
+            return;
+        }
+
+        classes.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id;
+            opt.textContent = `${c.code} | ${c.teacher_name || "Chưa có GV"} | ${c.schedule_text || "Chưa có lịch"} | ${c.room || ""}`;
+            classEl.appendChild(opt);
+        });
+    }
+
+    courseEl.addEventListener("change", (e) => loadClasses(e.target.value));
+</script>

@@ -1,0 +1,568 @@
+<%
+const data = page || {};
+const cards = Array.isArray(data.cards) ? data.cards : [];
+const categories = Array.isArray(data.categories) ? data.categories : [];
+%>
+
+<style>
+  .dtlib-page {
+    --dt-bg: #f5f2ea;
+    --dt-surface: rgba(255, 255, 255, 0.92);
+    --dt-line: rgba(15, 23, 42, 0.08);
+    --dt-text: #1f2937;
+    --dt-muted: #607081;
+    --dt-dark: #152538;
+    --dt-accent: #0f766e;
+    --dt-accent-soft: rgba(15, 118, 110, 0.12);
+    --dt-secondary: #e2ecff;
+    --dt-shadow: 0 28px 58px rgba(15, 23, 42, 0.08);
+    display: grid;
+    gap: 24px;
+    width: min(1380px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 48px;
+  }
+
+  .dtlib-panel {
+    border-radius: 34px;
+    border: 1px solid var(--dt-line);
+    background: var(--dt-surface);
+    box-shadow: var(--dt-shadow);
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+  }
+
+  .dtlib-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+    gap: 28px;
+    padding: 42px 40px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.76), transparent 30%),
+      linear-gradient(135deg, rgba(225, 247, 245, 0.98) 0%, rgba(248, 250, 252, 0.98) 52%, rgba(231, 238, 255, 0.98) 100%);
+  }
+
+  .dtlib-kicker,
+  .dtlib-chip,
+  .dtlib-category,
+  .dtlib-ribbon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    border-radius: 999px;
+    font-weight: 800;
+  }
+
+  .dtlib-kicker {
+    gap: 10px;
+    padding: 11px 18px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--dt-accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+  }
+
+  .dtlib-kicker::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 8px var(--dt-accent-soft);
+  }
+
+  .dtlib-copy {
+    display: grid;
+    gap: 16px;
+  }
+
+  .dtlib-copy h1,
+  .dtlib-stat strong,
+  .dtlib-card h3,
+  .dtlib-empty strong {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: var(--dt-dark);
+  }
+
+  .dtlib-copy h1 {
+    font-size: clamp(2.5rem, 4.8vw, 4.4rem);
+    line-height: 1.02;
+    max-width: 12ch;
+  }
+
+  .dtlib-copy p,
+  .dtlib-stat span,
+  .dtlib-card p,
+  .dtlib-meta,
+  .dtlib-empty span {
+    color: var(--dt-muted);
+    line-height: 1.75;
+  }
+
+  .dtlib-side {
+    display: grid;
+    gap: 14px;
+    align-content: end;
+  }
+
+  .dtlib-stat {
+    display: grid;
+    gap: 12px;
+    padding: 24px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+  }
+
+  .dtlib-stat strong {
+    font-size: 3rem;
+    line-height: 0.95;
+  }
+
+  .dtlib-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .dtlib-chip {
+    padding: 12px 16px;
+    background: rgba(21, 37, 56, 0.05);
+    color: var(--dt-dark);
+    font-size: 0.92rem;
+  }
+
+  .dtlib-toolbar {
+    display: grid;
+    gap: 18px;
+    padding: 26px 30px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 247, 242, 0.96) 100%);
+  }
+
+  .dtlib-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dtlib-filter {
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: rgba(21, 37, 56, 0.05);
+    color: var(--dt-text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .dtlib-filter:hover {
+    transform: translateY(-1px);
+  }
+
+  .dtlib-filter.is-active {
+    background: #3b82f6;
+    color: #fff;
+    box-shadow: 0 18px 30px rgba(59, 130, 246, 0.18);
+  }
+
+  .dtlib-search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .dtlib-search-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid var(--dt-line);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .dtlib-search-shell input {
+    min-height: 58px;
+    padding: 0 20px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--dt-text);
+    font: inherit;
+  }
+
+  .dtlib-search-shell button {
+    min-width: 144px;
+    border: 0;
+    background: var(--dt-dark);
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dtlib-results {
+    color: var(--dt-muted);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .dtlib-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dtlib-card {
+    position: relative;
+    display: grid;
+    gap: 18px;
+    min-height: 274px;
+    padding: 24px;
+    border-radius: 30px;
+    border: 1px solid var(--dt-line);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.05);
+  }
+
+  .dtlib-card.is-featured {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 22px 42px rgba(59, 130, 246, 0.12);
+  }
+
+  .dtlib-ribbon {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    padding: 8px 12px;
+    background: #b78b74;
+    color: #fff;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 4px;
+    font-size: 0.84rem;
+  }
+
+  .dtlib-card h3 {
+    font-size: clamp(1.48rem, 2vw, 2rem);
+    line-height: 1.08;
+    text-transform: uppercase;
+  }
+
+  .dtlib-card-sub {
+    font-size: 0.92rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .dtlib-category {
+    padding: 8px 12px;
+    background: rgba(15, 118, 110, 0.08);
+    color: var(--dt-accent);
+    font-size: 0.84rem;
+  }
+
+  .dtlib-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+    font-weight: 600;
+  }
+
+  .dtlib-action {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    width: fit-content;
+    border-radius: 999px;
+    background: #2f2f32;
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 16px 30px rgba(17, 24, 39, 0.16);
+  }
+
+  .dtlib-empty {
+    display: none;
+    place-items: center;
+    gap: 12px;
+    padding: 34px;
+    text-align: center;
+  }
+
+  .dtlib-empty strong {
+    font-size: 1.7rem;
+  }
+
+  .dtlib-pager,
+  .dtlib-page-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .dtlib-page-btn {
+    min-width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid var(--dt-line);
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--dt-text);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dtlib-page-btn.is-current {
+    background: #2f2f32;
+    border-color: #2f2f32;
+    color: #fff;
+  }
+
+  .dtlib-page-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 1160px) {
+    .dtlib-hero,
+    .dtlib-search-row,
+    .dtlib-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .dtlib-page {
+      width: min(100% - 20px, 1380px);
+      padding-top: 18px;
+    }
+
+    .dtlib-hero,
+    .dtlib-toolbar {
+      padding: 22px 18px;
+    }
+
+    .dtlib-stat-grid,
+    .dtlib-meta,
+    .dtlib-search-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .dtlib-search-shell button {
+      min-height: 52px;
+    }
+  }
+</style>
+
+<div class="dtlib-page" data-dictation-library data-page-size="6">
+  <section class="dtlib-panel dtlib-hero">
+    <div class="dtlib-copy">
+      <span class="dtlib-kicker">Listen &amp; Type Studio</span>
+      <h1><%= data.heroTitle || 'Nghe - Ch&#233;p ch&#237;nh t&#7843;' %></h1>
+      <p><%= data.heroDescription || '' %></p>
+    </div>
+    <aside class="dtlib-side">
+      <div class="dtlib-stat">
+        <span>T&#7893;ng topic hi&#7879;n c&#243;</span>
+        <strong data-total-count><%= cards.length %></strong>
+        <div class="dtlib-stat-grid">
+          <span class="dtlib-chip">Audio local</span>
+          <span class="dtlib-chip">Typing feedback</span>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="dtlib-panel dtlib-toolbar">
+    <% if (categories.length) { %>
+      <div class="dtlib-filters" data-filter-group="category">
+        <% categories.forEach((category, index) => { %>
+          <button
+            type="button"
+            class="dtlib-filter <%= index === 0 ? 'is-active' : '' %>"
+            data-filter-value="<%= category.key %>">
+            <%= category.label %>
+          </button>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="dtlib-search-row">
+      <div class="dtlib-search-shell">
+        <input type="search" placeholder="Nh&#7853;p t&#234;n &#273;&#7873; mu&#7889;n t&#236;m..." data-library-search>
+        <button type="button" data-search-trigger>T&#236;m ki&#7871;m</button>
+      </div>
+      <span class="dtlib-results">Hi&#7875;n th&#7883; <strong data-visible-count><%= cards.length %></strong> topic</span>
+    </div>
+  </section>
+
+  <section class="dtlib-grid" data-card-grid>
+    <% cards.forEach((card, index) => { %>
+      <article
+        class="dtlib-card <%= index === 5 ? 'is-featured' : '' %>"
+        data-library-card
+        data-category="<%= card.categoryKey %>"
+        data-search="<%= card.searchText %>">
+        <span class="dtlib-ribbon">Free</span>
+        <div>
+          <h3><%= card.title %></h3>
+          <p class="dtlib-card-sub">NGHE &amp; CH&#201;P CH&#205;NH T&#7842;</p>
+        </div>
+        <p><%= card.description %></p>
+        <span class="dtlib-category"><%= card.categoryLabel %></span>
+        <div class="dtlib-meta">
+          <span>T&#7893;ng s&#7889; c&#226;u: <strong><%= card.totalEntries %></strong></span>
+          <span>S&#7889; lesson: <strong><%= card.lessonCount %></strong></span>
+        </div>
+        <a href="<%= card.href %>" class="dtlib-action">Xem b&#224;i t&#7853;p</a>
+      </article>
+    <% }) %>
+  </section>
+
+  <section class="dtlib-panel dtlib-empty" data-empty-state>
+    <strong>Ch&#432;a t&#236;m th&#7845;y topic ph&#249; h&#7907;p</strong>
+    <span>Th&#7917; &#273;&#7893;i t&#7915; kh&#243;a ho&#7863;c chuy&#7875;n sang nh&#243;m h&#7885;c vi&#234;n kh&#225;c.</span>
+  </section>
+
+  <nav class="dtlib-pager" aria-label="Phan trang" data-library-pager>
+    <button type="button" class="dtlib-page-btn" data-page-nav="prev">&lt;</button>
+    <div class="dtlib-page-list" data-page-list></div>
+    <button type="button" class="dtlib-page-btn" data-page-nav="next">&gt;</button>
+  </nav>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector("[data-dictation-library]");
+    if (!root) return;
+
+    const cards = Array.from(root.querySelectorAll("[data-library-card]"));
+    const searchInput = root.querySelector("[data-library-search]");
+    const searchTrigger = root.querySelector("[data-search-trigger]");
+    const visibleCountEl = root.querySelector("[data-visible-count]");
+    const totalCountEl = root.querySelector("[data-total-count]");
+    const emptyState = root.querySelector("[data-empty-state]");
+    const pager = root.querySelector("[data-library-pager]");
+    const pageList = root.querySelector("[data-page-list]");
+    const prevButton = root.querySelector("[data-page-nav='prev']");
+    const nextButton = root.querySelector("[data-page-nav='next']");
+    const categoryButtons = Array.from(root.querySelectorAll("[data-filter-group='category'] [data-filter-value]"));
+    const pageSize = Number(root.dataset.pageSize || 6);
+
+    let activeCategory = categoryButtons[0] ? categoryButtons[0].dataset.filterValue : "all";
+    let currentPage = 1;
+
+    const normalize = (value) => String(value || "").trim().toLowerCase();
+
+    const setActiveButton = (buttons, value) => {
+      buttons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.filterValue === value);
+      });
+    };
+
+    const getFilteredCards = () => {
+      const keyword = normalize(searchInput ? searchInput.value : "");
+
+      return cards.filter((card) => {
+        const matchCategory = activeCategory === "all" || card.dataset.category === activeCategory;
+        const matchSearch = !keyword || normalize(card.dataset.search).includes(keyword);
+        return matchCategory && matchSearch;
+      });
+    };
+
+    const buildPageButtons = (pageCount) => {
+      if (!pageList) return;
+      pageList.innerHTML = "";
+
+      for (let page = 1; page <= pageCount; page += 1) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "dtlib-page-btn" + (page === currentPage ? " is-current" : "");
+        button.textContent = String(page);
+        button.addEventListener("click", () => {
+          currentPage = page;
+          render();
+        });
+        pageList.appendChild(button);
+      }
+    };
+
+    const render = () => {
+      const filteredCards = getFilteredCards();
+      const pageCount = Math.max(Math.ceil(filteredCards.length / pageSize), 1);
+      if (currentPage > pageCount) {
+        currentPage = pageCount;
+      }
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageCards = filteredCards.slice(startIndex, startIndex + pageSize);
+
+      cards.forEach((card) => {
+        card.style.display = pageCards.includes(card) ? "" : "none";
+      });
+
+      if (visibleCountEl) visibleCountEl.textContent = String(filteredCards.length);
+      if (totalCountEl) totalCountEl.textContent = String(cards.length);
+      if (emptyState) emptyState.style.display = filteredCards.length ? "none" : "grid";
+      if (pager) pager.style.display = filteredCards.length > pageSize ? "flex" : "none";
+      if (prevButton) prevButton.disabled = currentPage <= 1;
+      if (nextButton) nextButton.disabled = currentPage >= pageCount;
+
+      buildPageButtons(pageCount);
+    };
+
+    categoryButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        activeCategory = button.dataset.filterValue;
+        currentPage = 1;
+        setActiveButton(categoryButtons, activeCategory);
+        render();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        currentPage = 1;
+        render();
+      });
+    }
+
+    if (searchTrigger) {
+      searchTrigger.addEventListener("click", render);
+    }
+
+    if (prevButton) {
+      prevButton.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage -= 1;
+          render();
+        }
+      });
+    }
+
+    if (nextButton) {
+      nextButton.addEventListener("click", () => {
+        const filteredCards = getFilteredCards();
+        const pageCount = Math.max(Math.ceil(filteredCards.length / pageSize), 1);
+        if (currentPage < pageCount) {
+          currentPage += 1;
+          render();
+        }
+      });
+    }
+
+    render();
+  })();
+</script>
+

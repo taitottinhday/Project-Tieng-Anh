@@ -1,0 +1,190 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const safeTeacher = (typeof teacher !== 'undefined' && teacher) ? teacher : { full_name: 'Giáo viên' };
+  const normalizeClass = (item) => ({
+    phase: {
+      label: item?.phase?.label || 'Đang vận hành',
+      tone: item?.phase?.tone || 'blue',
+      progress: typeof item?.phase?.progress === 'number' ? item.phase.progress : 18,
+      supportingText: item?.phase?.supportingText || 'Theo dõi tiến độ lớp học theo từng buổi dạy.'
+    },
+    total_students: Number(item?.total_students || 0),
+    total_comments: Number(item?.total_comments || 0),
+    ...item
+  });
+  const safeClasses = (Array.isArray(typeof classes !== 'undefined' ? classes : null) ? classes : []).map(normalizeClass);
+  const safeProfileStats = (typeof profileStats !== 'undefined' && profileStats)
+    ? profileStats
+    : {
+        totalClasses: safeClasses.length,
+        uniqueStudents: safeClasses.reduce((sum, item) => sum + Number(item.total_students || 0), 0),
+        recentCommentsCount: safeClasses.reduce((sum, item) => sum + Number(item.total_comments || 0), 0),
+        attendanceRecords: 0
+      };
+  const safeExpertiseClusters = Array.isArray(typeof expertiseClusters !== 'undefined' ? expertiseClusters : null) ? expertiseClusters : [];
+  const createdAtLabel = safeTeacher.created_at ? new Date(safeTeacher.created_at).toLocaleDateString('vi-VN') : 'Chưa rõ';
+  const initials = String(safeTeacher.full_name || 'GV')
+    .split(' ')
+    .filter(Boolean)
+    .slice(-2)
+    .map((item) => item[0])
+    .join('')
+    .toUpperCase();
+%>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Teacher Profile</p>
+        <h1 class="teacher-hero-title">Hồ sơ giảng dạy của <%= safeTeacher.full_name %></h1>
+        <p class="teacher-hero-text">
+          Không gian hồ sơ tập trung vào dấu ấn vận hành, phạm vi lớp phụ trách và bức tranh chuyên môn tổng quát
+          của giáo viên trong hệ thống.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= Number(safeProfileStats.totalClasses || 0) %> lớp phụ trách</span>
+          <span class="teacher-pill soft"><%= Number(safeProfileStats.uniqueStudents || 0) %> học viên đã đồng hành</span>
+          <span class="teacher-pill soft"><%= Number(safeProfileStats.recentCommentsCount || 0) %> nhận xét đã gửi</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <div style="display: inline-flex; width: 78px; height: 78px; align-items: center; justify-content: center; border-radius: 24px; background: rgba(255,255,255,0.18); font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700;">
+          <%= initials %>
+        </div>
+        <h2 class="teacher-panel-title" style="color: white; margin-top: 16px;">Dấu ấn giảng dạy</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">
+          Hồ sơ được làm theo phong cách quản trị hiện đại: sáng, rõ, có chiều sâu vận hành và luôn dễ đọc trên mọi nền.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Lớp phụ trách</span>
+      <strong class="teacher-stat-value"><%= Number(safeProfileStats.totalClasses || 0) %></strong>
+      <p class="teacher-stat-note">Tổng số lớp bạn đang hoặc đã phụ trách trong teacher workspace.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Học viên đồng hành</span>
+      <strong class="teacher-stat-value"><%= Number(safeProfileStats.uniqueStudents || 0) %></strong>
+      <p class="teacher-stat-note">Số học viên duy nhất đã được gắn với các lớp bạn giảng dạy.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Nhận xét đã gửi</span>
+      <strong class="teacher-stat-value"><%= Number(safeProfileStats.recentCommentsCount || 0) %></strong>
+      <p class="teacher-stat-note">Khối lượng phản hồi học viên bạn đã tạo trên hệ thống.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Lượt điểm danh</span>
+      <strong class="teacher-stat-value"><%= Number(safeProfileStats.attendanceRecords || 0) %></strong>
+      <p class="teacher-stat-note">Tổng số lượt chuyên cần đã được ghi trong toàn bộ lớp của bạn.</p>
+    </article>
+  </section>
+
+  <section class="teacher-grid two">
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Thông tin cá nhân</h2>
+          <p class="teacher-panel-desc">Những dữ liệu nhận diện quan trọng của hồ sơ giáo viên.</p>
+        </div>
+      </div>
+
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Họ và tên</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= safeTeacher.full_name %></strong>
+        </div>
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Số điện thoại</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= safeTeacher.phone || 'Chưa cập nhật' %></strong>
+        </div>
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Email</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= safeTeacher.email || 'Chưa cập nhật' %></strong>
+        </div>
+        <div class="teacher-profile-card" style="padding: 18px;">
+          <span class="teacher-stat-label">Ngày tạo hồ sơ</span>
+          <strong class="teacher-card-title" style="margin-top: 10px; display: block;"><%= createdAtLabel %></strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Cụm chuyên môn</h2>
+          <p class="teacher-panel-desc">Các nhóm kỹ năng hoặc khóa học bạn đang xuất hiện nhiều nhất trong hệ thống.</p>
+        </div>
+      </div>
+
+      <% if (safeExpertiseClusters.length) { %>
+        <div class="teacher-stack" style="margin-top: 18px;">
+          <% safeExpertiseClusters.forEach((item) => { %>
+            <article class="teacher-profile-card" style="padding: 18px;">
+              <div class="teacher-class-top">
+                <div>
+                  <h3 class="teacher-card-title"><%= item.category %></h3>
+                  <p class="teacher-card-text">Nhóm khóa học / định hướng giảng dạy</p>
+                </div>
+                <span class="teacher-pill blue"><%= item.total %> lớp</span>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 18px;">Chưa có dữ liệu cụm chuyên môn để hiển thị.</div>
+      <% } %>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Lớp học đang gắn với hồ sơ</h2>
+        <p class="teacher-panel-desc">Những lớp học mới nhất cho thấy phạm vi làm việc thực tế của giáo viên.</p>
+      </div>
+    </div>
+
+    <% if (safeClasses.length) { %>
+      <div class="teacher-grid two" style="margin-top: 20px;">
+        <% safeClasses.forEach((item) => { %>
+          <article class="teacher-class-card">
+            <div class="teacher-class-top">
+              <div>
+                <h3 class="teacher-card-title"><%= item.course_name %></h3>
+                <p class="teacher-card-text"><%= item.code %> · <%= item.category || 'Đa kỹ năng' %></p>
+              </div>
+              <span class="teacher-pill <%= item.phase.tone %>"><%= item.phase.label %></span>
+            </div>
+
+            <div class="teacher-kpi-strip">
+              <div class="teacher-mini-kpi">
+                <strong><%= item.total_students %></strong>
+                <span>Học viên</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.total_comments %></strong>
+                <span>Nhận xét</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.room || 'Chưa gán' %></strong>
+                <span>Phòng học</span>
+              </div>
+            </div>
+
+            <p class="teacher-card-text" style="margin-top: 14px;">Lịch học: <%= item.schedule_text || 'Chưa cập nhật' %></p>
+            <div class="teacher-card-actions" style="margin-top: 18px;">
+              <a href="<%= baseUrl %>/teacher/classes/<%= item.id %>" class="teacher-link-button">Xem chi tiết</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 18px;">Chưa có lớp nào gắn với hồ sơ giáo viên này.</div>
+    <% } %>
+  </section>
+</div>

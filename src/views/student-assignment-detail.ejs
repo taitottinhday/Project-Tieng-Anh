@@ -1,0 +1,118 @@
+<%- include('partials/student-classroom-style') %>
+<%
+  const safeClassInfo = typeof classInfo !== 'undefined' && classInfo ? classInfo : {};
+  const safePost = typeof post !== 'undefined' && post ? post : {};
+  const safeSubmission = typeof submission !== 'undefined' && submission ? submission : null;
+  const formatDate = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleString('vi-VN');
+  };
+%>
+
+<div class="sc-page">
+  <section class="sc-hero">
+    <span class="sc-kicker">Chi tiết bài học</span>
+    <h1><%= safePost.title || 'Bài học classroom' %></h1>
+    <p>
+      Đọc hướng dẫn, mở tài liệu, nộp bài làm và theo dõi phản hồi giáo viên ngay trong một khung classroom giống mẫu bảng tin.
+    </p>
+    <div class="sc-post-meta" style="margin-top: 18px;">
+      <span class="sc-pill soft">Lớp: <%= safeClassInfo.code || 'Chưa cập nhật' %></span>
+      <span class="sc-pill blue">Giáo viên: <%= safePost.teacher_name || safeClassInfo.teacher_name || 'Đang cập nhật' %></span>
+      <% if (safePost.post_type === 'assignment' && safePost.due_date) { %>
+        <span class="sc-pill pink">Hạn nộp: <%= formatDate(safePost.due_date) %></span>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="sc-feed-layout">
+    <article class="sc-panel">
+      <h2>Nội dung bài học</h2>
+      <p><%= safePost.description || 'Giáo viên chưa thêm mô tả cho bài học này.' %></p>
+
+      <% if (safePost.materials && safePost.materials.length) { %>
+        <div class="sc-attachment-list" style="margin-top: 20px;">
+          <% safePost.materials.forEach((file) => { %>
+            <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="sc-attachment">
+              <span><%= file.original_name %></span>
+              <span>Mở tài liệu</span>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="sc-empty" style="margin-top: 20px;">Bài học này chưa có tài liệu đính kèm.</div>
+      <% } %>
+
+      <% if (safePost.post_type === 'assignment' && safeSubmission && safeSubmission.files && safeSubmission.files.length) { %>
+        <section class="sc-panel" style="margin-top: 22px; padding: 22px;">
+          <h2>Tệp bài nộp của bạn</h2>
+          <div class="sc-attachment-list" style="margin-top: 16px;">
+            <% safeSubmission.files.forEach((file) => { %>
+              <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="sc-attachment">
+                <span><%= file.original_name %></span>
+                <span>Xem bài nộp</span>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+    </article>
+
+    <aside class="sc-grid">
+      <% if (safePost.post_type === 'assignment') { %>
+        <article class="sc-panel">
+          <h2>Bài tập của bạn</h2>
+          <p>Đăng tải file bài làm, ghi chú nếu cần và đánh dấu hoàn thành để giáo viên nhận bài chấm.</p>
+          <div class="sc-post-meta" style="margin-top: 14px;">
+            <span class="sc-pill <%= safeSubmission && safeSubmission.status === 'reviewed' ? 'green' : (safeSubmission && ['submitted', 'completed'].includes(safeSubmission.status) ? 'blue' : 'soft') %>">
+              Trạng thái: <%= safeSubmission ? safeSubmission.status : 'assigned' %>
+            </span>
+          </div>
+
+          <form action="<%= baseUrl %>/student/classroom/<%= safeClassInfo.id %>/posts/<%= safePost.id %>/submit" method="POST" enctype="multipart/form-data" class="sc-form-grid" style="margin-top: 18px;">
+            <label class="sc-label">Tải tệp bài làm</label>
+            <input class="sc-input" type="file" name="submission_files" multiple>
+
+            <label class="sc-label">Ghi chú bài nộp</label>
+            <textarea class="sc-textarea" name="student_note" placeholder="Nhập ghi chú, cách làm hoặc điều cần giáo viên xem thêm..."><%= safeSubmission ? (safeSubmission.student_note || '') : '' %></textarea>
+
+            <input type="hidden" name="mark_complete" value="0">
+            <div class="sc-actions">
+              <button type="submit" class="sc-btn-secondary">Tải lên / Cập nhật bài nộp</button>
+            </div>
+          </form>
+
+          <form action="<%= baseUrl %>/student/classroom/<%= safeClassInfo.id %>/posts/<%= safePost.id %>/complete" method="POST" style="margin-top: 14px;">
+            <div class="sc-actions">
+              <button type="submit" class="sc-btn">Đánh dấu là đã hoàn thành</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="sc-panel">
+          <h2>Phản hồi từ giáo viên</h2>
+          <% if (safeSubmission && (safeSubmission.teacher_feedback || safeSubmission.teacher_score)) { %>
+            <div class="sc-post-meta" style="margin-top: 14px;">
+              <% if (safeSubmission.teacher_score !== null && typeof safeSubmission.teacher_score !== 'undefined') { %>
+                <span class="sc-pill green">Điểm: <%= safeSubmission.teacher_score %></span>
+              <% } %>
+              <span class="sc-pill blue">Đánh giá lúc: <%= formatDate(safeSubmission.reviewed_at) %></span>
+            </div>
+            <p style="margin-top: 16px;"><%= safeSubmission.teacher_feedback || 'Giáo viên đã đánh giá bài tập.' %></p>
+          <% } else { %>
+            <div class="sc-empty" style="margin-top: 16px;">Giáo viên chưa gửi đánh giá cho bài tập này.</div>
+          <% } %>
+        </article>
+      <% } else { %>
+        <article class="sc-panel">
+          <h2>Thông báo bài giảng</h2>
+          <p>Đây là bài giảng / thông báo. Bạn chỉ cần mở tài liệu và theo dõi nội dung học. Nếu có bài tập đi kèm, giáo viên sẽ đăng thành một mục riêng trong bảng tin lớp học.</p>
+          <div class="sc-actions">
+            <a href="<%= baseUrl %>/student/classroom/<%= safeClassInfo.id %>" class="sc-btn-secondary">Quay lại bảng tin</a>
+          </div>
+        </article>
+      <% } %>
+    </aside>
+  </section>
+</div>

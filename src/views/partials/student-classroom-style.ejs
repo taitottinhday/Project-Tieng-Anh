@@ -1,0 +1,326 @@
+<style>
+  .sc-page {
+    width: min(1480px, calc(100% - 26px));
+    margin: 0 auto;
+    padding: 28px 0 46px;
+    display: grid;
+    gap: 22px;
+    color: #1b324a;
+  }
+
+  .sc-page * {
+    box-sizing: border-box;
+  }
+
+  .sc-shell,
+  .sc-panel,
+  .sc-card,
+  .sc-hero {
+    border: 1px solid rgba(120, 152, 205, 0.16);
+    box-shadow: 0 24px 54px rgba(53, 92, 153, 0.12);
+    background: rgba(255, 255, 255, 0.94);
+  }
+
+  .sc-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 34px;
+    border-radius: 34px;
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,0.24), transparent 28%),
+      linear-gradient(135deg, #4f93ff 0%, #2f78ed 50%, #88c3ff 100%);
+    color: #fff;
+  }
+
+  .sc-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -60px -90px auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 72%);
+    pointer-events: none;
+  }
+
+  .sc-hero h1,
+  .sc-panel h2,
+  .sc-card h3 {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+  }
+
+  .sc-hero h1 {
+    margin-top: 14px;
+    font-size: clamp(2.3rem, 5vw, 4rem);
+    line-height: 1;
+  }
+
+  .sc-hero p {
+    margin: 14px 0 0;
+    max-width: 58ch;
+    line-height: 1.82;
+    color: rgba(255,255,255,0.88);
+  }
+
+  .sc-kicker,
+  .sc-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-weight: 800;
+  }
+
+  .sc-kicker {
+    background: rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.92);
+    font-size: 0.84rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sc-pill {
+    gap: 8px;
+    font-size: 0.86rem;
+    border: 1px solid transparent;
+  }
+
+  .sc-pill.blue {
+    color: #1552a4;
+    background: rgba(219, 234, 254, 0.92);
+    border-color: rgba(96, 165, 250, 0.18);
+  }
+
+  .sc-pill.pink {
+    color: #9a2759;
+    background: rgba(252, 231, 243, 0.94);
+    border-color: rgba(232, 121, 167, 0.16);
+  }
+
+  .sc-pill.green {
+    color: #0f7660;
+    background: rgba(209, 250, 229, 0.94);
+    border-color: rgba(16, 185, 129, 0.16);
+  }
+
+  .sc-pill.soft {
+    color: #4d6580;
+    background: rgba(241, 245, 249, 0.94);
+    border-color: rgba(148, 163, 184, 0.16);
+  }
+
+  .sc-grid,
+  .sc-grid.two,
+  .sc-grid.three,
+  .sc-feed-layout,
+  .sc-card-grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .sc-grid.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sc-grid.three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sc-feed-layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+
+  .sc-panel,
+  .sc-card {
+    border-radius: 30px;
+    padding: 24px;
+  }
+
+  .sc-panel p,
+  .sc-card p,
+  .sc-meta {
+    color: #60758c;
+    line-height: 1.78;
+  }
+
+  .sc-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sc-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -34px -50px auto;
+    width: 140px;
+    height: 140px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 177, 74, 0.12), transparent 72%);
+    pointer-events: none;
+  }
+
+  .sc-card h3 {
+    font-size: 1.4rem;
+    color: #1a3552;
+  }
+
+  .sc-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sc-attachment-list,
+  .sc-post-list,
+  .sc-side-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .sc-attachment {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(233, 243, 255, 0.82);
+    border: 1px solid rgba(123, 156, 210, 0.16);
+    color: #18416e;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .sc-post-card {
+    padding: 22px;
+    border-radius: 28px;
+    background: rgba(255,255,255,0.98);
+    border: 1px solid rgba(123, 156, 210, 0.16);
+    box-shadow: 0 18px 40px rgba(53, 92, 153, 0.1);
+  }
+
+  .sc-post-card h3 {
+    margin: 12px 0 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: 1.44rem;
+    letter-spacing: -0.05em;
+    color: #1a3552;
+  }
+
+  .sc-post-meta,
+  .sc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sc-post-meta {
+    margin-top: 14px;
+  }
+
+  .sc-actions {
+    margin-top: 18px;
+  }
+
+  .sc-btn,
+  .sc-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    border: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .sc-btn {
+    color: #fff;
+    background: linear-gradient(135deg, #2f78ed 0%, #63a8ff 100%);
+    box-shadow: 0 18px 32px rgba(47, 120, 237, 0.22);
+  }
+
+  .sc-btn-secondary {
+    color: #18416e;
+    background: rgba(233, 243, 255, 0.86);
+    border: 1px solid rgba(123, 156, 210, 0.16);
+  }
+
+  .sc-btn:hover,
+  .sc-btn-secondary:hover {
+    transform: translateY(-2px);
+  }
+
+  .sc-form-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .sc-label {
+    font-weight: 700;
+    color: #35506f;
+  }
+
+  .sc-input,
+  .sc-textarea {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(123, 156, 210, 0.16);
+    background: #fff;
+    color: #18324a;
+    outline: none;
+  }
+
+  .sc-textarea {
+    min-height: 120px;
+    padding: 14px 16px;
+    resize: vertical;
+  }
+
+  .sc-empty {
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px dashed rgba(123, 156, 210, 0.24);
+    background: rgba(248, 250, 252, 0.86);
+    color: #60758c;
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1120px) {
+    .sc-feed-layout,
+    .sc-card-grid,
+    .sc-grid.two,
+    .sc-grid.three {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .sc-page {
+      width: min(100% - 18px, 1480px);
+      padding: 20px 0 28px;
+    }
+
+    .sc-hero,
+    .sc-panel,
+    .sc-card,
+    .sc-post-card {
+      border-radius: 24px;
+      padding: 20px;
+    }
+
+    .sc-actions .sc-btn,
+    .sc-actions .sc-btn-secondary {
+      width: 100%;
+    }
+  }
+</style>

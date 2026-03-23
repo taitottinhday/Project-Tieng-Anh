@@ -1,0 +1,222 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const safeClassrooms = Array.isArray(typeof classrooms !== 'undefined' ? classrooms : null) ? classrooms : [];
+  const totals = typeof classroomTotals !== 'undefined' && classroomTotals
+    ? classroomTotals
+    : { classes: 0, students: 0, lectures: 0, assignments: 0, submissions: 0 };
+  const formatDate = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleDateString('vi-VN');
+  };
+%>
+
+<style>
+  .teacher-classroom-hero-note {
+    margin-top: 14px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .teacher-shell .teacher-panel[style*="background: rgba(255,255,255,0.16)"] .teacher-classroom-hero-note .teacher-pill.navy {
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: 10px 18px;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    line-height: 1.45;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    background: linear-gradient(135deg, rgba(39, 72, 108, 0.96), rgba(54, 88, 120, 0.96));
+    border-color: rgba(226, 239, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .teacher-classroom-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .teacher-classroom-card {
+    position: relative;
+    overflow: hidden;
+    padding: 22px;
+    border-radius: 28px;
+    border: 1px solid rgba(136, 166, 215, 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.94));
+    box-shadow: 0 24px 54px rgba(53, 92, 153, 0.12);
+  }
+
+  .teacher-classroom-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -38px -62px auto;
+    width: 140px;
+    height: 140px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 177, 74, 0.14), transparent 72%);
+    pointer-events: none;
+  }
+
+  .teacher-classroom-card h3 {
+    margin: 0;
+    font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+    font-size: 1.42rem;
+    letter-spacing: -0.04em;
+    color: #16304a;
+  }
+
+  .teacher-classroom-card p {
+    margin: 10px 0 0;
+    color: #5f7287;
+    line-height: 1.78;
+  }
+
+  .teacher-classroom-meta {
+    margin-top: 18px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .teacher-classroom-meta div {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(234, 243, 255, 0.82);
+    border: 1px solid rgba(136, 166, 215, 0.16);
+  }
+
+  .teacher-classroom-meta strong {
+    display: block;
+    font-size: 1.08rem;
+    color: #153454;
+  }
+
+  .teacher-classroom-meta span {
+    display: block;
+    margin-top: 6px;
+    color: #60758c;
+    font-size: 0.88rem;
+  }
+
+  .teacher-classroom-actions {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  @media (max-width: 960px) {
+    .teacher-classroom-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Digital Classroom</p>
+        <h1 class="teacher-hero-title">Không gian đăng bài, giao bài tập và chấm bài trong một luồng.</h1>
+        <p class="teacher-hero-text">
+          Giáo viên có thể đăng bài giảng, bài tập, tài liệu đính kèm và theo dõi toàn bộ nhận bài nộp của học viên ngay trong từng lớp.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= totals.classes %> lớp đang quản lý</span>
+          <span class="teacher-pill pink"><%= totals.assignments %> bài tập đã giao</span>
+          <span class="teacher-pill blue"><%= totals.submissions %> lượt nộp bài</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Trạng thái workspace</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.84);">
+          Mỗi lớp học được tách riêng để giáo viên đăng bài, xem lượt nộp và chấm bài nhanh, giảm việc thao tác rời rạc.
+        </p>
+        <div class="teacher-classroom-hero-note">
+          <span class="teacher-pill navy" style="color: #fff;">Bài giảng + Bài tập + Đánh giá</span>
+          <span class="teacher-pill navy" style="color: #fff;">Học viên nhận tài liệu ngay sau khi đăng</span>
+          <span class="teacher-pill navy" style="color: #fff;">Chấm bài theo từng học viên</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Tổng lớp</span>
+      <strong class="teacher-stat-value"><%= totals.classes %></strong>
+      <p class="teacher-stat-note">Toàn bộ lớp có classroom đang hoạt động.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Học viên</span>
+      <strong class="teacher-stat-value"><%= totals.students %></strong>
+      <p class="teacher-stat-note">Sĩ số đang được đồng bộ vào luồng nộp bài.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Bài giảng</span>
+      <strong class="teacher-stat-value"><%= totals.lectures %></strong>
+      <p class="teacher-stat-note">Số bài giảng và tài liệu đã được phát hành.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Bài tập</span>
+      <strong class="teacher-stat-value"><%= totals.assignments %></strong>
+      <p class="teacher-stat-note">Tổng số bài tập đang chờ học viên xử lý.</p>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Danh sách lớp học số</h2>
+        <p class="teacher-panel-desc">Chọn từng lớp để đăng bài giảng, giao bài tập và mở bảng chấm bài chi tiết.</p>
+      </div>
+    </div>
+
+    <% if (safeClassrooms.length) { %>
+      <div class="teacher-classroom-grid" style="margin-top: 22px;">
+        <% safeClassrooms.forEach((item) => { %>
+          <article class="teacher-classroom-card">
+            <span class="teacher-pill <%= item.assignment_count ? 'pink' : 'soft' %>"><%= item.code %></span>
+            <h3 style="margin-top: 14px;"><%= item.course_name || 'Lớp học chưa cập nhật' %></h3>
+            <p>
+              <strong style="color:#18324a;">Lịch học:</strong> <%= item.schedule_text || 'Đang bổ sung lịch học' %><br>
+              <strong style="color:#18324a;">Phòng:</strong> <%= item.room || 'Đang bổ sung phòng học' %><br>
+              <strong style="color:#18324a;">Bài đăng mới nhất:</strong> <%= formatDate(item.latest_post_at) %>
+            </p>
+
+            <div class="teacher-classroom-meta">
+              <div>
+                <strong><%= item.student_count %></strong>
+                <span>Học viên</span>
+              </div>
+              <div>
+                <strong><%= item.lecture_count %></strong>
+                <span>Bài giảng</span>
+              </div>
+              <div>
+                <strong><%= item.assignment_count %></strong>
+                <span>Bài tập</span>
+              </div>
+              <div>
+                <strong><%= item.reviewed_count %>/<%= item.submission_count %></strong>
+                <span>Đã đánh giá / Đã nộp</span>
+              </div>
+            </div>
+
+            <div class="teacher-classroom-actions">
+              <a href="<%= baseUrl %>/teacher/classroom/<%= item.id %>" class="teacher-link-button">Mở classroom</a>
+              <a href="<%= baseUrl %>/teacher/classes/<%= item.id %>" class="teacher-link-button secondary">Thông tin lớp</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="teacher-empty" style="margin-top: 22px;">
+        Chưa có lớp nào gắn giáo viên này. Khi lớp được phân công, classroom sẽ tự động hiện tại đây.
+      </div>
+    <% } %>
+  </section>
+</div>

@@ -1,0 +1,259 @@
+<%
+const data = topic || {};
+const lessons = Array.isArray(data.lessons) ? data.lessons : [];
+const breadcrumbs = Array.isArray(data.breadcrumbs) ? data.breadcrumbs : [];
+%>
+
+<style>
+  .dtopic-page {
+    --dtopic-line: rgba(15, 23, 42, 0.08);
+    --dtopic-text: #1f2937;
+    --dtopic-muted: #627184;
+    --dtopic-dark: #152538;
+    --dtopic-accent: #2563eb;
+    --dtopic-shadow: 0 24px 52px rgba(15, 23, 42, 0.08);
+    display: grid;
+    gap: 22px;
+    width: min(1380px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 48px;
+  }
+
+  .dtopic-panel {
+    border-radius: 32px;
+    border: 1px solid var(--dtopic-line);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--dtopic-shadow);
+    overflow: hidden;
+  }
+
+  .dtopic-hero {
+    padding: 38px 40px 28px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.76), transparent 30%),
+      linear-gradient(135deg, rgba(243, 247, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 60%, rgba(247, 249, 252, 0.98) 100%);
+  }
+
+  .dtopic-title,
+  .dtopic-card h3,
+  .dtopic-empty strong {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: var(--dtopic-dark);
+  }
+
+  .dtopic-title {
+    font-size: clamp(2.3rem, 4.6vw, 4.1rem);
+    line-height: 1.04;
+    max-width: 11ch;
+  }
+
+  .dtopic-sub,
+  .dtopic-breadcrumb a,
+  .dtopic-breadcrumb span,
+  .dtopic-card p,
+  .dtopic-card-meta,
+  .dtopic-empty span {
+    color: var(--dtopic-muted);
+    line-height: 1.75;
+  }
+
+  .dtopic-search-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-top: 24px;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid var(--dtopic-line);
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  .dtopic-search-shell input {
+    min-height: 58px;
+    padding: 0 20px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--dtopic-text);
+    font: inherit;
+  }
+
+  .dtopic-search-shell button {
+    min-width: 140px;
+    border: 0;
+    background: #2f2f32;
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dtopic-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    font-weight: 600;
+  }
+
+  .dtopic-breadcrumb span.sep {
+    color: rgba(37, 99, 235, 0.5);
+  }
+
+  .dtopic-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .dtopic-card {
+    display: grid;
+    gap: 16px;
+    min-height: 276px;
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid var(--dtopic-line);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.05);
+  }
+
+  .dtopic-card h3 {
+    font-size: clamp(1.55rem, 2.4vw, 2.15rem);
+    text-transform: uppercase;
+  }
+
+  .dtopic-card-meta {
+    font-weight: 600;
+  }
+
+  .dtopic-action {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    width: fit-content;
+    border-radius: 14px;
+    background: #2f2f32;
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .dtopic-empty {
+    display: none;
+    place-items: center;
+    gap: 12px;
+    padding: 34px;
+    text-align: center;
+  }
+
+  .dtopic-empty strong {
+    font-size: 1.7rem;
+  }
+
+  @media (max-width: 980px) {
+    .dtopic-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .dtopic-page {
+      width: min(100% - 20px, 1380px);
+      padding-top: 18px;
+    }
+
+    .dtopic-hero {
+      padding: 24px 18px;
+    }
+
+    .dtopic-search-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .dtopic-search-shell button {
+      min-height: 52px;
+    }
+  }
+</style>
+
+<div class="dtopic-page" data-dictation-topic>
+  <section class="dtopic-panel dtopic-hero">
+    <h1 class="dtopic-title">T&#7893;ng h&#7907;p topic</h1>
+    <p class="dtopic-sub">Ch&#7885;n lesson b&#7841;n mu&#7889;n luy&#7879;n trong <strong><%= data.title %></strong> v&#224; v&#224;o th&#7859;ng player nghe-ch&#233;p.</p>
+    <div class="dtopic-search-shell">
+      <input type="search" placeholder="Nh&#7853;p t&#234;n &#273;&#7873; mu&#7889;n t&#236;m..." data-topic-search>
+      <button type="button" data-search-trigger>T&#236;m ki&#7871;m</button>
+    </div>
+  </section>
+
+  <nav class="dtopic-breadcrumb" aria-label="Breadcrumb">
+    <% breadcrumbs.forEach((item, index) => { %>
+      <% if (index > 0) { %><span class="sep">/</span><% } %>
+      <% if (item.href) { %>
+        <a href="<%= item.href %>"><%= item.label %></a>
+      <% } else { %>
+        <span><%= item.label %></span>
+      <% } %>
+    <% }) %>
+  </nav>
+
+  <section class="dtopic-grid" data-card-grid>
+    <% lessons.forEach((lesson) => { %>
+      <article class="dtopic-card" data-lesson-card data-search="<%= `${lesson.title} ${lesson.description} ${lesson.preview}`.toLowerCase() %>">
+        <div>
+          <h3><%= lesson.title %></h3>
+          <p><%= lesson.description %></p>
+        </div>
+        <p><%= lesson.preview %></p>
+        <div class="dtopic-card-meta">T&#7893;ng s&#7889; c&#226;u: <strong><%= lesson.totalEntries %></strong></div>
+        <a href="<%= lesson.href %>" class="dtopic-action">Listen &amp; Type</a>
+      </article>
+    <% }) %>
+  </section>
+
+  <section class="dtopic-panel dtopic-empty" data-empty-state>
+    <strong>Kh&#244;ng c&#243; lesson ph&#249; h&#7907;p</strong>
+    <span>Th&#7917; t&#236;m theo t&#234;n lesson ho&#7863;c m&#7897;t c&#7909;m t&#7915; trong c&#226;u m&#7851;u.</span>
+  </section>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector("[data-dictation-topic]");
+    if (!root) return;
+
+    const cards = Array.from(root.querySelectorAll("[data-lesson-card]"));
+    const searchInput = root.querySelector("[data-topic-search]");
+    const searchTrigger = root.querySelector("[data-search-trigger]");
+    const emptyState = root.querySelector("[data-empty-state]");
+
+    const normalize = (value) => String(value || "").trim().toLowerCase();
+
+    const render = () => {
+      const keyword = normalize(searchInput ? searchInput.value : "");
+      const visibleCards = cards.filter((card) => !keyword || normalize(card.dataset.search).includes(keyword));
+
+      cards.forEach((card) => {
+        card.style.display = visibleCards.includes(card) ? "" : "none";
+      });
+
+      if (emptyState) {
+        emptyState.style.display = visibleCards.length ? "none" : "grid";
+      }
+    };
+
+    if (searchInput) {
+      searchInput.addEventListener("input", render);
+    }
+
+    if (searchTrigger) {
+      searchTrigger.addEventListener("click", render);
+    }
+
+    render();
+  })();
+</script>

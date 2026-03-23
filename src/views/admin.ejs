@@ -1,0 +1,2157 @@
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const safeStats = stats || {};
+const safeHealth = health || {};
+const safeAnalytics = analytics || {};
+const safeAlerts = Array.isArray(alerts) ? alerts : [];
+const safeActivityFeed = Array.isArray(activityFeed) ? activityFeed : [];
+const safeClasses = Array.isArray(classes) ? classes : [];
+const safeUsers = Array.isArray(users) ? users : [];
+const safeStudents = Array.isArray(students) ? students : [];
+const safeTeachers = Array.isArray(teachers) ? teachers : [];
+const safeMessages = Array.isArray(messages) ? messages : [];
+const safePayments = Array.isArray(payments) ? payments : [];
+const enrollmentTrend = Array.isArray(safeAnalytics.enrollmentTrend) ? safeAnalytics.enrollmentTrend : [];
+const revenueTrend = Array.isArray(safeAnalytics.revenueTrend) ? safeAnalytics.revenueTrend : [];
+const roleMix = Array.isArray(safeAnalytics.roleMix) ? safeAnalytics.roleMix : [];
+const messageStatuses = Array.isArray(safeAnalytics.messageStatuses) ? safeAnalytics.messageStatuses : [];
+const paymentMethods = Array.isArray(safeAnalytics.paymentMethods) ? safeAnalytics.paymentMethods : [];
+const teacherLoad = Array.isArray(safeAnalytics.teacherLoad) ? safeAnalytics.teacherLoad : [];
+const coursePerformance = Array.isArray(safeAnalytics.coursePerformance) ? safeAnalytics.coursePerformance : [];
+const generatedOn = generatedAt ? new Date(generatedAt) : new Date();
+
+const numberFmt = (value) => Number(value || 0).toLocaleString("vi-VN");
+const moneyFmt = (value) => `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
+const shortDate = (value) => {
+  if (!value) return "Chưa cập nhật";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
+  return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+};
+const shortDateTime = (value) => {
+  if (!value) return "Chưa cập nhật";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
+  return new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+};
+const dateFieldValue = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value.slice(0, 10);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
+
+const roleLabelMap = {
+  admin: "Quản trị",
+  teacher: "Giáo viên",
+  registered: "Học viên",
+  visitor: "Khách",
+  unknown: "Khác",
+};
+const messageStatusMap = {
+  new: "Mới",
+  viewed: "Đã xem",
+  contacted: "Đã liên hệ",
+  unknown: "Khác",
+};
+const paymentStatusMap = {
+  pending: "Chờ duyệt",
+  confirmed: "Đã xác nhận",
+  rejected: "Từ chối",
+};
+const paymentMethodMap = {
+  cash: "Tiền mặt",
+  bank: "Ngân hàng",
+  bank_transfer: "Chuyển khoản",
+  transfer: "Chuyển khoản",
+  momo: "MoMo",
+  zalo_pay: "ZaloPay",
+  card: "Thẻ",
+  other: "Khác",
+};
+const alertTitleMap = {
+  "New leads waiting": "Yêu cầu tư vấn mới",
+  "Pending payments": "Thanh toán chờ duyệt",
+  "Classes without owner": "Lớp chưa phân công",
+  "Student profiles incomplete": "Hồ sơ học sinh thiếu thông tin",
+  "Teachers missing contact": "Hồ sơ giáo viên thiếu liên hệ",
+};
+const alertDescriptionMap = {
+  "New leads waiting": "Các yêu cầu tư vấn mới chưa được phản hồi trong hộp thư.",
+  "Pending payments": "Cần xác nhận hoặc từ chối để chốt doanh thu đúng hạn.",
+  "Classes without owner": "Một số lớp chưa được gán giáo viên phụ trách.",
+  "Student profiles incomplete": "Thiếu số điện thoại hoặc email để chăm sóc học viên.",
+  "Teachers missing contact": "Cần bổ sung thông tin liên hệ để vận hành ổn định.",
+};
+const activityLabelMap = {
+  "Lead intake": "Tư vấn",
+  Finance: "Tài chính",
+  Enrollment: "Ghi danh",
+};
+const toneClassMap = {
+  amber: "tone-amber",
+  cyan: "tone-cyan",
+  emerald: "tone-emerald",
+  rose: "tone-rose",
+  violet: "tone-violet",
+};
+
+const chartWidth = 560;
+const chartHeight = 230;
+const padX = 28;
+const padY = 24;
+const enrollmentMax = Math.max(...enrollmentTrend.map((item) => Number(item.value || 0)), 1);
+const buildLinePoints = (series, maxValue) => {
+  if (!series.length) return "";
+  const spanX = chartWidth - padX * 2;
+  const spanY = chartHeight - padY * 2;
+  const divisor = Math.max(series.length - 1, 1);
+  return series
+    .map((item, index) => {
+      const x = padX + (spanX * index) / divisor;
+      const y = chartHeight - padY - (spanY * Number(item.value || 0)) / Math.max(maxValue, 1);
+      return `${x},${y}`;
+    })
+    .join(" ");
+};
+const buildAreaPoints = (series, maxValue) => {
+  if (!series.length) return "";
+  const linePoints = buildLinePoints(series, maxValue);
+  const firstX = padX;
+  const lastX = chartWidth - padX;
+  const baseY = chartHeight - padY;
+  return `${firstX},${baseY} ${linePoints} ${lastX},${baseY}`;
+};
+const enrollmentLine = buildLinePoints(enrollmentTrend, enrollmentMax);
+const enrollmentArea = buildAreaPoints(enrollmentTrend, enrollmentMax);
+
+const classState = (item) => {
+  if (!item || !item.teacher_name) return "Chưa phân công";
+  const now = new Date();
+  const start = item.start_date ? new Date(item.start_date) : null;
+  const end = item.end_date ? new Date(item.end_date) : null;
+
+  if (end && !Number.isNaN(end.getTime()) && end < now) return "Đã kết thúc";
+  if (start && !Number.isNaN(start.getTime())) {
+    const diffDays = Math.ceil((start.getTime() - now.getTime()) / 86400000);
+    if (diffDays >= 0 && diffDays <= 14) return "Sắp khai giảng";
+    if (start <= now && (!end || end >= now)) return "Đang hoạt động";
+  }
+  return "Đã lên lịch";
+};
+%>
+
+<style>
+  .admin-page {
+    display: grid;
+    gap: 22px;
+    color: #18324a;
+  }
+
+  .admin-hero,
+  .admin-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(245, 249, 253, 0.94) 100%);
+    box-shadow: 0 24px 48px rgba(97, 122, 150, 0.12);
+  }
+
+  .admin-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.85fr);
+    gap: 20px;
+    padding: 32px;
+  }
+
+  .admin-hero::after,
+  .admin-panel::after {
+    content: "";
+    position: absolute;
+    inset: auto -90px -110px auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(143, 180, 232, 0.16), transparent 70%);
+    pointer-events: none;
+  }
+
+  .admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(95, 132, 194, 0.1);
+    color: #2d557d;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .admin-hero h1,
+  .admin-panel h2 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.04em;
+    color: #17314c;
+  }
+
+  .admin-hero h1 {
+    margin-top: 14px;
+    font-size: clamp(2rem, 4.4vw, 3.35rem);
+    line-height: 1.03;
+    max-width: 13ch;
+  }
+
+  .admin-hero p,
+  .admin-panel > p,
+  .admin-copy {
+    margin: 0;
+    color: #60758c;
+    line-height: 1.72;
+  }
+
+  .admin-hero p {
+    margin-top: 16px;
+    max-width: 64ch;
+    font-size: 1rem;
+  }
+
+  .admin-anchorbar,
+  .admin-kpi-grid,
+  .admin-grid,
+  .admin-mini-grid,
+  .admin-health-grid,
+  .admin-bar-list,
+  .admin-feed,
+  .admin-quick-grid,
+  .admin-form-grid,
+  .admin-stat-list {
+    display: grid;
+    gap: 16px;
+  }
+
+  .admin-anchorbar {
+    grid-template-columns: repeat(auto-fit, minmax(150px, max-content));
+  }
+
+  .admin-anchor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 16px;
+    border-radius: 16px;
+    text-decoration: none;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(255, 255, 255, 0.72);
+    color: #365a7f;
+    font-weight: 700;
+  }
+
+  .admin-anchor:hover {
+    background: rgba(230, 239, 249, 0.92);
+  }
+
+  .admin-hero-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 16px;
+  }
+
+  .admin-info-card-primary,
+  .admin-hero-pulse {
+    grid-column: 1 / -1;
+  }
+
+  .admin-info-card,
+  .admin-health-card,
+  .admin-kpi,
+  .admin-quick-card {
+    position: relative;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(248, 251, 255, 0.88);
+    padding: 18px 18px 16px;
+  }
+
+  .admin-info-card strong,
+  .admin-kpi strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 1.6rem;
+    line-height: 1.05;
+    color: #17314c;
+  }
+
+  .admin-info-card span,
+  .admin-kpi span,
+  .admin-label {
+    color: #6a8098;
+    font-size: 0.92rem;
+  }
+
+  .admin-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .admin-kpi small {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+    color: #2d557d;
+    font-weight: 700;
+  }
+
+  .admin-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-grid-3 {
+    grid-template-columns: 1.1fr 1fr 1fr;
+  }
+
+  .admin-panel {
+    padding: 24px;
+  }
+
+  .admin-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .admin-panel-header p {
+    margin: 8px 0 0;
+    color: #698096;
+  }
+
+  .admin-panel-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+    color: #2f5377;
+    background: rgba(95, 132, 194, 0.1);
+  }
+
+  .admin-panel-link:hover {
+    background: rgba(95, 132, 194, 0.16);
+  }
+
+  .admin-chart {
+    padding: 16px 18px 12px;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: linear-gradient(180deg, rgba(249, 251, 255, 0.95), rgba(240, 245, 251, 0.92));
+  }
+
+  .admin-chart svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .chart-grid-line {
+    stroke: rgba(148, 163, 184, 0.18);
+    stroke-width: 1;
+  }
+
+  .chart-area {
+    fill: rgba(95, 132, 194, 0.18);
+  }
+
+  .chart-line {
+    fill: none;
+    stroke: #4f7db3;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .chart-dot {
+    fill: #2b547c;
+    stroke: rgba(255, 255, 255, 0.9);
+    stroke-width: 3;
+  }
+
+  .chart-axis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+    color: #73879d;
+    font-size: 0.82rem;
+  }
+
+  .admin-hero {
+    isolation: isolate;
+    gap: 28px;
+    padding: 34px;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(96, 165, 250, 0.34), transparent 24%),
+      radial-gradient(circle at 82% 18%, rgba(45, 212, 191, 0.2), transparent 24%),
+      radial-gradient(circle at 55% 100%, rgba(251, 191, 36, 0.14), transparent 28%),
+      linear-gradient(135deg, #0f172a 0%, #12263d 44%, #17395a 100%);
+    box-shadow: 0 36px 72px rgba(15, 23, 42, 0.24);
+    border-color: rgba(148, 163, 184, 0.14);
+  }
+
+  .admin-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0%, transparent 35%, transparent 68%, rgba(255, 255, 255, 0.05) 100%),
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: auto, 28px 28px, 28px 28px;
+    mask-image: radial-gradient(circle at center, black, transparent 88%);
+    opacity: 0.42;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .admin-hero::after {
+    inset: auto -100px -120px auto;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, rgba(125, 211, 252, 0.34), rgba(59, 130, 246, 0.14) 40%, transparent 72%);
+    filter: blur(12px);
+    animation: adminAurora 10s ease-in-out infinite;
+  }
+
+  .admin-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-hero-content {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+  }
+
+  .admin-hero-content > .admin-badge {
+    display: none;
+  }
+
+  .admin-hero-topline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .admin-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: #dbeafe;
+    border: 1px solid rgba(191, 219, 254, 0.2);
+    backdrop-filter: blur(18px);
+  }
+
+  .admin-live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(191, 219, 254, 0.16);
+    background: rgba(9, 19, 32, 0.28);
+    color: rgba(226, 232, 240, 0.82);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    backdrop-filter: blur(16px);
+  }
+
+  .admin-live-pill::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #5eead4;
+    box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.55);
+    animation: adminPulse 2.2s infinite;
+  }
+
+  .admin-hero h1 {
+    max-width: 10.6ch;
+    color: #f8fbff;
+    text-shadow: 0 16px 40px rgba(15, 23, 42, 0.28);
+  }
+
+  .admin-hero p {
+    color: rgba(224, 233, 244, 0.82);
+    max-width: 58ch;
+  }
+
+  .admin-hero-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .admin-hero-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 154px;
+    padding: 13px 18px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .admin-hero-action.primary {
+    background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 45%, #22d3ee 100%);
+    color: #0f172a;
+    box-shadow: 0 22px 38px rgba(34, 211, 238, 0.28);
+  }
+
+  .admin-hero-action.secondary {
+    border: 1px solid rgba(191, 219, 254, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: #e6eef8;
+    backdrop-filter: blur(16px);
+  }
+
+  .admin-hero-action:hover {
+    transform: translateY(-2px);
+  }
+
+  .admin-hero-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 4px;
+  }
+
+  .admin-highlight {
+    position: relative;
+    overflow: hidden;
+    padding: 16px 16px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(191, 219, 254, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    backdrop-filter: blur(18px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .admin-highlight::after {
+    content: "";
+    position: absolute;
+    inset: auto -24px -36px auto;
+    width: 96px;
+    height: 96px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(125, 211, 252, 0.18), transparent 72%);
+    pointer-events: none;
+  }
+
+  .admin-highlight strong {
+    display: block;
+    color: #f8fbff;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .admin-highlight span {
+    display: block;
+    margin-top: 10px;
+    color: rgba(224, 233, 244, 0.76);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .admin-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .admin-hero .admin-info-card {
+    overflow: hidden;
+    border-color: rgba(191, 219, 254, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(18px);
+  }
+
+  .admin-hero .admin-info-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(125, 211, 252, 0.9), rgba(94, 234, 212, 0));
+  }
+
+  .admin-info-card-primary {
+    min-height: 132px;
+    background:
+      linear-gradient(180deg, rgba(125, 211, 252, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%),
+      rgba(255, 255, 255, 0.05);
+  }
+
+  .admin-hero .admin-info-card span {
+    color: rgba(224, 233, 244, 0.72);
+    font-size: 0.9rem;
+  }
+
+  .admin-hero .admin-info-card strong {
+    color: #ffffff;
+    font-size: clamp(1.7rem, 2.5vw, 2.2rem);
+    line-height: 1.08;
+  }
+
+  .admin-hero-pulse {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px;
+    border-radius: 22px;
+    border: 1px solid rgba(191, 219, 254, 0.14);
+    background: rgba(8, 18, 31, 0.26);
+    backdrop-filter: blur(18px);
+  }
+
+  .admin-hero-pulse div {
+    padding: 14px 14px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .admin-hero-pulse span {
+    display: block;
+    color: rgba(224, 233, 244, 0.7);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .admin-hero-pulse strong {
+    display: block;
+    margin-top: 8px;
+    color: #f8fbff;
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+
+  .admin-anchorbar {
+    padding: 10px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(17, 34, 54, 0.92) 0%, rgba(33, 63, 94, 0.82) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+  }
+
+  .admin-anchor {
+    min-width: 154px;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #e6eef8;
+    backdrop-filter: blur(14px);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .admin-anchor:hover {
+    transform: translateY(-2px);
+    border-color: rgba(191, 219, 254, 0.22);
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.18) 0%, rgba(34, 211, 238, 0.16) 100%);
+    box-shadow: 0 16px 28px rgba(10, 20, 34, 0.16);
+  }
+
+  .admin-kpi {
+    overflow: hidden;
+    min-height: 156px;
+    border-color: rgba(148, 163, 184, 0.12);
+    background: linear-gradient(160deg, rgba(17, 31, 48, 0.98) 0%, rgba(26, 44, 67, 0.98) 64%, rgba(31, 58, 90, 0.98) 100%);
+    box-shadow: 0 24px 44px rgba(15, 23, 42, 0.16);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .admin-kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #7dd3fc, #38bdf8);
+  }
+
+  .admin-kpi::after {
+    content: "";
+    position: absolute;
+    inset: auto -28px -34px auto;
+    width: 132px;
+    height: 132px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(125, 211, 252, 0.2), transparent 72%);
+    pointer-events: none;
+  }
+
+  .admin-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 28px 54px rgba(15, 23, 42, 0.2);
+  }
+
+  .admin-kpi span {
+    color: rgba(219, 233, 247, 0.76);
+  }
+
+  .admin-kpi strong {
+    color: #ffffff;
+    font-size: clamp(2rem, 3vw, 2.45rem);
+  }
+
+  .admin-kpi small {
+    color: #b8cbe2;
+  }
+
+  .admin-kpi:nth-child(2)::before {
+    background: linear-gradient(90deg, #6ee7b7, #14b8a6);
+  }
+
+  .admin-kpi:nth-child(3)::before {
+    background: linear-gradient(90deg, #f9a8d4, #c084fc);
+  }
+
+  .admin-kpi:nth-child(4)::before {
+    background: linear-gradient(90deg, #fcd34d, #fb923c);
+  }
+
+  .admin-hero-content,
+  .admin-hero-meta,
+  .admin-anchorbar,
+  .admin-kpi {
+    animation: adminFadeUp 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .admin-hero-meta {
+    animation-delay: 0.08s;
+  }
+
+  .admin-anchorbar {
+    animation-delay: 0.14s;
+  }
+
+  .admin-kpi:nth-child(1) {
+    animation-delay: 0.2s;
+  }
+
+  .admin-kpi:nth-child(2) {
+    animation-delay: 0.26s;
+  }
+
+  .admin-kpi:nth-child(3) {
+    animation-delay: 0.32s;
+  }
+
+  .admin-kpi:nth-child(4) {
+    animation-delay: 0.38s;
+  }
+
+  @keyframes adminAurora {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-18px, -14px, 0) scale(1.06);
+    }
+  }
+
+  @keyframes adminFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes adminPulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.55);
+    }
+    70% {
+      box-shadow: 0 0 0 12px rgba(94, 234, 212, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(94, 234, 212, 0);
+    }
+  }
+
+  @media (max-width: 1180px) {
+    .admin-hero-highlights,
+    .admin-hero-pulse {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 920px) {
+    .admin-hero-meta,
+    .admin-meta-grid,
+    .admin-hero-highlights,
+    .admin-hero-pulse {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-hero::after,
+    .admin-live-pill::before,
+    .admin-hero-content,
+    .admin-hero-meta,
+    .admin-anchorbar,
+    .admin-kpi {
+      animation: none !important;
+    }
+  }
+</style>
+
+<style>
+  .admin-hero {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(96, 165, 250, 0.22), transparent 24%),
+      radial-gradient(circle at 82% 18%, rgba(244, 114, 182, 0.18), transparent 24%),
+      linear-gradient(135deg, rgba(251, 253, 255, 0.98) 0%, rgba(239, 246, 255, 0.98) 48%, rgba(252, 231, 243, 0.96) 100%) !important;
+    border-color: rgba(136, 166, 215, 0.16) !important;
+    box-shadow: 0 30px 64px rgba(53, 92, 153, 0.12) !important;
+  }
+
+  .admin-hero::before {
+    opacity: 0.16 !important;
+  }
+
+  .admin-hero h1,
+  .admin-hero p,
+  .admin-live-pill,
+  .admin-highlight strong,
+  .admin-highlight span,
+  .admin-hero .admin-info-card strong,
+  .admin-hero .admin-info-card span,
+  .admin-hero-pulse span,
+  .admin-hero-pulse strong {
+    color: #17314c !important;
+    text-shadow: none !important;
+  }
+
+  .admin-badge,
+  .admin-live-pill,
+  .admin-highlight,
+  .admin-hero .admin-info-card,
+  .admin-hero-pulse,
+  .admin-hero-pulse div {
+    background: rgba(255, 255, 255, 0.82) !important;
+    border-color: rgba(136, 166, 215, 0.16) !important;
+    box-shadow: none !important;
+  }
+
+  .admin-hero-action.primary {
+    background: linear-gradient(135deg, #ff7a59 0%, #ff5d8f 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 18px 34px rgba(255, 93, 143, 0.2) !important;
+  }
+
+  .admin-hero-action.secondary,
+  .admin-anchorbar,
+  .admin-anchor,
+  .admin-kpi {
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(244,248,254,0.94)) !important;
+    color: #17314c !important;
+    border-color: rgba(136, 166, 215, 0.16) !important;
+    box-shadow: 0 20px 40px rgba(53, 92, 153, 0.1) !important;
+  }
+
+  .admin-kpi::before {
+    background: linear-gradient(90deg, #2f78ed, #ff7a59) !important;
+  }
+</style>
+
+<div class="admin-page">
+  <section class="admin-hero" id="overview">
+    <div class="admin-hero-content">
+      <div class="admin-hero-topline">
+        <span class="admin-badge">Trung tâm điều hành</span>
+        <span class="admin-live-pill">Dữ liệu trực tiếp</span>
+      </div>
+      <span class="admin-badge">Trung tâm điều hành</span>
+      <h1>Quản lý trung tâm dễ dàng – theo dõi học viên, giảng viên và doanh thu trong một nền tảng duy nhất.</h1>
+      <p>
+        Theo dõi sức khỏe vận hành của trung tâm theo thời gian thực, xử lý lớp học chưa phân công, hoàn thiện hồ sơ
+        và phản hồi các yêu cầu tư vấn ngay từ cùng một dashboard.
+      </p>
+      <div class="admin-hero-actions">
+        <a class="admin-hero-action primary" href="#classes">Xem lớp học</a>
+        <a class="admin-hero-action secondary" href="<%= safeBaseUrl %>/payments">Duyệt thanh toán</a>
+      </div>
+
+      <div class="admin-hero-highlights">
+        <article class="admin-highlight">
+          <strong><%= numberFmt(safeStats.classesStartingSoon) %></strong>
+          <span>Lớp sắp khai giảng</span>
+        </article>
+        <article class="admin-highlight">
+          <strong><%= numberFmt(safeStats.unassignedClasses) %></strong>
+          <span>Lớp cần phân công</span>
+        </article>
+        <article class="admin-highlight">
+          <strong><%= numberFmt(safeStats.pendingPayments) %></strong>
+          <span>Thanh toán chờ duyệt</span>
+        </article>
+      </div>
+    </div>
+
+    <div class="admin-hero-meta">
+      <div class="admin-info-card admin-info-card-primary">
+        <span>Cập nhật gần nhất</span>
+        <strong><%= shortDateTime(generatedOn) %></strong>
+      </div>
+      <div class="admin-info-card">
+        <span>Doanh thu tháng này</span>
+        <strong><%= moneyFmt(safeStats.thisMonthRevenue) %></strong>
+      </div>
+      <div class="admin-info-card">
+        <span>Tỷ lệ phản hồi tư vấn</span>
+        <strong><%= numberFmt(safeHealth.leadResponseRate) %>%</strong>
+      </div>
+      <div class="admin-hero-pulse">
+        <div>
+          <span>Tỷ lệ thu tiền</span>
+          <strong><%= numberFmt(safeHealth.collectionRate) %>%</strong>
+        </div>
+        <div>
+          <span>Học viên mỗi lớp</span>
+          <strong><%= safeHealth.averageStudentsPerClass || "0.0" %></strong>
+        </div>
+        <div>
+          <span>Hồ sơ đủ thông tin</span>
+          <strong><%= numberFmt(safeHealth.studentProfileCoverage) %>%</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="admin-anchorbar">
+    <a class="admin-anchor" href="#overview">Tổng quan</a>
+    <a class="admin-anchor" href="#classes">Lớp học</a>
+    <a class="admin-anchor" href="#students">Học sinh</a>
+    <a class="admin-anchor" href="#teachers">Giáo viên</a>
+    <a class="admin-anchor" href="#system">Hệ thống</a>
+  </div>
+
+  <section class="admin-kpi-grid">
+    <article class="admin-kpi">
+      <span>Tổng học sinh</span>
+      <strong><%= numberFmt(safeStats.totalStudents) %></strong>
+      <small><%= numberFmt(safeStats.studentsMissingContact) %> hồ sơ cần bổ sung</small>
+    </article>
+    <article class="admin-kpi">
+      <span>Tổng giáo viên</span>
+      <strong><%= numberFmt(safeStats.totalTeachers) %></strong>
+      <small><%= numberFmt(safeStats.teachersMissingContact) %> hồ sơ cần cập nhật</small>
+    </article>
+    <article class="admin-kpi">
+      <span>Lớp đang vận hành</span>
+      <strong><%= numberFmt(safeStats.totalClasses) %></strong>
+      <small><%= numberFmt(safeStats.classesStartingSoon) %> lớp sắp khai giảng</small>
+    </article>
+    <article class="admin-kpi">
+      <span>Tổng doanh thu</span>
+      <strong><%= moneyFmt(safeStats.totalRevenue) %></strong>
+      <small><%= numberFmt(safeStats.pendingPayments) %> thanh toán chờ duyệt</small>
+    </article>
+  </section>
+
+  <section class="admin-grid admin-grid-2">
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Xu hướng ghi danh</h2>
+          <p>Số lượng ghi danh trong 6 tháng gần nhất để theo dõi nhịp tăng trưởng.</p>
+        </div>
+      </div>
+
+      <div class="admin-chart">
+        <svg viewBox="0 0 560 230" aria-hidden="true">
+          <% [48, 96, 144, 192].forEach((lineY) => { %>
+            <line class="chart-grid-line" x1="20" y1="<%= lineY %>" x2="540" y2="<%= lineY %>"></line>
+          <% }) %>
+          <% if (enrollmentArea) { %>
+            <polygon class="chart-area" points="<%= enrollmentArea %>"></polygon>
+          <% } %>
+          <% if (enrollmentLine) { %>
+            <polyline class="chart-line" points="<%= enrollmentLine %>"></polyline>
+          <% } %>
+          <% enrollmentTrend.forEach((item, index) => {
+            const spanX = chartWidth - padX * 2;
+            const spanY = chartHeight - padY * 2;
+            const divisor = Math.max(enrollmentTrend.length - 1, 1);
+            const x = padX + (spanX * index) / divisor;
+            const y = chartHeight - padY - (spanY * Number(item.value || 0)) / Math.max(enrollmentMax, 1);
+          %>
+            <circle class="chart-dot" cx="<%= x %>" cy="<%= y %>" r="5"></circle>
+          <% }) %>
+        </svg>
+
+        <div class="chart-axis">
+          <% enrollmentTrend.forEach((item) => { %>
+            <span><%= item.label %> · <%= numberFmt(item.value) %></span>
+          <% }) %>
+        </div>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Doanh thu và cơ cấu người dùng</h2>
+          <p>Tổng hợp nguồn thu theo tháng và tỷ trọng các nhóm tài khoản hiện có.</p>
+        </div>
+        <a class="admin-panel-link" href="<%= safeBaseUrl %>/payments">Xem thanh toán</a>
+      </div>
+
+      <div class="admin-mini-grid">
+        <% if (!revenueTrend.length) { %>
+          <div class="admin-empty">Chưa có dữ liệu doanh thu theo tháng.</div>
+        <% } %>
+
+        <% revenueTrend.forEach((item) => {
+          const maxRevenue = Math.max(...revenueTrend.map((entry) => Number(entry.value || 0)), 1);
+          const width = Math.max((Number(item.value || 0) / maxRevenue) * 100, item.value ? 10 : 0);
+        %>
+          <div class="admin-quick-card">
+            <strong><%= moneyFmt(item.value) %></strong>
+            <span><%= item.label %></span>
+            <div class="admin-progress"><i style="width: <%= width %>%"></i></div>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+  </section>
+
+  <style>
+    .admin-progress {
+      margin-top: 12px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(191, 219, 254, 0.34);
+      overflow: hidden;
+    }
+
+    .admin-progress i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #4e75a6 0%, #8eb0df 100%);
+    }
+
+    .admin-health-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-health-card strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.7rem;
+      color: #17314c;
+    }
+
+    .admin-bar-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .admin-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #365470;
+      font-weight: 700;
+    }
+
+    .admin-bar-top small {
+      color: #7a8ea3;
+      font-weight: 600;
+    }
+
+    .admin-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .admin-alert,
+    .admin-feed-item,
+    .admin-table-card,
+    .admin-user-card {
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(248, 251, 255, 0.84);
+    }
+
+    .admin-alert {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .admin-alert-badge,
+    .admin-feed-dot,
+    .admin-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .admin-alert-badge {
+      min-width: 52px;
+      height: 52px;
+      padding: 0 14px;
+      font-size: 1rem;
+      color: #18324a;
+    }
+
+    .admin-alert h3,
+    .admin-feed-item h3,
+    .admin-user-card h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #18324a;
+    }
+
+    .admin-alert p,
+    .admin-feed-item p,
+    .admin-table-card p,
+    .admin-user-card p {
+      margin: 6px 0 0;
+      color: #6f8499;
+      line-height: 1.6;
+    }
+
+    .tone-amber {
+      background: rgba(245, 158, 11, 0.18);
+      color: #9a6708;
+    }
+
+    .tone-cyan {
+      background: rgba(56, 189, 248, 0.16);
+      color: #0f6c8d;
+    }
+
+    .tone-emerald {
+      background: rgba(16, 185, 129, 0.16);
+      color: #0f766e;
+    }
+
+    .tone-rose {
+      background: rgba(244, 63, 94, 0.16);
+      color: #be123c;
+    }
+
+    .tone-violet {
+      background: rgba(129, 140, 248, 0.16);
+      color: #5b5bd6;
+    }
+
+    .admin-alert-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: #305579;
+      background: rgba(95, 132, 194, 0.1);
+      font-weight: 700;
+    }
+
+    .admin-alert-link:hover {
+      background: rgba(95, 132, 194, 0.16);
+    }
+
+    .admin-feed-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .admin-feed-dot {
+      width: 12px;
+      height: 12px;
+      margin-top: 8px;
+      padding: 0;
+    }
+
+    .admin-feed-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      color: #7b8ea2;
+      font-size: 0.86rem;
+    }
+
+    .admin-inline-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(95, 132, 194, 0.1);
+      color: #35597e;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .admin-table-wrap {
+      overflow: auto;
+    }
+
+    .admin-table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .admin-table th {
+      color: #607890;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .admin-table td strong {
+      display: block;
+      color: #18324a;
+    }
+
+    .admin-table td small {
+      display: block;
+      margin-top: 4px;
+      color: #7b8fa3;
+    }
+
+    .admin-status {
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      background: rgba(95, 132, 194, 0.12);
+      color: #35597e;
+    }
+
+    .status-active {
+      background: rgba(16, 185, 129, 0.14);
+      color: #047857;
+    }
+
+    .status-upcoming,
+    .status-pending {
+      background: rgba(245, 158, 11, 0.16);
+      color: #a16207;
+    }
+
+    .status-ended,
+    .status-rejected {
+      background: rgba(244, 63, 94, 0.14);
+      color: #be123c;
+    }
+
+    .status-unassigned {
+      background: rgba(129, 140, 248, 0.16);
+      color: #5b5bd6;
+    }
+
+    .admin-empty {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(248, 250, 252, 0.86);
+      border: 1px dashed rgba(148, 163, 184, 0.24);
+      color: #70859b;
+      text-align: center;
+    }
+
+    @media (max-width: 1180px) {
+      .admin-kpi-grid,
+      .admin-health-grid,
+      .admin-grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 920px) {
+      .admin-hero,
+      .admin-grid-2,
+      .admin-grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-kpi-grid,
+      .admin-health-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-panel,
+      .admin-hero {
+        padding: 22px;
+      }
+
+      .admin-anchorbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+
+  <section class="admin-grid admin-grid-3">
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Chỉ số sức khỏe</h2>
+          <p>Những điểm cần theo dõi mỗi ngày để giữ vận hành ổn định.</p>
+        </div>
+      </div>
+
+      <div class="admin-health-grid">
+        <div class="admin-health-card">
+          <span>Học sinh mỗi lớp</span>
+          <strong><%= safeHealth.averageStudentsPerClass || "0.0" %></strong>
+        </div>
+        <div class="admin-health-card">
+          <span>Tỷ lệ thu tiền</span>
+          <strong><%= numberFmt(safeHealth.collectionRate) %>%</strong>
+        </div>
+        <div class="admin-health-card">
+          <span>Phản hồi tư vấn</span>
+          <strong><%= numberFmt(safeHealth.leadResponseRate) %>%</strong>
+        </div>
+        <div class="admin-health-card">
+          <span>Hồ sơ đủ thông tin</span>
+          <strong><%= numberFmt(safeHealth.studentProfileCoverage) %>%</strong>
+        </div>
+      </div>
+
+      <div class="admin-bar-list">
+        <% if (!roleMix.length) { %>
+          <div class="admin-empty">Chưa có dữ liệu cơ cấu tài khoản.</div>
+        <% } %>
+
+        <% roleMix.forEach((item) => { %>
+          <div class="admin-bar-row">
+            <div class="admin-bar-top">
+              <span><%= roleLabelMap[item.key] || item.label || item.key %></span>
+              <small><%= numberFmt(item.total) %> tài khoản</small>
+            </div>
+            <div class="admin-progress"><i style="width: <%= Math.max(item.percentage || 0, item.total ? 8 : 0) %>%"></i></div>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Cảnh báo ưu tiên</h2>
+          <p>Các việc nên xử lý sớm để tránh tắc vận hành hoặc chậm doanh thu.</p>
+        </div>
+      </div>
+
+      <div class="admin-list">
+        <% if (!safeAlerts.length) { %>
+          <div class="admin-empty">Hiện chưa có cảnh báo nào cần lưu ý.</div>
+        <% } %>
+
+        <% safeAlerts.forEach((alert) => { %>
+          <div class="admin-alert">
+            <span class="admin-alert-badge <%= toneClassMap[alert.tone] || '' %>"><%= numberFmt(alert.value) %></span>
+            <div>
+              <h3><%= alertTitleMap[alert.title] || alert.title %></h3>
+              <p><%= alertDescriptionMap[alert.title] || alert.description %></p>
+            </div>
+            <a class="admin-alert-link" href="<%= alert.href %>">Mở</a>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Hoạt động gần đây</h2>
+          <p>Dòng sự kiện mới nhất từ tư vấn, ghi danh và thanh toán.</p>
+        </div>
+      </div>
+
+      <div class="admin-feed">
+        <% if (!safeActivityFeed.length) { %>
+          <div class="admin-empty">Chưa có hoạt động nào được ghi nhận.</div>
+        <% } %>
+
+        <% safeActivityFeed.forEach((item) => { %>
+          <div class="admin-feed-item">
+            <span class="admin-feed-dot <%= toneClassMap[item.tone] || '' %>"></span>
+            <div>
+              <h3><%= item.title %></h3>
+              <p><%= item.meta %></p>
+              <div class="admin-feed-meta">
+                <span class="admin-inline-badge"><%= activityLabelMap[item.label] || item.label %></span>
+                <span><%= shortDateTime(item.at) %></span>
+                <a class="admin-panel-link" href="<%= item.href %>">Mở chi tiết</a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+  </section>
+
+  <section class="admin-grid admin-grid-2" id="classes">
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Danh mục lớp học</h2>
+          <p>Theo dõi tình trạng lớp, giáo viên phụ trách và doanh thu đã chốt.</p>
+        </div>
+        <a class="admin-panel-link" href="<%= safeBaseUrl %>/database">Mở dữ liệu</a>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Lớp học</th>
+              <th>Lịch học</th>
+              <th>Giáo viên</th>
+              <th>Học viên</th>
+              <th>Doanh thu</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!safeClasses.length) { %>
+              <tr>
+                <td colspan="6"><div class="admin-empty">Chưa có lớp học nào trong hệ thống.</div></td>
+              </tr>
+            <% } %>
+
+            <% safeClasses.forEach((item) => {
+              const state = classState(item);
+              const statusClass =
+                state === "Đang hoạt động"
+                  ? "status-active"
+                  : state === "Sắp khai giảng"
+                    ? "status-upcoming"
+                    : state === "Đã kết thúc"
+                      ? "status-ended"
+                      : state === "Chưa phân công"
+                        ? "status-unassigned"
+                        : "";
+            %>
+              <tr>
+                <td>
+                  <strong><%= item.course_name || "Chưa có tên khóa học" %></strong>
+                  <small>Mã lớp: <%= item.code || "Đang cập nhật" %> · Phòng: <%= item.room || "Chưa gán" %></small>
+                </td>
+                <td>
+                  <strong><%= shortDate(item.start_date) %></strong>
+                  <small><%= item.schedule_text || "Chưa có lịch học" %></small>
+                </td>
+                <td>
+                  <strong><%= item.teacher_name || "Chưa phân công" %></strong>
+                  <small><%= item.category || "Chưa phân loại" %></small>
+                </td>
+                <td><%= numberFmt(item.enrollment_count) %></td>
+                <td><%= moneyFmt(item.confirmed_revenue) %></td>
+                <td><span class="admin-status <%= statusClass %>"><%= state %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Trạng thái vận hành</h2>
+          <p>Tóm tắt nhanh hộp thư, kênh thanh toán và tiến độ xử lý.</p>
+        </div>
+      </div>
+
+      <div class="admin-list">
+        <div class="admin-table-card">
+          <h3>Trạng thái tin nhắn</h3>
+          <p>Phân loại yêu cầu tư vấn để đội ngũ xử lý không bị bỏ sót.</p>
+          <div class="admin-bar-list">
+            <% if (!messageStatuses.length) { %>
+              <div class="admin-empty">Chưa có dữ liệu trạng thái tin nhắn.</div>
+            <% } %>
+
+            <% messageStatuses.forEach((item) => { %>
+              <div class="admin-bar-row">
+                <div class="admin-bar-top">
+                  <span><%= messageStatusMap[item.key] || item.label || item.key %></span>
+                  <small><%= numberFmt(item.total) %> yêu cầu</small>
+                </div>
+                <div class="admin-progress"><i style="width: <%= Math.max(item.percentage || 0, item.total ? 8 : 0) %>%"></i></div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <h3>Kênh thanh toán</h3>
+          <p>Ưu tiên những kênh tạo doanh thu tốt và xử lý thuận tiện nhất.</p>
+          <div class="admin-bar-list">
+            <% if (!paymentMethods.length) { %>
+              <div class="admin-empty">Chưa có dữ liệu kênh thanh toán.</div>
+            <% } %>
+
+            <% paymentMethods.forEach((item) => {
+              const maxMethodRevenue = Math.max(...paymentMethods.map((entry) => Number(entry.revenue || 0)), 1);
+              const width = Math.max((Number(item.revenue || 0) / maxMethodRevenue) * 100, item.revenue ? 8 : 0);
+            %>
+              <div class="admin-bar-row">
+                <div class="admin-bar-top">
+                  <span><%= paymentMethodMap[item.key] || paymentMethodMap[item.label] || item.label || item.key %></span>
+                  <small><%= moneyFmt(item.revenue) %></small>
+                </div>
+                <div class="admin-progress"><i style="width: <%= width %>%"></i></div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <style>
+    .admin-section-grid {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .admin-form-card {
+      padding: 20px;
+      border-radius: 22px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(248, 251, 255, 0.86);
+    }
+
+    .admin-form-card h3,
+    .admin-table-card h3 {
+      margin: 0;
+      color: #17314c;
+      font-size: 1.05rem;
+    }
+
+    .admin-form-card p {
+      margin: 8px 0 0;
+      color: #71859b;
+      line-height: 1.6;
+    }
+
+    .admin-form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .admin-form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .admin-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .admin-field label {
+      color: #355779;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .admin-input {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(191, 219, 254, 0.7);
+      background: rgba(255, 255, 255, 0.96);
+      color: #17314c;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .admin-input:focus {
+      border-color: rgba(95, 132, 194, 0.72);
+      box-shadow: 0 0 0 4px rgba(95, 132, 194, 0.12);
+    }
+
+    .admin-actions,
+    .admin-toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .admin-toolbar {
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .admin-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 15px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: linear-gradient(135deg, #466a98 0%, #6f93c2 100%);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .admin-button.secondary {
+      background: rgba(95, 132, 194, 0.12);
+      color: #32577b;
+      border-color: rgba(148, 163, 184, 0.16);
+    }
+
+    .admin-button.danger {
+      background: rgba(244, 63, 94, 0.12);
+      color: #be123c;
+      border-color: rgba(244, 63, 94, 0.18);
+    }
+
+    .admin-button:hover {
+      filter: brightness(0.98);
+    }
+
+    .admin-search {
+      min-width: min(100%, 280px);
+    }
+
+    .admin-edit-row.hidden {
+      display: none;
+    }
+
+    .admin-inline-form {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(244, 248, 252, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .admin-inline-form .admin-form-grid {
+      margin-top: 0;
+    }
+
+    .admin-micro-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .admin-user-card strong {
+      display: block;
+      color: #17314c;
+      font-size: 1rem;
+    }
+
+    .admin-user-card small {
+      display: block;
+      margin-top: 6px;
+      color: #7a8ea3;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      .admin-section-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .admin-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-toolbar {
+        align-items: stretch;
+      }
+
+      .admin-search {
+        min-width: 100%;
+      }
+    }
+  </style>
+
+  <section class="admin-panel" id="students">
+    <div class="admin-panel-header">
+      <div>
+        <h2>Quản lý học sinh</h2>
+        <p>Thêm hồ sơ mới, tìm kiếm nhanh và cập nhật thông tin học sinh ngay trên dashboard.</p>
+      </div>
+    </div>
+
+    <div class="admin-section-grid">
+      <aside class="admin-form-card">
+        <h3>Thêm học sinh mới</h3>
+        <p>Tạo hồ sơ cơ bản để ghi nhận liên hệ và chuẩn bị cho các bước ghi danh tiếp theo.</p>
+
+        <form method="POST" action="<%= safeBaseUrl %>/admin/students/add" class="admin-form-grid">
+          <div class="admin-field full">
+            <label for="student-full-name">Họ và tên</label>
+            <input class="admin-input" id="student-full-name" name="full_name" type="text" placeholder="Nhập họ và tên" required>
+          </div>
+          <div class="admin-field">
+            <label for="student-phone">Số điện thoại</label>
+            <input class="admin-input" id="student-phone" name="phone" type="text" placeholder="Nhập số điện thoại">
+          </div>
+          <div class="admin-field">
+            <label for="student-email">Email</label>
+            <input class="admin-input" id="student-email" name="email" type="email" placeholder="Nhập email">
+          </div>
+          <div class="admin-field full">
+            <label for="student-dob">Ngày sinh</label>
+            <input class="admin-input" id="student-dob" name="dob" type="date">
+          </div>
+          <div class="admin-actions full">
+            <button class="admin-button" type="submit">Thêm học sinh</button>
+          </div>
+        </form>
+      </aside>
+
+      <div class="admin-table-card">
+        <div class="admin-toolbar">
+          <div>
+            <h3>Danh sách học sinh</h3>
+            <p>Tìm theo tên, số điện thoại hoặc email để xử lý hồ sơ nhanh hơn.</p>
+          </div>
+          <input class="admin-input admin-search" type="search" placeholder="Tìm học sinh..." data-admin-search="students-table">
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Học sinh</th>
+                <th>Liên hệ</th>
+                <th>Ghi danh</th>
+                <th>Đã thu</th>
+                <th>Ngày tạo</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!safeStudents.length) { %>
+                <tr>
+                  <td colspan="6"><div class="admin-empty">Chưa có học sinh nào trong hệ thống.</div></td>
+                </tr>
+              <% } %>
+
+              <% safeStudents.forEach((item) => { %>
+                <tr
+                  data-filter-row="students-table"
+                  data-edit-row="student-edit-<%= item.id %>"
+                  data-filter-text="<%= [item.full_name, item.phone, item.email].filter(Boolean).join(' ') %>"
+                >
+                  <td>
+                    <strong><%= item.full_name || "Chưa cập nhật tên" %></strong>
+                    <small>Ngày sinh: <%= shortDate(item.dob) %></small>
+                  </td>
+                  <td>
+                    <strong><%= item.phone || "Chưa có số điện thoại" %></strong>
+                    <small><%= item.email || "Chưa có email" %></small>
+                  </td>
+                  <td><%= numberFmt(item.enrollment_count) %></td>
+                  <td><%= moneyFmt(item.confirmed_paid) %></td>
+                  <td><%= shortDate(item.created_at) %></td>
+                  <td>
+                    <div class="admin-actions">
+                      <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('student-edit-<%= item.id %>')">Sửa</button>
+                      <form method="POST" action="<%= safeBaseUrl %>/admin/students/<%= item.id %>/delete" onsubmit="return confirm('Bạn có chắc muốn xóa hồ sơ học sinh này?')">
+                        <button class="admin-button danger" type="submit">Xóa</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="student-edit-<%= item.id %>" class="admin-edit-row hidden">
+                  <td colspan="6">
+                    <form class="admin-inline-form" method="POST" action="<%= safeBaseUrl %>/admin/students/<%= item.id %>/update">
+                      <div class="admin-form-grid">
+                        <div class="admin-field full">
+                          <label>Họ và tên</label>
+                          <input class="admin-input" name="full_name" type="text" value="<%= item.full_name || '' %>" required>
+                        </div>
+                        <div class="admin-field">
+                          <label>Số điện thoại</label>
+                          <input class="admin-input" name="phone" type="text" value="<%= item.phone || '' %>">
+                        </div>
+                        <div class="admin-field">
+                          <label>Email</label>
+                          <input class="admin-input" name="email" type="email" value="<%= item.email || '' %>">
+                        </div>
+                        <div class="admin-field full">
+                          <label>Ngày sinh</label>
+                          <input class="admin-input" name="dob" type="date" value="<%= dateFieldValue(item.dob) %>">
+                        </div>
+                      </div>
+                      <div class="admin-actions">
+                        <button class="admin-button" type="submit">Lưu thay đổi</button>
+                        <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('student-edit-<%= item.id %>')">Đóng</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-panel" id="teachers">
+    <div class="admin-panel-header">
+      <div>
+        <h2>Quản lý giáo viên</h2>
+        <p>Theo dõi tải lớp, số lượng học viên và cập nhật đội ngũ giảng dạy trực tiếp tại đây.</p>
+      </div>
+    </div>
+
+    <div class="admin-section-grid">
+      <aside class="admin-form-card">
+        <h3>Thêm giáo viên mới</h3>
+        <p>Tạo hồ sơ giáo viên để sẵn sàng phân công lớp và đồng bộ liên hệ vận hành.</p>
+
+        <form method="POST" action="<%= safeBaseUrl %>/admin/teachers/add" class="admin-form-grid">
+          <div class="admin-field full">
+            <label for="teacher-full-name">Họ và tên</label>
+            <input class="admin-input" id="teacher-full-name" name="full_name" type="text" placeholder="Nhập họ và tên" required>
+          </div>
+          <div class="admin-field">
+            <label for="teacher-phone">Số điện thoại</label>
+            <input class="admin-input" id="teacher-phone" name="phone" type="text" placeholder="Nhập số điện thoại">
+          </div>
+          <div class="admin-field">
+            <label for="teacher-email">Email</label>
+            <input class="admin-input" id="teacher-email" name="email" type="email" placeholder="Nhập email">
+          </div>
+          <div class="admin-actions full">
+            <button class="admin-button" type="submit">Thêm giáo viên</button>
+          </div>
+        </form>
+      </aside>
+
+      <div class="admin-table-card">
+        <div class="admin-toolbar">
+          <div>
+            <h3>Danh sách giáo viên</h3>
+            <p>Tìm kiếm nhanh để cập nhật liên hệ hoặc điều chỉnh hồ sơ giảng dạy.</p>
+          </div>
+          <input class="admin-input admin-search" type="search" placeholder="Tìm giáo viên..." data-admin-search="teachers-table">
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Giáo viên</th>
+                <th>Liên hệ</th>
+                <th>Lớp phụ trách</th>
+                <th>Tải học viên</th>
+                <th>Doanh thu</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!safeTeachers.length) { %>
+                <tr>
+                  <td colspan="6"><div class="admin-empty">Chưa có giáo viên nào trong hệ thống.</div></td>
+                </tr>
+              <% } %>
+
+              <% safeTeachers.forEach((item) => { %>
+                <tr
+                  data-filter-row="teachers-table"
+                  data-edit-row="teacher-edit-<%= item.id %>"
+                  data-filter-text="<%= [item.full_name, item.phone, item.email].filter(Boolean).join(' ') %>"
+                >
+                  <td>
+                    <strong><%= item.full_name || "Chưa cập nhật tên" %></strong>
+                    <small>Ngày tạo: <%= shortDate(item.created_at) %></small>
+                  </td>
+                  <td>
+                    <strong><%= item.phone || "Chưa có số điện thoại" %></strong>
+                    <small><%= item.email || "Chưa có email" %></small>
+                  </td>
+                  <td><%= numberFmt(item.class_count) %></td>
+                  <td><%= numberFmt(item.student_load) %></td>
+                  <td><%= moneyFmt(item.confirmed_revenue) %></td>
+                  <td>
+                    <div class="admin-actions">
+                      <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('teacher-edit-<%= item.id %>')">Sửa</button>
+                      <form method="POST" action="<%= safeBaseUrl %>/admin/teachers/<%= item.id %>/delete" onsubmit="return confirm('Bạn có chắc muốn xóa hồ sơ giáo viên này?')">
+                        <button class="admin-button danger" type="submit">Xóa</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="teacher-edit-<%= item.id %>" class="admin-edit-row hidden">
+                  <td colspan="6">
+                    <form class="admin-inline-form" method="POST" action="<%= safeBaseUrl %>/admin/teachers/<%= item.id %>/update">
+                      <div class="admin-form-grid">
+                        <div class="admin-field full">
+                          <label>Họ và tên</label>
+                          <input class="admin-input" name="full_name" type="text" value="<%= item.full_name || '' %>" required>
+                        </div>
+                        <div class="admin-field">
+                          <label>Số điện thoại</label>
+                          <input class="admin-input" name="phone" type="text" value="<%= item.phone || '' %>">
+                        </div>
+                        <div class="admin-field">
+                          <label>Email</label>
+                          <input class="admin-input" name="email" type="email" value="<%= item.email || '' %>">
+                        </div>
+                      </div>
+                      <div class="admin-actions">
+                        <button class="admin-button" type="submit">Lưu thay đổi</button>
+                        <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('teacher-edit-<%= item.id %>')">Đóng</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-grid admin-grid-2" id="system">
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Tài khoản mới tạo</h2>
+          <p>Danh sách tài khoản gần nhất để kiểm tra phân quyền và hoạt động onboarding.</p>
+        </div>
+      </div>
+
+      <div class="admin-micro-list">
+        <% if (!safeUsers.length) { %>
+          <div class="admin-empty">Chưa có tài khoản nào được ghi nhận.</div>
+        <% } %>
+
+        <% safeUsers.forEach((item) => { %>
+          <div class="admin-user-card">
+            <h3><%= item.username || item.email || "Tài khoản mới" %></h3>
+            <p><%= item.email || "Chưa có email" %></p>
+            <small>
+              Vai trò: <%= roleLabelMap[item.role] || item.role || "Khác" %> · Tạo lúc <%= shortDateTime(item.created_at) %>
+            </small>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Năng lực đội ngũ và khóa học</h2>
+          <p>So sánh tải giảng dạy của giáo viên và hiệu suất ghi danh theo khóa học.</p>
+        </div>
+      </div>
+
+      <div class="admin-list">
+        <div class="admin-table-card">
+          <h3>Tải giảng dạy</h3>
+          <div class="admin-bar-list">
+            <% if (!teacherLoad.length) { %>
+              <div class="admin-empty">Chưa có dữ liệu tải giảng dạy.</div>
+            <% } %>
+
+            <% teacherLoad.forEach((item) => {
+              const maxTeacherLoad = Math.max(...teacherLoad.map((entry) => Number(entry.enrollment_count || 0)), 1);
+              const width = Math.max((Number(item.enrollment_count || 0) / maxTeacherLoad) * 100, item.enrollment_count ? 10 : 0);
+            %>
+              <div class="admin-bar-row">
+                <div class="admin-bar-top">
+                  <span><%= item.full_name || "Giáo viên" %></span>
+                  <small><%= numberFmt(item.enrollment_count) %> học viên</small>
+                </div>
+                <div class="admin-progress"><i style="width: <%= width %>%"></i></div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="admin-table-card">
+          <h3>Khóa học nổi bật</h3>
+          <div class="admin-bar-list">
+            <% if (!coursePerformance.length) { %>
+              <div class="admin-empty">Chưa có dữ liệu hiệu quả khóa học.</div>
+            <% } %>
+
+            <% coursePerformance.forEach((item) => {
+              const maxCourseEnrollments = Math.max(...coursePerformance.map((entry) => Number(entry.enrollment_count || 0)), 1);
+              const width = Math.max((Number(item.enrollment_count || 0) / maxCourseEnrollments) * 100, item.enrollment_count ? 10 : 0);
+            %>
+              <div class="admin-bar-row">
+                <div class="admin-bar-top">
+                  <span><%= item.name || "Khóa học" %></span>
+                  <small><%= numberFmt(item.enrollment_count) %> ghi danh</small>
+                </div>
+                <div class="admin-progress"><i style="width: <%= width %>%"></i></div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="admin-grid admin-grid-2">
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Tin nhắn mới</h2>
+          <p>Những yêu cầu tư vấn gần nhất để đội ngũ phản hồi đúng nhịp.</p>
+        </div>
+        <a class="admin-panel-link" href="<%= safeBaseUrl %>/messages">Mở hộp thư</a>
+      </div>
+
+      <div class="admin-list">
+        <% if (!safeMessages.length) { %>
+          <div class="admin-empty">Chưa có yêu cầu tư vấn mới.</div>
+        <% } %>
+
+        <% safeMessages.forEach((item) => { %>
+          <div class="admin-table-card">
+            <h3><%= item.name || item.email || "Yêu cầu mới" %></h3>
+            <p><%= item.message || "Chưa có nội dung." %></p>
+            <div class="admin-feed-meta">
+              <span class="admin-inline-badge"><%= messageStatusMap[item.status || "new"] || item.status || "Mới" %></span>
+              <span><%= shortDateTime(item.created_at) %></span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <h2>Thanh toán gần đây</h2>
+          <p>Kiểm tra tình trạng xác nhận và đối chiếu nhanh theo lớp hoặc khóa học.</p>
+        </div>
+        <a class="admin-panel-link" href="<%= safeBaseUrl %>/payments">Mở thanh toán</a>
+      </div>
+
+      <div class="admin-list">
+        <% if (!safePayments.length) { %>
+          <div class="admin-empty">Chưa có giao dịch nào được ghi nhận.</div>
+        <% } %>
+
+        <% safePayments.forEach((item) => {
+          const statusClass =
+            item.status === "confirmed"
+              ? "status-active"
+              : item.status === "pending"
+                ? "status-pending"
+                : item.status === "rejected"
+                  ? "status-rejected"
+                  : "";
+        %>
+          <div class="admin-table-card">
+            <h3><%= item.student_name || "Học viên" %></h3>
+            <p>
+              <%= item.course_name || "Chưa có khóa học" %>
+              <% if (item.class_code) { %>· Lớp <%= item.class_code %><% } %>
+            </p>
+            <div class="admin-feed-meta">
+              <span class="admin-status <%= statusClass %>"><%= paymentStatusMap[item.status] || item.status || "Chưa cập nhật" %></span>
+              <span><%= paymentMethodMap[item.method] || item.method || "Khác" %></span>
+              <span><%= moneyFmt(item.amount) %></span>
+              <span><%= shortDateTime(item.paid_at) %></span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </article>
+  </section>
+</div>
+
+<script>
+  function toggleAdminEditor(id) {
+    const row = document.getElementById(id);
+    if (!row) return;
+    row.classList.toggle("hidden");
+    if (!row.classList.contains("hidden")) {
+      row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  document.querySelectorAll("[data-admin-search]").forEach((input) => {
+    const group = input.getAttribute("data-admin-search");
+    const rows = Array.from(document.querySelectorAll(`[data-filter-row="${group}"]`));
+
+    input.addEventListener("input", () => {
+      const query = input.value.trim().toLowerCase();
+
+      rows.forEach((row) => {
+        const haystack = (row.getAttribute("data-filter-text") || row.textContent || "").toLowerCase();
+        const visible = !query || haystack.includes(query);
+        row.style.display = visible ? "" : "none";
+
+        const editRowId = row.getAttribute("data-edit-row");
+        if (editRowId) {
+          const editRow = document.getElementById(editRowId);
+          if (editRow && !visible) {
+            editRow.classList.add("hidden");
+          }
+        }
+      });
+    });
+  });
+</script>

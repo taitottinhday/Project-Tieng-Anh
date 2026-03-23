@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#eef6ff;--panel:#ffffff;--line:rgba(37,99,235,.12);--text:#102a43;--muted:#58708f;--blue:#2563eb;--blue-soft:#dbeafe;--cyan:#38bdf8;--shadow:0 26px 70px rgba(37,99,235,.10)}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:"Manrope","Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at top left,rgba(56,189,248,.16),transparent 24%),radial-gradient(circle at top right,rgba(37,99,235,.16),transparent 22%),linear-gradient(180deg,#ffffff 0%,var(--bg) 100%)}
+    .wrap{width:min(100%,1200px);margin:0 auto;padding:32px 24px}
+    .panel{border:1px solid var(--line);border-radius:30px;background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);box-shadow:var(--shadow)}
+    .hero{padding:26px;margin-bottom:22px}
+    .kicker{display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;color:var(--blue);font-size:.76rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+    .kicker::before{content:"";width:30px;height:1px;background:currentColor;opacity:.72}
+    h1,h2,h3{margin:0;font-family:"Sora",sans-serif;letter-spacing:-.04em}
+    p{margin:0;color:var(--muted);line-height:1.8}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.9fr);gap:18px;align-items:center}
+    .score-main{padding:24px;border-radius:26px;background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1px solid rgba(37,99,235,.14)}
+    .score-main span{display:block;color:var(--muted);font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    .score-main strong{display:block;margin-top:10px;font-family:"Sora",sans-serif;font-size:4rem;line-height:1;color:var(--text)}
+    .score-main small{display:block;margin-top:10px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:22px}
+    .card{padding:22px}
+    .card span{display:block;color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    .card strong{display:block;margin-top:10px;font-family:"Sora",sans-serif;font-size:1.8rem;color:#173f73}
+    .split{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:22px}
+    .mini{padding:18px;border-radius:24px;background:#f7fbff;border:1px solid rgba(37,99,235,.10)}
+    .mini strong{display:block;margin-top:8px;font-family:"Sora",sans-serif;font-size:1.4rem}
+    .recommend{padding:24px;display:grid;gap:16px}
+    .recommend-box{padding:22px;border-radius:24px;background:linear-gradient(135deg,#173f73,#2563eb 70%,#38bdf8);border:1px solid rgba(37,99,235,.14)}
+    .recommend-box h3{font-size:1.55rem;margin-bottom:10px;color:#fff}
+    .recommend-box p{color:rgba(239,246,255,.86)}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 20px;border-radius:16px;text-decoration:none;font-weight:800}
+    .btn-primary{background:linear-gradient(135deg,#60a5fa,#2563eb);color:#fff}
+    .btn-secondary{background:#eff6ff;color:var(--blue);border:1px solid rgba(37,99,235,.12)}
+    @media (max-width:900px){.hero-grid,.grid,.split{grid-template-columns:1fr}.wrap{padding:20px 14px}.hero,.card,.recommend{padding:18px}.score-main strong{font-size:3.1rem}}
+  </style>
+</head>
+<body>
+  <% const data = result || {}; const recommendation = data.recommendation || {}; const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : ''; %>
+  <div class="wrap">
+    <section class="panel hero">
+      <div class="hero-grid">
+        <div>
+          <span class="kicker">Kết quả placement test</span>
+          <h1><%= data.examTitle || 'Kết quả TOEIC Placement Test' %></h1>
+          <p>Kết quả được tính ngay sau khi nộp bài. Trang này hiển thị cả điểm TOEIC quy đổi theo 2 kỹ năng và điểm thô theo công thức số câu đúng x 5 để bạn dễ theo dõi.</p>
+        </div>
+        <div class="score-main">
+          <span>Điểm TOEIC quy đổi</span>
+          <strong><%= data.toeicScore || 0 %></strong>
+          <small>Listening <%= data.listeningScore || 0 %> • Reading <%= data.readingScore || 0 %> • Max 990</small>
+        </div>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="panel card">
+        <span>Điểm thô</span>
+        <strong><%= data.rawPracticeScore || 0 %> / <%= data.rawPracticeMax || 0 %></strong>
+        <p>Công thức: số câu đúng x 5.</p>
+      </div>
+      <div class="panel card">
+        <span>Số câu đúng</span>
+        <strong><%= data.correctCount || 0 %> / <%= data.totalQuestions || 0 %></strong>
+        <p>Sai: <%= data.incorrectCount || 0 %> • Bỏ trống: <%= data.unansweredCount || 0 %></p>
+      </div>
+    </section>
+    <section class="split">
+      <div class="panel card mini">
+        <span>Listening</span>
+        <strong><%= data.listeningCorrect || 0 %> / <%= data.listeningTotal || 0 %></strong>
+        <p>Điểm quy đổi: <%= data.listeningScore || 0 %></p>
+      </div>
+      <div class="panel card mini">
+        <span>Reading</span>
+        <strong><%= data.readingCorrect || 0 %> / <%= data.readingTotal || 0 %></strong>
+        <p>Điểm quy đổi: <%= data.readingScore || 0 %></p>
+      </div>
+      <div class="panel card mini">
+        <span>Thí sinh</span>
+        <strong><%= data.guestName || 'Khách' %></strong>
+        <p><%= data.guestEmail || 'Chưa cung cấp email' %></p>
+      </div>
+    </section>
+    <section class="panel recommend">
+      <div>
+        <span class="kicker">Gợi ý khóa học</span>
+        <h2><%= recommendation.course || 'Chưa có gợi ý khóa học' %></h2>
+        <p>Trình độ đánh giá: <strong style="color:#102a43"><%= recommendation.level || 'Chưa xác định' %></strong></p>
+      </div>
+      <div class="recommend-box">
+        <h3>Lộ trình gợi ý</h3>
+        <p><%= recommendation.note || 'Hệ thống sẽ đề xuất khóa học phù hợp dựa trên tổng điểm TOEIC quy đổi của bạn.' %></p>
+      </div>
+      <div class="actions">
+        <a href="<%= safeBaseUrl %>/register-course" class="btn btn-primary">Đăng ký khóa học</a>
+        <a href="<%= safeBaseUrl %>/placement-tests/<%= data.examId || '' %>" class="btn btn-secondary">Làm lại bài thi</a>
+        <a href="<%= safeBaseUrl %>/placement-tests" class="btn btn-secondary">Về danh sách bài test</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,2 @@
+{"id":1765816579325,"username":"ayman","email":"ayman@gmail.com","password":"$2b$10$TPCkNXXQLoUTBr9RcG.RAu.BFgRmR77ePecvYqzDUx3zELlxKHYoa","role":"user"}
+{"id":1765825233145,"username":"Admin","email":"admin@gmail.com","password":"$2b$10$Hm/BJastwbRuO8jz9nrlW.LgpNvf14dKbPEokxKhaKK0ukQOZCo8K","role":"admin"}

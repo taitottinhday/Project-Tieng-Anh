@@ -1,0 +1,2146 @@
+<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const routeGroups=Array.isArray(scheduleGroups) ?
+  scheduleGroups : []; const sectionLinks=[ { label: "Lịch khai giảng" , href: "#hero" }, { label: "Lộ trình học" ,
+  href: "#lo-trinh-hoc" }, { label: "Tập Sự" , href: "#tap-su" }, { label: "TOEIC A" , href: "#toeic-a" }, {
+  label: "TOEIC B" , href: "#toeic-b" }, { label: "TOEIC SW" , href: "#toeic-sw" }, { label: "Điểm học viên" ,
+  href: "#bang-diem" }, { label: "Giảng viên" , href: "#giang-vien" }, { label: "Địa chỉ học" , href: "#dia-chi-hoc" },
+  { label: "Học phí" , href: "#hoc-phi" }, { label: "Hỏi đáp" , href: "#cau-hoi" }, ]; const heroCards=[ {
+  title: "TOEIC A" , bullets: [ "Hoàn thành Part 1-2-3-4" , "Hệ thống lại ngữ pháp" , "Làm quen với phần Reading cơ bản"
+  , ], price: "3.900.000đ" , sessions: "27 buổi" , image: "https://i.postimg.cc/sXxrYG53/1.png" ,
+  placeholder: "Ảnh lớp TOEIC A" , tone: "violet" , }, { title: "TOEIC B" , bullets: [ "Tập trung vào Reading"
+  , "Tập trung vào Vocab" , "Hoàn thiện toàn bộ kỹ năng" , ], price: "3.500.000đ" , sessions: "25 buổi" ,
+  image: "https://i.postimg.cc/bvJyT5hp/2.png" , placeholder: "Ảnh lớp TOEIC B" , tone: "rose" , }, ]; const
+  seededGroups=routeGroups.length ? routeGroups : [ { campus: "Cơ sở Hồ Tùng Mậu" ,
+  address: "Số 17, ngõ 20 Hồ Tùng Mậu, Cầu Giấy, Hà Nội" , classes: [ { code: "TẬP SỰ TS20" , course: "Tập Sự TOEIC" ,
+  time: "18h-19h30" , days: "Tối 3-5-7" , opening: "31/03" , }, { code: "TẬP SỰ TS24" , course: "Tập Sự TOEIC" ,
+  time: "22h-23h30" , days: "Tối 2-4-6" , opening: "30/03" , }, { code: "TOEIC A23" , course: "TOEIC A" ,
+  time: "18h-19h30" , days: "Tối 3-5-7" , opening: "24/03" , }, { code: "TOEIC B88" , course: "TOEIC B" ,
+  time: "20h15-21h45" , days: "Tối 2-4-6" , opening: "01/04" , }, ], }, { campus: "Cơ sở Lê Đức Thọ" ,
+  address: "Số 9 ngách 59 ngõ 21 Lê Đức Thọ, Nam Từ Liêm, Hà Nội" , classes: [ { code: "TẬP SỰ LT01" ,
+  course: "Tập Sự TOEIC" , time: "17h45-19h15" , days: "Tối 3-5" , opening: "06/04" , }, { code: "TOEIC A LT02" ,
+  course: "TOEIC A" , time: "19h15-20h45" , days: "Tối 3-5-CN" , opening: "10/04" , }, { code: "TOEIC SW82" ,
+  course: "TOEIC SW" , time: "09h-11h" , days: "Thứ 7-CN" , opening: "17/04" , }, ], }, ]; const extraGroups=[ {
+  campus: "Cơ sở Hà Đông - 197 Trần Phú" , address: "197 Trần Phú, Văn Quán, Hà Đông, Hà Nội" , classes: [ {
+  code: "TẬP SỰ SH06" , course: "Tập Sự TOEIC" , time: "18h-19h30" , days: "Tối 3-5-7" , opening: "24/03" ,
+  teacher: "Mr. Trường Giang" , }, { code: "TẬP SỰ SH10" , course: "Tập Sự TOEIC" , time: "20h-21h30" ,
+  days: "Tối 2-4-6" , opening: "01/04" , teacher: "Mr. Mạnh Huy" , }, { code: "TOEIC AH09" , course: "TOEIC A" ,
+  time: "18h-19h30" , days: "Tối 3-5-7" , opening: "07/04" , teacher: "Mr. Minh Trí" , }, { code: "TOEIC AH11" ,
+  course: "TOEIC A" , time: "18h-19h30" , days: "Tối 2-4-6" , opening: "27/03" , teacher: "Mr. Mạnh Huy" , }, ], }, ];
+  const campusShortMap={ "Cơ sở Hồ Tùng Mậu" : "Hồ Tùng Mậu" , "Cơ sở Lê Đức Thọ" : "Lê Đức Thọ"
+  , "Cơ sở Hà Đông - 197 Trần Phú" : "197 Trần Phú, Hà Đông" , }; const teacherPools={ "Cơ sở Hồ Tùng Mậu" :
+  [ "Ms. Thu Linh" , "Ms. Trang Trang" , "Ms. Mỹ Ngọc" , "Ms. Linh Chi" , "Ms. Hiền" , ], "Cơ sở Lê Đức Thọ" :
+  [ "Ms. Minh Hạnh" , "Ms. Thu Linh" , "Ms. Phương Anh" , "Ms. Trang Vũ" , ], "Cơ sở Hà Đông - 197 Trần Phú" :
+  [ "Mr. Trường Giang" , "Ms. Nhất Nguyên" , "Mr. Mạnh Huy" , "Mr. Minh Trí" , ], }; function courseTone(value) { const
+  normalized=String(value || "" ).toLowerCase(); if (normalized.includes("tập sự") || normalized.includes("ts")) {
+  return "starter" ; } if (normalized.includes("sw") || normalized.includes("speaking")) { return "sw" ; } if
+  (normalized.includes("toeic b") || normalized.includes(" b")) { return "b" ; } return "a" ; } const campusNames={};
+  seededGroups.forEach((group)=> {
+  campusNames[group.campus] = true;
+  });
+
+  const rawTableGroups = seededGroups.concat(
+  extraGroups.filter((group) => !campusNames[group.campus])
+  );
+
+  const tableGroups = rawTableGroups.map((group, groupIndex) => {
+  const teachers = teacherPools[group.campus] || ["Giảng viên phụ trách"];
+
+  return {
+  ...group,
+  id: `campus-${groupIndex + 1}`,
+  shortAddress: campusShortMap[group.campus] || group.address,
+  classes: (group.classes || []).map((item, itemIndex) => ({
+  ...item,
+  teacher: item.teacher || teachers[itemIndex % teachers.length],
+  locationLabel: item.locationLabel || (campusShortMap[group.campus] || group.address),
+  scheduleText: `${item.days} | ${item.time}`,
+  tone: courseTone(`${item.course} ${item.code}`),
+  })),
+  };
+  });
+
+  const scoreCards = [
+  {
+  name: "Tran Vu Hoang",
+  score: "780 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac023-768x691.jpg.webp",
+  placeholder: "Ảnh bảng điểm 01",
+  },
+  {
+  name: "Nguyen Minh Tri",
+  score: "918 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac022-768x691.jpg",
+  placeholder: "Ảnh bảng điểm 02",
+  },
+  {
+  name: "Dao Phuong Chi",
+  score: "820 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac020-768x691.jpg",
+  placeholder: "Ảnh bảng điểm 03",
+  },
+  {
+  name: "Nguyen Mai Chi",
+  score: "870 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac019-768x691.jpg.webp",
+  placeholder: "Ảnh bảng điểm 04",
+  },
+  {
+  name: "Pham Gia Han",
+  score: "800 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac018-768x691.jpg.webp",
+  placeholder: "Ảnh bảng điểm 05",
+  },
+  {
+  name: "Dao Xuan Anh",
+  score: "885 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac017-768x691.jpg",
+  placeholder: "Ảnh bảng điểm 06",
+  },
+  {
+  name: "Nguyen Phan Huy",
+  score: "795 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac016-768x691.jpg.webp",
+  placeholder: "Ảnh bảng điểm 07",
+  },
+  {
+  name: "Nguyen Thi Ngoan",
+  score: "765 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac015-768x691.jpg",
+  placeholder: "Ảnh bảng điểm 08",
+  },
+  {
+  name: "Le Thanh Long",
+  score: "860 LR",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2026/03/ac014-768x691.jpg.webp",
+  placeholder: "Ảnh bảng điểm 09",
+  },
+  ];
+
+  const teacherCards = [
+  {
+  name: "Mr. Manh Huy",
+  score: "985 TOEIC LR | 8.0 IELTS",
+  image: "https://i.postimg.cc/VLgPVF4Y/t4.png",
+  placeholder: "Ảnh giảng viên A1",
+  },
+  {
+  name: "Ms. Giang Thuy",
+  score: "990 TOEIC LR",
+  image: "https://i.postimg.cc/Wz7Cx2GX/t5.png",
+  placeholder: "Ảnh giảng viên A2",
+  },
+  {
+  name: "Ms. Linh Chi",
+  score: "985 TOEIC LR",
+  image: "https://i.postimg.cc/Cx2t3rqc/t6.png",
+  placeholder: "Ảnh giảng viên A3",
+  },
+  {
+  name: "Ms. Phuong Anh",
+  score: "980 TOEIC LR",
+  image: "https://i.postimg.cc/BnRYYLWt/t7.png",
+  placeholder: "Ảnh giảng viên A4",
+  },
+  ];
+
+  const locationCards = [
+  {
+  title: "Cơ sở Hồ Tùng Mậu",
+  address: "Số 17, ngõ 20 Hồ Tùng Mậu, Cầu Giấy, Hà Nội",
+  href: `${safeBaseUrl}/contact`,
+  },
+  {
+  title: "Cơ sở Lê Đức Thọ",
+  address: "Số 9 ngách 59 ngõ 21 Lê Đức Thọ, Nam Từ Liêm, Hà Nội",
+  href: `${safeBaseUrl}/contact`,
+  },
+  {
+  title: "Cơ sở Hà Đông",
+  address: "197 Trần Phú, Văn Quán, Hà Đông, Hà Nội",
+  href: `${safeBaseUrl}/contact`,
+  },
+  ];
+
+  const tuitionCards = [
+  {
+  title: "Tập Sự",
+  sessions: "28 buổi",
+  basePrice: "3.500.000đ",
+  promoPrice: "3.200.000đ",
+  onlinePrice: "3.000.000đ",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2023/05/banner-lich-kg-01-768x313.webp",
+  placeholder: "Ảnh học phí Tập Sự",
+  tone: "starter",
+  },
+  {
+  title: "TOEIC A",
+  sessions: "27 buổi",
+  basePrice: "3.900.000đ",
+  promoPrice: "3.700.000đ",
+  onlinePrice: "3.500.000đ",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2025/06/sw-003-768x341.webp",
+  placeholder: "Ảnh học phí TOEIC A",
+  tone: "a",
+  },
+  {
+  title: "TOEIC B",
+  sessions: "25 buổi",
+  basePrice: "3.500.000đ",
+  promoPrice: "3.200.000đ",
+  onlinePrice: "3.000.000đ",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2023/08/banner-thang-10-768x409.webp",
+  placeholder: "Ảnh học phí TOEIC B",
+  tone: "b",
+  },
+  {
+  title: "TOEIC SW",
+  sessions: "28 buổi",
+  basePrice: "4.800.000đ",
+  promoPrice: "Liên hệ",
+  onlinePrice: "Liên hệ",
+  image: "https://thaylongtoeic.com/wp-content/uploads/2024/05/banner-768x318.webp",
+  placeholder: "Ảnh học phí TOEIC SW",
+  tone: "sw",
+  },
+  ];
+
+  const faqItems = [
+  {
+  question: "Cam kết đầu ra",
+  answer:
+  "Lớp sẽ có lộ trình, mốc bài tập và hướng dẫn ôn tập rõ ràng. " +
+  "Các mốc hỗ trợ thi và điều kiện áp dụng có thể xem thêm ở phần hỗ trợ thi bên dưới.",
+  },
+  {
+  question: "Không có chính sách học thử",
+  answer:
+  "Trung tâm tập trung tối ưu trải nghiệm học chính thức, vì vậy thay vì học thử, bạn có thể xem lịch khai giảng, " +
+  "lộ trình hoặc nhận tư vấn trực tiếp để chọn lớp phù hợp.",
+  },
+  {
+  question: "Muốn rút lớp trước ngày khai giảng",
+  answer:
+  "Bạn nên liên hệ sớm với trung tâm trước ngày lớp bắt đầu để được hướng dẫn phương án bảo lưu " +
+  "hoặc chuyển ca học phù hợp.",
+  },
+  {
+  question: "Chính sách bảo lưu",
+  answer:
+  "Trường hợp cần nghỉ dài ngày, trung tâm có thể hỗ trợ bảo lưu theo quy định chung của lớp. " +
+  "Hãy nhắn trực tiếp để được kiểm tra điều kiện hiện tại.",
+  },
+  ];
+
+  function renderMedia(url, alt, placeholder, className) {
+  if (url) {
+  return `<div class="${className}"><img src="${url}" alt="${alt}"></div>`;
+  }
+
+  return `
+  <div class="${className}">
+    <div class="gs-media-placeholder">
+      <span>${placeholder}</span>
+      <small></small>
+    </div>
+  </div>
+  `;
+  }
+  %>
+
+  <style>
+    :root {
+      --gs-bg: #f5f5f7;
+      --gs-card: rgba(255, 255, 255, 0.98);
+      --gs-line: rgba(15, 23, 42, 0.08);
+      --gs-text: #18181b;
+      --gs-muted: #4b5563;
+      --gs-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+    }
+
+    .gs-page {
+      display: grid;
+      gap: 72px;
+      padding: 8px 0 40px;
+      color: var(--gs-text);
+    }
+
+    .gs-anchor-nav {
+      position: sticky;
+      top: 88px;
+      z-index: 20;
+    }
+
+    .gs-anchor-list {
+      display: flex;
+      gap: 12px;
+      overflow: auto;
+      padding: 6px 0 4px;
+      scrollbar-width: none;
+    }
+
+    .gs-anchor-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .gs-anchor-link {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+      font-weight: 700;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .gs-anchor-link:first-child {
+      background: #18181b;
+      color: #ffffff;
+    }
+
+    .gs-anchor-link:hover,
+    .gs-button:hover,
+    .gs-inline-link:hover,
+    .gs-tuition-choice:hover,
+    .gs-pill:hover {
+      transform: translateY(-1px);
+    }
+
+    .gs-hero {
+      overflow: hidden;
+      padding: 42px 34px 0;
+      border-radius: 40px;
+      background:
+        radial-gradient(circle at top left, rgba(147, 197, 253, 0.42), transparent 28%),
+        radial-gradient(circle at top right, rgba(191, 219, 254, 0.42), transparent 26%),
+        linear-gradient(180deg, #dff1ff 0%, #edf7ff 48%, #f7fbff 100%);
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      box-shadow: 0 30px 56px rgba(37, 99, 235, 0.08);
+    }
+
+    .gs-hero-top {
+      display: grid;
+      gap: 22px;
+      max-width: 920px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .gs-hero-title,
+    .gs-section-title,
+    .gs-course-name,
+    .gs-quote-title,
+    .gs-big-heading {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      letter-spacing: -0.06em;
+      color: #111827;
+    }
+
+    .gs-hero-title {
+      font-size: clamp(3rem, 8vw, 5.7rem);
+      line-height: 0.95;
+    }
+
+    .gs-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      min-height: 52px;
+      padding: 0 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gs-button-outline {
+      margin: 0 auto;
+      border: 1.5px solid #111827;
+      color: #111827;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .gs-button-dark {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 18px 30px rgba(24, 24, 27, 0.16);
+    }
+
+    .gs-button-blue {
+      background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+      color: #ffffff;
+      box-shadow: 0 18px 30px rgba(37, 99, 235, 0.18);
+    }
+
+    .gs-inline-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .gs-inline-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      color: #111827;
+      font-size: 1.04rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .gs-inline-link::after {
+      content: "+";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    .gs-hero-cards,
+    .gs-campus-list,
+    .gs-score-grid,
+    .gs-teacher-grid,
+    .gs-location-grid,
+    .gs-tuition-grid {
+      display: grid;
+      gap: 22px;
+    }
+
+    .gs-hero-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .gs-hero-card,
+    .gs-campus-card,
+    .gs-info-card,
+    .gs-banner-card,
+    .gs-panel,
+    .gs-score-board,
+    .gs-location-card,
+    .gs-tuition-card,
+    .gs-support-panel,
+    .gs-faq-card,
+    .gs-quick-test {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-line);
+      box-shadow: var(--gs-shadow);
+    }
+
+    .gs-hero-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 0.82fr);
+      gap: 18px;
+      align-items: end;
+      padding: 22px 22px 0;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+    }
+
+    .gs-hero-copy {
+      display: grid;
+      gap: 14px;
+      padding-bottom: 20px;
+    }
+
+    .gs-course-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .gs-course-chip.violet {
+      background: rgba(168, 85, 247, 0.14);
+      color: #9333ea;
+    }
+
+    .gs-course-chip.rose {
+      background: rgba(244, 114, 182, 0.16);
+      color: #ef4444;
+    }
+
+    .gs-hero-copy ul,
+    .gs-info-card ul,
+    .gs-support-panel ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #1f2937;
+      line-height: 1.85;
+    }
+
+    .gs-price-line {
+      display: grid;
+      gap: 2px;
+      margin-top: 6px;
+    }
+
+    .gs-price-line strong {
+      font-size: 1.9rem;
+      letter-spacing: -0.05em;
+    }
+
+    .gs-price-line span {
+      color: var(--gs-muted);
+      font-weight: 600;
+    }
+
+    .gs-media-frame {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(239, 246, 255, 0.96) 0%, rgba(219, 234, 254, 0.94) 100%);
+    }
+
+    .gs-media-frame img,
+    .gs-media-placeholder {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .gs-media-frame img {
+      object-fit: cover;
+    }
+
+    .gs-media-placeholder {
+      position: relative;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      padding: 26px;
+      text-align: center;
+      color: #173f73;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.14), transparent 30%),
+        linear-gradient(135deg, #f8fbff 0%, #edf4ff 100%);
+    }
+
+    .gs-media-placeholder::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 22px;
+      border: 1.5px dashed rgba(37, 99, 235, 0.24);
+    }
+
+    .gs-media-placeholder span,
+    .gs-media-placeholder small {
+      position: relative;
+      z-index: 1;
+    }
+
+    .gs-media-placeholder span {
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .gs-media-placeholder small {
+      color: #4b6382;
+      line-height: 1.7;
+    }
+
+    .gs-photo-hero-card {
+      min-height: 320px;
+      border-radius: 24px 24px 0 0;
+    }
+
+    .gs-photo-wide {
+      min-height: clamp(280px, 34vw, 420px);
+      border-radius: 34px;
+    }
+
+    .gs-photo-banner {
+      min-height: clamp(220px, 30vw, 340px);
+      border-radius: 28px;
+    }
+
+    .gs-photo-course {
+      min-height: 260px;
+      border-radius: 24px;
+    }
+
+    .gs-photo-resource,
+    .gs-photo-score,
+    .gs-photo-tuition {
+      aspect-ratio: 4 / 5;
+      border-radius: 24px;
+    }
+
+    .gs-photo-cert {
+      min-height: clamp(320px, 44vw, 520px);
+      width: min(100%, 760px);
+      border-radius: 34px;
+    }
+
+    .gs-photo-teacher {
+      aspect-ratio: 4 / 5;
+    }
+
+    .gs-stack-section,
+    .gs-course-block,
+    .gs-roadmap,
+    .gs-score-section,
+    .gs-quote-section,
+    .gs-location-section,
+    .gs-tuition-section,
+    .gs-faq-section {
+      display: grid;
+      gap: 28px;
+    }
+
+    .gs-section-title {
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      line-height: 0.98;
+    }
+
+    .gs-underlined {
+      display: inline-block;
+      position: relative;
+      padding-bottom: 12px;
+    }
+
+    .gs-underlined::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+    }
+
+    .gs-campus-list {
+      gap: 26px;
+    }
+
+    .gs-campus-card {
+      padding: 28px 28px 22px;
+      border-radius: 34px;
+    }
+
+    .gs-campus-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .gs-campus-head h3,
+    .gs-card-title,
+    .gs-panel h3,
+    .gs-score-body h3,
+    .gs-location-card h3,
+    .gs-tuition-card h3,
+    .gs-faq-title {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      letter-spacing: -0.04em;
+      color: #111827;
+    }
+
+    .gs-campus-head h3 {
+      font-size: clamp(1.65rem, 4vw, 2.4rem);
+    }
+
+    .gs-campus-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .gs-social-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 800;
+      text-transform: lowercase;
+    }
+
+    .gs-table-wrap {
+      overflow-x: auto;
+    }
+
+    .gs-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      overflow: hidden;
+    }
+
+    .gs-table th,
+    .gs-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+    }
+
+    .gs-table th {
+      background: #18181b;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.98rem;
+    }
+
+    .gs-table td {
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 0.98rem;
+    }
+
+    .gs-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .gs-code {
+      font-weight: 800;
+    }
+
+    .gs-code.tone-starter {
+      color: #ef476f;
+    }
+
+    .gs-code.tone-a {
+      color: #1e40af;
+    }
+
+    .gs-code.tone-b {
+      color: #16a34a;
+    }
+
+    .gs-code.tone-sw {
+      color: #0891b2;
+    }
+
+    .gs-campus-footer,
+    .gs-center-cta {
+      display: flex;
+      justify-content: center;
+    }
+
+    .gs-community-panel {
+      border-radius: 36px;
+      overflow: hidden;
+    }
+
+    .gs-roadmap {
+      justify-items: center;
+      text-align: center;
+    }
+
+    .gs-roadmap-copy {
+      display: grid;
+      gap: 22px;
+      max-width: 940px;
+    }
+
+    .gs-roadmap-copy p {
+      margin: 0;
+      color: #111827;
+      font-size: 1.15rem;
+      line-height: 1.9;
+    }
+
+    .gs-pill-group {
+      display: grid;
+      gap: 16px;
+    }
+
+    .gs-pill-group h3 {
+      margin: 0;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: #374151;
+    }
+
+    .gs-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .gs-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475569;
+      font-weight: 800;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .gs-pill.is-active {
+      background: #1976f2;
+      color: #ffffff;
+    }
+
+    .gs-roadmap-summary {
+      max-width: 900px;
+      margin: 0;
+      font-size: 1.95rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #111827;
+    }
+
+    .gs-roadmap-note {
+      max-width: 920px;
+      margin: 0;
+      text-align: left;
+      color: #111827;
+      font-size: 1.08rem;
+      line-height: 1.9;
+    }
+
+    .gs-preview-grid,
+    .gs-info-grid,
+    .gs-module-grid,
+    .gs-location-grid,
+    .gs-faq-grid,
+    .gs-banner-grid,
+    .gs-tuition-grid,
+    .gs-support-columns {
+      display: grid;
+      gap: 20px;
+    }
+
+    .gs-preview-grid,
+    .gs-info-grid,
+    .gs-banner-grid,
+    .gs-module-grid,
+    .gs-faq-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .gs-preview-card,
+    .gs-info-card,
+    .gs-panel,
+    .gs-tuition-card,
+    .gs-location-card {
+      border-radius: 32px;
+    }
+
+    .gs-preview-card {
+      display: grid;
+      gap: 18px;
+      padding: 22px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--gs-line);
+      box-shadow: var(--gs-shadow);
+    }
+
+    .gs-preview-card h3,
+    .gs-info-card h3,
+    .gs-panel h3,
+    .gs-quick-test h3 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+
+    .gs-preview-card p,
+    .gs-info-card p,
+    .gs-panel p,
+    .gs-support-panel p,
+    .gs-score-body p,
+    .gs-location-card p,
+    .gs-tuition-card p,
+    .gs-faq-card p,
+    .gs-quick-test p {
+      margin: 0;
+      color: var(--gs-muted);
+      line-height: 1.9;
+    }
+
+    .gs-course-name {
+      font-size: clamp(2.6rem, 5vw, 4rem);
+      line-height: 0.98;
+    }
+
+    .gs-info-card {
+      display: grid;
+      gap: 18px;
+      padding: 30px;
+    }
+
+    .gs-info-card.soft {
+      background: #f3f4f6;
+    }
+
+    .gs-info-card.blue {
+      background: #dfeef7;
+    }
+
+    .gs-info-card.gold {
+      background: linear-gradient(180deg, rgba(244, 232, 186, 0.52) 0%, rgba(251, 246, 224, 0.86) 100%);
+    }
+
+    .gs-info-card.warm {
+      background: linear-gradient(180deg, rgba(232, 224, 203, 0.8) 0%, rgba(248, 244, 234, 0.9) 100%);
+    }
+
+    .gs-info-card-highlight {
+      align-content: start;
+    }
+
+    .gs-info-card-highlight h3 {
+      text-align: center;
+    }
+
+    .gs-banner-card {
+      padding: 30px;
+      border-radius: 34px;
+    }
+
+    .gs-banner-card.purple {
+      background: linear-gradient(135deg, rgba(157, 156, 202, 0.95) 0%, rgba(189, 184, 236, 0.95) 100%);
+      color: #ffffff;
+    }
+
+    .gs-banner-card.gold {
+      background: linear-gradient(135deg, rgba(229, 212, 155, 0.94) 0%, rgba(251, 244, 217, 0.96) 100%);
+    }
+
+    .gs-banner-card .gs-panel-copy {
+      display: grid;
+      gap: 18px;
+      align-content: center;
+    }
+
+    .gs-panel-copy h3 {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.05em;
+      color: #111827;
+    }
+
+    .gs-panel-copy p {
+      margin: 0;
+      line-height: 1.85;
+      color: inherit;
+    }
+
+    .gs-banner-card.purple h3,
+    .gs-banner-card.purple p {
+      color: #ffffff;
+    }
+
+    .gs-panel {
+      padding: 30px;
+    }
+
+    .gs-panel.soft {
+      background: #f3f4f6;
+    }
+
+    .gs-panel.blue {
+      background: #dfeef7;
+    }
+
+    .gs-panel.warm {
+      background: linear-gradient(180deg, rgba(232, 224, 203, 0.8) 0%, rgba(248, 244, 234, 0.9) 100%);
+    }
+
+    .gs-accordion-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .gs-accordion-list details {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      overflow: hidden;
+    }
+
+    .gs-accordion-list summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 18px 20px;
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .gs-accordion-list summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .gs-accordion-list summary::before {
+      content: "+";
+      display: inline-block;
+      width: 24px;
+      margin-right: 8px;
+      font-weight: 900;
+    }
+
+    .gs-accordion-list details[open] summary::before {
+      content: "−";
+    }
+
+    .gs-accordion-body {
+      padding: 0 20px 18px;
+    }
+
+    .gs-accordion-body ul {
+      margin: 0;
+      padding-left: 24px;
+      color: #111827;
+      line-height: 1.9;
+    }
+
+    .gs-score-board {
+      display: grid;
+      gap: 24px;
+      padding: 28px;
+      border-radius: 36px;
+      background: #f3f4f6;
+    }
+
+    .gs-score-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .gs-score-card,
+    .gs-teacher-card {
+      overflow: hidden;
+      border-radius: 24px;
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      box-shadow: 0 18px 32px rgba(15, 23, 42, 0.06);
+    }
+
+    .gs-score-body,
+    .gs-tuition-body {
+      display: grid;
+      gap: 8px;
+      padding: 18px 16px 20px;
+      text-align: center;
+    }
+
+    .gs-score-body h3 {
+      font-size: 1.16rem;
+    }
+
+    .gs-quote-section {
+      justify-items: center;
+      text-align: center;
+    }
+
+    .gs-quote-title {
+      max-width: 880px;
+      font-size: clamp(3rem, 8vw, 5.4rem);
+      line-height: 0.98;
+    }
+
+    .gs-teacher-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .gs-teacher-meta {
+      display: grid;
+      gap: 8px;
+      padding: 18px 18px 20px;
+      min-height: 118px;
+      text-align: center;
+      background: linear-gradient(180deg, #3a0d54 0%, #230530 100%);
+      color: #ffffff;
+    }
+
+    .gs-teacher-meta h3 {
+      margin: 0;
+      font-size: 1.18rem;
+      line-height: 1.45;
+    }
+
+    .gs-teacher-meta p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.84);
+      line-height: 1.6;
+    }
+
+    .gs-big-heading {
+      font-size: clamp(2.6rem, 5vw, 4.2rem);
+      line-height: 1;
+    }
+
+    .gs-location-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .gs-location-card {
+      display: grid;
+      gap: 18px;
+      padding: 30px 26px;
+      text-align: center;
+      background: #f3f4f6;
+    }
+
+    .gs-map-icon {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #2563eb;
+    }
+
+    .gs-map-icon svg {
+      width: 58px;
+      height: 58px;
+    }
+
+    .gs-tuition-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .gs-tuition-card {
+      display: grid;
+      gap: 18px;
+      padding: 24px 20px 20px;
+    }
+
+    .gs-tuition-card.starter {
+      background: linear-gradient(180deg, rgba(244, 232, 255, 0.82) 0%, rgba(255, 255, 255, 0.96) 100%);
+    }
+
+    .gs-tuition-card.a {
+      background: linear-gradient(180deg, rgba(232, 239, 255, 0.86) 0%, rgba(255, 255, 255, 0.96) 100%);
+    }
+
+    .gs-tuition-card.b {
+      background: linear-gradient(180deg, rgba(244, 239, 220, 0.92) 0%, rgba(255, 255, 255, 0.96) 100%);
+    }
+
+    .gs-tuition-card.sw {
+      background: linear-gradient(180deg, rgba(225, 247, 208, 0.92) 0%, rgba(255, 255, 255, 0.96) 100%);
+    }
+
+    .gs-tuition-meta {
+      display: grid;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .gs-price-builder {
+      display: grid;
+      gap: 18px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .gs-price-builder h3,
+    .gs-faq-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.06;
+    }
+
+    .gs-tuition-choice {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475569;
+      font-weight: 800;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .gs-tuition-choice.is-active {
+      background: #3b91f5;
+      color: #ffffff;
+    }
+
+    .gs-price-display {
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      color: #111827;
+    }
+
+    .gs-price-caption {
+      max-width: 700px;
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+
+    .gs-support-columns {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .gs-support-panel {
+      display: grid;
+      gap: 20px;
+      padding: 32px;
+      border-radius: 34px;
+      background: linear-gradient(180deg, rgba(244, 232, 186, 0.56) 0%, rgba(250, 244, 225, 0.92) 100%);
+    }
+
+    .gs-support-panel h3 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 3.4rem);
+      line-height: 1.04;
+      text-align: center;
+    }
+
+    .gs-support-panel h4 {
+      margin: 0 0 10px;
+      font-size: 1.45rem;
+      line-height: 1.3;
+      color: #111827;
+    }
+
+    .gs-group-offer {
+      display: grid;
+      gap: 18px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .gs-group-offer p {
+      max-width: 840px;
+      margin: 0;
+      color: #374151;
+      font-size: 1.2rem;
+      line-height: 1.85;
+    }
+
+    .gs-faq-grid {
+      align-items: stretch;
+    }
+
+    .gs-quick-test {
+      display: grid;
+      gap: 18px;
+      align-content: center;
+      padding: 34px 28px;
+      border-radius: 34px;
+      background: linear-gradient(180deg, #ffad1f 0%, #ff5a4f 100%);
+      color: #ffffff;
+    }
+
+    .gs-quick-test h3,
+    .gs-quick-test p {
+      color: #ffffff;
+    }
+
+    .gs-faq-card {
+      display: grid;
+      gap: 16px;
+      padding: 30px;
+      border-radius: 34px;
+      background: #f3f4f6;
+    }
+
+    .gs-faq-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .gs-faq-list details {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 20px;
+      padding: 16px 18px;
+    }
+
+    .gs-faq-list summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .gs-faq-list summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .gs-faq-list p {
+      margin-top: 12px;
+    }
+
+    @media (max-width: 1180px) {
+
+      .gs-hero-cards,
+      .gs-score-grid,
+      .gs-teacher-grid,
+      .gs-location-grid,
+      .gs-tuition-grid,
+      .gs-support-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 920px) {
+      .gs-anchor-nav {
+        top: 76px;
+      }
+
+      .gs-inline-links,
+      .gs-hero-cards,
+      .gs-preview-grid,
+      .gs-info-grid,
+      .gs-banner-grid,
+      .gs-module-grid,
+      .gs-faq-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .gs-hero-card {
+        grid-template-columns: 1fr;
+        padding-bottom: 22px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .gs-page {
+        gap: 56px;
+        padding-bottom: 18px;
+      }
+
+      .gs-hero {
+        padding: 24px 18px 0;
+        border-radius: 28px;
+      }
+
+      .gs-campus-card,
+      .gs-info-card,
+      .gs-banner-card,
+      .gs-panel,
+      .gs-score-board,
+      .gs-location-card,
+      .gs-tuition-card,
+      .gs-support-panel,
+      .gs-faq-card,
+      .gs-quick-test {
+        padding: 20px 18px;
+        border-radius: 26px;
+      }
+
+      .gs-campus-head {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .gs-inline-links {
+        gap: 10px;
+      }
+
+      .gs-inline-link {
+        min-height: auto;
+        font-size: 0.96rem;
+      }
+
+      .gs-score-grid,
+      .gs-teacher-grid,
+      .gs-location-grid,
+      .gs-tuition-grid,
+      .gs-support-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .gs-quote-title {
+        font-size: clamp(2.6rem, 12vw, 4.1rem);
+      }
+
+      .gs-photo-hero-card {
+        min-height: 260px;
+      }
+    }
+  </style>
+
+  <div class="gs-page">
+    <nav class="gs-anchor-nav" aria-label="Điều hướng nhanh lịch khai giảng">
+      <div class="gs-anchor-list">
+        <% sectionLinks.forEach((item)=> { %>
+          <a href="<%= item.href %>" class="gs-anchor-link">
+            <%= item.label %>
+          </a>
+          <% }) %>
+      </div>
+    </nav>
+
+    <section id="hero" class="gs-hero">
+      <div class="gs-hero-top">
+        <h1 class="gs-hero-title">Lịch khai giảng<br>&amp; thông tin khóa học</h1>
+        <a href="#lo-trinh-hoc" class="gs-button gs-button-outline">Chọn lộ trình học</a>
+
+        <div class="gs-inline-links">
+          <a href="#bang-diem" class="gs-inline-link">Xem video review</a>
+          <a href="<%= safeBaseUrl %>/contact" class="gs-inline-link">Đăng ký học</a>
+        </div>
+      </div>
+
+      <div class="gs-hero-cards">
+        <% heroCards.forEach((item)=> { %>
+          <article class="gs-hero-card">
+            <div class="gs-hero-copy">
+              <span class="gs-course-chip <%= item.tone %>">
+                <%= item.title %>
+              </span>
+              <ul>
+                <% item.bullets.forEach((bullet)=> { %>
+                  <li>
+                    <%= bullet %>
+                  </li>
+                  <% }) %>
+              </ul>
+              <div class="gs-price-line">
+                <strong>
+                  <%= item.price %>
+                </strong>
+                <span>
+                  <%= item.sessions %>
+                </span>
+              </div>
+            </div>
+
+            <%- renderMedia(item.image, item.title, item.placeholder, 'gs-media-frame gs-photo-hero-card' ) %>
+          </article>
+          <% }) %>
+      </div>
+    </section>
+
+    <section id="lich-khai-giang" class="gs-stack-section">
+      <h2 class="gs-section-title"><span class="gs-underlined">Lịch khai giảng 2026</span></h2>
+
+      <div class="gs-campus-list">
+        <% tableGroups.forEach((group)=> { %>
+          <article class="gs-campus-card">
+            <div class="gs-campus-head">
+              <h3>
+                <%= group.campus %>
+              </h3>
+              <div class="gs-campus-actions">
+                <a href="<%= safeBaseUrl %>/contact" class="gs-social-dot" aria-label="Facebook">f</a>
+                <a href="<%= safeBaseUrl %>/contact" class="gs-social-dot" aria-label="Messenger">m</a>
+              </div>
+            </div>
+
+            <div class="gs-table-wrap">
+              <table class="gs-table">
+                <thead>
+                  <tr>
+                    <th>Mã lớp</th>
+                    <th>Ca học</th>
+                    <th>Khai giảng</th>
+                    <th>Giáo viên</th>
+                    <th>Địa chỉ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% group.classes.forEach((item)=> { %>
+                    <tr>
+                      <td>
+                        <span class="gs-code tone-<%= item.tone %>">
+                          <%= item.code %>
+                        </span>
+                      </td>
+                      <td>
+                        <%= item.scheduleText %>
+                      </td>
+                      <td><strong>
+                          <%= item.opening %>
+                        </strong></td>
+                      <td>
+                        <%= item.teacher %>
+                      </td>
+                      <td>
+                        <%= item.locationLabel %>
+                      </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="gs-campus-footer">
+              <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-blue">Đăng ký học</a>
+            </div>
+          </article>
+          <% }) %>
+      </div>
+
+      <%- renderMedia('https://thaylongtoeic.com/wp-content/uploads/2023/10/banner-thang-12.webp', 'Hoạt động lớp học'
+        , 'Ảnh tập thể học viên hoặc hoạt động nổi bật' , 'gs-media-frame gs-photo-wide gs-community-panel' ) %>
+    </section>
+
+    <section id="lo-trinh-hoc" class="gs-roadmap">
+      <h2 class="gs-section-title">Lộ trình học</h2>
+
+      <div class="gs-roadmap-copy">
+        <div class="gs-pill-group">
+          <h3>Lộ trình học phù hợp cho bạn:</h3>
+          <div class="gs-pill-row">
+            <span class="gs-pill is-active">TOEIC 2 kỹ năng (LR)</span>
+            <span class="gs-pill">TOEIC 4 kỹ năng</span>
+          </div>
+        </div>
+
+        <div class="gs-pill-group">
+          <h3>Trình độ hiện tại:</h3>
+          <div class="gs-pill-row">
+            <span class="gs-pill is-active">Mất gốc</span>
+            <span class="gs-pill">Có nền tảng</span>
+            <span class="gs-pill">600+ TOEIC LR</span>
+          </div>
+        </div>
+
+        <div class="gs-pill-group">
+          <h3>Mục tiêu điểm số:</h3>
+          <div class="gs-pill-row">
+            <span class="gs-pill is-active">550+ TOEIC LR</span>
+            <span class="gs-pill">700+ TOEIC LR</span>
+          </div>
+        </div>
+
+        <p class="gs-roadmap-summary">Lộ trình bao gồm 2 khóa học: Tập Sự + TOEIC A</p>
+        <p class="gs-roadmap-note">
+          Chương trình được thiết kế cho người mới bắt đầu, giúp bạn xây nền chắc về từ vựng, ngữ pháp và kỹ năng nghe
+          hiểu. Sau 2 khóa Tập Sự và TOEIC A, học viên có thể tự tin chạm mục tiêu 550+ TOEIC với lộ trình học rõ ràng,
+          số buổi hợp lý và khối bài tập bám sát từng giai đoạn tiến bộ.
+        </p>
+
+        <div class="gs-center-cta">
+          <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-dark">Đăng ký học</a>
+        </div>
+      </div>
+
+      <div class="gs-preview-grid">
+        <article class="gs-preview-card">
+          <h3>Tập Sự</h3>
+          <p>Phát triển kỹ năng nghe cơ bản, tích lũy từ vựng và học ngữ pháp nền tảng để chuẩn bị cho giai đoạn học
+            TOEIC chính thức.</p>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2026/01/tap-su-tet-28-buoi-2500-1536x1025.webp', 'Lớp Tập Sự'
+            , 'Ảnh preview lớp Tập Sự' , 'gs-media-frame gs-photo-course' ) %>
+        </article>
+
+        <article class="gs-preview-card">
+          <h3>TOEIC A</h3>
+          <p>Hoàn thành nền tảng Part 1-2-3-4, hệ thống lại ngữ pháp và làm quen dần với phần Reading để bước vào mục
+            tiêu 550+.</p>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2024/12/toeic-A-2025-1536x1025.webp', 'Lớp TOEIC A'
+            , 'Ảnh preview lớp TOEIC A' , 'gs-media-frame gs-photo-course' ) %>
+        </article>
+      </div>
+    </section>
+
+    <section id="tap-su" class="gs-course-block">
+      <h2 class="gs-course-name">Lớp Tập Sự</h2>
+
+      <div class="gs-info-grid">
+        <article class="gs-info-card soft">
+          <h3>Dành cho các bạn mất gốc nền quá yếu.</h3>
+          <p>
+            Bắt đầu vào khóa học, lớp sẽ tập trung vào 3 điểm chính: phát triển kỹ năng nghe cơ bản, tích lũy từ vựng
+            và học ngữ pháp nền tảng. Ngoài ra học viên còn được tiếp cận thêm bộ flashcard để xây dựng thói quen ghi
+            nhớ từ vựng ngay từ đầu.
+          </p>
+        </article>
+
+        <article class="gs-info-card blue gs-info-card-highlight">
+          <h3>Thời lượng<br>28 buổi học</h3>
+          <ul>
+            <li>Phát triển kỹ năng nghe cơ bản</li>
+            <li>Tích lũy từ vựng</li>
+            <li>Học ngữ pháp cơ bản</li>
+          </ul>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2023/08/banner-thang-10-768x409.webp', 'Lớp Tập Sự'
+            , 'Ảnh lớp Tập Sự' , 'gs-media-frame gs-photo-course' ) %>
+        </article>
+      </div>
+
+      <article class="gs-banner-card">
+        <div class="gs-banner-grid">
+          <div class="gs-panel-copy">
+            <h3>6 buổi bổ trợ âm Online</h3>
+            <p>
+              6 buổi bổ trợ âm online qua Zoom trước khi học trực tiếp giúp nắm rõ bảng IPA và làm quen với phần nghe
+              trong TOEIC Part 1 trước khi vào giai đoạn chính thức.
+            </p>
+          </div>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2024/04/luyen-de-website.webp', 'Bổ trợ âm online'
+            , 'Ảnh lớp bổ trợ âm online' , 'gs-media-frame gs-photo-banner' ) %>
+        </div>
+      </article>
+
+      <div class="gs-module-grid">
+        <article class="gs-panel soft">
+          <h3>Nội dung các buổi học</h3>
+          <div class="gs-accordion-list">
+            <details open>
+              <summary>Buổi 1-4: Listening Part 1 (Photographs)</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Học cách nhận diện và phân tích các dạng tranh mô tả người, nhiều người, vật thể và khung cảnh.
+                  </li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 5-9: Listening Part 2</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Luyện dạng câu hỏi ngắn, phản xạ nghe từ khóa và xử lý nhiễu.</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 10: Kiểm tra giữa khóa</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Đo tiến độ và rà soát lại phần ngữ pháp, từ vựng, phản xạ nghe.</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 11-22: Ngữ pháp cơ bản và Reading nền tảng</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Chủ điểm ngữ pháp cơ bản, cấu trúc câu và xây nền cho Part 5-6-7.</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 22: Final Test</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Làm bài đánh giá cuối khóa để xác định điểm bắt đầu cho TOEIC A.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <article class="gs-panel blue">
+          <h3>Tài liệu học tập</h3>
+          <p>
+            Kết hợp với bài giảng trên lớp là bộ tài liệu được tối ưu để học viên có thể ôn tập mọi lúc mọi nơi, bám
+            sát từng buổi và theo dõi tiến độ của bản thân dễ hơn.
+          </p>
+          <div class="gs-center-cta" style="justify-content:flex-start">
+            <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-outline">Xem bản demo</a>
+          </div>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2025/12/manh-huy-1536x1327.webp', 'Tài liệu lớp Tập Sự'
+            , 'Ảnh tài liệu lớp Tập Sự' , 'gs-media-frame gs-photo-resource' ) %>
+        </article>
+      </div>
+
+      <div class="gs-center-cta">
+        <a href="#hoc-phi" class="gs-button gs-button-outline">Học phí lớp Tập Sự</a>
+      </div>
+    </section>
+
+    <section id="toeic-a" class="gs-course-block">
+      <h2 class="gs-course-name">Lớp TOEIC A (Mục tiêu 550+)</h2>
+
+      <div class="gs-info-grid">
+        <article class="gs-info-card soft">
+          <h3>Dành cho những bạn đã có nền tảng nhưng chưa từng học TOEIC hoặc đã học nhưng dưới 600.</h3>
+          <p>
+            Khóa học tập trung hoàn thành toàn bộ phần nghe trong khóa học này, đồng thời hệ thống lại ngữ pháp cơ bản
+            và
+            làm quen với phần Reading. Bên cạnh đó, học viên còn được củng cố từ vựng theo từng chủ đề thường gặp.
+          </p>
+        </article>
+
+        <article class="gs-info-card warm gs-info-card-highlight">
+          <h3>Thời lượng<br>27 buổi học</h3>
+          <ul>
+            <li>Hoàn thành toàn bộ phần nghe Part 1-2-3-4</li>
+            <li>Hệ thống lại ngữ pháp cơ bản</li>
+            <li>Làm quen với phần Reading cơ bản</li>
+          </ul>
+          <%- renderMedia('https://thaylongtoeic.com/wp-content/uploads/2025/06/sw-003-768x341.webp', 'Lớp TOEIC A'
+            , 'Ảnh lớp TOEIC A' , 'gs-media-frame gs-photo-course' ) %>
+        </article>
+      </div>
+
+      <article class="gs-panel blue">
+        <h3>Nội dung các buổi học</h3>
+        <div class="gs-accordion-list">
+          <details open>
+            <summary>Buổi 1-3: Luyện tập Part 1</summary>
+            <div class="gs-accordion-body">
+              <ul>
+                <li>Tranh tả người</li>
+                <li>Tranh tả vật</li>
+                <li>Tranh hỗn hợp</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>Buổi 4-8: Luyện tập Part 2</summary>
+            <div class="gs-accordion-body">
+              <ul>
+                <li>Tăng phản xạ nghe nhanh và nhận diện dạng câu hỏi quen thuộc.</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>Buổi 9-19: Luyện tập Part 3 + Ngữ pháp Part 5-6</summary>
+            <div class="gs-accordion-body">
+              <ul>
+                <li>Luyện hội thoại, câu hỏi ngữ pháp, dạng bài chọn từ và hoàn thành câu.</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>Buổi 20-26: Luyện Part 4 + Reading Part 7 + luyện đề</summary>
+            <div class="gs-accordion-body">
+              <ul>
+                <li>Rà soát toàn bộ kỹ năng và chuyển dần sang làm đề theo thời gian thật.</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>Buổi 27: Final Test</summary>
+            <div class="gs-accordion-body">
+              <ul>
+                <li>Kiểm tra cuối khóa để chốt mức độ sẵn sàng cho mục tiêu 550+.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <article class="gs-info-card gold">
+        <h3>Mục tiêu 550+ TOEIC Listening &amp; Reading</h3>
+        <p>
+          Học viên thi lấy bằng TOEIC tại IIG trong vòng 45 ngày sau khi kết thúc khóa học sẽ được hỗ trợ theo chính
+          sách
+          hiện hành của trung tâm nếu kết quả chưa đạt 550, miễn là đảm bảo số buổi học và lượng bài tập theo quy định
+          chung.
+        </p>
+        <ul>
+          <li>Học lại miễn phí 100% nếu kết quả không đạt 550 trong điều kiện áp dụng của lớp.</li>
+        </ul>
+      </article>
+
+      <article class="gs-banner-card purple">
+        <div class="gs-banner-grid">
+          <div class="gs-panel-copy">
+            <h3>Website luyện đề TOEIC Online miễn phí cho học viên</h3>
+            <p>Trải nghiệm giống thi thật tới 90% để bạn luyện tốc độ, chiến lược và cảm giác phòng thi đều đặn.</p>
+            <div class="gs-center-cta" style="justify-content:flex-start">
+              <a href="<%= safeBaseUrl %>/placement-tests" class="gs-button gs-button-dark">Làm thử ngay</a>
+            </div>
+          </div>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2024/04/luyen-de-website.webp', 'Luyện đề online'
+            , 'Ảnh học viên luyện đề online' , 'gs-media-frame gs-photo-banner' ) %>
+        </div>
+      </article>
+
+      <div class="gs-center-cta">
+        <a href="#hoc-phi" class="gs-button gs-button-outline">Học phí lớp TOEIC A</a>
+      </div>
+    </section>
+
+    <section id="toeic-b" class="gs-course-block">
+      <h2 class="gs-course-name">Lớp TOEIC B (700+)</h2>
+
+      <div class="gs-info-grid">
+        <article class="gs-info-card soft">
+          <h3>Dành cho những bạn đã hoàn thành lớp TOEIC A hoặc có nền tảng ổn định.</h3>
+          <p>
+            Khóa học tập trung Reading &amp; Vocab và hoàn thiện toàn bộ kỹ năng trong bài thi, bao gồm cả Listening.
+            Điểm
+            khác biệt là lớp sẽ tối ưu hóa từng kỹ năng trong bài thi và đưa vào nhiều dạng bài thực chiến hơn.
+          </p>
+        </article>
+
+        <article class="gs-info-card warm gs-info-card-highlight">
+          <h3>Thời lượng<br>25 buổi học</h3>
+          <ul>
+            <li>Tập trung vào Reading</li>
+            <li>Tập trung vào Vocab</li>
+            <li>Hoàn thiện toàn bộ kỹ năng</li>
+          </ul>
+          <%- renderMedia('https://thaylongtoeic.com/wp-content/uploads/2024/05/banner-768x318.webp', 'Lớp TOEIC B'
+            , 'Ảnh lớp TOEIC B' , 'gs-media-frame gs-photo-course' ) %>
+        </article>
+      </div>
+
+      <article class="gs-info-card gold">
+        <h3>Mục tiêu 700+ TOEIC Listening &amp; Reading</h3>
+        <p>
+          Lộ trình TOEIC B giúp học viên hoàn thiện chiến lược xử lý đề và nâng độ chính xác ở cả Reading lẫn Listening.
+          Phần bài tập được đẩy lên mức sát đề thi thực tế để học viên duy trì phong độ khi bước vào kỳ thi thật.
+        </p>
+        <ul>
+          <li>Hỗ trợ 50% lệ phí thi với học viên đạt 700+ có kèm review sau khóa học theo chính sách áp dụng.</li>
+        </ul>
+      </article>
+
+      <div class="gs-center-cta">
+        <a href="#hoc-phi" class="gs-button gs-button-outline">Học phí lớp TOEIC B</a>
+      </div>
+    </section>
+
+    <section id="toeic-sw" class="gs-course-block">
+      <h2 class="gs-course-name">Lớp TOEIC Speaking &amp; Writing</h2>
+
+      <div class="gs-info-grid">
+        <article class="gs-info-card soft">
+          <h3>Dành cho các bạn sau khi hoàn thành kỳ thi TOEIC Listening &amp; Reading muốn nâng cao kỹ năng nói và
+            viết.</h3>
+          <p>
+            Ngoài những mục tiêu học thuật, đây còn là khóa dành cho những bạn cần bổ sung TOEIC 4 kỹ năng cho hồ sơ
+            công
+            việc, đầu ra hoặc định hướng môi trường làm việc quốc tế. Học viên sẽ được hướng dẫn theo từng dạng đề và có
+            hỗ trợ review bài thi.
+          </p>
+        </article>
+
+        <article class="gs-info-card blue gs-info-card-highlight">
+          <h3>Thời lượng<br>28 buổi học</h3>
+          <p>18 buổi Speaking và 10 buổi Writing</p>
+          <%-
+            renderMedia('https://thaylongtoeic.com/wp-content/uploads/2023/05/banner-lich-kg-01-768x313.webp', 'Lớp TOEIC SW'
+            , 'Ảnh lớp TOEIC Speaking & Writing' , 'gs-media-frame gs-photo-course' ) %>
+        </article>
+      </div>
+
+      <div class="gs-module-grid">
+        <article class="gs-panel warm">
+          <h3>18 buổi học Speaking</h3>
+          <div class="gs-accordion-list">
+            <details open>
+              <summary>Buổi 1-5: Module 01-02</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Đọc đoạn văn, announcement, guide, intro</li>
+                  <li>Tranh chủ đề: park, road, beach, store, restaurant</li>
+                  <li>Luyện đọc đoạn văn tổng hợp</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 6-10: Module 03</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Luyện trả lời câu hỏi và xây dựng phản xạ theo chủ đề.</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 11-15: Module 05</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Tập trung tăng độ trôi chảy và cấu trúc câu.</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 16-18: Full test</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Làm full test và review theo tiêu chí chấm điểm của bài thi thật.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <article class="gs-panel blue">
+          <h3>10 buổi học Writing</h3>
+          <div class="gs-accordion-list">
+            <details open>
+              <summary>Buổi 1: Làm quen format Writing</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Phân biệt những mảng ngữ pháp hay nhầm lẫn</li>
+                  <li>Giới thiệu phần mô tả tranh và luyện tập</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 2-5: Viết câu và phản hồi yêu cầu</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Rèn cấu trúc câu ngắn, câu ghép và cách phản hồi email.</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>Buổi 6-10: Essay và review bài</summary>
+              <div class="gs-accordion-body">
+                <ul>
+                  <li>Luyện essay, sắp ý và sửa bài theo tiêu chí chấm điểm.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </article>
+      </div>
+
+      <div class="gs-center-cta">
+        <a href="#hoc-phi" class="gs-button gs-button-outline">Học phí lớp TOEIC SW</a>
+      </div>
+    </section>
+
+    <section id="bang-diem" class="gs-score-section">
+      <h2 class="gs-section-title">Bảng điểm học viên</h2>
+
+      <div class="gs-score-board">
+        <div class="gs-score-grid">
+          <% scoreCards.forEach((item)=> { %>
+            <article class="gs-score-card">
+              <%- renderMedia(item.image, item.name, item.placeholder, 'gs-media-frame gs-photo-score' ) %>
+                <div class="gs-score-body">
+                  <h3>
+                    <%= item.name %>
+                      <%= item.score %>
+                  </h3>
+                </div>
+            </article>
+            <% }) %>
+        </div>
+
+        <div class="gs-center-cta">
+          <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-dark">Xem thêm</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="gs-quote-section">
+      <h2 class="gs-quote-title">Chăm chỉ là có<br>chứng chỉ</h2>
+      <%- renderMedia('https://thaylongtoeic.com/wp-content/uploads/2025/12/hup-1536x1327.webp', 'Thành tích học viên'
+        , 'Ảnh học viên cầm chứng chỉ và thành tích nổi bật' , 'gs-media-frame gs-photo-cert' ) %>
+    </section>
+
+    <section id="giang-vien" class="gs-stack-section">
+      <h2 class="gs-big-heading">Giảng viên lớp A</h2>
+
+      <div class="gs-teacher-grid">
+        <% teacherCards.forEach((item)=> { %>
+          <article class="gs-teacher-card">
+            <%- renderMedia(item.image, item.name, item.placeholder, 'gs-media-frame gs-photo-teacher' ) %>
+              <div class="gs-teacher-meta">
+                <h3>
+                  <%= item.name %>
+                </h3>
+                <p>
+                  <%= item.score %>
+                </p>
+              </div>
+          </article>
+          <% }) %>
+      </div>
+    </section>
+
+    <section id="dia-chi-hoc" class="gs-location-section">
+      <h2 class="gs-big-heading">Địa chỉ học</h2>
+
+      <div class="gs-location-grid">
+        <% locationCards.forEach((item)=> { %>
+          <article class="gs-location-card">
+            <div class="gs-map-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none">
+                <path d="M32 58C32 58 50 41.2 50 28C50 18.1 41.9 10 32 10C22.1 10 14 18.1 14 28C14 41.2 32 58 32 58Z"
+                  fill="currentColor"></path>
+                <circle cx="32" cy="28" r="9" fill="white"></circle>
+              </svg>
+            </div>
+            <h3>
+              <%= item.title %>
+            </h3>
+            <p>
+              <%= item.address %>
+            </p>
+            <div class="gs-center-cta">
+              <a href="<%= item.href %>" class="gs-button gs-button-dark">Xem Google Maps</a>
+            </div>
+          </article>
+          <% }) %>
+      </div>
+    </section>
+
+    <section id="hoc-phi" class="gs-tuition-section">
+      <h2 class="gs-big-heading">Học phí khóa học</h2>
+
+      <div class="gs-tuition-grid">
+        <% tuitionCards.forEach((item)=> { %>
+          <article class="gs-tuition-card <%= item.tone %>">
+            <div class="gs-tuition-meta">
+              <h3>
+                <%= item.title %>
+              </h3>
+              <p><strong>
+                  <%= item.sessions %>
+                </strong></p>
+              <p>Học phí gốc: <strong>
+                  <%= item.basePrice %>
+                </strong></p>
+              <p>Học phí ưu đãi: <strong>
+                  <%= item.promoPrice %>
+                </strong></p>
+              <p>Học phí lớp Online: <strong>
+                  <%= item.onlinePrice %>
+                </strong></p>
+            </div>
+            <%- renderMedia(item.image, item.title, item.placeholder, 'gs-media-frame gs-photo-tuition' ) %>
+          </article>
+          <% }) %>
+      </div>
+
+      <div class="gs-price-builder">
+        <div class="gs-pill-group">
+          <h3>Chọn khóa học muốn đăng ký</h3>
+          <div class="gs-pill-row">
+            <span class="gs-tuition-choice is-active">Tập Sự</span>
+            <span class="gs-tuition-choice">TOEIC A</span>
+            <span class="gs-tuition-choice">TOEIC B</span>
+            <span class="gs-tuition-choice">TOEIC SW</span>
+          </div>
+        </div>
+
+        <div class="gs-pill-group">
+          <h3>Chọn hình thức học</h3>
+          <div class="gs-pill-row">
+            <span class="gs-tuition-choice is-active">Online</span>
+            <span class="gs-tuition-choice">Offline</span>
+          </div>
+        </div>
+
+        <div class="gs-price-display">3.000.000đ</div>
+        <p class="gs-price-caption">
+          Áp dụng khi đăng ký và hoàn tất học phí trước ngày khai giảng. Học phí gốc: 3.500.000đ. Tiết kiệm: 500.000đ.
+        </p>
+      </div>
+    </section>
+
+    <section class="gs-stack-section">
+      <article class="gs-banner-card gold">
+        <div class="gs-banner-grid">
+          <div class="gs-panel-copy">
+            <h3>COMBO 550 (Tập Sự + TOEIC A)<br>chỉ từ 5.600.000đ</h3>
+            <div class="gs-center-cta" style="justify-content:flex-start">
+              <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-dark">Tìm hiểu ngay</a>
+            </div>
+          </div>
+          <%- renderMedia('https://thaylongtoeic.com/wp-content/uploads/2023/09/ms-hoaaa.webp', 'Combo 550'
+            , 'Ảnh combo 550' , 'gs-media-frame gs-photo-banner' ) %>
+        </div>
+      </article>
+
+      <article class="gs-support-panel">
+        <h3>Hỗ trợ thi cho học viên</h3>
+        <div class="gs-support-columns">
+          <div>
+            <h4>Lớp TOEIC A</h4>
+            <ul>
+              <li>Đạt 550-695 sẽ nhận thưởng 250.000</li>
+              <li>Đạt 700+ sẽ nhận thưởng 300.000</li>
+              <li>Đạt 800+ sẽ nhận thưởng 350.000</li>
+              <li>Đạt 900+ sẽ nhận thưởng 400.000</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Lớp TOEIC B</h4>
+            <ul>
+              <li>Hỗ trợ 50% lệ phí thi với học viên đạt 700+ có kèm review sau khóa học.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Lớp TOEIC Speaking &amp; Writing</h4>
+            <ul>
+              <li>Với các bạn đạt tối thiểu 120-120 mỗi kỹ năng sẽ được hỗ trợ 1.300.000 sau khi viết review.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gs-center-cta">
+          <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-outline">Chi tiết hỗ trợ thi</a>
+        </div>
+      </article>
+
+      <div class="gs-group-offer">
+        <h2 class="gs-quote-title">Nguyên Team<br>đi học nhóm</h2>
+        <p>Thêm động lực cùng nhau chinh phục 990 TOEIC. Nhận ngay ưu đãi “nhóm từ 3 người - giảm thêm 100k/người”.</p>
+      </div>
+    </section>
+
+    <section id="cau-hoi" class="gs-faq-section">
+      <div class="gs-roadmap-copy" style="text-align:center">
+        <h2 class="gs-faq-title">Bạn có câu hỏi cần lớp giải đáp?</h2>
+        <p>Liên hệ ngay với chúng tớ nhé.</p>
+        <div class="gs-center-cta">
+          <a href="<%= safeBaseUrl %>/contact" class="gs-button gs-button-blue">Gửi tin nhắn</a>
+        </div>
+      </div>
+
+      <div class="gs-faq-grid">
+        <article class="gs-quick-test">
+          <h3>Kiểm tra nhanh trình độ tiếng Anh của bạn!</h3>
+          <p>Tham gia 2 bài kiểm tra ngắn của lớp để biết được trình độ hiện tại và lựa chọn lộ trình phù hợp.</p>
+          <div class="gs-center-cta" style="justify-content:flex-start">
+            <a href="<%= safeBaseUrl %>/placement-tests" class="gs-button gs-button-outline"
+              style="background:#fff;border-color:#fff">Kiểm tra trình độ</a>
+          </div>
+        </article>
+
+        <article class="gs-faq-card">
+          <h2 class="gs-faq-title">Câu hỏi thường gặp khác</h2>
+          <div class="gs-faq-list">
+            <% faqItems.forEach((item, index)=> { %>
+              <details <%=index===0 ? 'open' : '' %>>
+                <summary>
+                  <%= item.question %>
+                </summary>
+                <p>
+                  <%= item.answer %>
+                </p>
+              </details>
+              <% }) %>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>

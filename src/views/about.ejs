@@ -1,0 +1,596 @@
+<% const safeBaseUrl=typeof baseUrl !=='undefined' ? baseUrl : '' ; const
+  heroImage='https://i.pinimg.com/1200x/b8/6e/4b/b86e4b0613c2f6e71d2427c38c9a0274.jpg' ;
+  const materialsHeroImage='https://thaylongtoeic.com/wp-content/uploads/2023/11/tai-lieu-1446x1536.jpg.webp' ; const resultCards=[ { name: 'Tran Vu Hoang' , score: '780 TOEIC LR' ,
+  image: 'https://thaylongtoeic.com/wp-content/uploads/2026/03/ac023-768x691.jpg.webp' , placeholder: 'Ảnh học viên 01'
+  }, { name: 'Nguyen Minh Tri' , score: '918 TOEIC LR' , image: 'https://thaylongtoeic.com/wp-content/uploads/2026/03/ac022-768x691.jpg' , placeholder: 'Ảnh học viên 02' }, {
+  name: 'Dao Phuong Chi' , score: '820 TOEIC LR' , image: 'https://thaylongtoeic.com/wp-content/uploads/2026/03/ac020-768x691.jpg' , placeholder: 'Ảnh học viên 03' }, {
+  name: 'Nguyen Mai Chi' , score: '870 TOEIC LR' , image: 'https://thaylongtoeic.com/wp-content/uploads/2026/03/ac019-768x691.jpg.webp' , placeholder: 'Ảnh học viên 04' } ]; const teacherCards=[
+  { name: 'Ms. Giang Thuy' , score: '990 TOEIC LR' , image: 'https://i.postimg.cc/zBCnk3Nt/giangthuy.png' , placeholder: 'Ảnh giảng viên 01' }, {
+  name: 'Mr. Hoang Tri' , score: '980 TOEIC | 8.0 IELTS' , image: 'https://i.postimg.cc/XvDh0HyN/tri.png' , placeholder: 'Ảnh giảng viên 02' }, {
+  name: 'Ms. Linh Chi' , score: '985 TOEIC LR' , image: 'https://i.postimg.cc/Df5Gf9w2/linhchi.png' , placeholder: 'Ảnh giảng viên 03' }, { name: 'Mr. Manh Huy'
+  , score: '985 TOEIC LR | 8.0 IELTS' , image: 'https://i.postimg.cc/brMNDHMf/manhhuy.png' , placeholder: 'Ảnh giảng viên 04' }, {
+  name: 'Ms. Thu Ha' , score: '980 TOEIC LR | Business English' , image: 'https://i.pravatar.cc/600?img=32' , placeholder: 'Ảnh giảng viên 05' }, {
+  name: 'Mr. Minh Quan' , score: '990 TOEIC LR' , image: 'https://i.pravatar.cc/600?img=33' , placeholder: 'Ảnh giảng viên 06' }, {
+  name: 'Ms. Bao Ngoc' , score: '975 TOEIC LR | 7.5 IELTS' , image: 'https://i.pravatar.cc/600?img=47' , placeholder: 'Ảnh giảng viên 07' }, {
+  name: 'Ms. Khanh Linh' , score: '985 TOEIC LR | Speaking Coach' , image: 'https://i.pravatar.cc/600?img=48' , placeholder: 'Ảnh giảng viên 08' }, {
+  name: 'Mr. Thanh Son' , score: '975 TOEIC LR | Writing Mentor' , image: 'https://i.pravatar.cc/600?img=53' , placeholder: 'Ảnh giảng viên 09' }, {
+  name: 'Ms. Lan Phuong' , score: '980 TOEIC LR | 8.0 IELTS' , image: 'https://i.pravatar.cc/600?img=44' , placeholder: 'Ảnh giảng viên 10' } ]; const materialCards=[ {
+  title: 'Flashcard từ vựng' ,
+  text: 'Bên cạnh tài liệu học trên lớp, học viên còn được học từ vựng qua bộ flashcard nhỏ gọn, bám sát các chủ điểm quan trọng trong bài thi TOEIC. Thiết kế trực quan giúp việc ôn tập mỗi ngày nhanh và dễ nhớ hơn.'
+  , image: 'https://thaylongtoeic.com/wp-content/uploads/2022/03/flashcard-toeic-1-600x600.jpg.webp' , placeholder: 'Ảnh bộ flashcard' , action: 'Tìm hiểu về bộ Flashcard' , href: `${safeBaseUrl}/contact`,
+  tone: 'flashcard' }, { title: 'Sổ từ vựng' ,
+  text: 'Học viên còn được tặng sổ tay để ghi chép từ vựng, cấu trúc và lưu lại những điểm cần nhớ trong suốt quá trình học. Đây là món quà hỗ trợ việc tự học và giúp kiến thức được hệ thống hóa rõ ràng hơn.'
+  , image: 'https://thaylongtoeic.com/wp-content/uploads/2022/08/so%CC%82%CC%89-tu%CC%9B%CC%80-vu%CC%9B%CC%A3ng-va%CC%80-flashcard-768x659.jpg' , placeholder: 'Ảnh sổ từ vựng' , action: 'Khám phá sổ từ vựng' , href: `${safeBaseUrl}/contact`,
+  tone: 'notebook' } ]; function renderMedia(url, alt, placeholder, className) { if (url) { return `<div
+  class="${className}"><img src="${url}" alt="${alt}"></div>`;
+  }
+
+  return `
+  <div class="${className}">
+    <div class="ga-media-placeholder">
+      <span>${placeholder}</span>
+      <small>Bạn gắn link ảnh sau tại đây</small>
+    </div>
+  </div>
+  `;
+  }
+  %>
+
+  <style>
+    .ga-page {
+      display: grid;
+      gap: 88px;
+      padding: 10px 0 36px;
+    }
+
+    .ga-section {
+      display: grid;
+      gap: 30px;
+    }
+
+    .ga-heading {
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .ga-heading-hero {
+      gap: 20px;
+    }
+
+    .ga-kicker {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.08);
+      color: #1d4ed8;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .ga-heading h1,
+    .ga-heading h2,
+    .ga-material-copy h3,
+    .ga-material-card h3 {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      letter-spacing: -0.06em;
+      color: #111827;
+    }
+
+    .ga-heading h1 {
+      font-size: clamp(3rem, 8vw, 5.9rem);
+      line-height: 0.95;
+    }
+
+    .ga-heading h2 {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      line-height: 0.98;
+    }
+
+    .ga-heading p {
+      max-width: 920px;
+      margin: 0;
+      color: #39526e;
+      font-size: 1.08rem;
+      line-height: 1.9;
+    }
+
+    .ga-copy {
+      display: grid;
+      gap: 20px;
+    }
+
+    .ga-copy-narrow {
+      width: min(100%, 860px);
+      margin: 0 auto;
+    }
+
+    .ga-copy p {
+      margin: 0;
+      color: #223c5b;
+      font-size: 1.05rem;
+      line-height: 1.95;
+    }
+
+    .ga-results-panel {
+      display: grid;
+      gap: 22px;
+      padding: 24px;
+      border-radius: 34px;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+      border: 1px solid rgba(15, 23, 42, 0.05);
+      box-shadow: 0 22px 38px rgba(15, 23, 42, 0.06);
+    }
+
+    .ga-results-grid,
+    .ga-teacher-grid,
+    .ga-material-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .ga-results-grid,
+    .ga-teacher-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .ga-material-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ga-result-card,
+    .ga-teacher-card,
+    .ga-material-card {
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      box-shadow: 0 18px 32px rgba(15, 23, 42, 0.06);
+    }
+
+    .ga-result-card {
+      border-radius: 24px;
+    }
+
+    .ga-teacher-card {
+      border-radius: 28px;
+    }
+
+    .ga-material-card {
+      display: grid;
+      gap: 22px;
+      align-content: start;
+      padding: 28px;
+      border-radius: 32px;
+    }
+
+    .ga-material-card.is-flashcard {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .ga-material-card.is-notebook {
+      background: linear-gradient(180deg, #fffaf7 0%, #ffffff 100%);
+    }
+
+    .ga-photo {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%);
+    }
+
+    .ga-photo img,
+    .ga-media-placeholder {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .ga-photo img {
+      object-fit: cover;
+    }
+
+    .ga-photo-hero {
+      min-height: clamp(320px, 48vw, 560px);
+      border-radius: 34px;
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      box-shadow: 0 26px 46px rgba(37, 99, 235, 0.08);
+    }
+
+    .ga-photo-result {
+      aspect-ratio: 16 / 14;
+    }
+
+    .ga-photo-teacher {
+      aspect-ratio: 4 / 5;
+    }
+
+    .ga-photo-material-hero {
+      min-height: clamp(280px, 42vw, 460px);
+      border-radius: 32px;
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      box-shadow: 0 24px 42px rgba(37, 99, 235, 0.08);
+    }
+
+    .ga-photo-material-card {
+      aspect-ratio: 4 / 3;
+      border-radius: 24px;
+    }
+
+    .ga-media-placeholder {
+      position: relative;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      padding: 26px;
+      text-align: center;
+      color: #173f73;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.14), transparent 30%),
+        linear-gradient(135deg, #f8fbff 0%, #edf4ff 100%);
+    }
+
+    .ga-media-placeholder::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border-radius: 22px;
+      border: 1.5px dashed rgba(37, 99, 235, 0.24);
+      pointer-events: none;
+    }
+
+    .ga-media-placeholder span,
+    .ga-media-placeholder small {
+      position: relative;
+      z-index: 1;
+    }
+
+    .ga-media-placeholder span {
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: clamp(1.05rem, 2vw, 1.55rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .ga-media-placeholder small {
+      color: #4b6382;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .ga-result-body {
+      display: grid;
+      gap: 8px;
+      padding: 18px 16px 22px;
+      text-align: center;
+    }
+
+    .ga-result-body h3,
+    .ga-teacher-meta h3 {
+      margin: 0;
+      font-size: 1.18rem;
+      line-height: 1.45;
+      letter-spacing: -0.03em;
+    }
+
+    .ga-result-body h3 {
+      color: #111827;
+    }
+
+    .ga-result-body p {
+      margin: 0;
+      color: #355372;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .ga-panel-cta {
+      display: flex;
+      justify-content: center;
+    }
+
+    .ga-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .ga-btn:hover,
+    .ga-material-link:hover {
+      transform: translateY(-1px);
+    }
+
+    .ga-btn-dark {
+      color: #ffffff;
+      background: #18181b;
+      box-shadow: 0 16px 30px rgba(24, 24, 27, 0.18);
+    }
+
+    .ga-teacher-meta {
+      display: grid;
+      gap: 8px;
+      padding: 20px 18px 22px;
+      min-height: 120px;
+      text-align: center;
+      color: #ffffff;
+      background: linear-gradient(180deg, #3a0d54 0%, #230530 100%);
+    }
+
+    .ga-teacher-meta p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .ga-material-feature {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(340px, 1.08fr);
+      gap: 26px;
+      align-items: center;
+    }
+
+    .ga-material-copy {
+      display: grid;
+      gap: 16px;
+    }
+
+    .ga-material-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.08);
+      color: #1d4ed8;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .ga-material-copy h3 {
+      font-size: clamp(1.9rem, 4vw, 2.9rem);
+      line-height: 1.06;
+    }
+
+    .ga-material-copy p,
+    .ga-material-card p {
+      margin: 0;
+      color: #223c5b;
+      font-size: 1.04rem;
+      line-height: 1.9;
+    }
+
+    .ga-material-card h3 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.06;
+    }
+
+    .ga-material-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1.5px solid #111827;
+      color: #111827;
+      font-weight: 800;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .ga-material-link:hover {
+      color: #ffffff;
+      background: #111827;
+    }
+
+    @media (max-width: 1160px) {
+
+      .ga-results-grid,
+      .ga-teacher-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .ga-material-feature {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .ga-page {
+        gap: 64px;
+        padding-bottom: 18px;
+      }
+
+      .ga-section {
+        gap: 22px;
+      }
+
+      .ga-heading h1 {
+        font-size: clamp(2.5rem, 16vw, 4.4rem);
+      }
+
+      .ga-heading h2 {
+        font-size: clamp(2rem, 13vw, 3.2rem);
+      }
+
+      .ga-heading p,
+      .ga-copy p,
+      .ga-material-copy p,
+      .ga-material-card p {
+        font-size: 1rem;
+      }
+
+      .ga-results-grid,
+      .ga-teacher-grid,
+      .ga-material-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .ga-results-panel,
+      .ga-material-card {
+        padding: 18px;
+      }
+
+      .ga-teacher-meta {
+        min-height: auto;
+      }
+    }
+  </style>
+
+  <div class="ga-page">
+    <section class="ga-section">
+      <div class="ga-heading ga-heading-hero">
+        <span class="ga-kicker">Về chúng tôi</span>
+        <h1>Chất lượng<br>là ưu tiên hàng đầu.</h1>
+      </div>
+
+      <%- renderMedia(heroImage, 'Không gian lớp học TOEIC' , 'Ảnh lớp học hoặc hoạt động trung tâm'
+        , 'ga-photo ga-photo-hero' ) %>
+
+        <div class="ga-copy ga-copy-narrow">
+          <p>
+            Lớp TOEIC thầy Tài tự hào là một trong những địa chỉ đào tạo TOEIC toàn diện, tập trung vào trải nghiệm học
+            tập rõ ràng, thực tế và bám sát mục tiêu đầu ra của từng học viên. Qua nhiều năm hoạt động và phát triển,
+            trung tâm đã trở thành nơi gửi gắm niềm tin của đông đảo học sinh, sinh viên và người đi làm.
+          </p>
+          <p>
+            Với slogan “Chất lượng là ưu tiên hàng đầu”, mỗi buổi học, tài liệu và lộ trình đều được xây dựng để học
+            viên
+            không chỉ nâng điểm TOEIC mà còn cảm nhận rõ sự tiến bộ của mình trên suốt chặng đường học tập.
+          </p>
+        </div>
+
+        <div class="ga-results-panel">
+          <div class="ga-results-grid">
+            <% resultCards.forEach((item)=> { %>
+              <article class="ga-result-card">
+                <%- renderMedia(item.image, item.name, item.placeholder, 'ga-photo ga-photo-result' ) %>
+                  <div class="ga-result-body">
+                    <h3>
+                      <%= item.name %>
+                    </h3>
+                    <p>
+                      <%= item.score %>
+                    </p>
+                  </div>
+              </article>
+              <% }) %>
+          </div>
+
+          <div class="ga-panel-cta">
+            <a href="<%= safeBaseUrl %>/contact" class="ga-btn ga-btn-dark">Xem thêm</a>
+          </div>
+        </div>
+    </section>
+
+    <section class="ga-section">
+      <div class="ga-heading">
+        <h2>Tầm nhìn</h2>
+      </div>
+
+      <div class="ga-copy ga-copy-narrow">
+        <p>
+          Lớp TOEIC thầy Tài xây dựng một môi trường học TOEIC không chỉ chú trọng chất lượng đầu ra, mà còn là điểm
+          đến thân thuộc giúp học viên chăm chỉ hơn, có định hướng rõ hơn và bền bỉ hơn trên hành trình nâng cao năng
+          lực tiếng Anh của mình.
+        </p>
+      </div>
+    </section>
+
+    <section class="ga-section">
+      <div class="ga-heading">
+        <h2>Đội ngũ giảng viên</h2>
+        <p>
+          Một trong những yếu tố quan trọng bên cạnh kiến thức chất lượng là đội ngũ giảng viên truyền cảm hứng, đồng
+          hành và trực tiếp dẫn dắt học viên trên hành trình chinh phục điểm số.
+        </p>
+      </div>
+
+      <div class="ga-copy ga-copy-narrow">
+        <p>
+          Với sứ mệnh đó, đội ngũ giảng viên được tuyển chọn kỹ lưỡng để mang đến những bài giảng hiệu quả nhưng không
+          khô khan. Sự chắc chắn về chuyên môn, sự tận tâm trong cách dạy và tinh thần hỗ trợ sau giờ học là những giá
+          trị giúp học viên yên tâm bám sát lộ trình của mình.
+        </p>
+      </div>
+
+      <div class="ga-teacher-grid">
+        <% teacherCards.forEach((item)=> { %>
+          <article class="ga-teacher-card">
+            <%- renderMedia(item.image, item.name, item.placeholder, 'ga-photo ga-photo-teacher' ) %>
+              <div class="ga-teacher-meta">
+                <h3>
+                  <%= item.name %>
+                </h3>
+                <p>
+                  <%= item.score %>
+                </p>
+              </div>
+          </article>
+          <% }) %>
+      </div>
+    </section>
+
+    <section class="ga-section">
+      <div class="ga-heading">
+        <h2>Tài liệu học tập</h2>
+      </div>
+
+      <div class="ga-material-feature">
+        <div class="ga-material-copy">
+          <span class="ga-material-tag">Biên soạn riêng</span>
+          <h3>Tài liệu được thiết kế để học viên theo sát từng giai đoạn tiến bộ.</h3>
+          <p>
+            Có thể nói, tài liệu học tập tại Lớp TOEIC thầy Tài là một điểm rất riêng khi luôn được biên soạn kỹ,
+            cập nhật liên tục và bám sát đề thi thực tế. Với từng lớp học, giảng viên sẽ có cách triển khai bài giảng,
+            giáo án và phần luyện tập phù hợp để học viên dễ tiếp thu và duy trì động lực học lâu dài.
+          </p>
+        </div>
+
+        <%- renderMedia(materialsHeroImage, 'Tài liệu học tập TOEIC' , 'Ảnh tài liệu học tập hoặc giảng viên đang dạy'
+          , 'ga-photo ga-photo-material-hero' ) %>
+      </div>
+
+      <div class="ga-material-grid">
+        <% materialCards.forEach((item)=> { %>
+          <article class="ga-material-card <%= item.tone === 'flashcard' ? 'is-flashcard' : 'is-notebook' %>">
+            <div>
+              <h3>
+                <%= item.title %>
+              </h3>
+            </div>
+
+            <p>
+              <%= item.text %>
+            </p>
+
+            <%- renderMedia(item.image, item.title, item.placeholder, 'ga-photo ga-photo-material-card' ) %>
+
+              <a href="<%= item.href %>" class="ga-material-link">
+                <%= item.action %>
+              </a>
+          </article>
+          <% }) %>
+      </div>
+    </section>
+  </div>

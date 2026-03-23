@@ -1,0 +1,304 @@
+<%
+const data = result || {};
+const parts = Array.isArray(data.partBreakdown) ? data.partBreakdown : [];
+%>
+
+<style>
+  .pres-page {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 30px 0 44px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .pres-panel {
+    border-radius: 32px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 24px 54px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .pres-hero {
+    padding: 34px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.78), transparent 30%),
+      linear-gradient(135deg, rgba(255, 244, 237, 0.98) 0%, rgba(248, 250, 252, 0.98) 54%, rgba(228, 238, 255, 0.98) 100%);
+  }
+
+  .pres-kicker,
+  .pres-pill {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .pres-kicker {
+    color: #c63a31;
+    background: rgba(198, 58, 49, 0.12);
+  }
+
+  .pres-hero h1,
+  .pres-score strong,
+  .pres-card strong,
+  .pres-breakdown h3,
+  .pres-note h2 {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: #132238;
+  }
+
+  .pres-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 22px;
+    align-items: center;
+    margin-top: 18px;
+  }
+
+  .pres-hero h1 {
+    font-size: clamp(2.1rem, 4vw, 3.5rem);
+    line-height: 1.04;
+    max-width: 14ch;
+  }
+
+  .pres-hero p,
+  .pres-card span,
+  .pres-item span,
+  .pres-note p {
+    color: #5f6b7a;
+    line-height: 1.75;
+  }
+
+  .pres-score {
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.78);
+  }
+
+  .pres-score span {
+    display: block;
+    color: #5f6b7a;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .pres-score strong {
+    display: block;
+    margin-top: 12px;
+    font-size: 4rem;
+    line-height: 0.95;
+  }
+
+  .pres-score small {
+    display: block;
+    margin-top: 12px;
+    color: #5f6b7a;
+    line-height: 1.7;
+  }
+
+  .pres-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .pres-card {
+    padding: 24px;
+  }
+
+  .pres-card strong {
+    display: block;
+    margin-top: 12px;
+    font-size: 2rem;
+  }
+
+  .pres-breakdown {
+    padding: 28px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .pres-breakdown-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .pres-pill {
+    background: rgba(19, 34, 56, 0.06);
+    color: #132238;
+  }
+
+  .pres-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .pres-item {
+    padding: 18px;
+    border-radius: 24px;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .pres-item strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 1.45rem;
+  }
+
+  .pres-note {
+    padding: 28px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .pres-note-box {
+    padding: 22px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #132238 0%, #203655 100%);
+    color: #fff;
+  }
+
+  .pres-note-box p {
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .pres-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .pres-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 20px;
+    border-radius: 18px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .pres-btn.primary {
+    background: linear-gradient(135deg, #c63a31 0%, #e05b52 100%);
+    color: #fff;
+    box-shadow: 0 18px 34px rgba(198, 58, 49, 0.18);
+  }
+
+  .pres-btn.secondary {
+    background: #f8fafc;
+    color: #132238;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  @media (max-width: 980px) {
+    .pres-hero-grid,
+    .pres-grid,
+    .pres-breakdown-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pres-page {
+      width: min(100% - 20px, 1180px);
+      padding-top: 18px;
+    }
+
+    .pres-hero,
+    .pres-card,
+    .pres-breakdown,
+    .pres-note {
+      padding: 20px 18px;
+    }
+
+    .pres-score strong {
+      font-size: 3.1rem;
+    }
+  }
+</style>
+
+<div class="pres-page">
+  <section class="pres-panel pres-hero">
+    <span class="pres-kicker"><%= data.modeLabel || 'Practice Result' %></span>
+    <div class="pres-hero-grid">
+      <div>
+        <h1><%= data.title || 'Kết quả luyện tập' %></h1>
+        <p>
+          Bộ luyện lấy từ <strong style="color:#132238"><%= data.sourceLabel || 'Practice Library' %></strong>.
+          Kết quả bên dưới ưu tiên cho việc chữa lỗi và cải thiện độ chính xác thay vì chỉ nhìn điểm cuối.
+        </p>
+      </div>
+      <div class="pres-score">
+        <span>Tỷ lệ chính xác</span>
+        <strong><%= data.accuracy || 0 %>%</strong>
+        <small>
+          Điểm mô phỏng: <%= data.rawScore || 0 %> / <%= data.rawMax || 0 %>
+          <br>
+          Đúng <%= data.correctCount || 0 %> • Sai <%= data.incorrectCount || 0 %> • Bỏ trống <%= data.unansweredCount || 0 %>
+        </small>
+      </div>
+    </div>
+  </section>
+
+  <section class="pres-grid">
+    <article class="pres-panel pres-card">
+      <span>Tổng số câu</span>
+      <strong><%= data.totalQuestions || 0 %> câu</strong>
+    </article>
+    <article class="pres-panel pres-card">
+      <span>Câu đúng</span>
+      <strong><%= data.correctCount || 0 %></strong>
+    </article>
+    <article class="pres-panel pres-card">
+      <span>Điểm mô phỏng</span>
+      <strong><%= data.rawScore || 0 %> / <%= data.rawMax || 0 %></strong>
+    </article>
+  </section>
+
+  <section class="pres-panel pres-breakdown">
+    <div class="pres-breakdown-head">
+      <h3>Breakdown theo phần</h3>
+      <span class="pres-pill"><%= data.mode === 'reading' ? 'Parts 5-7' : 'Single Part Focus' %></span>
+    </div>
+    <div class="pres-breakdown-grid">
+      <% parts.forEach((item) => { %>
+        <article class="pres-item">
+          <span>Part <%= item.partNumber %> - <%= item.title %></span>
+          <strong><%= item.correctCount %> / <%= item.totalQuestions %></strong>
+          <span>Độ chính xác: <%= item.accuracy %>%</span>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="pres-panel pres-note">
+    <h2>Nhận xét nhanh</h2>
+    <p>Kết quả này được tính trực tiếp từ bộ câu hỏi và đáp án đã tách ra từ API full test gốc.</p>
+    <div class="pres-note-box">
+      <p><%= data.focusMessage || 'Tiếp tục luyện đều để giữ độ ổn định ở các dạng câu hỏi bạn đang làm tốt.' %></p>
+    </div>
+    <div class="pres-actions">
+      <a href="<%= data.retryHref || '#' %>" class="pres-btn primary">Làm lại bộ này</a>
+      <a href="<%= data.libraryHref || '#' %>" class="pres-btn secondary"><%= data.libraryLabel || 'Về thư viện luyện tập' %></a>
+      <a href="<%= baseUrl %>/placement-tests" class="pres-btn secondary">Qua Full Test</a>
+    </div>
+  </section>
+</div>

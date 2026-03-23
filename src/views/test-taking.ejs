@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --border: #d8e2ef;
+      --border-strong: #c5d3e6;
+      --text: #19314f;
+      --muted: #6d83a0;
+      --accent: #ffa313;
+      --accent-deep: #ef8c00;
+      --navy: #163c69;
+      --navy-soft: #eef4fb;
+      --success: #2c9a67;
+      --shadow: 0 18px 45px rgba(30, 56, 95, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    body {
+      padding: 12px;
+    }
+
+    button,
+    input,
+    audio {
+      font: inherit;
+    }
+
+    .exam-form {
+      height: calc(100vh - 24px);
+    }
+
+    .page-shell {
+      display: grid;
+      grid-template-columns: 264px minmax(0, 1fr);
+      gap: 20px;
+      height: 100%;
+      min-height: 760px;
+    }
+
+    .sidebar-card,
+    .exam-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .timer-panel {
+      padding: 14px 18px;
+      background: linear-gradient(180deg, #ffb11f 0%, var(--accent) 100%);
+      color: #ffffff;
+      text-align: center;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: 0.03em;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow: auto;
+      padding: 18px 14px 14px;
+    }
+
+    .sidebar-part + .sidebar-part {
+      margin-top: 18px;
+    }
+
+    .sidebar-part h3 {
+      margin: 0 0 10px;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.05rem;
+      color: #122c4e;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .nav-btn {
+      min-height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: #ffffff;
+      color: #587190;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .nav-btn:hover {
+      border-color: #91a8c5;
+      color: var(--navy);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.current {
+      border-color: var(--navy);
+      color: var(--navy);
+      box-shadow: inset 0 0 0 1px rgba(22, 60, 105, 0.08);
+    }
+
+    .nav-btn.answered {
+      background: #fff5e6;
+      border-color: #f6c46e;
+      color: var(--accent-deep);
+    }
+
+    .nav-btn.current.answered {
+      background: linear-gradient(180deg, #ffe3b0 0%, #ffd289 100%);
+      border-color: var(--accent-deep);
+      color: #7a4700;
+    }
+
+    .sidebar-footer {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 10px;
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      background: #fbfdff;
+    }
+
+    .count-box {
+      display: grid;
+      place-items: center;
+      min-height: 48px;
+      border-radius: 12px;
+      border: 1px solid #f2bb56;
+      background: #ffffff;
+      color: var(--navy);
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .submit-btn,
+    .secondary-btn,
+    .control-btn {
+      min-height: 48px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .submit-btn {
+      background: linear-gradient(180deg, #ffaf1f 0%, var(--accent) 100%);
+      color: #ffffff;
+    }
+
+    .submit-btn:hover,
+    .secondary-btn:hover,
+    .control-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .secondary-btn,
+    .control-btn {
+      background: #ffffff;
+      color: var(--navy);
+      border-color: var(--border-strong);
+    }
+
+    .submit-btn:disabled,
+    .secondary-btn:disabled,
+    .control-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .exam-panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .exam-header {
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .exam-meta {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .exam-header h1 {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: clamp(1.5rem, 2vw, 2rem);
+      color: #203b60;
+    }
+
+    .exam-subline {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.96rem;
+      min-height: 24px;
+    }
+
+    .demo-notice,
+    .empty-state {
+      margin: 18px 22px 0;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #ffd69b;
+      background: #fff8ed;
+      color: #8a5b0d;
+      line-height: 1.6;
+    }
+
+    .screen-stack {
+      flex: 1;
+      min-height: 0;
+      padding: 18px 22px 22px;
+    }
+
+    .question-screen {
+      display: none;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .question-screen.active {
+      display: block;
+    }
+
+    .content-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 18px;
+      height: 100%;
+      min-height: 640px;
+    }
+
+    .question-stage,
+    .answer-stage {
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      background: #ffffff;
+    }
+
+    .question-stage {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .answer-stage {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 18px 16px;
+      background: #fcfdff;
+    }
+
+    .stage-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stage-kicker {
+      display: inline-block;
+      margin-bottom: 6px;
+      color: var(--accent-deep);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stage-top h2 {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.35rem;
+      color: #19375f;
+    }
+
+    .question-badge {
+      white-space: nowrap;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: var(--navy-soft);
+      color: var(--navy);
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .audio-block,
+    .passage-block,
+    .prompt-block {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-soft);
+      padding: 14px;
+    }
+
+    .audio-block strong,
+    .passage-block strong,
+    .prompt-block strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #1f3b63;
+      font-family: "Plus Jakarta Sans", sans-serif;
+    }
+
+    .audio-block audio {
+      width: 100%;
+    }
+
+    .passage-body {
+      color: #35506f;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .image-stage {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .image-stage img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: block;
+      object-fit: contain;
+      max-height: 620px;
+    }
+
+    .instruction-line {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.7;
+    }
+
+    .prompt-text {
+      font-size: 1.06rem;
+      line-height: 1.8;
+      color: #1d3659;
+      white-space: pre-wrap;
+    }
+
+    .prompt-text.compact {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .answer-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #23466f;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .answer-flag {
+      width: 10px;
+      height: 16px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #ffb938 0%, var(--accent) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 55% 55%, 0 70%);
+    }
+
+    .answer-options {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .choice {
+      display: block;
+      cursor: pointer;
+    }
+
+    .choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice-ui {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: 0.18s ease;
+    }
+
+    .choice:hover .choice-ui {
+      background: #f7faff;
+      border-color: #d5dfec;
+    }
+
+    .choice input:checked + .choice-ui {
+      background: #fff5e8;
+      border-color: #f6c46e;
+    }
+
+    .choice-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1.6px solid #c5d3e6;
+      position: relative;
+      background: #ffffff;
+    }
+
+    .choice input:checked + .choice-ui .choice-dot {
+      border-color: var(--accent-deep);
+      background: #ffffff;
+    }
+
+    .choice input:checked + .choice-ui .choice-dot::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 999px;
+      background: var(--accent-deep);
+    }
+
+    .choice-copy {
+      color: #274669;
+      line-height: 1.7;
+      font-weight: 700;
+    }
+
+    .choice-copy strong {
+      margin-right: 6px;
+      color: #173862;
+      font-family: "Plus Jakarta Sans", sans-serif;
+    }
+
+    .choice-copy.only-letter {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      letter-spacing: 0.04em;
+    }
+
+    .answer-footer {
+      margin-top: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .empty-state {
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 1200px) {
+      .page-shell {
+        grid-template-columns: 220px minmax(0, 1fr);
+      }
+
+      .content-shell {
+        grid-template-columns: minmax(0, 1fr) 220px;
+      }
+    }
+
+    @media (max-width: 960px) {
+      body {
+        padding: 10px;
+      }
+
+      .exam-form {
+        height: auto;
+      }
+
+      .page-shell {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .sidebar-card {
+        order: 2;
+      }
+
+      .exam-panel {
+        order: 1;
+      }
+
+      .sidebar-scroll {
+        max-height: 320px;
+      }
+
+      .content-shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .answer-stage {
+        order: -1;
+      }
+
+      .screen-stack {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .exam-header {
+        padding: 14px;
+      }
+
+      .sidebar-footer,
+      .answer-footer {
+        grid-template-columns: 1fr;
+      }
+
+      .stage-top {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%
+    const fallbackExam =
+      typeof defaultPlacementExam !== 'undefined' && defaultPlacementExam
+        ? defaultPlacementExam
+        : {};
+    const requestedExam =
+      typeof exam !== 'undefined' && exam
+        ? exam
+        : fallbackExam;
+    const examData =
+      Array.isArray(requestedExam.flatQuestions) && requestedExam.flatQuestions.length
+        ? requestedExam
+        : fallbackExam;
+    const questions = Array.isArray(examData.flatQuestions) ? examData.flatQuestions : [];
+    const groups = Array.isArray(examData.groups) ? examData.groups : [];
+    const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
+    const durationMinutes = Number(examData.durationMinutes || 120);
+    const questionViews = questions.map((question) => {
+      const group = groups.find((item) => Array.isArray(item.questions) && item.questions.some((groupQuestion) => groupQuestion.number === question.number)) || {};
+      const part = partSummary.find((item) => item.partNumber === question.partNumber) || {};
+      return Object.assign({}, question, {
+        partTitle: part.title || ('Part ' + question.partNumber),
+        partInstructions: part.instructions || '',
+        sharedContent: group.sharedContent || '',
+        sharedAudioUrl: group.sharedAudioUrl || null,
+        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : []
+      });
+    });
+    const partSections = partSummary
+      .map((part) => Object.assign({}, part, {
+        questions: questionViews.filter((question) => question.partNumber === part.partNumber)
+      }))
+      .filter((part) => part.questions.length > 0);
+    const totalQuestions = Number(examData.totalQuestions || questionViews.length || 0);
+    const hasQuestions = questionViews.length > 0;
+    const firstQuestion = hasQuestions ? questionViews[0] : null;
+  %>
+  <%
+    const resolvedBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+  %>
+  <form action="<%= resolvedBaseUrl %>/placement-tests/<%= examData.id %>/submit" method="POST" class="exam-form" data-test-form data-session-key="toeic-placement-<%= examData.id %>">
+    <input type="hidden" name="guest_name" value="">
+    <input type="hidden" name="guest_email" value="">
+    <div class="page-shell">
+      <aside class="sidebar-card">
+        <div class="timer-panel">
+          <div id="timer" data-duration="<%= durationMinutes %>">00:00:00</div>
+        </div>
+        <div class="sidebar-scroll">
+          <% partSections.forEach((part) => { %>
+            <section class="sidebar-part">
+              <h3>Part <%= part.partNumber %></h3>
+              <div class="nav-grid">
+                <% part.questions.forEach((question) => { %>
+                  <button type="button" class="nav-btn" data-go-question="<%= question.number %>"><%= question.number %></button>
+                <% }) %>
+              </div>
+            </section>
+          <% }) %>
+        </div>
+        <div class="sidebar-footer">
+          <div class="count-box"><span id="answeredCount">0</span>/<%= totalQuestions %></div>
+          <button type="submit" class="submit-btn" <%= hasQuestions ? '' : 'disabled' %>>Nộp bài</button>
+        </div>
+      </aside>
+
+      <main class="exam-panel">
+        <header class="exam-header">
+          <div class="exam-meta"><%= examData.title || 'TOEIC Placement Test' %> | <%= examData.bookName || 'ETS 2024' %></div>
+          <h1 id="currentHeadline"><%= firstQuestion ? ('Part ' + firstQuestion.partNumber + ' | Câu ' + firstQuestion.number) : 'TOEIC Placement Test' %></h1>
+          <div class="exam-subline" id="currentSubline"><%= firstQuestion ? firstQuestion.partTitle : 'Chưa có dữ liệu đề thi' %></div>
+        </header>
+
+        <div class="screen-stack">
+          <% if (!hasQuestions) { %>
+            <div class="empty-state">Chưa có dữ liệu để hiển thị. Kiểm tra lại file đề thi hoặc route đang truyền vào view.</div>
+          <% } else { %>
+            <% questionViews.forEach((question, index) => { %>
+              <section
+                class="question-screen<%= index === 0 ? ' active' : '' %>"
+                data-question-screen
+                data-question-id="<%= question.number %>"
+                data-part-number="<%= question.partNumber %>"
+                data-part-title="<%= question.partTitle %>"
+                data-headline="Part <%= question.partNumber %> | Câu <%= question.number %>">
+                <div class="content-shell">
+                  <div class="question-stage">
+                    <div class="stage-top">
+                      <div>
+                        <span class="stage-kicker">Part <%= question.partNumber %></span>
+                        <h2><%= question.partTitle %></h2>
+                      </div>
+                      <span class="question-badge">Câu <%= question.number %></span>
+                    </div>
+
+                    <% if (question.sharedAudioUrl) { %>
+                      <div class="audio-block">
+                        <strong>Âm thanh</strong>
+                        <audio controls preload="metadata">
+                          <source src="<%= question.sharedAudioUrl %>" type="audio/mpeg">
+                        </audio>
+                      </div>
+                    <% } %>
+
+                    <% if (question.sharedContent) { %>
+                      <div class="passage-block">
+                        <strong>Đoạn văn</strong>
+                        <div class="passage-body"><%= question.sharedContent %></div>
+                      </div>
+                    <% } %>
+
+                    <% if (question.sharedImages && question.sharedImages.length) { %>
+                      <div class="image-stage">
+                        <% question.sharedImages.forEach((imageUrl) => { %>
+                          <img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>">
+                        <% }) %>
+                      </div>
+                    <% } %>
+
+                    <div class="prompt-block">
+                      <strong>Hướng dẫn</strong>
+                      <p class="instruction-line"><%= question.partInstructions %></p>
+                      <div class="prompt-text<%= question.sharedImages && question.sharedImages.length ? ' compact' : '' %>"><%= question.prompt %></div>
+                    </div>
+                  </div>
+
+                  <aside class="answer-stage">
+                    <div class="answer-head">
+                      <span class="answer-flag"></span>
+                      <span><%= question.number %>.</span>
+                    </div>
+
+                    <div class="answer-options">
+                      <% question.options.forEach((option) => { %>
+                        <label class="choice">
+                          <input
+                            type="radio"
+                            name="<%= question.inputName %>"
+                            value="<%= option.label %>"
+                            data-question-input="<%= question.number %>">
+                          <span class="choice-ui">
+                            <span class="choice-dot"></span>
+                            <% if (option.isLetterOnly) { %>
+                              <span class="choice-copy only-letter"><strong><%= option.label %></strong></span>
+                            <% } else { %>
+                              <span class="choice-copy"><strong><%= option.label %></strong><%= option.text %></span>
+                            <% } %>
+                          </span>
+                        </label>
+                      <% }) %>
+                    </div>
+
+                    <div class="answer-footer">
+                      <button type="button" class="control-btn" data-direction="-1">Câu trước</button>
+                      <button type="button" class="control-btn" data-direction="1">Câu tiếp</button>
+                    </div>
+
+                    <button type="button" class="secondary-btn" data-jump-pending>Đến câu chưa làm</button>
+                  </aside>
+                </div>
+              </section>
+            <% }) %>
+          <% } %>
+        </div>
+      </main>
+    </div>
+  </form>
+
+  <script>
+    (() => {
+      const form = document.querySelector('[data-test-form]');
+      if (!form) return;
+
+      const sessionKey = form.dataset.sessionKey || '';
+      const screens = Array.from(form.querySelectorAll('[data-question-screen]'));
+      const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
+      const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
+      const timerEl = document.getElementById('timer');
+      const answeredEl = document.getElementById('answeredCount');
+      const headlineEl = document.getElementById('currentHeadline');
+      const sublineEl = document.getElementById('currentSubline');
+      const jumpButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+      const orderedIds = screens.map((screen) => String(screen.dataset.questionId));
+      let currentQuestionId = orderedIds[0] || null;
+
+      const readState = () => {
+        if (!sessionKey) return null;
+        try {
+          const raw = sessionStorage.getItem(sessionKey);
+          return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const writeState = () => {
+        if (!sessionKey) return;
+        const answers = {};
+        radioInputs.forEach((input) => {
+          if (input.checked) {
+            answers[input.name] = input.value;
+          }
+        });
+
+        try {
+          sessionStorage.setItem(sessionKey, JSON.stringify({
+            currentQuestionId,
+            answers
+          }));
+        } catch (error) {
+          console.warn('Cannot save placement state:', error);
+        }
+      };
+
+      const restoreState = () => {
+        const stored = readState();
+        if (!stored) return;
+
+        Object.entries(stored.answers || {}).forEach(([name, value]) => {
+          const matched = form.querySelector(`input[name="${name}"][value="${value}"]`);
+          if (matched) {
+            matched.checked = true;
+          }
+        });
+
+        if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
+          currentQuestionId = String(stored.currentQuestionId);
+        }
+      };
+
+      const getAnsweredSet = () => new Set(
+        radioInputs
+          .filter((input) => input.checked)
+          .map((input) => String(input.dataset.questionInput))
+      );
+
+      const getScreen = (questionId) => screens.find((screen) => screen.dataset.questionId === String(questionId));
+
+      const getNeighborId = (questionId, direction) => {
+        const currentIndex = orderedIds.indexOf(String(questionId));
+        if (currentIndex === -1) return null;
+        return orderedIds[currentIndex + direction] || null;
+      };
+
+      const updateFooterControls = () => {
+        screens.forEach((screen) => {
+          const questionId = screen.dataset.questionId;
+          const prevButton = screen.querySelector('[data-direction="-1"]');
+          const nextButton = screen.querySelector('[data-direction="1"]');
+          if (prevButton) prevButton.disabled = !getNeighborId(questionId, -1);
+          if (nextButton) nextButton.disabled = !getNeighborId(questionId, 1);
+        });
+      };
+
+      const syncUi = () => {
+        const answeredSet = getAnsweredSet();
+        const activeScreen = getScreen(currentQuestionId) || screens[0];
+
+        screens.forEach((screen) => {
+          screen.classList.toggle('active', screen === activeScreen);
+        });
+
+        navButtons.forEach((button) => {
+          const questionId = button.dataset.goQuestion;
+          button.classList.toggle('current', questionId === String(currentQuestionId));
+          button.classList.toggle('answered', answeredSet.has(questionId));
+        });
+
+        const currentButton = navButtons.find((button) => button.dataset.goQuestion === String(currentQuestionId));
+        if (currentButton) {
+          currentButton.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+
+        if (answeredEl) {
+          answeredEl.textContent = String(answeredSet.size);
+        }
+
+        if (activeScreen) {
+          currentQuestionId = String(activeScreen.dataset.questionId);
+          if (headlineEl) {
+            headlineEl.textContent = activeScreen.dataset.headline || ('Câu ' + currentQuestionId);
+          }
+          if (sublineEl) {
+            const answeredLabel = answeredSet.has(currentQuestionId) ? 'Đã chọn đáp án' : 'Chưa trả lời';
+            sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel;
+          }
+        }
+
+        updateFooterControls();
+        writeState();
+      };
+
+      const setCurrentQuestion = (questionId) => {
+        if (!orderedIds.includes(String(questionId))) return;
+        currentQuestionId = String(questionId);
+        syncUi();
+      };
+
+      const jumpToFirstPending = () => {
+        const answeredSet = getAnsweredSet();
+        const nextPending = orderedIds.find((questionId) => !answeredSet.has(questionId));
+        if (nextPending) {
+          setCurrentQuestion(nextPending);
+        }
+      };
+
+      restoreState();
+      syncUi();
+
+      navButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          setCurrentQuestion(button.dataset.goQuestion);
+        });
+      });
+
+      radioInputs.forEach((input) => {
+        input.addEventListener('change', () => {
+          currentQuestionId = String(input.dataset.questionInput);
+          syncUi();
+        });
+      });
+
+      screens.forEach((screen) => {
+        const prevButton = screen.querySelector('[data-direction="-1"]');
+        const nextButton = screen.querySelector('[data-direction="1"]');
+        const questionId = screen.dataset.questionId;
+
+        if (prevButton) {
+          prevButton.addEventListener('click', () => {
+            const prevId = getNeighborId(questionId, -1);
+            if (prevId) {
+              setCurrentQuestion(prevId);
+            }
+          });
+        }
+
+        if (nextButton) {
+          nextButton.addEventListener('click', () => {
+            const nextId = getNeighborId(questionId, 1);
+            if (nextId) {
+              setCurrentQuestion(nextId);
+            }
+          });
+        }
+      });
+
+      jumpButtons.forEach((button) => {
+        button.addEventListener('click', jumpToFirstPending);
+      });
+
+      form.addEventListener('submit', () => {
+        if (sessionKey) {
+          sessionStorage.removeItem(sessionKey);
+        }
+      });
+
+      if (timerEl) {
+        let timeLeft = Number(timerEl.dataset.duration || 120) * 60;
+        const renderTimer = () => {
+          const hours = Math.floor(timeLeft / 3600);
+          const minutes = Math.floor((timeLeft % 3600) / 60);
+          const seconds = timeLeft % 60;
+          timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+          if (timeLeft <= 0) {
+            alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.');
+            form.submit();
+            return;
+          }
+          timeLeft -= 1;
+        };
+        renderTimer();
+        setInterval(renderTimer, 1000);
+      }
+    })();
+  </script>
+</body>
+</html>

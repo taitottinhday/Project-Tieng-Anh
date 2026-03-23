@@ -1,0 +1,141 @@
+
+
+<div class="space-y-10">
+  <% 
+    const ctx = (typeof subjects !== 'undefined' || typeof students !== 'undefined' || typeof marks !== 'undefined')
+      ? { subjects, students, marks, username }
+      : (typeof locals !== 'undefined' ? locals : {});
+
+    const toArray = (value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      try {
+        return Array.from(value);
+      } catch (err) {
+        return [];
+      }
+    };
+
+    const safeSubjects = toArray(ctx.subjects);
+    const safeStudents = toArray(ctx.students);
+    const safeMarks = toArray(ctx.marks);
+    const displayUsername = ctx.username ? ctx.username : 'Guest';
+  %>
+
+  <header class="rounded-2xl bg-gradient-to-r from-teal-600 to-sky-600 p-8 text-white shadow-lg">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="text-xs uppercase tracking-[0.4em] text-white/80">Marks Admin</p>
+        <h1 class="mt-2 text-3xl font-bold">Khóa Học</h1>
+        <p class="mt-2 max-w-2xl text-white/80">Create and remove mark records directly from the database.</p>
+      </div>
+      <div class="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-right">
+        <p class="text-xs uppercase tracking-wide text-white/70">Signed in as</p>
+        <p class="text-xl font-semibold"><%= displayUsername %></p>
+      </div>
+    </div>
+  </header>
+
+  <section class="rounded-2xl border border-gray-700 bg-gray-900/70 p-8 shadow-xl space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-white">Add New Mark</h2>
+      <p class="text-sm text-gray-400">All fields are required. Scores accept values between 0 and 100.</p>
+    </div>
+
+    <form action="crud/create" method="POST" class="space-y-4">
+      <div class="grid gap-4 md:grid-cols-3">
+        <label class="flex flex-col gap-2 text-sm text-gray-300">
+          <span>Student</span>
+          <select name="student_id" required class="rounded-lg border border-gray-700 bg-gray-800/80 p-3 text-white focus:border-teal-400 focus:outline-none">
+            <option value="">Select Student</option>
+            <% safeStudents.slice(0, 200).forEach((student) => { %>
+              <option value="<%= student.student_id %>"><%= student.name || ('ID ' + student.student_id) %></option>
+            <% }); %>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-gray-300">
+          <span>Subject</span>
+          <select name="subject_id" required class="rounded-lg border border-gray-700 bg-gray-800/80 p-3 text-white focus:border-teal-400 focus:outline-none">
+            <option value="">Select Subject</option>
+            <% safeSubjects.forEach((subject) => { %>
+              <option value="<%= subject.id %>"><%= subject.subject_name %></option>
+            <% }); %>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-gray-300">
+          <span>Mark</span>
+          <input
+            type="number"
+            name="mark"
+            min="0"
+            max="100"
+            required
+            placeholder="0 - 100"
+            class="rounded-lg border border-gray-700 bg-gray-800/80 p-3 text-white placeholder-gray-500 focus:border-teal-400 focus:outline-none"
+          />
+        </label>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <button type="submit" class="rounded-lg bg-teal-500 px-6 py-3 text-sm font-semibold text-darkbg transition hover:bg-teal-400">
+          Add Mark
+        </button>
+        <p class="text-xs text-gray-500">Latest <%= safeMarks.length %> records listed below.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="rounded-2xl border border-gray-700 bg-gray-900/70 p-8 shadow-xl">
+    <header class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-800 pb-4">
+      <div>
+        <h2 class="text-xl font-semibold text-white">Marks List</h2>
+        <p class="text-sm text-gray-400">Showing the 100 most recent records with student and subject names.</p>
+      </div>
+    </header>
+
+    <% if (safeMarks.length > 0) { %>
+      <div class="mt-4 max-h-[420px] overflow-auto rounded-lg border border-gray-800">
+        <table class="min-w-full text-left text-sm text-gray-200">
+          <thead class="bg-gray-800/70 text-xs uppercase tracking-wide text-gray-400">
+            <tr>
+              <th class="px-5 py-3">ID</th>
+              <th class="px-5 py-3">Student</th>
+              <th class="px-5 py-3">Subject</th>
+              <th class="px-5 py-3">Mark</th>
+              <th class="px-5 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-800">
+            <% safeMarks.forEach((row) => { %>
+              <tr class="hover:bg-gray-800/40 transition">
+                <td class="px-5 py-3 font-mono text-sm text-gray-300"><%= row.id %></td>
+                <td class="px-5 py-3 text-white"><%= row.student_name || ('Student #' + row.student_id) %></td>
+                <td class="px-5 py-3 text-gray-300"><%= row.subject_name || 'Unknown Subject' %></td>
+                <td class="px-5 py-3 font-semibold text-teal-300"><%= row.mark %></td>
+                <td class="px-5 py-3 space-x-4">
+                  <a
+                    href="crud/edit/<%= row.id %>"
+                    class="text-sm font-semibold text-sky-400 hover:text-sky-300"
+                  >
+                    Edit
+                  </a>
+                  <a
+                    href="crud/delete/<%= row.id %>"
+                    class="text-sm font-semibold text-red-400 hover:text-red-300"
+                    onclick="return confirm('Delete mark #<%= row.id %>?');"
+                  >
+                    Delete
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="mt-6 text-sm text-gray-400">No marks found yet. Add one above to get started.</p>
+    <% } %>
+  </section>
+</div>

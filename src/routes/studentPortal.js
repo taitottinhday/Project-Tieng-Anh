@@ -1,0 +1,222 @@
+const express = require("express");
+const router = express.Router();
+const renderWithLayout = require("../utils/renderHelper");
+const { isLoggedIn } = require("./auth");
+const studentPracticeController = require("../controllers/studentPracticeController");
+const studentDictationController = require("../controllers/studentDictationController");
+const {
+  syncStudentProfileFromUser,
+  uploadStudentSubmissionFiles,
+} = require("../services/platformSupport");
+const {
+  getStudentClassroomFeed,
+  getStudentClassroomList,
+  getStudentPostDetail,
+  markStudentSubmissionComplete,
+  saveStudentSubmission,
+} = require("../services/classroomService");
+
+function isStudent(req, res, next) {
+  const role = req.session?.user?.role;
+
+  if (!role || role === "admin" || role === "teacher") {
+    return res.status(403).send("Access Denied - Students Only");
+  }
+
+  next();
+}
+
+async function getCurrentStudent(req) {
+  return syncStudentProfileFromUser(req.session?.user);
+}
+
+function handleStudentUpload(middleware) {
+  return (req, res, next) => {
+    middleware(req, res, (err) => {
+      if (err) {
+        req.flash("error_msg", err.message || "Không thể tải tệp nộp bài lúc này.");
+        return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
+      }
+
+      return next();
+    });
+  };
+}
+
+router.get("/courses", isLoggedIn, isStudent, (req, res) => {
+  renderWithLayout(res, "student-courses", {
+    title: "Khóa học học viên",
+  });
+});
+
+router.get("/schedule", isLoggedIn, isStudent, (req, res) => {
+  renderWithLayout(res, "student-schedule", {
+    title: "Lịch khai giảng học viên",
+  });
+});
+
+router.get("/contact", isLoggedIn, isStudent, (req, res) => {
+  renderWithLayout(res, "student-contact", {
+    title: "Liên hệ học viên",
+    success: req.query.success || null,
+  });
+});
+
+router.get("/feedback", isLoggedIn, isStudent, (req, res) => {
+  renderWithLayout(res, "student-feedback", {
+    title: "Góp ý học viên",
+    success: req.query.success || null,
+  });
+});
+
+router.get("/classroom", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const student = await getCurrentStudent(req);
+
+    if (!student) {
+      return res.status(404).send("Không tìm thấy hồ sơ học viên.");
+    }
+
+    const classrooms = await getStudentClassroomList(student.id);
+    renderWithLayout(res, "student-classroom", {
+      title: "Lớp học của tôi",
+      studentName: student.full_name || req.session.user?.username,
+      student,
+      classrooms,
+      success: req.query.success || null,
+    });
+  } catch (err) {
+    res.send("ERROR: " + err.message);
+  }
+});
+
+router.get("/classroom/:classId", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const student = await getCurrentStudent(req);
+    const classId = Number(req.params.classId);
+
+    if (!student) {
+      return res.status(404).send("Không tìm thấy hồ sơ học viên.");
+    }
+
+    const classroom = await getStudentClassroomFeed(student.id, classId);
+    if (!classroom) {
+      return res.status(404).send("Không tìm thấy lớp học của học viên.");
+    }
+
+    renderWithLayout(res, "student-classroom-feed", {
+      title: "Bảng tin lớp học",
+      studentName: student.full_name || req.session.user?.username,
+      student,
+      classInfo: classroom.classInfo,
+      posts: classroom.posts,
+      success: req.query.success || null,
+    });
+  } catch (err) {
+    res.send("ERROR: " + err.message);
+  }
+});
+
+router.get("/classroom/:classId/posts/:postId", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const student = await getCurrentStudent(req);
+    const classId = Number(req.params.classId);
+    const postId = Number(req.params.postId);
+
+    if (!student) {
+      return res.status(404).send("Không tìm thấy hồ sơ học viên.");
+    }
+
+    const classroom = await getStudentClassroomFeed(student.id, classId);
+    const detail = await getStudentPostDetail(student.id, classId, postId);
+
+    if (!classroom || !detail) {
+      return res.status(404).send("Không tìm thấy bài học của học viên.");
+    }
+
+    renderWithLayout(res, "student-assignment-detail", {
+      title: "Chi tiết bài học",
+      studentName: student.full_name || req.session.user?.username,
+      student,
+      classInfo: classroom.classInfo,
+      post: detail.post,
+      submission: detail.submission,
+      success: req.query.success || null,
+    });
+  } catch (err) {
+    res.send("ERROR: " + err.message);
+  }
+});
+
+router.post(
+  "/classroom/:classId/posts/:postId/submit",
+  isLoggedIn,
+  isStudent,
+  handleStudentUpload(uploadStudentSubmissionFiles.array("submission_files", 6)),
+  async (req, res) => {
+    try {
+      const student = await getCurrentStudent(req);
+
+      if (!student) {
+        return res.status(404).send("Không tìm thấy hồ sơ học viên.");
+      }
+
+      await saveStudentSubmission({
+        studentId: student.id,
+        classId: Number(req.params.classId),
+        postId: Number(req.params.postId),
+        note: req.body.student_note,
+        files: req.files || [],
+        markComplete: String(req.body.mark_complete || "") === "1",
+      });
+
+      return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}?success=1`);
+    } catch (err) {
+      req.flash("error_msg", err.message || "Không thể nộp bài lúc này.");
+      return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
+    }
+  }
+);
+
+router.post("/classroom/:classId/posts/:postId/complete", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const student = await getCurrentStudent(req);
+
+    if (!student) {
+      return res.status(404).send("Không tìm thấy hồ sơ học viên.");
+    }
+
+    await markStudentSubmissionComplete({
+      studentId: student.id,
+      classId: Number(req.params.classId),
+      postId: Number(req.params.postId),
+    });
+
+    return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}?success=1`);
+  } catch (err) {
+    req.flash("error_msg", err.message || "Không thể đánh dấu hoàn thành lúc này.");
+    return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
+  }
+});
+
+router.get("/practice/parts", isLoggedIn, isStudent, studentPracticeController.listPartPractice);
+router.get("/practice/reading", isLoggedIn, isStudent, studentPracticeController.listReadingPractice);
+router.get("/dictation", isLoggedIn, isStudent, studentDictationController.listDictationTopics);
+router.get("/dictation/:topicId", isLoggedIn, isStudent, studentDictationController.showDictationTopic);
+router.get("/dictation/:topicId/:lessonId", isLoggedIn, isStudent, studentDictationController.showDictationLesson);
+router.get("/practice/parts/:practiceId", isLoggedIn, isStudent, studentPracticeController.showPartPracticeStart);
+router.get("/practice/parts/:practiceId/take", isLoggedIn, isStudent, studentPracticeController.takePartPractice);
+router.post("/practice/parts/:practiceId/submit", isLoggedIn, isStudent, studentPracticeController.submitPartPractice);
+router.get("/practice/reading/:practiceId", isLoggedIn, isStudent, studentPracticeController.showReadingPracticeStart);
+router.get("/practice/reading/:practiceId/take", isLoggedIn, isStudent, studentPracticeController.takeReadingPractice);
+router.post("/practice/reading/:practiceId/submit", isLoggedIn, isStudent, studentPracticeController.submitReadingPractice);
+router.get("/practice/result/latest", isLoggedIn, isStudent, studentPracticeController.showLatestPracticeResult);
+
+router.get("/api/practice/parts", isLoggedIn, isStudent, studentPracticeController.listPartPracticeApi);
+router.get("/api/practice/parts/:practiceId/questions", isLoggedIn, isStudent, studentPracticeController.getPartQuestionsApi);
+router.get("/api/practice/parts/:practiceId/answers", isLoggedIn, isStudent, studentPracticeController.getPartAnswersApi);
+router.get("/api/practice/reading", isLoggedIn, isStudent, studentPracticeController.listReadingPracticeApi);
+router.get("/api/practice/reading/:practiceId/questions", isLoggedIn, isStudent, studentPracticeController.getReadingQuestionsApi);
+router.get("/api/practice/reading/:practiceId/answers", isLoggedIn, isStudent, studentPracticeController.getReadingAnswersApi);
+
+module.exports = router;

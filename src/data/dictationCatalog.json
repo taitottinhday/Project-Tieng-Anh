@@ -1,0 +1,268 @@
+{
+  "topics": [
+    {
+      "id": "topic-1-job",
+      "title": "TOPIC 1-JOB",
+      "categoryKey": "toeic-a-b",
+      "categoryLabel": "TOEIC A & B",
+      "description": "Office routines, interviews, and team communication.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Listen to short workplace statements and type the complete sentence.",
+          "entries": [
+            { "id": "topic-1-job-word-1-01", "transcript": "The new sales manager starts work at nine o'clock every morning.", "audioFile": "topic-1-job-word-1-01.wav" },
+            { "id": "topic-1-job-word-1-02", "transcript": "Please submit the hiring report before the interview begins.", "audioFile": "topic-1-job-word-1-02.wav" },
+            { "id": "topic-1-job-word-1-03", "transcript": "Our team usually meets in the conference room after lunch.", "audioFile": "topic-1-job-word-1-03.wav" },
+            { "id": "topic-1-job-word-1-04", "transcript": "The receptionist will call you when the director is available.", "audioFile": "topic-1-job-word-1-04.wav" },
+            { "id": "topic-1-job-word-1-05", "transcript": "Everyone in the office must wear an identification badge.", "audioFile": "topic-1-job-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Practice longer office sentences with names, numbers, and schedules.",
+          "entries": [
+            { "id": "topic-1-job-word-2-01", "transcript": "The applicant has five years of experience in customer service.", "audioFile": "topic-1-job-word-2-01.wav" },
+            { "id": "topic-1-job-word-2-02", "transcript": "We need to schedule another training session for new employees.", "audioFile": "topic-1-job-word-2-02.wav" },
+            { "id": "topic-1-job-word-2-03", "transcript": "His supervisor praised him for finishing the project early.", "audioFile": "topic-1-job-word-2-03.wav" },
+            { "id": "topic-1-job-word-2-04", "transcript": "The accountant is preparing the monthly payroll this afternoon.", "audioFile": "topic-1-job-word-2-04.wav" },
+            { "id": "topic-1-job-word-2-05", "transcript": "Several interns are helping with data entry this week.", "audioFile": "topic-1-job-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "topic-2-advertising-marketing-promotion",
+      "title": "TOPIC 2-ADVERTISING-MARKETING-PROMOTION",
+      "categoryKey": "toeic-a-b",
+      "categoryLabel": "TOEIC A & B",
+      "description": "Campaign launches, discounts, and brand communication.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Focus on promotions and customer-facing vocabulary.",
+          "entries": [
+            { "id": "topic-2-advertising-marketing-promotion-word-1-01", "transcript": "The company launched a new advertising campaign on social media.", "audioFile": "topic-2-advertising-marketing-promotion-word-1-01.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-1-02", "transcript": "Our marketing team is designing posters for the summer event.", "audioFile": "topic-2-advertising-marketing-promotion-word-1-02.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-1-03", "transcript": "Customers can receive a discount coupon by email today.", "audioFile": "topic-2-advertising-marketing-promotion-word-1-03.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-1-04", "transcript": "The promotion increased online sales by almost twenty percent.", "audioFile": "topic-2-advertising-marketing-promotion-word-1-04.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-1-05", "transcript": "Please review the brochure before we print one thousand copies.", "audioFile": "topic-2-advertising-marketing-promotion-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Train on slogans, target audiences, and media channels.",
+          "entries": [
+            { "id": "topic-2-advertising-marketing-promotion-word-2-01", "transcript": "The brand manager wants to target college students this season.", "audioFile": "topic-2-advertising-marketing-promotion-word-2-01.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-2-02", "transcript": "We should update the website banner with the new product image.", "audioFile": "topic-2-advertising-marketing-promotion-word-2-02.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-2-03", "transcript": "Many shoppers visited the store after watching the television commercial.", "audioFile": "topic-2-advertising-marketing-promotion-word-2-03.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-2-04", "transcript": "The agency suggested a shorter slogan for the radio advertisement.", "audioFile": "topic-2-advertising-marketing-promotion-word-2-04.wav" },
+            { "id": "topic-2-advertising-marketing-promotion-word-2-05", "transcript": "Our biggest competitor announced a special offer last weekend.", "audioFile": "topic-2-advertising-marketing-promotion-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day-1",
+      "title": "DAY 1",
+      "categoryKey": "tap-su",
+      "categoryLabel": "Tập Sự",
+      "description": "Short beginner-friendly dictation for daily listening habits.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Warm up with clear and simple everyday sentences.",
+          "entries": [
+            { "id": "day-1-word-1-01", "transcript": "I usually check my email before breakfast.", "audioFile": "day-1-word-1-01.wav" },
+            { "id": "day-1-word-1-02", "transcript": "My class starts at eight fifteen every Monday.", "audioFile": "day-1-word-1-02.wav" },
+            { "id": "day-1-word-1-03", "transcript": "Please bring your notebook to the training room.", "audioFile": "day-1-word-1-03.wav" },
+            { "id": "day-1-word-1-04", "transcript": "We often practice listening in the library after school.", "audioFile": "day-1-word-1-04.wav" },
+            { "id": "day-1-word-1-05", "transcript": "Her teacher speaks slowly during the first lesson.", "audioFile": "day-1-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Continue with polite requests and simple directions.",
+          "entries": [
+            { "id": "day-1-word-2-01", "transcript": "Can you open the window near the front desk?", "audioFile": "day-1-word-2-01.wav" },
+            { "id": "day-1-word-2-02", "transcript": "The blue folder is on the chair beside the printer.", "audioFile": "day-1-word-2-02.wav" },
+            { "id": "day-1-word-2-03", "transcript": "I need to finish this homework before dinner tonight.", "audioFile": "day-1-word-2-03.wav" },
+            { "id": "day-1-word-2-04", "transcript": "Our coach gives useful tips for pronunciation practice.", "audioFile": "day-1-word-2-04.wav" },
+            { "id": "day-1-word-2-05", "transcript": "The student in the red jacket asked an easy question.", "audioFile": "day-1-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day-2",
+      "title": "DAY 2",
+      "categoryKey": "tap-su",
+      "categoryLabel": "Tập Sự",
+      "description": "Simple listening about schedules, lessons, and study tasks.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Practice dates, time expressions, and classroom actions.",
+          "entries": [
+            { "id": "day-2-word-1-01", "transcript": "The afternoon workshop ends at four thirty on Tuesday.", "audioFile": "day-2-word-1-01.wav" },
+            { "id": "day-2-word-1-02", "transcript": "Please write your full name on the top of the page.", "audioFile": "day-2-word-1-02.wav" },
+            { "id": "day-2-word-1-03", "transcript": "They are waiting outside the classroom for the next session.", "audioFile": "day-2-word-1-03.wav" },
+            { "id": "day-2-word-1-04", "transcript": "My partner will send the homework file after lunch.", "audioFile": "day-2-word-1-04.wav" },
+            { "id": "day-2-word-1-05", "transcript": "The audio exercise is easier when you listen twice.", "audioFile": "day-2-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Build confidence with natural but slow daily English.",
+          "entries": [
+            { "id": "day-2-word-2-01", "transcript": "We need more pencils for the speaking class tomorrow.", "audioFile": "day-2-word-2-01.wav" },
+            { "id": "day-2-word-2-02", "transcript": "The front door closes automatically after six o'clock.", "audioFile": "day-2-word-2-02.wav" },
+            { "id": "day-2-word-2-03", "transcript": "Her friend borrowed a dictionary from the study center.", "audioFile": "day-2-word-2-03.wav" },
+            { "id": "day-2-word-2-04", "transcript": "This listening test includes ten short sentences and one dialogue.", "audioFile": "day-2-word-2-04.wav" },
+            { "id": "day-2-word-2-05", "transcript": "Please turn off your phone during the practice activity.", "audioFile": "day-2-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day-3",
+      "title": "DAY 3",
+      "categoryKey": "tap-su",
+      "categoryLabel": "Tập Sự",
+      "description": "Daily study stories with slightly longer sentence patterns.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Listen for key verbs, adjectives, and classroom vocabulary.",
+          "entries": [
+            { "id": "day-3-word-1-01", "transcript": "The teacher explained the answer in a very clear voice.", "audioFile": "day-3-word-1-01.wav" },
+            { "id": "day-3-word-1-02", "transcript": "I forgot my headphones, so I borrowed a pair at the office.", "audioFile": "day-3-word-1-02.wav" },
+            { "id": "day-3-word-1-03", "transcript": "The students reviewed new words before the mock test started.", "audioFile": "day-3-word-1-03.wav" },
+            { "id": "day-3-word-1-04", "transcript": "Please circle the correct answer and check your spelling.", "audioFile": "day-3-word-1-04.wav" },
+            { "id": "day-3-word-1-05", "transcript": "Our class will move to the second floor next week.", "audioFile": "day-3-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "More natural sentences to sharpen your typing accuracy.",
+          "entries": [
+            { "id": "day-3-word-2-01", "transcript": "She practices English for thirty minutes before going to work.", "audioFile": "day-3-word-2-01.wav" },
+            { "id": "day-3-word-2-02", "transcript": "The center posted the updated timetable on the notice board.", "audioFile": "day-3-word-2-02.wav" },
+            { "id": "day-3-word-2-03", "transcript": "Please save the document in the shared folder on your computer.", "audioFile": "day-3-word-2-03.wav" },
+            { "id": "day-3-word-2-04", "transcript": "My teammate corrected the sentence after listening one more time.", "audioFile": "day-3-word-2-04.wav" },
+            { "id": "day-3-word-2-05", "transcript": "We will take a short break before the final speaking activity.", "audioFile": "day-3-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "topic-3-manufacturing",
+      "title": "TOPIC 3-MANUFACTURING",
+      "categoryKey": "toeic-a-b",
+      "categoryLabel": "TOEIC A & B",
+      "description": "Factory operations, production plans, and safety updates.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Train on production lines, equipment, and quality checks.",
+          "entries": [
+            { "id": "topic-3-manufacturing-word-1-01", "transcript": "The factory installed new equipment to improve safety standards.", "audioFile": "topic-3-manufacturing-word-1-01.wav" },
+            { "id": "topic-3-manufacturing-word-1-02", "transcript": "Workers must inspect each machine before the first shift begins.", "audioFile": "topic-3-manufacturing-word-1-02.wav" },
+            { "id": "topic-3-manufacturing-word-1-03", "transcript": "Our production manager expects higher output this quarter.", "audioFile": "topic-3-manufacturing-word-1-03.wav" },
+            { "id": "topic-3-manufacturing-word-1-04", "transcript": "The quality control team rejected several damaged parts yesterday.", "audioFile": "topic-3-manufacturing-word-1-04.wav" },
+            { "id": "topic-3-manufacturing-word-1-05", "transcript": "Please store the finished goods in warehouse number three.", "audioFile": "topic-3-manufacturing-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Practice work orders, materials, and shipping preparation.",
+          "entries": [
+            { "id": "topic-3-manufacturing-word-2-01", "transcript": "The assembly line stopped because one conveyor belt was broken.", "audioFile": "topic-3-manufacturing-word-2-01.wav" },
+            { "id": "topic-3-manufacturing-word-2-02", "transcript": "We ordered extra steel materials for next month's large contract.", "audioFile": "topic-3-manufacturing-word-2-02.wav" },
+            { "id": "topic-3-manufacturing-word-2-03", "transcript": "Every technician should report equipment issues immediately.", "audioFile": "topic-3-manufacturing-word-2-03.wav" },
+            { "id": "topic-3-manufacturing-word-2-04", "transcript": "The supplier delivered the replacement parts earlier than expected.", "audioFile": "topic-3-manufacturing-word-2-04.wav" },
+            { "id": "topic-3-manufacturing-word-2-05", "transcript": "Management plans to expand the plant near the river next year.", "audioFile": "topic-3-manufacturing-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day-4",
+      "title": "DAY 4",
+      "categoryKey": "tap-su",
+      "categoryLabel": "Tập Sự",
+      "description": "Friendly review set before moving to more advanced TOEIC topics.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Review familiar sentence structures with daily vocabulary.",
+          "entries": [
+            { "id": "day-4-word-1-01", "transcript": "The teacher asked us to repeat the sentence one more time.", "audioFile": "day-4-word-1-01.wav" },
+            { "id": "day-4-word-1-02", "transcript": "My younger brother studies English in the evening at home.", "audioFile": "day-4-word-1-02.wav" },
+            { "id": "day-4-word-1-03", "transcript": "Please put your bag under the desk before class begins.", "audioFile": "day-4-word-1-03.wav" },
+            { "id": "day-4-word-1-04", "transcript": "The practice room is quieter in the morning than at night.", "audioFile": "day-4-word-1-04.wav" },
+            { "id": "day-4-word-1-05", "transcript": "We will check the answers together after the listening task.", "audioFile": "day-4-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Push accuracy with longer beginner-level sentences.",
+          "entries": [
+            { "id": "day-4-word-2-01", "transcript": "She wrote the new vocabulary in a small blue notebook.", "audioFile": "day-4-word-2-01.wav" },
+            { "id": "day-4-word-2-02", "transcript": "Our class manager sent the meeting link before nine o'clock.", "audioFile": "day-4-word-2-02.wav" },
+            { "id": "day-4-word-2-03", "transcript": "The coffee shop near the center opens very early every day.", "audioFile": "day-4-word-2-03.wav" },
+            { "id": "day-4-word-2-04", "transcript": "Please listen carefully and type the sentence exactly as you hear it.", "audioFile": "day-4-word-2-04.wav" },
+            { "id": "day-4-word-2-05", "transcript": "The student corrected two spelling mistakes before submitting the form.", "audioFile": "day-4-word-2-05.wav" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "topic-4-shipping",
+      "title": "TOPIC 4-SHIPPING",
+      "categoryKey": "toeic-a-b",
+      "categoryLabel": "TOEIC A & B",
+      "description": "Logistics, delivery updates, and warehouse coordination.",
+      "lessons": [
+        {
+          "id": "word-1",
+          "title": "WORD 1",
+          "description": "Focus on deliveries, ports, and warehouse movements.",
+          "entries": [
+            { "id": "topic-4-shipping-word-1-01", "transcript": "The package was delayed because of heavy rain at the port.", "audioFile": "topic-4-shipping-word-1-01.wav" },
+            { "id": "topic-4-shipping-word-1-02", "transcript": "Please confirm the delivery address before the truck departs.", "audioFile": "topic-4-shipping-word-1-02.wav" },
+            { "id": "topic-4-shipping-word-1-03", "transcript": "Our warehouse staff loaded the boxes onto the second container.", "audioFile": "topic-4-shipping-word-1-03.wav" },
+            { "id": "topic-4-shipping-word-1-04", "transcript": "The shipping clerk printed all the customs documents this morning.", "audioFile": "topic-4-shipping-word-1-04.wav" },
+            { "id": "topic-4-shipping-word-1-05", "transcript": "Customers can track their orders on the company website.", "audioFile": "topic-4-shipping-word-1-05.wav" }
+          ]
+        },
+        {
+          "id": "word-2",
+          "title": "WORD 2",
+          "description": "Train on routes, schedules, and freight communication.",
+          "entries": [
+            { "id": "topic-4-shipping-word-2-01", "transcript": "The express courier will arrive before noon with the replacement parts.", "audioFile": "topic-4-shipping-word-2-01.wav" },
+            { "id": "topic-4-shipping-word-2-02", "transcript": "We need to update the freight schedule for next Friday.", "audioFile": "topic-4-shipping-word-2-02.wav" },
+            { "id": "topic-4-shipping-word-2-03", "transcript": "A customer complained that one carton was missing from the order.", "audioFile": "topic-4-shipping-word-2-03.wav" },
+            { "id": "topic-4-shipping-word-2-04", "transcript": "The logistics coordinator called the driver about a traffic delay.", "audioFile": "topic-4-shipping-word-2-04.wav" },
+            { "id": "topic-4-shipping-word-2-05", "transcript": "All export items must be packed securely before inspection.", "audioFile": "topic-4-shipping-word-2-05.wav" }
+          ]
+        }
+      ]
+    }
+  ]
+}

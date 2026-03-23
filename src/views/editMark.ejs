@@ -1,0 +1,115 @@
+
+
+<div class="space-y-10">
+  <% 
+    const ctx = (typeof mark !== 'undefined' || typeof subjects !== 'undefined' || typeof students !== 'undefined')
+      ? { mark, subjects, students, username }
+      : (typeof locals !== 'undefined' ? locals : {});
+
+    const toArray = (value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      try {
+        return Array.from(value);
+      } catch (err) {
+        return [];
+      }
+    };
+
+    const record = ctx.mark || null;
+    const safeSubjects = toArray(ctx.subjects);
+    const safeStudents = toArray(ctx.students);
+    const selectedStudentId = record ? Number(record.student_id) : null;
+    const selectedSubjectId = record ? Number(record.subject_id) : null;
+    const displayUsername = ctx.username ? ctx.username : 'Guest';
+  %>
+
+  <header class="rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 p-8 text-white shadow-lg">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="text-xs uppercase tracking-[0.4em] text-white/80">Marks Admin</p>
+        <h1 class="mt-2 text-3xl font-bold">Edit Mark</h1>
+        <p class="mt-2 max-w-2xl text-white/80">Update the selected mark's student, subject, or score, then save your changes.</p>
+      </div>
+      <div class="rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-right">
+        <p class="text-xs uppercase tracking-wide text-white/70">Signed in as</p>
+        <p class="text-xl font-semibold"><%= displayUsername %></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <a href="/app207/crud" class="inline-flex items-center gap-2 rounded-lg border border-sky-300 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/20">
+      &larr; Back to Marks
+    </a>
+    <% if (record) { %>
+      <p class="text-sm text-gray-400">Record ID <span class="font-semibold text-white">#<%= record.id %></span> - Last score <span class="font-semibold text-sky-300"><%= record.mark %></span></p>
+    <% } %>
+  </div>
+
+  <% if (!record) { %>
+    <section class="rounded-2xl border border-red-500/40 bg-red-500/10 p-8 text-red-200">
+      <h2 class="text-xl font-semibold text-white">Mark Not Found</h2>
+      <p class="mt-2 text-sm text-red-100/80">We could not locate the selected mark. It may have been deleted. Return to the marks list to choose another record.</p>
+      <a href="crud" class="mt-4 inline-flex items-center rounded-lg bg-red-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-400">Back to Marks List</a>
+    </section>
+  <% } else { %>
+    <section class="rounded-2xl border border-gray-700 bg-gray-900/70 p-8 shadow-xl space-y-6">
+      <div class="space-y-2">
+        <h2 class="text-xl font-semibold text-white">Update Mark Details</h2>
+        <p class="text-sm text-gray-400">Adjust the student, subject, or score for this mark. All fields are required.</p>
+      </div>
+
+      <form action="/app207/crud/update" method="POST" class="space-y-4">
+        <input type="hidden" name="id" value="<%= record.id %>" />
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <label class="flex flex-col gap-2 text-sm text-gray-300">
+            <span>Student</span>
+            <select name="student_id" required class="rounded-lg border border-gray-700 bg-gray-800/80 p-3 text-white focus:border-sky-400 focus:outline-none">
+              <option value="">Select Student</option>
+              <% safeStudents.slice(0, 200).forEach((student) => { %>
+                <option value="<%= student.student_id %>" <%= Number(student.student_id) === selectedStudentId ? 'selected' : '' %>>
+                  <%= student.name || ('ID ' + student.student_id) %>
+                </option>
+              <% }); %>
+            </select>
+          </label>
+
+          <label class="flex flex-col gap-2 text-sm text-gray-300">
+            <span>Subject</span>
+            <select name="subject_id" required class="rounded-lg border border-gray-700 bg-gray-800/80 p-3 text-white focus:border-sky-400 focus:outline-none">
+              <option value="">Select Subject</option>
+              <% safeSubjects.forEach((subject) => { %>
+                <option value="<%= subject.id %>" <%= Number(subject.id) === selectedSubjectId ? 'selected' : '' %>>
+                  <%= subject.subject_name %>
+                </option>
+              <% }); %>
+            </select>
+          </label>
+
+          <label class="flex flex-col gap-2 text-sm text-gray-300">
+            <span>Mark</span>
+            <input
+              type="number"
+              name="mark"
+              min="0"
+              max="100"
+              required
+              value="<%= typeof record.mark !== 'undefined' ? record.mark : '' %>"
+              placeholder="0 - 100"
+              class="rounded-lg border border-gray-700 bg-gray-800/80 p-3 text-white placeholder-gray-500 focus:border-sky-400 focus:outline-none"
+            />
+          </label>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <button type="submit" class="rounded-lg bg-sky-500 px-6 py-3 text-sm font-semibold text-darkbg transition hover:bg-sky-400">
+            Save Changes
+          </button>
+          <a href="/app207/crud" class="rounded-lg border border-gray-700 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:border-gray-500 hover:text-white">Cancel</a>
+        </div>
+      </form>
+    </section>
+  <% } %>
+</div>
