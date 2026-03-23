@@ -244,6 +244,10 @@
   </div>
   `;
   }
+
+  function buildGoogleMapsHref(query) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(query || ""))}`;
+  }
   %>
 
   <style>
@@ -2174,7 +2178,13 @@
       <h2 class="gs-big-heading">Địa chỉ học</h2>
 
       <div class="gs-location-grid">
-        <% locationCards.forEach((item)=> { %>
+        <% const locationMapQueries = [
+          "Ngo 20 Duong Ho Tung Mau, Mai Dich, Cau Giay, Ha Noi 122865, Viet Nam",
+          "So 9 ngach 59 ngo 21 Le Duc Tho, Nam Tu Liem, Ha Noi, Viet Nam",
+          "197 Tran Phu, Van Quan, Ha Dong, Ha Noi, Viet Nam"
+        ]; %>
+        <% locationCards.forEach((item, index)=> { %>
+          <% const googleMapsHref = buildGoogleMapsHref(locationMapQueries[index] || item.address); %>
           <article class="gs-location-card">
             <div class="gs-map-icon" aria-hidden="true">
               <svg viewBox="0 0 64 64" fill="none">
@@ -2190,7 +2200,7 @@
               <%= item.address %>
             </p>
             <div class="gs-center-cta">
-              <a href="<%= item.href %>" class="gs-button gs-button-dark">Xem Google Maps</a>
+              <a href="<%= googleMapsHref %>" target="_blank" rel="noopener noreferrer" class="gs-button gs-button-dark">Xem Google Maps</a>
             </div>
           </article>
           <% }) %>
