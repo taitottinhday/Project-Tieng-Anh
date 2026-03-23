@@ -1,4 +1,4 @@
-<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const reviewVideoUrl="https://www.youtube.com/watch?v=toJFoM_V5qA"; const routeGroups=Array.isArray(scheduleGroups) ?
+<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const reviewVideoUrl="https://www.youtube.com/watch?v=toJFoM_V5qA"; const reviewVideoEmbedUrl="https://www.youtube.com/embed/toJFoM_V5qA?autoplay=1&rel=0"; const routeGroups=Array.isArray(scheduleGroups) ?
   scheduleGroups : []; const sectionLinks=[ { label: "Lịch khai giảng" , href: "#hero" }, { label: "Lộ trình học" ,
   href: "#lo-trinh-hoc" }, { label: "Tập Sự" , href: "#tap-su" }, { label: "TOEIC A" , href: "#toeic-a" }, {
   label: "TOEIC B" , href: "#toeic-b" }, { label: "TOEIC SW" , href: "#toeic-sw" }, { label: "Điểm học viên" ,
@@ -417,6 +417,76 @@
       border: 1px solid currentColor;
       font-size: 0.9rem;
       line-height: 1;
+    }
+
+    body.gs-video-open {
+      overflow: hidden;
+    }
+
+    .gs-video-modal[hidden] {
+      display: none;
+    }
+
+    .gs-video-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 240;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+    }
+
+    .gs-video-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.76);
+      backdrop-filter: blur(6px);
+    }
+
+    .gs-video-dialog {
+      position: relative;
+      z-index: 1;
+      width: min(960px, calc(100vw - 32px));
+      padding: 12px;
+      border-radius: 28px;
+      background: #05070b;
+      box-shadow: 0 34px 70px rgba(15, 23, 42, 0.36);
+    }
+
+    .gs-video-frame {
+      overflow: hidden;
+      border-radius: 22px;
+      background: #000000;
+      aspect-ratio: 16 / 9;
+    }
+
+    .gs-video-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .gs-video-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .gs-video-close:hover {
+      transform: scale(1.04);
+      background: rgba(255, 255, 255, 0.24);
     }
 
     .gs-hero-cards,
@@ -1456,6 +1526,20 @@
         font-size: 0.96rem;
       }
 
+      .gs-video-modal {
+        padding: 16px;
+      }
+
+      .gs-video-dialog {
+        width: min(100vw - 20px, 960px);
+        padding: 10px;
+        border-radius: 22px;
+      }
+
+      .gs-video-frame {
+        border-radius: 18px;
+      }
+
       .gs-score-grid,
       .gs-teacher-grid,
       .gs-location-grid,
@@ -1564,6 +1648,23 @@
         padding: 8px 8px 0;
       }
 
+      .gs-video-modal {
+        padding: 12px;
+      }
+
+      .gs-video-dialog {
+        width: calc(100vw - 16px);
+        padding: 8px;
+        border-radius: 18px;
+      }
+
+      .gs-video-close {
+        top: 8px;
+        right: 8px;
+        width: 34px;
+        height: 34px;
+      }
+
       .gs-campus-card,
       .gs-info-card,
       .gs-banner-card,
@@ -1605,7 +1706,7 @@
         <a href="#lo-trinh-hoc" class="gs-button gs-button-outline">Chọn lộ trình học</a>
 
         <div class="gs-inline-links">
-          <a href="<%= reviewVideoUrl %>" target="_blank" rel="noopener noreferrer" class="gs-inline-link">Xem video review</a>
+          <a href="<%= reviewVideoUrl %>" target="_blank" rel="noopener noreferrer" class="gs-inline-link" data-open-review-video>Xem video review</a>
           <a href="<%= safeBaseUrl %>/contact" class="gs-inline-link">Đăng ký học</a>
         </div>
       </div>
@@ -2348,6 +2449,82 @@
       </div>
     </section>
   </div>
+
+  <div class="gs-video-modal" data-review-video-modal hidden aria-hidden="true">
+    <div class="gs-video-backdrop" data-close-review-video></div>
+    <div class="gs-video-dialog" role="dialog" aria-modal="true" aria-label="Video review lớp học">
+      <button type="button" class="gs-video-close" data-close-review-video aria-label="Đóng video">&times;</button>
+      <div class="gs-video-frame">
+        <iframe
+          data-review-video-frame
+          src=""
+          title="Video review lớp học"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const openTrigger = document.querySelector("[data-open-review-video]");
+      const modal = document.querySelector("[data-review-video-modal]");
+      const frame = document.querySelector("[data-review-video-frame]");
+      const closeTriggers = Array.from(document.querySelectorAll("[data-close-review-video]"));
+      if (!openTrigger || !modal || !frame) return;
+
+      const reviewVideoEmbedUrl = <%- JSON.stringify(reviewVideoEmbedUrl) %>;
+      let lastFocus = null;
+
+      const closeModal = () => {
+        modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("gs-video-open");
+        frame.setAttribute("src", "");
+
+        if (lastFocus && typeof lastFocus.focus === "function") {
+          lastFocus.focus();
+        }
+      };
+
+      const openModal = () => {
+        lastFocus = document.activeElement;
+        modal.hidden = false;
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("gs-video-open");
+        frame.setAttribute("src", reviewVideoEmbedUrl);
+
+        const closeButton = modal.querySelector(".gs-video-close");
+        if (closeButton) {
+          closeButton.focus();
+        }
+      };
+
+      openTrigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        openModal();
+      });
+
+      closeTriggers.forEach((trigger) => {
+        trigger.addEventListener("click", closeModal);
+      });
+
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !modal.hidden) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
 
   <script>
     (() => {
