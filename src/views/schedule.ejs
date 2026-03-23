@@ -263,6 +263,11 @@
       color: var(--gs-text);
     }
 
+    .gs-page section[id],
+    .gs-page nav[id] {
+      scroll-margin-top: 120px;
+    }
+
     .gs-anchor-nav {
       position: sticky;
       top: 88px;
@@ -1335,31 +1340,76 @@
 
     @media (max-width: 720px) {
       .gs-page {
-        gap: 56px;
+        gap: 48px;
+        padding-top: 14px;
         padding-bottom: 18px;
       }
 
+      .gs-anchor-nav {
+        position: static;
+        top: auto;
+      }
+
       .gs-anchor-list {
-        gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        overflow: visible;
+        padding: 0;
       }
 
       .gs-anchor-link {
-        min-height: 40px;
-        padding: 0 14px;
+        width: 100%;
+        min-height: 46px;
+        padding: 10px 12px;
         font-size: 0.92rem;
+        text-align: center;
+        white-space: normal;
+        line-height: 1.35;
       }
 
       .gs-hero {
-        padding: 24px 18px 0;
-        border-radius: 28px;
+        padding: 20px 14px 0;
+        border-radius: 24px;
       }
 
       .gs-hero-top {
-        gap: 16px;
+        gap: 14px;
+        max-width: none;
       }
 
       .gs-hero-title {
-        font-size: clamp(2.45rem, 13vw, 3.6rem);
+        font-size: clamp(2.05rem, 11vw, 3rem);
+        line-height: 1;
+      }
+
+      .gs-section-title {
+        font-size: clamp(2rem, 9vw, 2.8rem);
+      }
+
+      .gs-hero-cards {
+        margin-top: 18px;
+        gap: 16px;
+      }
+
+      .gs-hero-card {
+        gap: 14px;
+        padding: 16px 16px 0;
+        border-radius: 24px;
+      }
+
+      .gs-hero-copy {
+        gap: 12px;
+        padding-bottom: 0;
+      }
+
+      .gs-hero-copy ul {
+        padding-left: 18px;
+        line-height: 1.68;
+      }
+
+      .gs-price-line strong {
+        font-size: 1.55rem;
       }
 
       .gs-button-outline,
@@ -1415,7 +1465,13 @@
       }
 
       .gs-photo-hero-card {
-        min-height: 260px;
+        min-height: 220px;
+        aspect-ratio: 4 / 3;
+        border-radius: 20px;
+      }
+
+      .gs-photo-hero-card img {
+        object-position: 62% center;
       }
 
       .gs-table-wrap {
@@ -1479,6 +1535,28 @@
     }
 
     @media (max-width: 420px) {
+      .gs-anchor-list {
+        gap: 8px;
+      }
+
+      .gs-anchor-link {
+        min-height: 44px;
+        padding: 8px 10px;
+        font-size: 0.88rem;
+      }
+
+      .gs-hero {
+        padding: 18px 12px 0;
+      }
+
+      .gs-hero-card {
+        padding: 14px 14px 0;
+      }
+
+      .gs-photo-hero-card {
+        min-height: 190px;
+      }
+
       .gs-campus-card,
       .gs-info-card,
       .gs-banner-card,
