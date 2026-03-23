@@ -1,0 +1,566 @@
+<%
+const student = profileStudent || {};
+const examRows = Array.isArray(examSessions) ? examSessions : [];
+const dictationRows = Array.isArray(dictationSessions) ? dictationSessions : [];
+const initialTab = activeTab === "dictation" ? "dictation" : "exams";
+const avatarLetter = String(student.full_name || student.email || "H").trim().charAt(0).toUpperCase() || "H";
+
+function formatDateTime(value) {
+  if (!value) return "Chưa có";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Chưa có";
+  return parsed.toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
+function formatDateOnly(value) {
+  if (!value) return "Chưa cập nhật";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Chưa cập nhật";
+  return parsed.toLocaleDateString("vi-VN");
+}
+
+function formatExamScore(row) {
+  if (row.activityType === "full_test") {
+    return `${row.scoreValue || 0}`;
+  }
+
+  return `${row.scoreValue || 0}${row.scoreMax ? ` / ${row.scoreMax}` : ""}`;
+}
+%>
+
+<style>
+  .spage {
+    width: min(1560px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 52px;
+    display: grid;
+    gap: 24px;
+  }
+
+  .spage * {
+    box-sizing: border-box;
+  }
+
+  .sprofile-shell {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.78fr);
+    gap: 18px;
+  }
+
+  .sprofile-card,
+  .sprofile-panel,
+  .sprofile-stat {
+    border-radius: 30px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 24px 54px rgba(15, 23, 42, 0.08);
+  }
+
+  .sprofile-card {
+    padding: 28px;
+    display: grid;
+    gap: 22px;
+    align-content: start;
+  }
+
+  .sprofile-head,
+  .sprofile-user,
+  .sprofile-table-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .sprofile-head h1,
+  .sprofile-panel h2,
+  .sprofile-table th,
+  .sprofile-name,
+  .sprofile-section strong,
+  .sprofile-empty strong,
+  .sprofile-tab {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.04em;
+    color: #132238;
+  }
+
+  .sprofile-head h1 {
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    line-height: 1.04;
+  }
+
+  .sprofile-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: #fff;
+    color: #475569;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .sprofile-user {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .sprofile-avatar {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #102a43 0%, #2f78ed 100%);
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 800;
+    box-shadow: 0 18px 30px rgba(17, 24, 39, 0.18);
+  }
+
+  .sprofile-name {
+    font-size: 1.34rem;
+    line-height: 1.15;
+  }
+
+  .sprofile-email {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 1rem;
+  }
+
+  .sprofile-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .sprofile-section {
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+    border: 1px solid rgba(17, 24, 39, 0.06);
+  }
+
+  .sprofile-label {
+    color: #ef4444;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .sprofile-value {
+    color: #475569;
+    line-height: 1.7;
+    word-break: break-word;
+  }
+
+  .sprofile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .sprofile-stat {
+    padding: 18px;
+    display: grid;
+    gap: 6px;
+  }
+
+  .sprofile-stat span {
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .sprofile-stat strong {
+    font-size: 1.9rem;
+  }
+
+  .sprofile-panel {
+    overflow: hidden;
+  }
+
+  .sprofile-panel-inner {
+    padding: 26px 26px 10px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .sprofile-panel h2 {
+    font-size: 2rem;
+  }
+
+  .sprofile-table-top {
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .sprofile-tab {
+    min-height: 50px;
+    padding: 0 22px;
+    border-radius: 14px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: #fff;
+    color: #475569;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .sprofile-tab.is-active {
+    background: #303236;
+    border-color: #303236;
+    color: #fff;
+  }
+
+  .sprofile-table-wrap {
+    display: none;
+  }
+
+  .sprofile-table-wrap.is-active {
+    display: block;
+  }
+
+  .sprofile-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .sprofile-table thead th {
+    padding: 18px 16px;
+    color: #2563eb;
+    font-size: 0.96rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .sprofile-table tbody td {
+    padding: 18px 16px;
+    color: #475569;
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+    vertical-align: top;
+  }
+
+  .sprofile-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .sprofile-title {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .sprofile-subtitle {
+    margin-top: 4px;
+    color: #94a3b8;
+    font-size: 0.94rem;
+  }
+
+  .sprofile-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .sprofile-pill.type {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+  }
+
+  .sprofile-pill.status {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+  }
+
+  .sprofile-pill.status.incomplete {
+    background: rgba(244, 114, 182, 0.12);
+    color: #ec4899;
+  }
+
+  .sprofile-pill.status.fresh {
+    background: rgba(148, 163, 184, 0.12);
+    color: #64748b;
+  }
+
+  .sprofile-pill.reset {
+    background: rgba(249, 115, 22, 0.12);
+    color: #f97316;
+  }
+
+  .sprofile-score {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #334155;
+  }
+
+  .sprofile-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: #fff;
+    color: #475569;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .sprofile-empty {
+    padding: 28px 12px 34px;
+    text-align: center;
+    color: #94a3b8;
+  }
+
+  .sprofile-empty p {
+    margin: 8px 0 0;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1180px) {
+    .sprofile-shell {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .spage {
+      width: min(100% - 20px, 1560px);
+      padding-top: 18px;
+    }
+
+    .sprofile-card,
+    .sprofile-panel-inner {
+      padding: 20px 18px;
+    }
+
+    .sprofile-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .sprofile-table-top {
+      justify-content: stretch;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .sprofile-tab {
+      width: 100%;
+    }
+
+    .sprofile-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+  }
+</style>
+
+<div class="spage">
+  <section class="sprofile-stats">
+    <article class="sprofile-stat">
+      <span>Lớp đã ghi danh</span>
+      <strong><%= student.enrollmentCount || 0 %></strong>
+    </article>
+    <article class="sprofile-stat">
+      <span>Lịch sử làm bài</span>
+      <strong><%= examRows.length %></strong>
+    </article>
+    <article class="sprofile-stat">
+      <span>Phiên dictation</span>
+      <strong><%= dictationRows.length %></strong>
+    </article>
+  </section>
+
+  <div class="sprofile-shell">
+    <aside class="sprofile-card">
+      <div class="sprofile-head">
+        <h1>Thông tin cá nhân</h1>
+        <a href="<%= baseUrl %>/student/contact" class="sprofile-edit">Cập nhật</a>
+      </div>
+
+      <div class="sprofile-user">
+        <span class="sprofile-avatar"><%= avatarLetter %></span>
+        <div>
+          <p class="sprofile-name"><%= student.full_name || "Học viên" %></p>
+          <p class="sprofile-email"><%= student.email || "Chưa cập nhật email" %></p>
+        </div>
+      </div>
+
+      <div class="sprofile-grid">
+        <section class="sprofile-section">
+          <span class="sprofile-label">Username</span>
+          <strong class="sprofile-value"><%= (student.full_name || student.email || "Học viên").toLowerCase().replace(/\s+/g, "") %></strong>
+        </section>
+        <section class="sprofile-section">
+          <span class="sprofile-label">Họ và tên</span>
+          <strong class="sprofile-value"><%= student.full_name || "Chưa cập nhật" %></strong>
+        </section>
+        <section class="sprofile-section">
+          <span class="sprofile-label">Email</span>
+          <strong class="sprofile-value"><%= student.email || "Chưa cập nhật" %></strong>
+        </section>
+        <section class="sprofile-section">
+          <span class="sprofile-label">Số điện thoại</span>
+          <strong class="sprofile-value"><%= student.phone || "Chưa cập nhật" %></strong>
+        </section>
+        <section class="sprofile-section">
+          <span class="sprofile-label">Ngày sinh</span>
+          <strong class="sprofile-value"><%= formatDateOnly(student.dob) %></strong>
+        </section>
+        <section class="sprofile-section">
+          <span class="sprofile-label">Tạo hồ sơ</span>
+          <strong class="sprofile-value"><%= formatDateOnly(student.created_at) %></strong>
+        </section>
+      </div>
+    </aside>
+
+    <section class="sprofile-panel">
+      <div class="sprofile-panel-inner">
+        <div class="sprofile-table-top">
+          <button type="button" class="sprofile-tab <%= initialTab === 'exams' ? 'is-active' : '' %>" data-tab-button="exams">Phiên làm bài thi</button>
+          <button type="button" class="sprofile-tab <%= initialTab === 'dictation' ? 'is-active' : '' %>" data-tab-button="dictation">Phiên nghe chép chính tả</button>
+        </div>
+
+        <div class="sprofile-table-wrap <%= initialTab === 'exams' ? 'is-active' : '' %>" data-tab-panel="exams">
+          <% if (examRows.length) { %>
+            <table class="sprofile-table">
+              <thead>
+                <tr>
+                  <th>Ngày làm bài</th>
+                  <th>Tên bài</th>
+                  <th>Dạng bài</th>
+                  <th>Trạng thái</th>
+                  <th>Số điểm</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% examRows.forEach((row) => { %>
+                  <tr>
+                    <td><%= formatDateTime(row.updatedAt || row.submittedAt) %></td>
+                    <td>
+                      <div class="sprofile-title"><%= row.title %></div>
+                      <% if (row.sourceLabel || row.subtitle) { %>
+                        <div class="sprofile-subtitle"><%= row.sourceLabel || row.subtitle %></div>
+                      <% } %>
+                    </td>
+                    <td><span class="sprofile-pill type"><%= row.badgeLabel || "Session" %></span></td>
+                    <td>
+                      <span class="sprofile-pill status"><%= row.statusLabel || "Hoàn thành" %></span>
+                    </td>
+                    <td><span class="sprofile-score"><%= formatExamScore(row) %></span></td>
+                    <td>
+                      <a href="<%= row.actionHref %>" class="sprofile-action"><%= row.actionLabel || "Mở lại" %></a>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="sprofile-empty">
+              <strong>Chưa có lịch sử làm bài</strong>
+              <p>Khi học viên làm full test hoặc luyện part/reading, lịch sử sẽ tự động xuất hiện ở đây.</p>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="sprofile-table-wrap <%= initialTab === 'dictation' ? 'is-active' : '' %>" data-tab-panel="dictation">
+          <% if (dictationRows.length) { %>
+            <table class="sprofile-table">
+              <thead>
+                <tr>
+                  <th>Ngày làm bài</th>
+                  <th>Topic</th>
+                  <th>Exercise</th>
+                  <th>Trạng thái</th>
+                  <th>Số câu hoàn thành</th>
+                  <th>Số câu bỏ qua</th>
+                  <th>Reset session</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dictationRows.forEach((row) => { %>
+                  <% const statusClass = row.statusLabel === 'Hoàn thành' ? 'status' : (row.statusLabel === 'Mới bắt đầu' ? 'status fresh' : 'status incomplete'); %>
+                  <tr>
+                    <td><%= formatDateTime(row.updatedAt || row.submittedAt) %></td>
+                    <td>
+                      <div class="sprofile-title"><%= row.subtitle || row.sourceLabel || "Dictation" %></div>
+                      <% if (row.sourceLabel) { %>
+                        <div class="sprofile-subtitle"><%= row.sourceLabel %></div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div class="sprofile-title"><%= row.title %></div>
+                      <div class="sprofile-subtitle"><%= row.totalCount || 0 %> câu</div>
+                    </td>
+                    <td>
+                      <span class="sprofile-pill <%= statusClass %>"><%= row.statusLabel || "Chưa hoàn thành" %></span>
+                    </td>
+                    <td><span class="sprofile-score"><%= row.completedCount || 0 %> / <%= row.totalCount || 0 %></span></td>
+                    <td><span class="sprofile-score"><%= row.skippedCount || 0 %></span></td>
+                    <td>
+                      <% if (row.resetCount > 0) { %>
+                        <span class="sprofile-pill reset">Đã reset <%= row.resetCount %> lần</span>
+                      <% } else { %>
+                        <span class="sprofile-subtitle">-</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="sprofile-empty">
+              <strong>Chưa có phiên nghe chép</strong>
+              <p>Khi học viên bắt đầu check hoặc skip trong dictation player, hệ thống sẽ lưu session ở tab này.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const buttons = Array.from(document.querySelectorAll("[data-tab-button]"));
+    const panels = Array.from(document.querySelectorAll("[data-tab-panel]"));
+    if (!buttons.length || !panels.length) return;
+
+    const setActiveTab = (tabKey) => {
+      buttons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.tabButton === tabKey);
+      });
+
+      panels.forEach((panel) => {
+        panel.classList.toggle("is-active", panel.dataset.tabPanel === tabKey);
+      });
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => setActiveTab(button.dataset.tabButton));
+    });
+  })();
+</script>

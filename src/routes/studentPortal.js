@@ -4,6 +4,7 @@ const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn } = require("./auth");
 const studentPracticeController = require("../controllers/studentPracticeController");
 const studentDictationController = require("../controllers/studentDictationController");
+const studentProfileController = require("../controllers/studentProfileController");
 const {
   syncStudentProfileFromUser,
   uploadStudentSubmissionFiles,
@@ -68,6 +69,8 @@ router.get("/feedback", isLoggedIn, isStudent, (req, res) => {
     success: req.query.success || null,
   });
 });
+
+router.get("/profile", isLoggedIn, isStudent, studentProfileController.showStudentProfile);
 
 router.get("/classroom", isLoggedIn, isStudent, async (req, res) => {
   try {
@@ -204,6 +207,7 @@ router.get("/practice/reading", isLoggedIn, isStudent, studentPracticeController
 router.get("/dictation", isLoggedIn, isStudent, studentDictationController.listDictationTopics);
 router.get("/dictation/:topicId", isLoggedIn, isStudent, studentDictationController.showDictationTopic);
 router.get("/dictation/:topicId/:lessonId", isLoggedIn, isStudent, studentDictationController.showDictationLesson);
+router.post("/dictation/:topicId/:lessonId/session", isLoggedIn, isStudent, studentDictationController.saveDictationSession);
 router.get("/practice/parts/:practiceId", isLoggedIn, isStudent, studentPracticeController.showPartPracticeStart);
 router.get("/practice/parts/:practiceId/take", isLoggedIn, isStudent, studentPracticeController.takePartPractice);
 router.post("/practice/parts/:practiceId/submit", isLoggedIn, isStudent, studentPracticeController.submitPartPractice);

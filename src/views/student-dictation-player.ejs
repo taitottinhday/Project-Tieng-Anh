@@ -4,6 +4,7 @@ const topic = data.topic || {};
 const lesson = data.lesson || {};
 const breadcrumbs = Array.isArray(data.breadcrumbs) ? data.breadcrumbs : [];
 const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
 %>
 
 <style>
@@ -378,7 +379,10 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
   }
 </style>
 
-<div class="dplayer-page" data-dictation-player>
+<div
+  class="dplayer-page"
+  data-dictation-player
+  data-save-endpoint="<%= safeBaseUrl %>/student/dictation/<%= encodeURIComponent(topic.id || 'topic') %>/<%= encodeURIComponent(lesson.id || 'lesson') %>/session">
   <nav class="dplayer-breadcrumb" aria-label="Breadcrumb">
     <% breadcrumbs.forEach((item, index) => { %>
       <% if (index > 0) { %><span class="sep">/</span><% } %>
@@ -437,6 +441,7 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
       <div class="dplayer-actions">
         <button type="button" class="dplayer-primary" data-check-answer>Check</button>
         <button type="button" class="dplayer-secondary" data-skip-answer>Skip</button>
+        <button type="button" class="dplayer-secondary" data-reset-session>Reset session</button>
         <button type="button" class="dplayer-ghost" data-replay-audio>Nghe l&#7841;i</button>
       </div>
 
@@ -478,6 +483,7 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
     if (!entries.length) return;
 
     const storageKey = "dictation-progress:" + <%- JSON.stringify(`${topic.id || "topic"}:${lesson.id || "lesson"}`) %>;
+    const saveEndpoint = root.dataset.saveEndpoint || "";
     const speeds = [1, 1.25, 1.5];
     const audio = root.querySelector("[data-audio-player]");
     const panel = root.querySelector("[data-player-panel]");
@@ -500,6 +506,7 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
     const nextButton = root.querySelector("[data-next-entry]");
     const checkButton = root.querySelector("[data-check-answer]");
     const skipButton = root.querySelector("[data-skip-answer]");
+    const resetButton = root.querySelector("[data-reset-session]");
 
     const initialState = (() => {
       try {
@@ -512,15 +519,92 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
     const state = {
       index: Number.isInteger(initialState.index) ? Math.max(0, Math.min(initialState.index, entries.length - 1)) : 0,
       speedIndex: Number.isInteger(initialState.speedIndex) ? Math.max(0, Math.min(initialState.speedIndex, speeds.length - 1)) : 0,
-      results: initialState.results && typeof initialState.results === "object" ? initialState.results : {}
+      results: initialState.results && typeof initialState.results === "object" ? initialState.results : {},
+      sessionToken: typeof initialState.sessionToken === "string" && initialState.sessionToken
+        ? initialState.sessionToken
+        : `dict-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      startedAt: initialState.startedAt || new Date().toISOString(),
+      resetCount: Number.isFinite(Number(initialState.resetCount)) ? Number(initialState.resetCount) : 0
     };
+
+    let saveTimer = null;
 
     const persist = () => {
       sessionStorage.setItem(storageKey, JSON.stringify({
         index: state.index,
         speedIndex: state.speedIndex,
-        results: state.results
+        results: state.results,
+        sessionToken: state.sessionToken,
+        startedAt: state.startedAt,
+        resetCount: state.resetCount
       }));
+    };
+
+    const buildSummary = () => {
+      const values = Object.values(state.results);
+      const checked = values.filter((item) => item && item.type === "checked").length;
+      const correct = values.filter((item) => item && item.type === "checked" && item.correct).length;
+      const skipped = values.filter((item) => item && item.type === "skipped").length;
+      const completed = checked + skipped;
+
+      return {
+        checked,
+        correct,
+        skipped,
+        completed,
+        accuracy: checked ? Math.round((correct / checked) * 100) : 0,
+        statusLabel: completed >= entries.length
+          ? "Hoàn thành"
+          : (completed > 0 ? "Chưa hoàn thành" : "Mới bắt đầu")
+      };
+    };
+
+    const buildRemotePayload = () => {
+      const summary = buildSummary();
+
+      return {
+        sessionToken: state.sessionToken,
+        startedAt: state.startedAt,
+        lastActivityAt: new Date().toISOString(),
+        totalCount: entries.length,
+        completedCount: summary.completed,
+        correctCount: summary.correct,
+        skippedCount: summary.skipped,
+        accuracy: summary.accuracy,
+        statusLabel: summary.statusLabel,
+        resetCount: state.resetCount,
+        results: state.results
+      };
+    };
+
+    const sendProgress = () => {
+      if (!saveEndpoint) {
+        return Promise.resolve();
+      }
+
+      return fetch(saveEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(buildRemotePayload()),
+        keepalive: true
+      }).catch(() => null);
+    };
+
+    const queueRemoteSave = () => {
+      if (!saveEndpoint) {
+        return;
+      }
+
+      if (saveTimer) {
+        window.clearTimeout(saveTimer);
+      }
+
+      saveTimer = window.setTimeout(() => {
+        saveTimer = null;
+        void sendProgress();
+      }, 250);
     };
 
     const normalizeAnswer = (value) => String(value || "")
@@ -570,14 +654,11 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
     };
 
     const updateScoreboard = () => {
-      const values = Object.values(state.results);
-      const checked = values.filter((item) => item && item.type === "checked").length;
-      const correct = values.filter((item) => item && item.type === "checked" && item.correct).length;
-      const skipped = values.filter((item) => item && item.type === "skipped").length;
+      const summary = buildSummary();
 
-      checkedCount.textContent = String(checked);
-      correctCount.textContent = String(correct);
-      skippedCount.textContent = String(skipped);
+      checkedCount.textContent = String(summary.checked);
+      correctCount.textContent = String(summary.correct);
+      skippedCount.textContent = String(summary.skipped);
     };
 
     const setFeedback = (payload = null) => {
@@ -733,6 +814,7 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
 
       updateScoreboard();
       persist();
+      queueRemoteSave();
     });
 
     skipButton.addEventListener("click", () => {
@@ -746,6 +828,7 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
 
       updateScoreboard();
       persist();
+      queueRemoteSave();
 
       if (state.index < entries.length - 1) {
         state.index += 1;
@@ -753,6 +836,21 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
 
       render();
     });
+
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        state.results = {};
+        state.index = 0;
+        state.resetCount += 1;
+        state.startedAt = new Date().toISOString();
+        stopAudio();
+        setFeedback(null);
+        updateScoreboard();
+        persist();
+        queueRemoteSave();
+        render();
+      });
+    }
 
     audio.addEventListener("timeupdate", updateWaveProgress);
     audio.addEventListener("ended", () => {
@@ -765,6 +863,19 @@ const entries = Array.isArray(lesson.entries) ? lesson.entries : [];
       panel.dataset.playing = "false";
       playButton.innerHTML = "&#9658;";
       updateWaveProgress();
+    });
+
+    window.addEventListener("beforeunload", () => {
+      persist();
+
+      if (!saveEndpoint || !navigator.sendBeacon) {
+        return;
+      }
+
+      const payload = new Blob([JSON.stringify(buildRemotePayload())], {
+        type: "application/json"
+      });
+      navigator.sendBeacon(saveEndpoint, payload);
     });
 
     render();

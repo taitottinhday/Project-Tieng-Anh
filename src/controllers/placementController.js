@@ -1,11 +1,18 @@
 ﻿const testModel = require('../models/testModel');
 const renderWithLayout = require('../utils/renderHelper');
+const { syncStudentProfileFromUser } = require("../services/platformSupport");
+const { recordFullTestSession } = require("../services/studentActivityService");
 const {
     getFullTestCards,
     getFullTestCollections,
     findManagedFullTestDefinition,
     loadManagedFullTest
 } = require('../data/fullTestRegistry');
+
+function isStudentSession(req) {
+    const role = req.session?.user?.role;
+    return Boolean(role && role !== 'admin' && role !== 'teacher');
+}
 
 function getRecommendationByToeicScore(score) {
     if (score < 250) {
@@ -301,6 +308,9 @@ async function submitTest(req, res) {
         const testId = req.params.id;
         const { guest_name, guest_email } = req.body || {};
         const managedExam = loadManagedFullTest(testId);
+        const student = isStudentSession(req)
+            ? await syncStudentProfileFromUser(req.session?.user)
+            : null;
 
         if (managedExam) {
             const result = gradeToeicPlacementExam(managedExam, req.body || {});
@@ -310,6 +320,10 @@ async function submitTest(req, res) {
                 guestName: guest_name || null,
                 guestEmail: guest_email || null
             };
+
+            if (student?.id) {
+                await recordFullTestSession(student.id, result);
+            }
 
             return res.redirect('/placement-tests/result/latest');
         }
@@ -353,6 +367,21 @@ async function submitTest(req, res) {
             recommendedLevel: recommendation.level,
             recommendedCourse: recommendation.course
         });
+
+        if (student?.id) {
+            await recordFullTestSession(student.id, {
+                examId: String(testId),
+                examTitle: test.title,
+                bookName: test.category_name || 'Placement',
+                toeicScore: totalScore,
+                correctCount: 0,
+                incorrectCount: 0,
+                unansweredCount: 0,
+                totalQuestions: questions.length,
+                submittedAt: new Date().toISOString(),
+                recommendation
+            });
+        }
 
         res.redirect(`/placement-tests/result/${attemptId}`);
     } catch (error) {

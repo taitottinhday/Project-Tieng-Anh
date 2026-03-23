@@ -1,5 +1,6 @@
 const db = require("../models/db");
 const { ensurePlatformSupport } = require("./platformSupport");
+const { ensureStudentActivitySupport } = require("./studentActivityService");
 
 let bootstrapReady = false;
 
@@ -148,6 +149,7 @@ async function ensureApplicationSchema() {
 
   await ensureCoreTables();
   await ensurePlatformSupport();
+  await ensureStudentActivitySupport();
   bootstrapReady = true;
 }
 

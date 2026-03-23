@@ -1,663 +1,502 @@
-<%
-const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
-
-const courseCards = [
-  {
-    title: 'TẬP SỰ',
-    bullets: [
-      'Phát triển kỹ năng nghe cơ bản',
-      'Tích lũy từ vựng',
-      'Học ngữ pháp cơ bản'
-    ],
-    price: '3.200.000đ',
-    sessions: '25 buổi',
-    image: 'https://i.pinimg.com/1200x/76/11/3b/76113b577b8d936f670eeacf3bfc8e02.jpg',
-    placeholder: 'Ảnh khóa Tập Sự',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'starter'
-  },
-  {
-    title: 'TOEIC A',
-    bullets: [
-      'Hoàn thành Part 1-2-3-4',
-      'Hệ thống lại ngữ pháp',
-      'Làm quen với phần Reading cơ bản'
-    ],
-    price: '3.900.000đ',
-    sessions: '27 buổi',
-    image: 'https://i.pinimg.com/736x/66/53/e9/6653e98495ff276ffd2f071d208b9f79.jpg',
-    placeholder: 'Ảnh khóa TOEIC A',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'a'
-  },
-  {
-    title: 'TOEIC B',
-    bullets: [
-      'Tập trung vào Reading',
-      'Tập trung vào Vocab',
-      'Hoàn thiện toàn bộ kỹ năng'
-    ],
-    price: '3.500.000đ',
-    sessions: '25 buổi',
-    image: 'https://i.pinimg.com/736x/49/99/fb/4999fb2b2439e2eab91b90796f661fb5.jpg',
-    placeholder: 'Ảnh khóa TOEIC B',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'b'
-  },
-  {
-    title: 'TOEIC S&W',
-    bullets: [
-      'Đầu vào TOEIC LR 600-650+',
-      'Đầu ra 260-300+ điểm S&W',
-      'Hỗ trợ thi lên tới 2.000.000đ'
-    ],
-    price: '4.000.000đ',
-    sessions: '30 buổi',
-    image: 'https://i.pinimg.com/736x/01/fe/63/01fe635825415ca6633ec13d3c457616.jpg',
-    placeholder: 'Ảnh khóa TOEIC S&W',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'sw',
-    note: 'Dành cho học viên lớp TOEIC A, TOEIC B đã thi thật TOEIC tại IIG trên 650 điểm.'
-  },
-  {
-    title: 'TOEIC Starter 350+',
-    bullets: [
-      'Lấy lại nền từ vựng và ngữ pháp trọng tâm',
-      'Tập phản xạ nghe Part 1-2-3 theo nhịp chậm',
-      'Xây thói quen học đều và chữa lỗi cá nhân'
-    ],
-    price: '3.300.000đ',
-    sessions: '24 buổi',
-    image: 'https://i.pinimg.com/736x/0a/e8/85/0ae8854165c5c74b8c587ed4f18a54db.jpg',
-    placeholder: 'Ảnh khóa TOEIC Starter 350+',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'starter'
-  },
-  {
-    title: 'TOEIC Roadmap 550+',
-    bullets: [
-      'Tăng chắc Part 3-4-5-6 theo dạng câu hỏi',
-      'Hệ thống hóa kỹ thuật skimming và scanning',
-      'Kiểm tra tiến độ theo mini test hàng tuần'
-    ],
-    price: '3.850.000đ',
-    sessions: '28 buổi',
-    image: 'https://i.pinimg.com/736x/ca/34/72/ca3472630eef77457844fd467f1b5637.jpg',
-    placeholder: 'Ảnh khóa TOEIC Roadmap 550+',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'a'
-  },
-  {
-    title: 'TOEIC Intensive 650+',
-    bullets: [
-      'Đẩy tốc độ làm reading và xử lý bẫy thường gặp',
-      'Luyện nghe cụm paraphrase và suy luận ngữ cảnh',
-      'Theo sát đầu ra 600-700 với full test định kỳ'
-    ],
-    price: '4.200.000đ',
-    sessions: '30 buổi',
-    image: 'https://i.pinimg.com/736x/85/54/0e/85540e64c11f3b57ad249a5f6f7a427c.jpg',
-    placeholder: 'Ảnh khóa TOEIC Intensive 650+',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'b'
-  },
-  {
-    title: 'TOEIC Fast Track 750+',
-    bullets: [
-      'Rút ngắn thời gian xử lý part khó và dài',
-      'Luyện bộ đề nâng cao có chữa chiến lược làm bài',
-      'Tập trung band điểm 700-780 cho sinh viên năm cuối'
-    ],
-    price: '4.600.000đ',
-    sessions: '30 buổi',
-    image: 'https://i.pinimg.com/736x/fd/61/5f/fd615fd59e340f57be3e412ab7ca7f40.jpg',
-    placeholder: 'Ảnh khóa TOEIC Fast Track 750+',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'sw'
-  },
-  {
-    title: 'TOEIC Elite 850+',
-    bullets: [
-      'Làm chủ bẫy nâng cao của Part 3-4-7',
-      'Huấn luyện tư duy chọn đáp án trong thời gian ngắn',
-      'Phù hợp hồ sơ xin việc và đầu ra doanh nghiệp'
-    ],
-    price: '5.200.000đ',
-    sessions: '34 buổi',
-    image: 'https://i.pinimg.com/736x/98/66/4e/98664e5fb0f6c4f17ee44f1ffdf875f9.jpg',
-    placeholder: 'Ảnh khóa TOEIC Elite 850+',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'starter'
-  },
-  {
-    title: 'Speaking Jumpstart',
-    bullets: [
-      'Tạo phản xạ nói câu ngắn rõ và đúng ý',
-      'Chỉnh phát âm, ngữ điệu và tốc độ trả lời',
-      'Luyện task hỏi đáp và mô tả tranh thực tế'
-    ],
-    price: '3.600.000đ',
-    sessions: '18 buổi',
-    image: 'https://i.pinimg.com/736x/f8/36/2b/f8362b42ce2847fd7da33758364ed375.jpg',
-    placeholder: 'Ảnh khóa Speaking Jumpstart',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'a'
-  },
-  {
-    title: 'Writing Lab',
-    bullets: [
-      'Rèn câu trả lời email và phản hồi ngắn gọn',
-      'Viết opinion và proposal có bố cục rõ',
-      'Nhận feedback sửa bài trực tiếp từng buổi'
-    ],
-    price: '3.400.000đ',
-    sessions: '16 buổi',
-    image: 'https://i.pinimg.com/736x/5c/2f/4c/5c2f4c0db2d6798dfb0a7a5c89b90e53.jpg',
-    placeholder: 'Ảnh khóa Writing Lab',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'b'
-  },
-  {
-    title: 'Business English',
-    bullets: [
-      'Email, meeting và thuyết trình cho môi trường công sở',
-      'Mẫu câu làm việc với khách hàng và team quốc tế',
-      'Case study bám sát bối cảnh doanh nghiệp'
-    ],
-    price: '4.800.000đ',
-    sessions: '20 buổi',
-    image: 'https://i.pinimg.com/736x/18/52/0c/18520ce2ea1b1ef9fc4954b74bb8dc0b.jpg',
-    placeholder: 'Ảnh khóa Business English',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'sw'
-  },
-  {
-    title: 'IELTS Foundation 5.5',
-    bullets: [
-      'Làm quen 4 kỹ năng với lộ trình học bài bản',
-      'Xây từ vựng học thuật và cấu trúc nền tảng',
-      'Phù hợp học viên chuyển từ TOEIC sang IELTS'
-    ],
-    price: '4.300.000đ',
-    sessions: '28 buổi',
-    image: 'https://i.pinimg.com/736x/5a/b8/18/5ab818e27afaf782d4673f9936384b60.jpg',
-    placeholder: 'Ảnh khóa IELTS Foundation 5.5',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'starter'
-  },
-  {
-    title: 'IELTS 6.5 Mastery',
-    bullets: [
-      'Tập trung chiến lược Reading và Writing band cao',
-      'Speaking mock test cùng phản hồi theo tiêu chí',
-      'Dành cho mục tiêu du học hoặc đầu ra học thuật'
-    ],
-    price: '5.600.000đ',
-    sessions: '32 buổi',
-    image: 'https://i.pinimg.com/736x/59/e2/68/59e2689638a43011ba9dcfd9740c0b4a.jpg',
-    placeholder: 'Ảnh khóa IELTS 6.5 Mastery',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'a'
-  },
-  {
-    title: 'Pronunciation Lab',
-    bullets: [
-      'Sửa âm cuối, trọng âm và nối âm thực chiến',
-      'Giảm ngại nói trước khi vào lớp speaking chuyên sâu',
-      'Bài tập shadowing ngắn, dễ duy trì mỗi ngày'
-    ],
-    price: '2.900.000đ',
-    sessions: '14 buổi',
-    image: 'https://i.pinimg.com/736x/d3/9b/aa/d39baa923325996f4fe4d659cd8d9f6f.jpg',
-    placeholder: 'Ảnh khóa Pronunciation Lab',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'b'
-  },
-  {
-    title: 'Interview English',
-    bullets: [
-      'Mô phỏng phỏng vấn intern và fresher bằng tiếng Anh',
-      'Luyện CV pitch, self-introduction và Q&A thực tế',
-      'Phù hợp học viên sắp đi thực tập hoặc xin việc'
-    ],
-    price: '3.700.000đ',
-    sessions: '15 buổi',
-    image: 'https://i.pinimg.com/736x/78/fe/32/78fe3211553e58d865f0ffb62159bc47.jpg',
-    placeholder: 'Ảnh khóa Interview English',
-    href: `${safeBaseUrl}/register-course`,
-    tone: 'sw'
-  }
-];
-
-const comboBanner = {
-  title: 'Combo Tập Sự + TOEIC A',
-  price: '6.000.000đ',
-  image: 'https://i.pinimg.com/736x/f5/f8/43/f5f843fa1dd48119755990bd520bb110.jpg',
-  placeholder: 'Ảnh banner combo',
-  href: `${safeBaseUrl}/contact`
-};
-
-const promoCards = [
-  {
-    title: 'Kiểm tra\ntrình độ đầu vào',
-    image: 'https://i.pinimg.com/736x/c8/a9/9e/c8a99e21941bcff08b8afada50f26e56.jpg',
-    placeholder: 'Ảnh kiểm tra đầu vào',
-    href: `${safeBaseUrl}/placement-tests`,
-    tone: 'placement'
-  },
-  {
-    title: 'Lịch khai giảng',
-    image: 'https://i.pinimg.com/1200x/30/3c/95/303c951ff2e035c00c767aaa8d07635d.jpg',
-    placeholder: 'Ảnh lịch khai giảng',
-    href: `${safeBaseUrl}/lich-khai-giang`,
-    tone: 'schedule'
-  }
-];
-
-function renderMedia(url, alt, placeholder, className) {
-  if (url) {
-    return `<div class="${className}"><img src="${url}" alt="${alt}"></div>`;
+<% const safeBaseUrl=typeof baseUrl !=='undefined' ? baseUrl : '' ; const courseCards=[ { title: 'TẬP SỰ' , bullets:
+  [ 'Phát triển kỹ năng nghe cơ bản' , 'Tích lũy từ vựng' , 'Học ngữ pháp cơ bản' ], price: '3.200.000đ' ,
+  sessions: '25 buổi' , image: 'https://i.pinimg.com/1200x/76/11/3b/76113b577b8d936f670eeacf3bfc8e02.jpg' ,
+  placeholder: 'Ảnh khóa Tập Sự' , href: `${safeBaseUrl}/register-course`, tone: 'starter' }, { title: 'TOEIC A' ,
+  bullets: [ 'Hoàn thành Part 1-2-3-4' , 'Hệ thống lại ngữ pháp' , 'Làm quen với phần Reading cơ bản' ],
+  price: '3.900.000đ' , sessions: '27 buổi' ,
+  image: 'https://i.pinimg.com/736x/66/53/e9/6653e98495ff276ffd2f071d208b9f79.jpg' , placeholder: 'Ảnh khóa TOEIC A' ,
+  href: `${safeBaseUrl}/register-course`, tone: 'a' }, { title: 'TOEIC B' , bullets: [ 'Tập trung vào Reading'
+  , 'Tập trung vào Vocab' , 'Hoàn thiện toàn bộ kỹ năng' ], price: '3.500.000đ' , sessions: '25 buổi' ,
+  image: 'https://i.pinimg.com/736x/49/99/fb/4999fb2b2439e2eab91b90796f661fb5.jpg' , placeholder: 'Ảnh khóa TOEIC B' ,
+  href: `${safeBaseUrl}/register-course`, tone: 'b' }, { title: 'TOEIC S&W' , bullets: [ 'Đầu vào TOEIC LR 600-650+'
+  , 'Đầu ra 260-300+ điểm S&W' , 'Hỗ trợ thi lên tới 2.000.000đ' ], price: '4.000.000đ' , sessions: '30 buổi' ,
+  image: 'https://i.pinimg.com/736x/7c/1c/a2/7c1ca2a6865ba76bea40a6925ba481a0.jpg' , placeholder: 'Ảnh khóa TOEIC S&W' ,
+  href: `${safeBaseUrl}/register-course`, tone: 'sw' ,
+  note: 'Dành cho học viên lớp TOEIC A, TOEIC B đã thi thật TOEIC tại IIG trên 650 điểm.' }, {
+  title: 'TOEIC Starter 350+' , bullets: [ 'Lấy lại nền từ vựng và ngữ pháp trọng tâm'
+  , 'Tập phản xạ nghe Part 1-2-3 theo nhịp chậm' , 'Xây thói quen học đều và chữa lỗi cá nhân' ], price: '3.300.000đ' ,
+  sessions: '24 buổi' , image: 'https://i.pinimg.com/1200x/e8/3f/60/e83f60edca1d257db49a8f2430bc9c37.jpg' ,
+  placeholder: 'Ảnh khóa TOEIC Starter 350+' , href: `${safeBaseUrl}/register-course`, tone: 'starter' }, {
+  title: 'TOEIC Roadmap 550+' , bullets: [ 'Tăng chắc Part 3-4-5-6 theo dạng câu hỏi'
+  , 'Hệ thống hóa kỹ thuật skimming và scanning' , 'Kiểm tra tiến độ theo mini test hàng tuần' ], price: '3.850.000đ' ,
+  sessions: '28 buổi' , image: 'https://i.pinimg.com/736x/d3/82/9d/d3829de1490f5f25d881ac6c26035408.jpg' ,
+  placeholder: 'Ảnh khóa TOEIC Roadmap 550+' , href: `${safeBaseUrl}/register-course`, tone: 'a' }, {
+  title: 'TOEIC Intensive 650+' , bullets: [ 'Đẩy tốc độ làm reading và xử lý bẫy thường gặp'
+  , 'Luyện nghe cụm paraphrase và suy luận ngữ cảnh' , 'Theo sát đầu ra 600-700 với full test định kỳ' ],
+  price: '4.200.000đ' , sessions: '30 buổi' ,
+  image: 'https://i.pinimg.com/736x/f8/8e/80/f88e80f2791605780d155ccff28809a4.jpg' ,
+  placeholder: 'Ảnh khóa TOEIC Intensive 650+' , href: `${safeBaseUrl}/register-course`, tone: 'b' }, {
+  title: 'TOEIC Fast Track 750+' , bullets: [ 'Rút ngắn thời gian xử lý part khó và dài'
+  , 'Luyện bộ đề nâng cao có chữa chiến lược làm bài' , 'Tập trung band điểm 700-780 cho sinh viên năm cuối' ],
+  price: '4.600.000đ' , sessions: '30 buổi' ,
+  image: 'https://i.pinimg.com/736x/8f/1b/4f/8f1b4fb4511947643c5dcf6897cb2899.jpg' ,
+  placeholder: 'Ảnh khóa TOEIC Fast Track 750+' , href: `${safeBaseUrl}/register-course`, tone: 'sw' }, {
+  title: 'TOEIC Elite 850+' , bullets: [ 'Làm chủ bẫy nâng cao của Part 3-4-7'
+  , 'Huấn luyện tư duy chọn đáp án trong thời gian ngắn' , 'Phù hợp hồ sơ xin việc và đầu ra doanh nghiệp' ],
+  price: '5.200.000đ' , sessions: '34 buổi' ,
+  image: 'https://i.pinimg.com/736x/d2/3e/08/d23e08ed09c9d523cd1bca994bcbc252.jpg' ,
+  placeholder: 'Ảnh khóa TOEIC Elite 850+' , href: `${safeBaseUrl}/register-course`, tone: 'starter' }, {
+  title: 'Speaking Jumpstart' , bullets: [ 'Tạo phản xạ nói câu ngắn rõ và đúng ý'
+  , 'Chỉnh phát âm, ngữ điệu và tốc độ trả lời' , 'Luyện task hỏi đáp và mô tả tranh thực tế' ], price: '3.600.000đ' ,
+  sessions: '18 buổi' , image: 'https://i.pinimg.com/736x/73/da/69/73da693ee83465c344639249e0483498.jpg' ,
+  placeholder: 'Ảnh khóa Speaking Jumpstart' , href: `${safeBaseUrl}/register-course`, tone: 'a' }, {
+  title: 'Writing Lab' , bullets: [ 'Rèn câu trả lời email và phản hồi ngắn gọn'
+  , 'Viết opinion và proposal có bố cục rõ' , 'Nhận feedback sửa bài trực tiếp từng buổi' ], price: '3.400.000đ' ,
+  sessions: '16 buổi' , image: 'https://i.pinimg.com/736x/25/45/b9/2545b9abd619e37a31aba4546ca27315.jpg' ,
+  placeholder: 'Ảnh khóa Writing Lab' , href: `${safeBaseUrl}/register-course`, tone: 'b' }, { title: 'Business English'
+  , bullets: [ 'Email, meeting và thuyết trình cho môi trường công sở'
+  , 'Mẫu câu làm việc với khách hàng và team quốc tế' , 'Case study bám sát bối cảnh doanh nghiệp' ],
+  price: '4.800.000đ' , sessions: '20 buổi' ,
+  image: 'https://i.pinimg.com/736x/21/84/4e/21844e98feea517a509768c6cc409da7.jpg' ,
+  placeholder: 'Ảnh khóa Business English' , href: `${safeBaseUrl}/register-course`, tone: 'sw' }, {
+  title: 'IELTS Foundation 5.5' , bullets: [ 'Làm quen 4 kỹ năng với lộ trình học bài bản'
+  , 'Xây từ vựng học thuật và cấu trúc nền tảng' , 'Phù hợp học viên chuyển từ TOEIC sang IELTS' ], price: '4.300.000đ'
+  , sessions: '28 buổi' , image: 'https://i.pinimg.com/736x/f0/a2/d8/f0a2d8e014493f0505ada1536af5ff0b.jpg' ,
+  placeholder: 'Ảnh khóa IELTS Foundation 5.5' , href: `${safeBaseUrl}/register-course`, tone: 'starter' }, {
+  title: 'IELTS 6.5 Mastery' , bullets: [ 'Tập trung chiến lược Reading và Writing band cao'
+  , 'Speaking mock test cùng phản hồi theo tiêu chí' , 'Dành cho mục tiêu du học hoặc đầu ra học thuật' ],
+  price: '5.600.000đ' , sessions: '32 buổi' ,
+  image: 'https://i.pinimg.com/1200x/88/75/62/887562565eaac2599e720ce86253b3b5.jpg' ,
+  placeholder: 'Ảnh khóa IELTS 6.5 Mastery' , href: `${safeBaseUrl}/register-course`, tone: 'a' }, {
+  title: 'Pronunciation Lab' , bullets: [ 'Sửa âm cuối, trọng âm và nối âm thực chiến'
+  , 'Giảm ngại nói trước khi vào lớp speaking chuyên sâu' , 'Bài tập shadowing ngắn, dễ duy trì mỗi ngày' ],
+  price: '2.900.000đ' , sessions: '14 buổi' ,
+  image: 'https://i.pinimg.com/736x/f6/7a/9d/f67a9d0bf310b8e742004184a9dfe03d.jpg' ,
+  placeholder: 'Ảnh khóa Pronunciation Lab' , href: `${safeBaseUrl}/register-course`, tone: 'b' }, {
+  title: 'Interview English' , bullets: [ 'Mô phỏng phỏng vấn intern và fresher bằng tiếng Anh'
+  , 'Luyện CV pitch, self-introduction và Q&A thực tế' , 'Phù hợp học viên sắp đi thực tập hoặc xin việc' ],
+  price: '3.700.000đ' , sessions: '15 buổi' ,
+  image: 'https://i.pinimg.com/736x/1e/dd/f7/1eddf78962901bfe4a59627f3e6bcf9e.jpg' ,
+  placeholder: 'Ảnh khóa Interview English' , href: `${safeBaseUrl}/register-course`, tone: 'sw' } ]; const
+  comboBanner={ title: 'Combo Tập Sự + TOEIC A' , price: '6.000.000đ' ,
+  image: 'https://i.pinimg.com/1200x/bb/cd/15/bbcd152f4a290b4987226be9fb770ed0.jpg' , placeholder: 'Ảnh banner combo' ,
+  href: `${safeBaseUrl}/contact` }; const promoCards=[ { title: 'Kiểm tra\ntrình độ đầu vào' ,
+  image: 'https://i.pinimg.com/736x/c8/a9/9e/c8a99e21941bcff08b8afada50f26e56.jpg' , placeholder: 'Ảnh kiểm tra đầu vào'
+  , href: `${safeBaseUrl}/placement-tests`, tone: 'placement' }, { title: 'Lịch khai giảng' ,
+  image: 'https://i.pinimg.com/1200x/30/3c/95/303c951ff2e035c00c767aaa8d07635d.jpg' , placeholder: 'Ảnh lịch khai giảng'
+  , href: `${safeBaseUrl}/lich-khai-giang`, tone: 'schedule' } ]; function renderMedia(url, alt, placeholder, className)
+  { if (url) { return `<div class="${className}"><img src="${url}" alt="${alt}"></div>`;
   }
 
   return `
-    <div class="${className}">
-      <div class="cc-media-placeholder">
-        <span>${placeholder}</span>
-        <small>Bạn gắn link ảnh sau tại đây</small>
-      </div>
+  <div class="${className}">
+    <div class="cc-media-placeholder">
+      <span>${placeholder}</span>
+      <small>Bạn gắn link ảnh sau tại đây</small>
     </div>
+  </div>
   `;
-}
-%>
-
-<style>
-  .cc-page {
-    display: grid;
-    gap: 18px;
-    padding: 8px 0 24px;
   }
+  %>
 
-  .cc-grid,
-  .cc-promo-grid {
-    display: grid;
-    gap: 18px;
-  }
+  <style>
+    .cc-page {
+      display: grid;
+      gap: 18px;
+      padding: 8px 0 24px;
+    }
 
-  .cc-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .cc-promo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .cc-card,
-  .cc-combo,
-  .cc-promo-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 0;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .cc-card {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.84fr);
-    gap: 18px;
-    min-height: 342px;
-    padding: 28px 26px 0;
-  }
-
-  .cc-card.starter {
-    background: #f5e8fb;
-  }
-
-  .cc-card.a {
-    background: #dee0ff;
-  }
-
-  .cc-card.b {
-    background: #f8dfd5;
-  }
-
-  .cc-card.sw {
-    background: #dbf7ec;
-  }
-
-  .cc-copy {
-    display: grid;
-    align-content: start;
-    gap: 16px;
-    padding-top: 4px;
-  }
-
-  .cc-title,
-  .cc-combo-copy h2,
-  .cc-promo-title {
-    margin: 0;
-    font-family: "Sora", "Be Vietnam Pro", sans-serif;
-    letter-spacing: -0.06em;
-  }
-
-  .cc-title {
-    font-size: clamp(2.6rem, 4vw, 4rem);
-    line-height: 0.92;
-  }
-
-  .cc-card.starter .cc-title {
-    color: #d76bcb;
-  }
-
-  .cc-card.a .cc-title {
-    color: #7c3aed;
-  }
-
-  .cc-card.b .cc-title {
-    color: #ff5d7a;
-  }
-
-  .cc-card.sw .cc-title {
-    color: #14b8c5;
-  }
-
-  .cc-bullets {
-    margin: 0;
-    padding-left: 22px;
-    color: #2f3640;
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-
-  .cc-price {
-    display: grid;
-    gap: 4px;
-    margin-top: 8px;
-    text-align: center;
-    justify-self: start;
-    min-width: 160px;
-  }
-
-  .cc-price strong {
-    font-size: 2rem;
-    line-height: 1;
-    letter-spacing: -0.05em;
-    color: #111827;
-  }
-
-  .cc-price span {
-    color: #44403c;
-    font-size: 0.98rem;
-  }
-
-  .cc-note {
-    margin: 0;
-    max-width: 290px;
-    color: #4b5563;
-    font-size: 0.84rem;
-    line-height: 1.55;
-  }
-
-  .cc-combo {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
-    gap: 18px;
-    align-items: center;
-    min-height: 420px;
-    padding: 28px 26px 0;
-    background: linear-gradient(180deg, #e84b31 0%, #ef7158 100%);
-  }
-
-  .cc-combo-copy {
-    display: grid;
-    justify-items: center;
-    gap: 16px;
-    text-align: center;
-    color: #ffffff;
-  }
-
-  .cc-combo-copy h2 {
-    font-size: clamp(2rem, 4vw, 3.4rem);
-    line-height: 1.02;
-  }
-
-  .cc-combo-copy strong {
-    font-family: "Sora", "Be Vietnam Pro", sans-serif;
-    font-size: clamp(3rem, 6vw, 5rem);
-    line-height: 0.96;
-    letter-spacing: -0.06em;
-  }
-
-  .cc-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 56px;
-    padding: 0 30px;
-    border-radius: 999px;
-    background: #000000;
-    color: #ffffff;
-    font-size: 1.15rem;
-    font-weight: 800;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  }
-
-  .cc-card:hover .cc-btn,
-  .cc-combo:hover .cc-btn,
-  .cc-promo-card:hover .cc-btn,
-  .cc-card:hover,
-  .cc-combo:hover,
-  .cc-promo-card:hover {
-    transform: translateY(-1px);
-  }
-
-  .cc-promo-card {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.76fr);
-    gap: 16px;
-    align-items: end;
-    min-height: 344px;
-    padding: 26px 0 0 26px;
-  }
-
-  .cc-promo-card.placement {
-    background: linear-gradient(180deg, #e49a00 0%, #efb31a 100%);
-  }
-
-  .cc-promo-card.schedule {
-    background: linear-gradient(180deg, #77adc2 0%, #8ec5d6 100%);
-  }
-
-  .cc-promo-copy {
-    display: grid;
-    align-content: start;
-    gap: 12px;
-    padding-bottom: 24px;
-  }
-
-  .cc-promo-title {
-    color: #ffffff;
-    font-size: clamp(2.4rem, 4vw, 4.5rem);
-    line-height: 0.94;
-    white-space: pre-line;
-  }
-
-  .cc-media,
-  .cc-media-placeholder {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  .cc-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .cc-media.course {
-    min-height: 314px;
-  }
-
-  .cc-media.combo {
-    min-height: 392px;
-  }
-
-  .cc-media.promo {
-    min-height: 318px;
-  }
-
-  .cc-media-placeholder {
-    position: relative;
-    display: grid;
-    place-items: center;
-    gap: 10px;
-    padding: 24px;
-    text-align: center;
-    background:
-      radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 28%),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
-    color: rgba(17, 24, 39, 0.9);
-  }
-
-  .cc-combo .cc-media-placeholder,
-  .cc-promo-card .cc-media-placeholder {
-    color: rgba(255, 255, 255, 0.96);
-  }
-
-  .cc-media-placeholder::before {
-    content: "";
-    position: absolute;
-    inset: 14px;
-    border: 1.5px dashed currentColor;
-    border-radius: 24px;
-    opacity: 0.35;
-  }
-
-  .cc-media-placeholder span,
-  .cc-media-placeholder small {
-    position: relative;
-    z-index: 1;
-  }
-
-  .cc-media-placeholder span {
-    font-family: "Sora", "Be Vietnam Pro", sans-serif;
-    font-size: clamp(1.05rem, 2vw, 1.45rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
-  }
-
-  .cc-media-placeholder small {
-    max-width: 220px;
-    line-height: 1.6;
-  }
-
-  @media (max-width: 1024px) {
     .cc-grid,
     .cc-promo-grid {
-      grid-template-columns: 1fr;
+      display: grid;
+      gap: 18px;
+    }
+
+    .cc-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cc-promo-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .cc-card,
     .cc-combo,
     .cc-promo-card {
-      grid-template-columns: 1fr;
-      padding-right: 26px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0;
+      text-decoration: none;
+      color: inherit;
     }
 
-    .cc-price {
-      justify-self: center;
+    .cc-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(200px, 0.78fr);
+      gap: 18px;
+      min-height: 342px;
+      padding: 28px 26px 0;
     }
 
-    .cc-copy,
-    .cc-promo-copy {
-      justify-items: center;
-      text-align: center;
+    .cc-card.starter {
+      background: #f5e8fb;
     }
 
-    .cc-bullets {
-      text-align: left;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .cc-page {
-      gap: 14px;
-      padding-bottom: 12px;
+    .cc-card.a {
+      background: #dee0ff;
     }
 
-    .cc-card,
-    .cc-combo,
-    .cc-promo-card {
-      min-height: auto;
-      padding: 18px 18px 0;
+    .cc-card.b {
+      background: #f8dfd5;
+    }
+
+    .cc-card.sw {
+      background: #dbf7ec;
+    }
+
+    .cc-copy {
+      display: grid;
+      align-content: start;
+      gap: 16px;
+      min-width: 0;
+      padding-top: 4px;
+    }
+
+    .cc-title,
+    .cc-combo-copy h2,
+    .cc-promo-title {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      letter-spacing: -0.06em;
     }
 
     .cc-title {
-      font-size: clamp(2.1rem, 12vw, 3rem);
+      font-size: clamp(2.6rem, 4vw, 4rem);
+      line-height: 0.92;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
-    .cc-promo-title {
-      font-size: clamp(2rem, 12vw, 3.2rem);
+    .cc-card.starter .cc-title {
+      color: #d76bcb;
+    }
+
+    .cc-card.a .cc-title {
+      color: #7c3aed;
+    }
+
+    .cc-card.b .cc-title {
+      color: #ff5d7a;
+    }
+
+    .cc-card.sw .cc-title {
+      color: #14b8c5;
+    }
+
+    .cc-bullets {
+      margin: 0;
+      padding-left: 22px;
+      color: #2f3640;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .cc-price {
+      display: grid;
+      gap: 4px;
+      margin-top: 8px;
+      text-align: center;
+      justify-self: start;
+      min-width: 160px;
+    }
+
+    .cc-price strong {
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      color: #111827;
+    }
+
+    .cc-price span {
+      color: #44403c;
+      font-size: 0.98rem;
+    }
+
+    .cc-note {
+      margin: 0;
+      max-width: 290px;
+      color: #4b5563;
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .cc-combo {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+      gap: 18px;
+      align-items: center;
+      min-height: 420px;
+      padding: 28px 26px 0;
+      background: linear-gradient(180deg, #e84b31 0%, #ef7158 100%);
+    }
+
+    .cc-combo-copy {
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .cc-combo-copy h2 {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.02;
     }
 
     .cc-combo-copy strong {
-      font-size: clamp(2.5rem, 13vw, 4rem);
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
     }
 
     .cc-btn {
-      min-height: 50px;
-      padding: 0 24px;
-      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      padding: 0 30px;
+      border-radius: 999px;
+      background: #000000;
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 800;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
-  }
-</style>
 
-<div class="cc-page">
-  <section class="cc-grid">
-    <% courseCards.forEach((item) => { %>
-      <a href="<%= item.href %>" class="cc-card <%= item.tone %>">
-        <div class="cc-copy">
-          <h2 class="cc-title"><%= item.title %></h2>
-          <ul class="cc-bullets">
-            <% item.bullets.forEach((bullet) => { %>
-              <li><%= bullet %></li>
-            <% }) %>
-          </ul>
-          <div class="cc-price">
-            <strong><%= item.price %></strong>
-            <span><%= item.sessions %></span>
+    .cc-card:hover .cc-btn,
+    .cc-combo:hover .cc-btn,
+    .cc-promo-card:hover .cc-btn,
+    .cc-card:hover,
+    .cc-combo:hover,
+    .cc-promo-card:hover {
+      transform: translateY(-1px);
+    }
+
+    .cc-promo-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 0.76fr);
+      gap: 16px;
+      align-items: end;
+      min-height: 344px;
+      padding: 26px 0 0 26px;
+    }
+
+    .cc-promo-card.placement {
+      background: linear-gradient(180deg, #e49a00 0%, #efb31a 100%);
+    }
+
+    .cc-promo-card.schedule {
+      background: linear-gradient(180deg, #77adc2 0%, #8ec5d6 100%);
+    }
+
+    .cc-promo-copy {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding-bottom: 24px;
+    }
+
+    .cc-promo-title {
+      color: #ffffff;
+      font-size: clamp(2.4rem, 4vw, 4.5rem);
+      line-height: 0.94;
+      white-space: pre-line;
+    }
+
+    .cc-media,
+    .cc-media-placeholder {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .cc-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cc-media.course {
+      min-height: 314px;
+    }
+
+    .cc-media.combo {
+      min-height: 392px;
+    }
+
+    .cc-media.promo {
+      min-height: 318px;
+    }
+
+    .cc-media-placeholder {
+      position: relative;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      padding: 24px;
+      text-align: center;
+      background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+      color: rgba(17, 24, 39, 0.9);
+    }
+
+    .cc-combo .cc-media-placeholder,
+    .cc-promo-card .cc-media-placeholder {
+      color: rgba(255, 255, 255, 0.96);
+    }
+
+    .cc-media-placeholder::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1.5px dashed currentColor;
+      border-radius: 24px;
+      opacity: 0.35;
+    }
+
+    .cc-media-placeholder span,
+    .cc-media-placeholder small {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cc-media-placeholder span {
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .cc-media-placeholder small {
+      max-width: 220px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1024px) {
+
+      .cc-grid,
+      .cc-promo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cc-card,
+      .cc-combo,
+      .cc-promo-card {
+        grid-template-columns: 1fr;
+        padding-right: 26px;
+      }
+
+      .cc-price {
+        justify-self: center;
+      }
+
+      .cc-copy,
+      .cc-promo-copy {
+        justify-items: center;
+        text-align: center;
+      }
+
+      .cc-bullets {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .cc-page {
+        gap: 14px;
+        padding-bottom: 12px;
+      }
+
+      .cc-card,
+      .cc-combo,
+      .cc-promo-card {
+        min-height: auto;
+        padding: 18px 18px 0;
+      }
+
+      .cc-title {
+        font-size: clamp(2.1rem, 12vw, 3rem);
+      }
+
+      .cc-promo-title {
+        font-size: clamp(2rem, 12vw, 3.2rem);
+      }
+
+      .cc-combo-copy strong {
+        font-size: clamp(2.5rem, 13vw, 4rem);
+      }
+
+      .cc-btn {
+        min-height: 50px;
+        padding: 0 24px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+
+  <div class="cc-page">
+    <section class="cc-grid">
+      <% courseCards.forEach((item)=> { %>
+        <a href="<%= item.href %>" class="cc-card <%= item.tone %>">
+          <div class="cc-copy">
+            <h2 class="cc-title">
+              <%= item.title %>
+            </h2>
+            <ul class="cc-bullets">
+              <% item.bullets.forEach((bullet)=> { %>
+                <li>
+                  <%= bullet %>
+                </li>
+                <% }) %>
+            </ul>
+            <div class="cc-price">
+              <strong>
+                <%= item.price %>
+              </strong>
+              <span>
+                <%= item.sessions %>
+              </span>
+            </div>
+            <% if (item.note) { %>
+              <p class="cc-note">
+                <%= item.note %>
+              </p>
+              <% } %>
           </div>
-          <% if (item.note) { %>
-            <p class="cc-note"><%= item.note %></p>
-          <% } %>
-        </div>
 
-        <%- renderMedia(item.image, item.title, item.placeholder, 'cc-media course') %>
-      </a>
-    <% }) %>
-  </section>
+          <%- renderMedia(item.image, item.title, item.placeholder, 'cc-media course' ) %>
+        </a>
+        <% }) %>
+    </section>
 
-  <a href="<%= comboBanner.href %>" class="cc-combo">
-    <div class="cc-combo-copy">
-      <h2><%= comboBanner.title %></h2>
-      <strong><%= comboBanner.price %></strong>
-      <span class="cc-btn">Tìm hiểu ngay</span>
-    </div>
+    <a href="<%= comboBanner.href %>" class="cc-combo">
+      <div class="cc-combo-copy">
+        <h2>
+          <%= comboBanner.title %>
+        </h2>
+        <strong>
+          <%= comboBanner.price %>
+        </strong>
+        <span class="cc-btn">Tìm hiểu ngay</span>
+      </div>
 
-    <%- renderMedia(comboBanner.image, comboBanner.title, comboBanner.placeholder, 'cc-media combo') %>
-  </a>
+      <%- renderMedia(comboBanner.image, comboBanner.title, comboBanner.placeholder, 'cc-media combo' ) %>
+    </a>
 
-  <section class="cc-promo-grid">
-    <% promoCards.forEach((item) => { %>
-      <a href="<%= item.href %>" class="cc-promo-card <%= item.tone %>">
-        <div class="cc-promo-copy">
-          <h2 class="cc-promo-title"><%= item.title %></h2>
-        </div>
+    <section class="cc-promo-grid">
+      <% promoCards.forEach((item)=> { %>
+        <a href="<%= item.href %>" class="cc-promo-card <%= item.tone %>">
+          <div class="cc-promo-copy">
+            <h2 class="cc-promo-title">
+              <%= item.title %>
+            </h2>
+          </div>
 
-        <%- renderMedia(item.image, item.title, item.placeholder, 'cc-media promo') %>
-      </a>
-    <% }) %>
-  </section>
-</div>
+          <%- renderMedia(item.image, item.title, item.placeholder, 'cc-media promo' ) %>
+        </a>
+        <% }) %>
+    </section>
+  </div>

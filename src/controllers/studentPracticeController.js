@@ -8,6 +8,8 @@ const {
   getAnswerPayload,
   gradePracticeExam
 } = require('../data/practiceCatalog');
+const { syncStudentProfileFromUser } = require("../services/platformSupport");
+const { recordPracticeSession } = require("../services/studentActivityService");
 
 function getSafeBaseUrl(res) {
   return res.locals.baseUrl || '';
@@ -30,6 +32,11 @@ function respondWithError(res, error, options = {}) {
   }
 
   return res.status(statusCode).send(error && error.message ? error.message : fallbackMessage);
+}
+
+function isStudentSession(req) {
+  const role = req.session?.user?.role;
+  return Boolean(role && role !== "admin" && role !== "teacher");
 }
 
 function listPartPractice(req, res) {
@@ -123,7 +130,7 @@ function takeReadingPractice(req, res) {
   }
 }
 
-function submitPractice(req, res, mode) {
+async function submitPractice(req, res, mode) {
   try {
     const safeBaseUrl = getSafeBaseUrl(res);
     const exam = mode === 'reading'
@@ -132,6 +139,13 @@ function submitPractice(req, res, mode) {
     const result = gradePracticeExam(exam, req.body || {});
 
     req.session.lastStudentPracticeResult = result;
+
+    if (isStudentSession(req)) {
+      const student = await syncStudentProfileFromUser(req.session?.user);
+      if (student?.id) {
+        await recordPracticeSession(student.id, result);
+      }
+    }
 
     return res.redirect(`${safeBaseUrl}/student/practice/result/latest`);
   } catch (error) {

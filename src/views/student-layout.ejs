@@ -196,7 +196,14 @@
             padding: 5px;
             border-radius: 999px;
             background: rgba(17, 24, 39, .04);
-            border: 1px solid rgba(17, 24, 39, .06)
+            border: 1px solid rgba(17, 24, 39, .06);
+            transition: transform .2s ease, background .2s ease, box-shadow .2s ease
+        }
+
+        .s-profile:hover {
+            transform: translateY(-1px);
+            background: rgba(37, 99, 235, .08);
+            box-shadow: 0 16px 28px rgba(17, 24, 39, .08)
         }
 
         .s-profile-meta {
@@ -577,7 +584,7 @@
                 <div class="s-actions">
                     <span class="s-badge">Tài khoản học viên</span>
 
-                    <div class="s-profile" aria-label="Tài khoản đang đăng nhập">
+                    <a href="<%= buildHref('/student/profile') %>" class="s-profile" aria-label="Mở hồ sơ học viên">
                         <div class="s-profile-meta">
                             <strong>
                                 <%= safeStudentName %>
@@ -587,7 +594,7 @@
                         <span class="s-avatar">
                             <%= studentInitial %>
                         </span>
-                    </div>
+                    </a>
 
                     <a href="<%= buildHref('/logout') %>" class="s-logout">Đăng xuất</a>
 
