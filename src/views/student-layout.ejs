@@ -280,7 +280,10 @@
             position: relative;
             z-index: 120;
             border-top: 1px solid rgba(17, 24, 39, .06);
-            background: rgba(255, 255, 255, .98)
+            background: rgba(255, 255, 255, .98);
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            overscroll-behavior: contain
         }
 
         body.menu-open .s-mobile {
@@ -303,6 +306,46 @@
             gap: 10px
         }
 
+        .s-mobile-account {
+            display: grid;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 22px;
+            border: 1px solid rgba(17, 24, 39, .08);
+            background: linear-gradient(180deg, rgba(248, 250, 252, .98) 0%, rgba(255, 255, 255, .98) 100%);
+            box-shadow: 0 16px 34px rgba(17, 24, 39, .08)
+        }
+
+        .s-mobile-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: inherit
+        }
+
+        .s-mobile-profile-copy {
+            display: grid;
+            gap: 4px;
+            min-width: 0
+        }
+
+        .s-mobile-profile-copy strong {
+            color: #111827;
+            font-size: .96rem;
+            line-height: 1.2
+        }
+
+        .s-mobile-profile-copy span {
+            color: var(--muted);
+            font-size: .8rem;
+            line-height: 1.4
+        }
+
+        .s-mobile-actions {
+            display: grid;
+            gap: 10px
+        }
+
         .s-mobile .s-link,
         .s-mobile .s-logout {
             width: 100%;
@@ -317,7 +360,8 @@
         .s-link,
         .s-profile,
         .s-logout,
-        .s-menu {
+        .s-menu,
+        .s-mobile-profile {
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent
         }
@@ -637,12 +681,26 @@
 
             <div class="s-mobile" id="studentMobilePanel">
                 <div class="s-mobile-inner">
+                    <div class="s-mobile-account">
+                        <a href="<%= buildHref('/student/profile') %>" class="s-mobile-profile" aria-label="M&#7903; h&#7891; s&#417; h&#7885;c vi&#234;n">
+                            <span class="s-avatar">
+                                <%= studentInitial %>
+                            </span>
+                            <span class="s-mobile-profile-copy">
+                                <strong><%= safeStudentName %></strong>
+                                <span>T&#224;i kho&#7843;n h&#7885;c vi&#234;n TOEIC</span>
+                            </span>
+                        </a>
+                        <div class="s-mobile-actions">
+                            <a href="<%= buildHref('/logout') %>" class="s-logout">&#272;&#259;ng xu&#7845;t</a>
+                        </div>
+                    </div>
+
                     <% navItems.forEach((item)=> { %>
                         <a href="<%= item.href %>" class="s-link <%= isActive(item) ? 'active' : '' %>">
                             <%= item.label %>
                         </a>
                         <% }) %>
-                            <a href="<%= buildHref('/logout') %>" class="s-logout">Đăng xuất</a>
                 </div>
             </div>
         </header>
