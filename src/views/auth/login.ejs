@@ -620,11 +620,11 @@
       const facebookReady = socialNote.dataset.facebookReady === 'true';
 
       if (googleReady || facebookReady) {
-        socialNote.textContent = 'Bấm Google hoặc Facebook để sang màn xác nhận của nhà cung cấp. Nếu chọn tiếp tục, hệ thống sẽ quay về web Thầy Tài và đăng nhập bằng tài khoản social đó; nếu hủy, bạn sẽ được đưa lại màn hình đăng nhập.';
+        socialNote.textContent = '';
         return;
       }
 
-      socialNote.textContent = 'Google/Facebook OAuth hiện chưa được cấu hình trong máy chủ, nên nút social chưa thể đưa bạn vào luồng đăng nhập quay về web Thầy Tài. Cần điền GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, FACEBOOK_CLIENT_ID, FACEBOOK_CLIENT_SECRET trong .env.';
+      socialNote.textContent = '';
     })();
   </script>
 </body>
