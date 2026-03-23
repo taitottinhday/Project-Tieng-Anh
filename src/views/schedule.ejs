@@ -305,7 +305,7 @@
       transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
     }
 
-    .gs-anchor-link:first-child {
+    .gs-anchor-link.is-active {
       background: #18181b;
       color: #ffffff;
     }
@@ -1590,9 +1590,9 @@
 
   <div class="gs-page">
     <nav class="gs-anchor-nav" aria-label="Điều hướng nhanh lịch khai giảng">
-      <div class="gs-anchor-list">
-        <% sectionLinks.forEach((item)=> { %>
-          <a href="<%= item.href %>" class="gs-anchor-link">
+      <div class="gs-anchor-list" data-anchor-list>
+        <% sectionLinks.forEach((item, index)=> { %>
+          <a href="<%= item.href %>" class="gs-anchor-link <%= index === 0 ? 'is-active' : '' %>" data-anchor-link>
             <%= item.label %>
           </a>
           <% }) %>
@@ -2348,3 +2348,86 @@
       </div>
     </section>
   </div>
+
+  <script>
+    (() => {
+      const anchorLinks = Array.from(document.querySelectorAll("[data-anchor-link]"));
+      if (!anchorLinks.length) return;
+
+      const sectionEntries = anchorLinks
+        .map((link) => {
+          const href = link.getAttribute("href") || "";
+          if (!href.startsWith("#")) return null;
+
+          const section = document.querySelector(href);
+          if (!section) return null;
+
+          return { link, section };
+        })
+        .filter(Boolean);
+
+      if (!sectionEntries.length) return;
+
+      let activeId = "";
+
+      const setActiveLink = (nextId) => {
+        if (!nextId || nextId === activeId) return;
+
+        activeId = nextId;
+        sectionEntries.forEach(({ link, section }) => {
+          const isActive = section.id === nextId;
+          link.classList.toggle("is-active", isActive);
+
+          if (isActive) {
+            link.scrollIntoView({
+              behavior: "smooth",
+              inline: "center",
+              block: "nearest"
+            });
+          }
+        });
+      };
+
+      const resolveOffset = () => {
+        const isMobile = window.innerWidth <= 720;
+        return window.scrollY + (isMobile ? 170 : 190);
+      };
+
+      const syncActiveSection = () => {
+        const offset = resolveOffset();
+        let currentSectionId = sectionEntries[0].section.id;
+
+        sectionEntries.forEach(({ section }) => {
+          if (section.offsetTop <= offset) {
+            currentSectionId = section.id;
+          }
+        });
+
+        setActiveLink(currentSectionId);
+      };
+
+      let frameId = null;
+      const queueSync = () => {
+        if (frameId) return;
+        frameId = window.requestAnimationFrame(() => {
+          frameId = null;
+          syncActiveSection();
+        });
+      };
+
+      anchorLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          const href = link.getAttribute("href") || "";
+          if (!href.startsWith("#")) return;
+          const section = document.querySelector(href);
+          if (!section) return;
+          setActiveLink(section.id);
+        });
+      });
+
+      window.addEventListener("scroll", queueSync, { passive: true });
+      window.addEventListener("resize", queueSync);
+      window.addEventListener("load", queueSync);
+      queueSync();
+    })();
+  </script>
