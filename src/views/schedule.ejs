@@ -1,4 +1,4 @@
-<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const routeGroups=Array.isArray(scheduleGroups) ?
+<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const reviewVideoUrl="https://www.youtube.com/watch?v=toJFoM_V5qA"; const routeGroups=Array.isArray(scheduleGroups) ?
   scheduleGroups : []; const sectionLinks=[ { label: "Lịch khai giảng" , href: "#hero" }, { label: "Lộ trình học" ,
   href: "#lo-trinh-hoc" }, { label: "Tập Sự" , href: "#tap-su" }, { label: "TOEIC A" , href: "#toeic-a" }, {
   label: "TOEIC B" , href: "#toeic-b" }, { label: "TOEIC SW" , href: "#toeic-sw" }, { label: "Điểm học viên" ,
@@ -1605,7 +1605,7 @@
         <a href="#lo-trinh-hoc" class="gs-button gs-button-outline">Chọn lộ trình học</a>
 
         <div class="gs-inline-links">
-          <a href="#bang-diem" class="gs-inline-link">Xem video review</a>
+          <a href="<%= reviewVideoUrl %>" target="_blank" rel="noopener noreferrer" class="gs-inline-link">Xem video review</a>
           <a href="<%= safeBaseUrl %>/contact" class="gs-inline-link">Đăng ký học</a>
         </div>
       </div>
