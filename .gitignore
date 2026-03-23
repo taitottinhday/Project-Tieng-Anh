@@ -3,7 +3,14 @@ node_modules/
 .env.*
 !.env.example
 tmp/
-public/uploads/
+public/uploads/*
+!public/uploads/audio/
+!public/uploads/dictation/
+public/uploads/audio/*
+!public/uploads/audio/*.mp3
+!public/uploads/audio/*.wav
+public/uploads/dictation/*
+!public/uploads/dictation/*.wav
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

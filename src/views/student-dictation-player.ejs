@@ -133,6 +133,7 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
     border: 1px solid var(--dplayer-line);
     font: inherit;
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   .dplayer-nav-btn,
@@ -224,6 +225,27 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
     height: 2px;
     background: rgba(148, 163, 184, 0.36);
     transform: translateY(-50%);
+  }
+
+  .dplayer-native-audio {
+    display: none;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 24px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    background: rgba(247, 250, 252, 0.96);
+  }
+
+  .dplayer-native-audio audio {
+    display: block;
+    width: 100%;
+  }
+
+  .dplayer-native-note {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--dplayer-muted);
   }
 
   .dplayer-textarea {
@@ -361,6 +383,10 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
       grid-template-columns: 1fr;
     }
 
+    .dplayer-native-audio {
+      display: grid;
+    }
+
     .dplayer-progress-row {
       flex-direction: column;
       align-items: flex-start;
@@ -436,6 +462,11 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
         <button type="button" class="dplayer-speed" data-speed-toggle>1x</button>
       </div>
 
+      <div class="dplayer-native-audio">
+        <audio data-audio-player preload="metadata" playsinline webkit-playsinline controls controlsList="nodownload noplaybackrate"></audio>
+        <p class="dplayer-native-note">Neu tren mobile nut Play chua phat ngay, hay dung thanh audio mac dinh nay de nghe.</p>
+      </div>
+
       <textarea class="dplayer-textarea" data-answer-input placeholder="Type what you hear..."></textarea>
 
       <div class="dplayer-actions">
@@ -470,8 +501,6 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
       </div>
     </div>
   </section>
-
-  <audio data-audio-player preload="auto"></audio>
 </div>
 
 <script>
@@ -507,6 +536,52 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
     const checkButton = root.querySelector("[data-check-answer]");
     const skipButton = root.querySelector("[data-skip-answer]");
     const resetButton = root.querySelector("[data-reset-session]");
+
+    const setPlaybackState = (isPlaying) => {
+      panel.dataset.playing = isPlaying ? "true" : "false";
+      playButton.innerHTML = isPlaying ? "&#9632;" : "&#9658;";
+    };
+
+    const resetPlaybackUi = () => {
+      setPlaybackState(false);
+      updateWaveProgress();
+    };
+
+    const describeAudioError = (error) => {
+      const errorName = error && error.name ? error.name : "";
+
+      if (errorName === "NotAllowedError") {
+        return "Trinh duyet mobile dang chan phat audio. Hay cham Play them mot lan hoac dung thanh audio mac dinh ben duoi.";
+      }
+
+      if (errorName === "NotSupportedError") {
+        return "Thiet bi hien tai khong phat duoc file audio nay. Hay thu trinh duyet khac hoac cap nhat thiet bi.";
+      }
+
+      return "Khong the phat audio luc nay. Hay tai lai trang hoac bam nghe lai.";
+    };
+
+    const loadCurrentAudio = () => {
+      const entry = getCurrentEntry();
+      const nextSrc = entry && entry.audioUrl ? entry.audioUrl : "";
+
+      audio.pause();
+
+      if (audio.getAttribute("src") !== nextSrc) {
+        audio.setAttribute("src", nextSrc);
+      }
+
+      audio.load();
+      audio.playbackRate = speeds[state.speedIndex];
+
+      try {
+        audio.currentTime = 0;
+      } catch (error) {
+        // Some mobile browsers reject this before metadata is ready.
+      }
+
+      resetPlaybackUi();
+    };
 
     const initialState = (() => {
       try {
@@ -680,22 +755,40 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
 
     const stopAudio = () => {
       audio.pause();
-      audio.currentTime = 0;
-      panel.dataset.playing = "false";
-      playButton.innerHTML = "&#9658;";
-      updateWaveProgress();
+
+      try {
+        audio.currentTime = 0;
+      } catch (error) {
+        // Some mobile browsers reject this before metadata is ready.
+      }
+
+      resetPlaybackUi();
     };
 
     const playAudio = () => {
+      const entry = getCurrentEntry();
+
+      if (audio.getAttribute("src") !== entry.audioUrl) {
+        loadCurrentAudio();
+      }
+
+      audio.muted = false;
       audio.playbackRate = speeds[state.speedIndex];
-      audio.play().then(() => {
-        panel.dataset.playing = "true";
-        playButton.innerHTML = "&#9632;";
-      }).catch(() => {
+      const playAttempt = audio.play();
+
+      if (!playAttempt || typeof playAttempt.then !== "function") {
+        setPlaybackState(true);
+        return;
+      }
+
+      playAttempt.then(() => {
+        setPlaybackState(true);
+      }).catch((error) => {
+        resetPlaybackUi();
         setFeedback({
           correct: false,
           score: 0,
-          note: "Audio chua san sang. Minh se cap nhat sau khi sinh xong file.",
+          note: describeAudioError(error),
           answer: getCurrentEntry().transcript
         });
       });
@@ -709,12 +802,9 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
       entryId.textContent = entry.id.toUpperCase();
       prevButton.disabled = state.index <= 0;
       nextButton.disabled = state.index >= entries.length - 1;
-      audio.src = entry.audioUrl;
-      audio.playbackRate = speeds[state.speedIndex];
+      loadCurrentAudio();
       speedButton.textContent = `${speeds[state.speedIndex]}x`;
       answerInput.value = stored && stored.attempt ? stored.attempt : "";
-
-      stopAudio();
       if (stored) {
         if (stored.type === "checked") {
           setFeedback({
@@ -852,17 +942,21 @@ const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
       });
     }
 
+    ["touchstart", "pointerdown"].forEach((eventName) => {
+      root.addEventListener(eventName, () => {
+        if (audio.readyState < 2) {
+          audio.load();
+        }
+      }, { once: true, passive: true });
+    });
+
     audio.addEventListener("timeupdate", updateWaveProgress);
     audio.addEventListener("ended", () => {
-      panel.dataset.playing = "false";
-      playButton.innerHTML = "&#9658;";
-      updateWaveProgress();
+      resetPlaybackUi();
     });
     audio.addEventListener("loadedmetadata", updateWaveProgress);
     audio.addEventListener("error", () => {
-      panel.dataset.playing = "false";
-      playButton.innerHTML = "&#9658;";
-      updateWaveProgress();
+      resetPlaybackUi();
     });
 
     window.addEventListener("beforeunload", () => {
