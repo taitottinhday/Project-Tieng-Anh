@@ -247,11 +247,19 @@
 
         .g-mobile-panel {
             display: none;
+            position: relative;
+            z-index: 120;
             border-top: 1px solid rgba(89,106,191,.1);
             background: linear-gradient(180deg, rgba(229, 240, 255, 0.94) 0%, rgba(255, 223, 239, 0.94) 100%);
         }
 
         body.menu-open .g-mobile-panel { display: block; }
+        body.menu-open .g-header { z-index: 140; }
+        body.menu-open .eng-fixed-left,
+        body.menu-open .eng-fixed-stack {
+            opacity: 0;
+            pointer-events: none;
+        }
 
         .g-mobile-inner {
             padding: 14px 0 18px;
@@ -264,6 +272,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+            touch-action: manipulation;
             padding: 14px 16px;
             border-radius: 18px;
             background: linear-gradient(135deg, rgba(201, 223, 255, 0.72) 0%, rgba(255, 214, 234, 0.74) 100%);
