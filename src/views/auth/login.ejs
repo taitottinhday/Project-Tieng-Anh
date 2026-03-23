@@ -424,6 +424,7 @@
       font-size: 0.92rem;
       text-align: center;
       line-height: 1.7;
+      display: none;
     }
 
     .auth-footer {
@@ -615,16 +616,7 @@
       if (!socialNote) {
         return;
       }
-
-      const googleReady = socialNote.dataset.googleReady === 'true';
-      const facebookReady = socialNote.dataset.facebookReady === 'true';
-
-      if (googleReady || facebookReady) {
-        socialNote.textContent = '';
-        return;
-      }
-
-      socialNote.textContent = '';
+      socialNote.remove();
     })();
   </script>
 </body>
