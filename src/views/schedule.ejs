@@ -2352,6 +2352,7 @@
   <script>
     (() => {
       const anchorLinks = Array.from(document.querySelectorAll("[data-anchor-link]"));
+      const anchorList = document.querySelector("[data-anchor-list]");
       if (!anchorLinks.length) return;
 
       const sectionEntries = anchorLinks
@@ -2377,8 +2378,9 @@
         sectionEntries.forEach(({ link, section }) => {
           const isActive = section.id === nextId;
           link.classList.toggle("is-active", isActive);
+          link.setAttribute("aria-current", isActive ? "true" : "false");
 
-          if (isActive) {
+          if (isActive && anchorList && anchorList.scrollWidth > anchorList.clientWidth + 8) {
             link.scrollIntoView({
               behavior: "smooth",
               inline: "center",
@@ -2416,12 +2418,22 @@
       };
 
       anchorLinks.forEach((link) => {
-        link.addEventListener("click", () => {
+        link.addEventListener("click", (event) => {
           const href = link.getAttribute("href") || "";
           if (!href.startsWith("#")) return;
           const section = document.querySelector(href);
           if (!section) return;
+
+          event.preventDefault();
           setActiveLink(section.id);
+          section.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+
+          if (window.history && typeof window.history.replaceState === "function") {
+            window.history.replaceState(null, "", href);
+          }
         });
       });
 
