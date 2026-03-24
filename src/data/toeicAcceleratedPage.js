@@ -1,13 +1,36 @@
 const toeic4SkillsPage = require("./toeic4SkillsPage");
 
+const decodePlaceholderLabel = (value) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const placeholderImage = (
   label,
   width = 1400,
   height = 900,
   background = "e6edf9",
   foreground = "1f2937"
-) =>
-  `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(label)}`;
+) => {
+  const value = typeof label === "string" ? label.trim() : "";
+  if (!value) return "";
+  if (
+    /^(?:https?:)?\/\//i.test(value) ||
+    value.startsWith("/") ||
+    value.startsWith("./") ||
+    value.startsWith("../") ||
+    value.startsWith("data:")
+  ) {
+    return value;
+  }
+
+  return `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(
+    decodePlaceholderLabel(value)
+  )}`;
+};
 
 module.exports = {
   slug: "khoa-hoc-cap-toc",
@@ -19,7 +42,7 @@ module.exports = {
     chips: ["TOEIC 450+", "TOEIC 600+", "TOEIC 800+"],
     ctaLabel: "Nhận tư vấn ngay",
     ctaHref: "/contact",
-    image: placeholderImage("Hero khoa hoc cap toc", 980, 860, "dbeafe", "1d4ed8"),
+    image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/page/2026/01/15/483843c7-a64b-4a4b-884c-ca6131901fff.png", 980, 860, "dbeafe", "1d4ed8"),
   },
   solutionHighlights: {
     lead: "Bạn hoàn toàn có thể bứt tốc TOEIC nhanh hơn hiệu quả hơn, khi sở hữu",
@@ -28,22 +51,22 @@ module.exports = {
       {
         title: "Lộ trình TOEIC tinh gọn & hiệu quả",
         text: "Lộ trình cá nhân hóa, tinh gọn, bám sát mục tiêu đầu ra giúp tiết kiệm thời gian, học phí và đạt band điểm mục tiêu nhanh hơn.",
-        image: placeholderImage("Lo trinh tinh gon", 720, 520, "eef6ff", "2563eb"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/320x260/toeic_img/page/2026/03/19/6d2e8b82-5097-4e60-a020-204fcf2e1e3b.jpg", 720, 520, "eef6ff", "2563eb"),
       },
       {
         title: "Đội ngũ sứ giả truyền cảm hứng",
         text: "Hơn 300+ giáo viên TOEIC 950+ giỏi kiến thức, giỏi kỹ năng và luôn đồng hành, sửa lỗi tỉ mỉ cùng bạn trong suốt hành trình.",
-        image: placeholderImage("Su gia truyen cam hung", 720, 520, "fef2f2", "b91c1c"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/320x260/toeic_img/page/2026/03/19/d55a3594-d51d-4d24-9774-38ea48b2bdba.jpg", 720, 520, "fef2f2", "b91c1c"),
       },
       {
         title: "Giáo trình độc quyền, NXB uy tín",
         text: "Giáo trình độc quyền kết hợp cùng NXB uy tín và sổ tay học viên giúp hiểu sâu, tiết kiệm 50% thời gian ôn luyện TOEIC.",
-        image: placeholderImage("Giao trinh doc quyen", 720, 520, "eff6ff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/320x260/toeic_img/page/2026/03/19/28a9b1ff-c79f-4162-9772-1ddbe99bc7f0.jpg", 720, 520, "eff6ff", "0f766e"),
       },
       {
         title: "Phương pháp RIPL độc quyền",
         text: "Phương pháp học tinh gọn, tiết kiệm thời gian, thực hành tối đa, phát triển đều các kỹ năng TOEIC. Học dễ hiểu, dễ nhớ và dễ về đích.",
-        image: placeholderImage("RIPL doc quyen", 720, 520, "eef6ff", "7c3aed"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/320x260/toeic_img/page/2026/03/19/8c17adbf-b348-4724-b72b-79aa49d6ac92.jpg", 720, 520, "eef6ff", "7c3aed"),
       },
     ],
   },
@@ -62,7 +85,7 @@ module.exports = {
         "Môi trường học tập năng động, thực hành nhiều.",
         "Học hỏi từ bạn bè, tạo động lực và sự gắn kết.",
       ],
-      image: placeholderImage("Lop hoc nhom nho", 900, 620, "eef6ff", "2563eb"),
+      image: placeholderImage("https://image.ebomb.edu.vn/crop/540x320/toeic_img/page/2026/01/15/ac4c72b8-d3d9-4f36-8361-a62b40dd79bc.png", 900, 620, "eef6ff", "2563eb"),
     },
     secondary: {
       title: "Lớp học 1 kèm 1",
@@ -71,7 +94,7 @@ module.exports = {
         "Lộ trình cá nhân hóa theo đúng mục tiêu của bạn.",
         "Tốc độ học nhanh, tập trung tối đa vào điểm yếu.",
       ],
-      image: placeholderImage("Lop hoc 1 kem 1", 900, 620, "fef2f2", "b91c1c"),
+      image: placeholderImage("https://image.ebomb.edu.vn/crop/540x320/toeic_img/page/2026/01/15/159b6cd8-887e-4369-b59c-4ace26b09f53.png", 900, 620, "fef2f2", "b91c1c"),
     },
   },
   resources: toeic4SkillsPage.resources,
@@ -102,7 +125,7 @@ module.exports = {
   consult: {
     title: "Tham vấn 1-1 cùng giáo viên!",
     text: "Chinh phục thần tốc mục tiêu TOEIC với Thầy Tài TOEIC. Hơn 1.000.000 học viên đã thành công cán đích. Bạn có muốn trở thành người tiếp theo?",
-    posterImage: placeholderImage("Qua tang bung no cap toc", 900, 1220, "dbeafe", "1d4ed8"),
+    posterImage: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/page/2026/01/15/a92e3dff-7ba2-48e2-8d8f-4c39f0c77ccf.png", 900, 1220, "dbeafe", "1d4ed8"),
     fields: [
       { type: "text", placeholder: "Họ và tên" },
       { type: "tel", placeholder: "Số điện thoại" },
@@ -124,11 +147,11 @@ module.exports = {
       "Khám phá địa chỉ 30+ cơ sở trên toàn quốc",
     ],
     collage: [
-      placeholderImage("Support 01", 420, 320, "fef2f2", "be123c"),
-      placeholderImage("Support 02", 420, 320, "dbeafe", "1d4ed8"),
-      placeholderImage("Support 03", 420, 320, "fff7ed", "9a3412"),
-      placeholderImage("Support 04", 420, 320, "ecfeff", "0f766e"),
-      placeholderImage("Support 05", 420, 320, "ede9fe", "7c3aed"),
+      placeholderImage("https://image.ebomb.edu.vn/crop/400x500/toeic_img/teacher/2026/03/04/707718b2-32ba-4a6b-b9f7-86e023e2c993.png", 420, 320, "fef2f2", "be123c"),
+      placeholderImage("https://image.ebomb.edu.vn/crop/400x500/toeic_img/teacher/2026/03/04/66bf791d-a2c0-4592-8283-60a8efee961a.png", 420, 320, "dbeafe", "1d4ed8"),
+      placeholderImage("https://image.ebomb.edu.vn/crop/400x500/toeic_img/teacher/2026/03/04/39c0abbe-9f7a-4645-8a44-2eb16973a9fd.png", 420, 320, "fff7ed", "9a3412"),
+      placeholderImage("https://image.ebomb.edu.vn/crop/400x500/toeic_img/teacher/2026/03/04/6090742c-b199-42ee-a6aa-2b27d066898f.png", 420, 320, "ecfeff", "0f766e"),
+      placeholderImage("https://image.ebomb.edu.vn/crop/400x500/toeic_img/teacher/2026/03/04/596be1c4-f342-453a-980e-f4adad599543.png", 420, 320, "ede9fe", "7c3aed"),
     ],
   },
 };

@@ -57,11 +57,15 @@ const resolveHref = (url) => {
           <div class="cl-actions"><a href="<%= resolveHref(page.hero.ctaHref) %>" class="cl-btn"><%= page.hero.ctaLabel %></a></div>
           <div class="cl-stats"><% (page.hero.stats || []).forEach((item) => { %><div class="cl-stat"><strong><%= item.value %></strong><span><%= item.label %></span></div><% }) %></div>
         </div>
-        <div class="cl-collage">
-          <% (page.hero.collage || []).forEach((item) => { %>
-            <% if (item.type === 'image') { %><div><img src="<%= item.image %>" alt="<%= item.alt %>"></div><% } else { %><div class="text"><span><%= item.label %></span></div><% } %>
-          <% }) %>
-        </div>
+        <% if (page.hero.image) { %>
+          <div class="cl-photo tall"><img src="<%= page.hero.image %>" alt="<%= page.hero.imageAlt || page.hero.badge || page.title %>"></div>
+        <% } else { %>
+          <div class="cl-collage">
+            <% (page.hero.collage || []).forEach((item) => { %>
+              <% if (item.type === 'image') { %><div><img src="<%= item.image %>" alt="<%= item.alt %>"></div><% } else { %><div class="text"><span><%= item.label %></span></div><% } %>
+            <% }) %>
+          </div>
+        <% } %>
       </article>
     </section>
 

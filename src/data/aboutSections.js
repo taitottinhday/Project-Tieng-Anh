@@ -1,11 +1,34 @@
+const decodePlaceholderLabel = (value) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const placeholderImage = (
   label,
   width = 1400,
   height = 900,
   background = "e6edf9",
   foreground = "1f2937"
-) =>
-  `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(label)}`;
+) => {
+  const value = typeof label === "string" ? label.trim() : "";
+  if (!value) return "";
+  if (
+    /^(?:https?:)?\/\//i.test(value) ||
+    value.startsWith("/") ||
+    value.startsWith("./") ||
+    value.startsWith("../") ||
+    value.startsWith("data:")
+  ) {
+    return value;
+  }
+
+  return `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(
+    decodePlaceholderLabel(value)
+  )}`;
+};
 
 const aboutMenu = [
   { slug: "ve-thay-tai-toeic", label: "Về Thầy Tài TOEIC" },
@@ -26,8 +49,8 @@ const aboutSections = {
     eyebrow: "About Brand",
     summary:
       "Thầy Tài TOEIC xây dựng một mô hình luyện thi gọn, chắc và có trách nhiệm với kết quả. Mỗi khóa học đều xoay quanh mục tiêu điểm số, thời gian học thực tế và năng lực hiện tại của từng học viên.",
-    heroImage: placeholderImage("Hero%20Ve%20Thay%20Tai%20TOEIC", 1200, 860, "dbeafe", "0f172a"),
-    heroNote: "Bạn có thể thay ảnh hero này bằng ảnh nhận diện trung tâm hoặc ảnh lớp học thật.",
+    heroImage: "https://r2.ebomb.edu.vn/toeic_img/page/2026/01/15/9a063f28-cb45-476e-8a9e-ff923f58522b.png",
+    heroNote: "",
     heroStats: [
       { value: "18.000+", label: "Học viên từng tham gia lộ trình TOEIC" },
       { value: "91%", label: "Học viên bám đúng kế hoạch trong 8 tuần" },
@@ -103,7 +126,7 @@ const aboutSections = {
       "Điều khiến thầy Tài được nhớ đến không chỉ là điểm số đầu ra, mà còn là cách thầy biến việc học TOEIC từ một mục tiêu áp lực thành một quá trình có cấu trúc, có động lực và có người đồng hành.",
     ],
     leadFigure: {
-      image: placeholderImage("Gap%20go%20truoc%20lop%20hoc%20cua%20Thay%20Tai", 1400, 920, "e2e8f0", "0f172a"),
+      image: placeholderImage("https://i.pinimg.com/736x/c2/4e/da/c24edaaf9032e4fa4c3112c7a9dfc4cb.jpg", 1400, 920, "e2e8f0", "0f172a"),
       caption: "Thầy Tài trong một buổi chia sẻ chiến lược học tập cùng học viên và đội ngũ học thuật",
     },
     chapters: [
@@ -135,46 +158,46 @@ const aboutSections = {
     splitGallery: {
       caption: "Những hình ảnh đầu tiên từ lớp học và các buổi chia sẻ chiến lược học tập",
       images: [
-        placeholderImage("Anh%20lop%20hoc%20dau%20tien%201", 900, 700, "fef3c7", "92400e"),
-        placeholderImage("Anh%20lop%20hoc%20dau%20tien%202", 900, 700, "dbeafe", "1d4ed8"),
+        placeholderImage("https://i.postimg.cc/cHVpqGdw/s1.png", 900, 700, "fef3c7", "92400e"),
+        placeholderImage("https://i.postimg.cc/T36QzYgV/s2.png", 900, 700, "dbeafe", "1d4ed8"),
       ],
     },
     midFigure: {
-      image: placeholderImage("Thay%20Tai%20lam%20viec%20cung%20doi%20ngu", 1400, 980, "f3f4f6", "111827"),
+      image: placeholderImage("https://i.pinimg.com/1200x/38/f7/d8/38f7d86da0ae75e82b10b0b1679e54b6.jpg", 1400, 980, "f3f4f6", "111827"),
       caption: "Thầy Tài trong một buổi làm việc cùng đội ngũ học thuật và mentor",
     },
     campusGallery: {
       title: "Không gian học tập của Thầy Tài TOEIC",
       caption: "Bạn có thể thay cụm ảnh này bằng ảnh cơ sở, lớp học, khu vực tiếp đón hoặc ảnh workshop thực tế",
       images: [
-        placeholderImage("Co%20so%20Thay%20Tai%2001", 900, 700, "fee2e2", "9f1239"),
-        placeholderImage("Co%20so%20Thay%20Tai%2002", 900, 700, "e0f2fe", "075985"),
-        placeholderImage("Co%20so%20Thay%20Tai%2003", 900, 700, "ecfccb", "365314"),
-        placeholderImage("Co%20so%20Thay%20Tai%2004", 900, 700, "ede9fe", "6d28d9"),
+        placeholderImage("https://i.pinimg.com/736x/c5/5f/17/c55f1712fb8b1cd5d0908d757cf8043d.jpg", 900, 700, "fee2e2", "9f1239"),
+        placeholderImage("https://i.pinimg.com/736x/b7/08/95/b70895fede22516535ced4cf7569ead6.jpg", 900, 700, "e0f2fe", "075985"),
+        placeholderImage("https://i.pinimg.com/736x/47/12/ed/4712ed89acf9b8f595c09906f9882c43.jpg", 900, 700, "ecfccb", "365314"),
+        placeholderImage("https://i.pinimg.com/736x/3e/4c/f5/3e4cf5f0c19dca20021c1a1808450edb.jpg", 900, 700, "ede9fe", "6d28d9"),
       ],
     },
     pressLinks: [
-      { source: "Báo Giáo Dục", title: "Hành trình xây dựng lớp học TOEIC chú trọng chiều sâu và cá nhân hóa", href: "https://example.com/thay-tai-bao-1" },
-      { source: "VnExpress", title: "Một góc nhìn khác về việc học TOEIC: học để hiểu, không chỉ học để khoanh đáp án", href: "https://example.com/thay-tai-bao-2" },
-      { source: "CafeBiz", title: "Cách một thương hiệu TOEIC phát triển từ sự theo sát trải nghiệm học viên", href: "https://example.com/thay-tai-bao-3" },
-      { source: "Kenh14", title: "Người trẻ học tiếng Anh hiệu quả hơn khi có lộ trình và nhịp học đúng", href: "https://example.com/thay-tai-bao-4" },
-      { source: "Tuổi Trẻ", title: "Câu chuyện phía sau những lớp TOEIC chữa bài sâu và rõ mục tiêu", href: "https://example.com/thay-tai-bao-5" },
+      { source: "Báo Giáo Dục", title: "Hành trình xây dựng lớp học TOEIC chú trọng chiều sâu và cá nhân hóa", href: "https://www.anhngumshoa.com/tin-tuc/baongheanvn-co-giao-xu-nghe-thanh-cong-voi-triet-ly-dao-tao-va-phuong-phap-giang-day-doc-quyen-38300.html" },
+      { source: "VnExpress", title: "Một góc nhìn khác về việc học TOEIC: học để hiểu, không chỉ học để khoanh đáp án", href: "https://www.anhngumshoa.com/tin-tuc/afamily-vn-ms-hoa-toeic-chu-tich-truong-anh-ngu-noi-tieng-ha-noi-tiet-lo-noi-lo-ve-2-co-con-gai-38301.html" },
+      { source: "CafeBiz", title: "Cách một thương hiệu TOEIC phát triển từ sự theo sát trải nghiệm học viên", href: "https://www.anhngumshoa.com/tin-tuc/vnexpress-ung-dung-tieng-anh-trong-cong-viec-tu-vung-tieng-anh-nganh-nhan-su-38303.html" },
+      { source: "Kenh14", title: "Người trẻ học tiếng Anh hiệu quả hơn khi có lộ trình và nhịp học đúng", href: "https://www.anhngumshoa.com/tin-tuc/vnexpress-meo-dat-diem-cao-mon-tieng-anh-ky-thi-tot-nghiep-thpt-quoc-gia-nho-bai-thi-toeic-38307.html" },
+      { source: "Tuổi Trẻ", title: "Câu chuyện phía sau những lớp TOEIC chữa bài sâu và rõ mục tiêu", href: "https://www.anhngumshoa.com/tin-tuc/vnexpress-co-giao-tre-so-huu-7-trung-tam-ngoai-ngu-36564.html" },
     ],
     eventCards: [
       {
-        image: placeholderImage("Su%20kien%20Noi%20bat%2001", 900, 620, "eff6ff", "1d4ed8"),
+        image: placeholderImage("https://i.pinimg.com/1200x/68/0c/39/680c39a9ee63dde833ebf99ef2ed2360.jpg", 900, 620, "eff6ff", "1d4ed8"),
         title: "Workshop chiến lược chinh phục TOEIC cho người mới bắt đầu",
         excerpt: "Một chuỗi chia sẻ dành cho học viên cần xây lại nền tảng và tìm phương pháp học bền vững hơn.",
         href: "/contact",
       },
       {
-        image: placeholderImage("Su%20kien%20Noi%20bat%2002", 900, 620, "fff7ed", "9a3412"),
+        image: placeholderImage("https://i.pinimg.com/736x/95/fa/98/95fa98073a9e4c7dbd4694926aaa0b47.jpg", 900, 620, "fff7ed", "9a3412"),
         title: "Bộ tài liệu cấu trúc ngữ pháp trọng tâm trong hệ thống của Thầy Tài",
         excerpt: "Các tài liệu được biên soạn để học viên học gọn hơn, hiểu sâu hơn và bám đúng format đề.",
         href: "/ve-chung-toi/phuong-phap-dao-tao",
       },
       {
-        image: placeholderImage("Su%20kien%20Noi%20bat%2003", 900, 620, "fdf2f8", "831843"),
+        image: placeholderImage("https://i.pinimg.com/736x/fd/7f/66/fd7f66bc4c5e06f718db85233a783a5a.jpg", 900, 620, "fdf2f8", "831843"),
         title: "Những dự án học liệu và sản phẩm học tập đang được phát triển",
         excerpt: "Từ practice online đến workbook nội bộ, mọi tài nguyên đều hướng đến trải nghiệm học đồng nhất.",
         href: "/goc-hoc-tap",
@@ -194,8 +217,8 @@ const aboutSections = {
       hrefLabel: "Xem lịch khai giảng",
       href: "/lich-khai-giang",
     },
-    heroImage: placeholderImage("Phuong%20phap%20TAIL", 1200, 920, "dbeafe", "1e3a8a"),
-    heroNote: "Thay bằng ảnh banner phương pháp đào tạo hoặc ảnh thầy Tài trong lớp học.",
+    heroImage: placeholderImage("https://i.pinimg.com/736x/66/e3/41/66e3418ee7a9acd64bcf68283aaa7bc9.jpg", 1200, 920, "dbeafe", "1e3a8a"),
+    heroNote: "",
     methodCards: [
       {
         letter: "T",
@@ -245,7 +268,7 @@ const aboutSections = {
           name: "Phần hồ sơ học viên",
           school: "Thay bằng tên trường hoặc đơn vị của học viên",
           score: "930 TOEIC",
-          image: placeholderImage("Hoc%20vien%20Reading", 500, 500, "eff6ff", "0f172a"),
+          image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/02/03/93f33732-b3b3-4c5a-a536-e6977c7ebbac.png", 500, 500, "eff6ff", "0f172a"),
         },
       },
       {
@@ -260,7 +283,7 @@ const aboutSections = {
           name: "Phần hồ sơ học viên",
           school: "Thay bằng tên trường hoặc đơn vị của học viên",
           score: "900 TOEIC",
-          image: placeholderImage("Hoc%20vien%20Listening", 500, 500, "f8fafc", "0f172a"),
+          image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/01/30/907c470c-ce7b-4f89-8771-5518ea1b705a.png", 500, 500, "f8fafc", "0f172a"),
         },
       },
       {
@@ -275,7 +298,7 @@ const aboutSections = {
           name: "Phần hồ sơ học viên",
           school: "Thay bằng tên trường hoặc đơn vị của học viên",
           score: "890+ TOEIC",
-          image: placeholderImage("Hoc%20vien%20Writing", 500, 500, "fff7ed", "7c2d12"),
+          image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/01/30/325f1cf6-6d4d-47b4-bec4-22b0bb3e3e35.png", 500, 500, "fff7ed", "7c2d12"),
         },
       },
       {
@@ -290,7 +313,7 @@ const aboutSections = {
           name: "Phần hồ sơ học viên",
           school: "Thay bằng tên trường hoặc đơn vị của học viên",
           score: "Target 8.0",
-          image: placeholderImage("Hoc%20vien%20Speaking", 500, 500, "fdf2f8", "831843"),
+          image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/01/30/aa27ef32-2f8f-41ee-8cd4-8c7626336559.png", 500, 500, "fdf2f8", "831843"),
         },
       },
     ],
@@ -301,31 +324,31 @@ const aboutSections = {
     ],
     proofQuote:
       "Điều tạo nên sự khác biệt của T.A.I.L không phải những khẩu hiệu lớn, mà là cách mỗi mắt xích trong lộ trình được nối với nhau để học viên đi đều và không bị hụt hơi giữa chặng.",
-    proofImage: placeholderImage("Video%20review%20phuong%20phap", 1000, 620, "fee2e2", "7f1d1d"),
+    proofImage: placeholderImage("https://i.pinimg.com/1200x/38/2a/37/382a379c14a4a8d47daf15eb4ff10310.jpg", 1000, 620, "fee2e2", "7f1d1d"),
     resources: [
       {
         title: "Workbook",
         subtitle: "Bài tập cốt lõi",
         text: "Bộ worksheet và handout luyện theo từng mục tiêu điểm, bám sát format đề thật.",
-        image: placeholderImage("Workbook", 700, 520, "eef2ff", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/03/04/a127e9a3-c8b7-473c-99dc-90cec3ec37e7.png", 700, 520, "eef2ff", "1d4ed8"),
       },
       {
         title: "Student Book",
         subtitle: "Sách học nội bộ",
         text: "Tài liệu tổng hợp cấu trúc, chiến lược và bài tập giúp học viên học theo lộ trình rõ ràng hơn.",
-        image: placeholderImage("Student%20Book", 700, 520, "fff7ed", "9a3412"),
+        image: placeholderImage("https://i.pinimg.com/736x/a5/3a/0e/a53a0e6d0533f8f4fdcf30c766e5420f.jpg", 700, 520, "fff7ed", "9a3412"),
       },
       {
         title: "AI Chấm Chữa",
         subtitle: "Trợ lý học tập",
         text: "Kết hợp công cụ online để học viên tự luyện, xem feedback và quay lại lớp với câu hỏi đúng trọng tâm.",
-        image: placeholderImage("AI%20Cham%20Chua", 700, 520, "ecfeff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/03/04/7e0e0e5b-7c81-4357-b798-9409c8814dfc.png", 700, 520, "ecfeff", "0f766e"),
       },
       {
         title: "App học online",
         subtitle: "Hệ sinh thái luyện tập",
         text: "Làm bài, xem kết quả, chữa lỗi và bám nhịp học trong cùng một tài khoản.",
-        image: placeholderImage("App%20hoc%20online", 700, 520, "faf5ff", "7e22ce"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/01/15/8634c2e3-19f6-4152-aba2-d53a8bc50bb3.png", 700, 520, "faf5ff", "7e22ce"),
       },
     ],
   },
@@ -336,8 +359,8 @@ const aboutSections = {
     eyebrow: "Campuses",
     summary:
       "Mỗi cơ sở đều được thiết kế như một điểm tư vấn - học tập - hỗ trợ lộ trình thống nhất. Nếu bạn chưa chắc mình nên học ở đâu, hãy dùng trang này để so sánh cơ sở, xem map và kết nối nhanh với đội ngũ tư vấn.",
-    heroImage: placeholderImage("Hero%20He%20thong%20co%20so", 1200, 760, "dbeafe", "1e3a8a"),
-    heroNote: "Thay bằng ảnh không gian lớp học, mặt tiền cơ sở hoặc ảnh khu vực tiếp đón học viên.",
+    heroImage: placeholderImage("https://i.pinimg.com/736x/39/44/20/39442052bc12ab00e24cdd5d6b470cba.jpg", 1200, 760, "dbeafe", "1e3a8a"),
+    heroNote: "",
     campuses: [
       {
         name: "Cơ sở Hồ Tùng Mậu",
@@ -345,7 +368,7 @@ const aboutSections = {
         phone: "0344 772 436",
         schedule: "Tư vấn 08:00 - 21:00 | Lớp tối các ngày 2-4-6 và 3-5-7",
         mapHref: "https://maps.google.com",
-        image: placeholderImage("Map%20Ho%20Tung%20Mau", 960, 700, "e2e8f0", "0f172a"),
+        image: placeholderImage("https://i.postimg.cc/KYDmFz1r/s4.png", 960, 700, "e2e8f0", "0f172a"),
       },
       {
         name: "Cơ sở Lê Đức Thọ",
@@ -353,7 +376,7 @@ const aboutSections = {
         phone: "0344 772 436",
         schedule: "Tư vấn 08:00 - 21:00 | Có lớp tối và lớp cuối tuần",
         mapHref: "https://maps.google.com",
-        image: placeholderImage("Map%20Le%20Duc%20Tho", 960, 700, "ecfccb", "365314"),
+        image: placeholderImage("https://i.postimg.cc/KYDmFz1r/s4.png", 960, 700, "ecfccb", "365314"),
       },
       {
         name: "Campus mới đang mở rộng",
@@ -361,7 +384,7 @@ const aboutSections = {
         phone: "Thay bằng số hotline riêng nếu có",
         schedule: "Phù hợp để giới thiệu kế hoạch mở rộng thương hiệu hoặc campus mới",
         mapHref: "https://maps.google.com",
-        image: placeholderImage("Map%20Campus%20moi", 960, 700, "fee2e2", "881337"),
+        image: placeholderImage("https://i.postimg.cc/KYDmFz1r/s4.png", 960, 700, "fee2e2", "881337"),
       },
     ],
     supportCard: {
@@ -380,17 +403,17 @@ const aboutSections = {
       {
         title: "Ưu đãi học viên mới",
         subtitle: "Dành cho học viên đăng ký sớm",
-        image: placeholderImage("Uu%20dai%20hoc%20vien%20moi", 900, 560, "fee2e2", "7f1d1d"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/430x280/toeic_img/news/2026/03/06/58cdf66e-0d67-4bf9-be3f-5210296d209e.png", 900, 560, "fee2e2", "7f1d1d"),
       },
       {
         title: "Trả góp học phí",
         subtitle: "Tối ưu chi phí học tập",
-        image: placeholderImage("Tra%20gop%20hoc%20phi", 900, 560, "dbeafe", "1e3a8a"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/430x280/toeic_img/news/2026/03/06/a55e6149-e3b5-41f7-8ff7-47b9e3808a21.png", 900, 560, "dbeafe", "1e3a8a"),
       },
       {
         title: "Hệ sinh thái học tập trọn đời",
         subtitle: "Từ lớp học đến thư viện practice",
-        image: placeholderImage("He%20sinh%20thai%20hoc%20tap", 900, 560, "ede9fe", "5b21b6"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/430x280/toeic_img/news/2026/03/06/69d0898b-2fff-4cf6-a69a-f922e54eb467.png", 900, 560, "ede9fe", "5b21b6"),
       },
     ],
   },
@@ -401,7 +424,7 @@ const aboutSections = {
     eyebrow: "Teaching Team",
     summary:
       "Đội ngũ giảng viên tại Thầy Tài TOEIC được xây dựng theo triết lý: giỏi chuyên môn là điều kiện cần, còn khả năng truyền đạt, chữa lỗi và giữ nhịp học cho học viên mới là yếu tố quyết định.",
-    heroImage: placeholderImage("Hero%20Doi%20ngu%20giao%20vien", 1200, 860, "fce7f3", "831843"),
+    heroImage: placeholderImage("https://i.pinimg.com/736x/76/c5/75/76c575bfffcbb9e9d089cb50973149aa.jpg", 1200, 860, "fce7f3", "831843"),
     heroStats: [
       { value: "10+", label: "Mentor và giảng viên học thuật" },
       { value: "03", label: "Vai trò chính: dạy, chữa, theo dõi tiến độ" },
@@ -417,7 +440,7 @@ const aboutSections = {
         name: "Thầy Tài",
         role: "Academic Director",
         score: "TOEIC Mentor | Roadmap Design",
-        image: placeholderImage("Thay%20Tai", 800, 980, "fee2e2", "7f1d1d"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/707718b2-32ba-4a6b-b9f7-86e023e2c993.png", 800, 980, "fee2e2", "7f1d1d"),
         tags: ["Roadmap", "Reading", "Strategy"],
         text: "Xây chiến lược đào tạo, chuẩn hóa lộ trình và trực tiếp phụ trách những lớp mục tiêu điểm cao.",
       },
@@ -425,7 +448,7 @@ const aboutSections = {
         name: "Cô Minh Anh",
         role: "Lead Instructor",
         score: "Listening & Speaking Coach",
-        image: placeholderImage("Co%20Minh%20Anh", 800, 980, "dbeafe", "1d4ed8"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/66bf791d-a2c0-4592-8283-60a8efee961a.png", 800, 980, "dbeafe", "1d4ed8"),
         tags: ["Listening", "Speaking", "Feedback"],
         text: "Phụ trách luyện phản xạ nghe - nói và hệ thống sửa lỗi phát âm theo từng nhóm học viên.",
       },
@@ -433,7 +456,7 @@ const aboutSections = {
         name: "Cô Lan Hạ",
         role: "Writing Mentor",
         score: "Writing & Grammar Specialist",
-        image: placeholderImage("Co%20Lan%20Ha", 800, 980, "ecfccb", "365314"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/6090742c-b199-42ee-a6aa-2b27d066898f.png", 800, 980, "ecfccb", "365314"),
         tags: ["Writing", "Grammar", "Structure"],
         text: "Tập trung giúp học viên viết gọn, đúng và có hệ thống, đặc biệt ở phần sửa lỗi ngữ pháp.",
       },
@@ -441,7 +464,7 @@ const aboutSections = {
         name: "Thầy Quốc Bảo",
         role: "Reading Coach",
         score: "Part 7 & Speed Reading",
-        image: placeholderImage("Thay%20Quoc%20Bao", 800, 980, "ede9fe", "5b21b6"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/02/11/927656ad-10f5-4ac2-9708-12bdc68e92f8.png", 800, 980, "ede9fe", "5b21b6"),
         tags: ["Reading", "Part 7", "Skimming"],
         text: "Chuyên luyện đọc tốc độ cao, phân loại câu hỏi và xây chiến lược làm bài trong áp lực thời gian.",
       },
@@ -449,7 +472,7 @@ const aboutSections = {
         name: "Cô Thanh Vy",
         role: "Student Success Mentor",
         score: "Progress Tracking",
-        image: placeholderImage("Co%20Thanh%20Vy", 800, 980, "fff7ed", "9a3412"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/1e11ffb1-1322-445d-a0c7-a7af4f6de0c5.png", 800, 980, "fff7ed", "9a3412"),
         tags: ["Mentoring", "Accountability", "Support"],
         text: "Theo dõi tiến độ, nhắc nhịp học và giúp học viên bám kế hoạch giữa các buổi trên lớp.",
       },
@@ -457,7 +480,7 @@ const aboutSections = {
         name: "Thầy Đức Khôi",
         role: "Practice Lab Coach",
         score: "Mock Test & Review",
-        image: placeholderImage("Thay%20Duc%20Khoi", 800, 980, "ecfeff", "0f766e"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/02/26/2ded07f2-fbcf-42a8-917d-2d7442266afb.png", 800, 980, "ecfeff", "0f766e"),
         tags: ["Mock Test", "Review", "Analysis"],
         text: "Đi sâu vào bài test, chiến lược xử lý đề và phần chữa bài chi tiết sau mỗi đợt luyện đề.",
       },
@@ -470,13 +493,13 @@ const aboutSections = {
     eyebrow: "Student Results",
     summary:
       "Những kết quả nổi bật dưới đây được trình bày theo kiểu landing page thành tích: có bảng vàng học viên, review ngắn và các câu chuyện thật để bạn dễ thay ảnh, thay điểm số và cập nhật thêm học viên mới về sau.",
-    heroImage: placeholderImage("Banner%20hoc%20vien%20diem%20cao%20Thay%20Tai", 1440, 560, "dbeafe", "1d4ed8"),
+    heroImage: placeholderImage("https://i.postimg.cc/4ygfT95V/s6.png", 1440, 560, "dbeafe", "1d4ed8"),
     promoStrip: {
       title: "Lộ trình TOEIC theo level",
       text: "Học viên đạt mốc mục tiêu sau khóa, có roadmap rõ ràng và theo sát tiến độ từng giai đoạn.",
       hrefLabel: "Xem thêm",
       href: "/lich-khai-giang",
-      image: placeholderImage("Promo%20hoc%20vien%20diem%20cao", 220, 220, "fff7ed", "9a3412"),
+      image: placeholderImage("", 220, 220, "fff7ed", "9a3412"),
     },
     achievementTitle: "Bảng vàng thành tích",
     reviewTitle: "Review học viên nhà Thầy Tài TOEIC",
@@ -492,17 +515,17 @@ const aboutSections = {
         school: "ĐH Thủy Lợi",
         score: "840",
         quote: "Từ chỗ học thiếu nhịp, mình dần quen với checklist ôn tập và lên điểm đều hơn sau từng tuần.",
-        image: placeholderImage("Bang%20vang%2001", 860, 660, "f8fafc", "0f172a"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/02/05/fcd5fc39-f6a9-4f12-8aaa-f58fffe37814.png", 860, 660, "f8fafc", "0f172a"),
       },
       {
         name: "Bùi Vân Khanh",
         school: "ĐH Thủ Đô",
         score: "840",
         quote: "Điểm mạnh nhất mình nhận được là cách chia nhỏ từng mục tiêu để bám học rất chắc.",
-        image: placeholderImage("Bang%20vang%2002", 860, 660, "eef2ff", "1d4ed8"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/980d49fd-0c68-4c5e-a82b-3ac2b021c59b.png", 860, 660, "eef2ff", "1d4ed8"),
       },
       {
-        name: "Nguyễn Quỳnh Anh",
+        name: "https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/8d5d6c23-8998-4769-b49a-6976a86f677c.png",
         school: "ĐH Kinh tế Quốc dân",
         score: "940",
         quote: "Mình từ khá lo lắng với Reading chuyển sang làm đề tự tin hơn vì được chữa rất kỹ từng lỗi.",
@@ -513,42 +536,42 @@ const aboutSections = {
         school: "ĐH Đại Nam",
         score: "925",
         quote: "Mình thích nhất cách thầy cô vừa giữ áp lực đủ tốt vừa không làm học viên bị ngợp.",
-        image: placeholderImage("Bang%20vang%2004", 860, 660, "ecfccb", "365314"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/2d9baa38-97c2-4970-9fbc-70a701a9a08b.png", 860, 660, "ecfccb", "365314"),
       },
       {
         name: "Vũ Nguyễn Huyền Trân",
         school: "Trường UEH",
         score: "900",
         quote: "Lộ trình học ngắn nhưng rất rõ, vào học là biết ngay tuần này cần làm gì.",
-        image: placeholderImage("Bang%20vang%2005", 860, 660, "fdf2f8", "831843"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/55dd67c2-192d-4773-b800-0d6e1cab2dca.png", 860, 660, "fdf2f8", "831843"),
       },
       {
         name: "Võ Hoàng Hồng Ngọc",
         school: "ĐH Văn Lang",
         score: "860",
         quote: "Mình tăng nhanh nhất ở Listening vì được rèn phản xạ và làm lại lỗi sai rất đều.",
-        image: placeholderImage("Bang%20vang%2006", 860, 660, "ecfeff", "0f766e"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/55dd67c2-192d-4773-b800-0d6e1cab2dca.png", 860, 660, "ecfeff", "0f766e"),
       },
       {
         name: "Trần Duy Khoa",
         school: "ĐH Công nghệ TP.HCM",
         score: "790",
         quote: "Từ mức nền chưa vững, mình lên được mốc mục tiêu nhờ nhịp học bền và phần theo sát ngoài giờ.",
-        image: placeholderImage("Bang%20vang%2007", 860, 660, "ede9fe", "6d28d9"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/248239e9-6472-4594-8e9d-0c63d5a0380c.png", 860, 660, "ede9fe", "6d28d9"),
       },
       {
         name: "Võ Ngọc Thùy Dương",
         school: "ĐH Kinh tế TP.HCM",
         score: "750",
         quote: "Điều khiến mình theo được đến cuối là bài tập luôn vừa sức nhưng vẫn đủ áp lực để tiến bộ.",
-        image: placeholderImage("Bang%20vang%2008", 860, 660, "fee2e2", "be123c"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/ddcbfa3f-1f7b-4f08-af0d-263aaf21df1f.png", 860, 660, "fee2e2", "be123c"),
       },
       {
         name: "Võ Hoài Nam",
         school: "ĐH Nguyễn Tất Thành",
         score: "795",
         quote: "Practice online cộng với chữa đề chi tiết là phần giúp mình giữ được nhịp học ổn định.",
-        image: placeholderImage("Bang%20vang%2009", 860, 660, "dcfce7", "166534"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/1fb9a002-4cb4-443f-af50-3fc132a7be50.png", 860, 660, "dcfce7", "166534"),
       },
     ],
     resultPagination: ["1", "2"],
@@ -556,37 +579,37 @@ const aboutSections = {
       {
         name: "Ngô Việt Dũng",
         date: "2026/03/24",
-        image: placeholderImage("Review%20hoc%20vien%2001", 860, 660, "eff6ff", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/30/602cdd73-6ecd-4518-804d-8f47fb451b76.png", 860, 660, "eff6ff", "1d4ed8"),
         excerpt: "Em là Ngô Việt Dũng, học viên lớp đề của Thầy Tài TOEIC. Sau thời gian học tại trung tâm, em đã đạt được mốc điểm tốt hơn kỳ vọng ban đầu nhờ lộ trình rất rõ và chữa bài cực kỳ sát.",
       },
       {
         name: "Chu Anh Tú",
         date: "2026/03/24",
-        image: placeholderImage("Review%20hoc%20vien%2002", 860, 660, "fff7ed", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/30/e2b0c927-f402-401d-9998-32fe693da10f.png", 860, 660, "fff7ed", "9a3412"),
         excerpt: "Bản thân em là học sinh mất gốc, trước đây khá lo lắng khi học TOEIC. Nhưng sau khi theo lớp, em hiểu rõ từng phần cần cải thiện và không còn học lan man như trước.",
       },
       {
         name: "Đỗ Thành Trung",
         date: "2026/03/24",
-        image: placeholderImage("Review%20hoc%20vien%2003", 860, 660, "fdf2f8", "831843"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/30/681fc86c-437b-45c5-9a6f-fa6cfb644db3.png", 860, 660, "fdf2f8", "831843"),
         excerpt: "Điểm số của mình vượt xa kỳ vọng ban đầu. Điều mình biết ơn nhất là các thầy cô luôn tạo động lực nhưng vẫn giữ yêu cầu rất rõ ràng trong suốt khóa học.",
       },
       {
         name: "Nguyễn Phan Chi",
         date: "2026/03/24",
-        image: placeholderImage("Review%20hoc%20vien%2004", 860, 660, "ecfeff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/30/68feca65-22bc-4dd9-820a-86e139ebfb35.png", 860, 660, "ecfeff", "0f766e"),
         excerpt: "Khi mới bắt đầu ôn thi, em khá lo lắng vì thời gian không nhiều và cũng đã lâu chưa đụng lại kiến thức. Trung tâm giúp em đi lại từ nền tảng đến luyện đề rất chắc tay.",
       },
       {
         name: "Vũ Tùng Mạnh",
         date: "2026/03/24",
-        image: placeholderImage("Review%20hoc%20vien%2005", 860, 660, "ecfccb", "365314"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/30/0ff8f2d8-1765-4b06-9e61-b8559cac7cea.png", 860, 660, "ecfccb", "365314"),
         excerpt: "Sau một thời gian tìm hiểu, mình quyết định học vì lộ trình nhìn rất thực tế. Điểm mình thích là bài tập không nhiều vô nghĩa mà bám rất sát mục tiêu cần đạt.",
       },
       {
         name: "Nguyễn Danh Thái",
         date: "2026/03/24",
-        image: placeholderImage("Review%20hoc%20vien%2006", 860, 660, "fee2e2", "9f1239"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/30/ce9db310-a1e0-4d49-8753-7856597cdf45.png", 860, 660, "fee2e2", "9f1239"),
         excerpt: "Hữu duyên biết đến trung tâm qua một người bạn, lúc đầu mình còn khá nghi ngờ. Nhưng sau vài buổi đầu tiên, mình cảm nhận rõ cách dạy rất có hệ thống và dễ theo.",
       },
     ],
@@ -595,37 +618,37 @@ const aboutSections = {
       {
         title: "Sinh viên HUFLIT tiết lộ phương pháp luyện để bứt tốc đầu ra",
         excerpt: "Chuyển đầu ra trường Đại học trở nên dễ dàng hơn khi bạn biết cách chia mục tiêu và giữ nhịp ôn tập đều đặn mỗi tuần.",
-        image: placeholderImage("Cau%20chuyen%20hoc%20vien%2001", 900, 560, "f8fafc", "0f172a"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/01/28/e9663f1e-7bcc-45b2-a2cb-8cd672f6ca14.jpg", 900, 560, "f8fafc", "0f172a"),
         href: "/contact",
       },
       {
         title: "Vượt mục tiêu đạt 800+ TOEIC sau khi đổi cách học Reading",
         excerpt: "Không chỉ đạt mà còn vượt xa mục tiêu điểm số ban đầu trong kỳ thi nhờ thay đổi cách đọc, cách phân loại câu hỏi và nhịp chữa lỗi.",
-        image: placeholderImage("Cau%20chuyen%20hoc%20vien%2002", 900, 560, "eef2ff", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2025/thumbnail_1200x628_30.jpg", 900, 560, "eef2ff", "1d4ed8"),
         href: "/contact",
       },
       {
         title: "Bật mí chiến lược học TOEIC 750+ từ sinh viên năm cuối",
         excerpt: "Từ những buổi học đầu tiên đến ngày chạm mốc 750+, câu chuyện này cho thấy việc giữ nhịp ôn còn quan trọng hơn cố gắng dồn sức ngắn hạn.",
-        image: placeholderImage("Cau%20chuyen%20hoc%20vien%2003", 900, 560, "fff7ed", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2025/thumbnail_1200x628_26.jpg", 900, 560, "fff7ed", "9a3412"),
         href: "/contact",
       },
       {
         title: "Sinh viên Đại học Kinh tế chia sẻ bí quyết học đúng lộ trình",
         excerpt: "Khi biết mình yếu phần nào và được giao đúng loại bài tập cần luyện, việc tiến bộ diễn ra đều đặn hơn rất nhiều.",
-        image: placeholderImage("Cau%20chuyen%20hoc%20vien%2004", 900, 560, "ecfccb", "365314"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2025/b1.jpg", 900, 560, "ecfccb", "365314"),
         href: "/contact",
       },
       {
         title: "Từ mất gốc đến chinh phục mốc 700+ với lịch học bận rộn",
         excerpt: "Một case điển hình cho thấy cách tối ưu thời gian học khi vừa đi học vừa đi làm thêm nhưng vẫn cần đầu ra TOEIC rõ ràng.",
-        image: placeholderImage("Cau%20chuyen%20hoc%20vien%2005", 900, 560, "fdf2f8", "831843"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2025/thumbnail_1200x628_3.png", 900, 560, "fdf2f8", "831843"),
         href: "/contact",
       },
       {
         title: "Cách practice online giúp học viên không đứt mạch giữa tuần",
         excerpt: "Kho practice và phần chữa bài chi tiết đã giúp nhiều học viên giữ được nhịp học kể cả khi không thể lên lớp nhiều buổi liên tiếp.",
-        image: placeholderImage("Cau%20chuyen%20hoc%20vien%2006", 900, 560, "ecfeff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2025/thumbnail_1200x628_2.png", 900, 560, "ecfeff", "0f766e"),
         href: "/goc-hoc-tap",
       },
     ],
@@ -638,7 +661,7 @@ const aboutSections = {
     eyebrow: "Careers",
     summary:
       "Trang này được dựng theo kiểu chuyên mục tin tuyển dụng: có bài nổi bật phía trên, danh sách vị trí đang mở và sidebar tư vấn/kết nối để bạn thay nội dung thật sau này.",
-    heroImage: placeholderImage("Tuyen%20dung%20banner", 1440, 700, "fee2e2", "9f1239"),
+    heroImage: placeholderImage("https://image.ebomb.edu.vn/resize/540x320/toeic_img/news/2026/03/09/21c566eb-7947-4db6-ad8d-f06ab5c4c6a6.jpg", 1440, 700, "fee2e2", "9f1239"),
     newsTitle: "Tuyển dụng",
     featuredPosts: [
       {
@@ -646,7 +669,7 @@ const aboutSections = {
         title: "Tham gia nhóm Zalo tuyển dụng Thầy Tài TOEIC - cơ hội nghề nghiệp tại hệ thống đào tạo đang mở rộng",
         excerpt: "Nếu bạn tìm kiếm một môi trường làm việc trẻ trung, có kỷ luật và đề cao sự phát triển chuyên môn, đây là nơi để bắt đầu theo dõi những vị trí tuyển mới nhất.",
         date: "08/10/2025",
-        image: placeholderImage("Career%20featured%2001", 960, 620, "fff7ed", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/540x320/toeic_img/news/2026/03/09/21c566eb-7947-4db6-ad8d-f06ab5c4c6a6.jpg", 960, 620, "fff7ed", "9a3412"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
       {
@@ -654,7 +677,7 @@ const aboutSections = {
         title: "Review công việc tại Thầy Tài TOEIC: vị trí đang tuyển, môi trường làm việc và định hướng phát triển",
         excerpt: "Từ giai đoạn xây dựng hệ thống đến lúc mở rộng đội ngũ, điều quan trọng nhất vẫn là tìm được những người phù hợp với văn hóa dạy thật và làm thật.",
         date: "05/06/2025",
-        image: placeholderImage("Career%20featured%2002", 960, 620, "eff6ff", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/2026/03/09/0890de6d-5cab-4bd5-a859-9f959a46fc08.jpg", 960, 620, "eff6ff", "1d4ed8"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
     ],
@@ -705,48 +728,48 @@ const aboutSections = {
       {
         title: "Tuyển dụng giáo viên tiếng Anh TOEIC/Giao tiếp/Junior/IELTS tại Thầy Tài TOEIC",
         excerpt: "Nhu cầu mở rộng mạng lưới lớp học và hệ học liệu khiến đội ngũ giảng dạy tiếp tục được bổ sung ở nhiều vai trò khác nhau, từ lớp nền tảng đến lớp mục tiêu điểm cao.",
-        image: placeholderImage("Career%20list%2001", 920, 580, "fee2e2", "be123c"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/2026/03/06/1308dc8f-8b54-486b-b736-6d487fdbb462.png", 920, 580, "fee2e2", "be123c"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
       {
         title: "Tuyển dụng giáo viên TOEIC toàn quốc với thu nhập theo năng lực và khung lớp rõ ràng",
         excerpt: "Dành cho các ứng viên muốn đồng hành dài hạn cùng mô hình luyện thi có hệ thống, có chuẩn lớp học, có mentor học thuật và cơ chế review đều đặn.",
-        image: placeholderImage("Career%20list%2002", 920, 580, "f8fafc", "0f172a"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/2026/03/09/a8145a1e-0c87-4b8a-b8fd-57e69213651e.jpg", 920, 580, "f8fafc", "0f172a"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
       {
         title: "Tuyển dụng tư vấn tuyển sinh tại Thầy Tài TOEIC với lộ trình nghề nghiệp rõ",
         excerpt: "Nếu bạn phù hợp với công việc định hướng học viên, giao tiếp tốt và có tư duy phục vụ, đây là nhóm vị trí quan trọng trong hành trình phát triển hệ thống.",
-        image: placeholderImage("Career%20list%2003", 920, 580, "ecfeff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/2026/03/09/ef9285af-4b33-4928-b56e-926b0dde5751.jpg", 920, 580, "ecfeff", "0f766e"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
       {
         title: "Tuyển Academic Operations phụ trách lớp học, học liệu và nhịp vận hành sau buổi học",
         excerpt: "Vai trò dành cho người thích làm việc có hệ thống, theo sát quy trình và đảm bảo trải nghiệm học tập không bị đứt mạch giữa các điểm chạm.",
-        image: placeholderImage("Career%20list%2004", 920, 580, "eef2ff", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2024/toeic_4_ky_nang.png", 920, 580, "eef2ff", "1d4ed8"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
       {
         title: "Mở tuyển thực tập sinh nội dung và media cho hệ sinh thái giáo dục của Thầy Tài TOEIC",
         excerpt: "Phù hợp với ứng viên muốn phát triển trong môi trường giáo dục số, tham gia sản xuất nội dung, landing page và chiến dịch tuyển sinh thực tế.",
-        image: placeholderImage("Career%20list%2005", 920, 580, "fff7ed", "b45309"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2026/03/17/2d6c3f36-8f49-4efa-9a41-1a3cffbac5c8.jpg", 920, 580, "fff7ed", "b45309"),
         href: "mailto:realtoeiccentral@gmail.com",
       },
     ],
     sideHighlights: [
       {
         title: "Lộ trình học TOEIC 4 kỹ năng",
-        image: placeholderImage("Side%20career%2001", 420, 260, "dbeafe", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2024/toeic_4_ky_nang.png", 420, 260, "dbeafe", "1d4ed8"),
         href: "/khoa-hoc",
       },
       {
         title: "Lộ trình mục tiêu 500-750 TOEIC",
-        image: placeholderImage("Side%20career%2002", 420, 260, "eef2ff", "4338ca"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2026/03/17/2d6c3f36-8f49-4efa-9a41-1a3cffbac5c8.jpg", 420, 260, "eef2ff", "4338ca"),
         href: "/lich-khai-giang",
       },
       {
         title: "Lộ trình học cho người mất gốc",
-        image: placeholderImage("Side%20career%2003", 420, 260, "ecfccb", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2026/03/09/b980cca8-4661-4272-b3ed-c2b1651e3cd8.jpg", 420, 260, "ecfccb", "9a3412"),
         href: "/placement-tests",
       },
     ],
@@ -799,7 +822,7 @@ const aboutSections = {
         title: "Thầy Tài TOEIC kỷ niệm hành trình phát triển thương hiệu và lan tỏa giá trị đào tạo",
         excerpt: "Một dấu mốc quan trọng không chỉ về quy mô mà còn về cách đội ngũ nhìn lại hành trình xây dựng hệ thống học tập rõ ràng, kỷ luật và giàu cảm hứng.",
         date: "17/06/2022",
-        image: placeholderImage("Culture%20featured%2001", 960, 620, "fee2e2", "be123c"),
+        image: placeholderImage("https://i.postimg.cc/T2tgfVSs/s7.png", 960, 620, "fee2e2", "be123c"),
         href: "/ve-chung-toi/ve-thay-tai-toeic",
       },
       {
@@ -807,7 +830,7 @@ const aboutSections = {
         title: "Lễ ra mắt bộ nhận diện mới của thương hiệu Thầy Tài TOEIC",
         excerpt: "Một bước chuyển về hình ảnh thương hiệu để hệ sinh thái đào tạo, học liệu và truyền thông có cùng một tiếng nói rõ ràng và chuyên nghiệp hơn.",
         date: "08/04/2022",
-        image: placeholderImage("Culture%20featured%2002", 960, 620, "fff7ed", "9a3412"),
+        image: placeholderImage("https://i.postimg.cc/d3Ch2Csp/s8.png", 960, 620, "fff7ed", "9a3412"),
         href: "/ve-chung-toi/ve-thay-tai-toeic",
       },
     ],
@@ -858,54 +881,54 @@ const aboutSections = {
       {
         title: "Chuyến xe đoàn viên - Cùng Thầy Tài TOEIC về quê đón Tết Giáp Thìn",
         excerpt: "Một hoạt động vì cộng đồng được tổ chức để kết nối đội ngũ, học viên và lan tỏa tinh thần đồng hành vượt ra ngoài khuôn khổ lớp học.",
-        image: placeholderImage("Culture%20list%2001", 920, 580, "dbeafe", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/chuyen-xe-doan-vien.png", 920, 580, "dbeafe", "1d4ed8"),
         href: "/ve-chung-toi/hoat-dong-noi-bo",
       },
       {
         title: "Bùng nổ chuỗi sự kiện nội bộ tại các cơ sở trong tháng 4",
         excerpt: "Từ workshop học thuật đến các hoạt động gắn kết nhỏ trong từng campus, nhịp sống thương hiệu được làm dày lên bằng nhiều điểm chạm có chủ đích.",
-        image: placeholderImage("Culture%20list%2002", 920, 580, "fee2e2", "be123c"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/gala_for_you_1200__630_px.png", 920, 580, "fee2e2", "be123c"),
         href: "/ve-chung-toi/hoat-dong-noi-bo",
       },
       {
         title: "Tưng bừng khai trương cơ sở mới với sự tham gia của đội ngũ và học viên",
         excerpt: "Những ngày khai trương không chỉ là hoạt động thương hiệu mà còn là dịp để đội ngũ nhìn thấy thành quả của một chặng phát triển mới.",
-        image: placeholderImage("Culture%20list%2003", 920, 580, "fff7ed", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/ima07721.jpg", 920, 580, "fff7ed", "9a3412"),
         href: "/ve-chung-toi/he-thong-co-so",
       },
       {
         title: "Hội thảo đào tạo nội bộ nâng cao chất lượng giảng dạy cho toàn hệ thống",
         excerpt: "Các buổi đào tạo nội bộ được tổ chức định kỳ để chuẩn hóa tư duy chữa bài, cách giao bài và cách giữ nhịp học giữa các nhóm lớp khác nhau.",
-        image: placeholderImage("Culture%20list%2004", 920, 580, "eff6ff", "7c3aed"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/dtnb.jpg", 920, 580, "eff6ff", "7c3aed"),
         href: "/ve-chung-toi/doi-ngu-giao-vien",
       },
       {
         title: "Workshop chiến lược truyền cảm hứng cho người học tại trường đại học",
         excerpt: "Chuỗi workshop ngoại khóa là nơi thương hiệu kết nối với cộng đồng sinh viên và tiếp tục mở rộng ảnh hưởng của phương pháp học có hệ thống.",
-        image: placeholderImage("Culture%20list%2005", 920, 580, "ecfeff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/Tin%20tuc/workshop_tieng_anh_cho_nguoi_ban_ron_11_04_2021_dai_hoc_ky_thuat_y_-_duoc_da_nang.jpg", 920, 580, "ecfeff", "0f766e"),
         href: "/contact",
       },
       {
         title: "Lì xì lộc phát, đại cát đầu năm và không khí khởi động quý mới",
         excerpt: "Bên cạnh những hoạt động học thuật, các dịp lễ trong năm là cơ hội để tạo thêm năng lượng tích cực cho đội ngũ vận hành và giảng dạy.",
-        image: placeholderImage("Culture%20list%2006", 920, 580, "fef2f2", "b91c1c"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/350x210/toeic_img/news/220210-to-web.jpg", 920, 580, "fef2f2", "b91c1c"),
         href: "/ve-chung-toi/hoat-dong-noi-bo",
       },
     ],
     sideHighlights: [
       {
         title: "Lộ trình học TOEIC 4 kỹ năng",
-        image: placeholderImage("Side%20culture%2001", 420, 260, "dbeafe", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2024/toeic_4_ky_nang.png", 420, 260, "dbeafe", "1d4ed8"),
         href: "/khoa-hoc",
       },
       {
         title: "Lộ trình mục tiêu 500-750 TOEIC",
-        image: placeholderImage("Side%20culture%2002", 420, 260, "eef2ff", "4338ca"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2026/03/17/2d6c3f36-8f49-4efa-9a41-1a3cffbac5c8.jpg", 420, 260, "eef2ff", "4338ca"),
         href: "/lich-khai-giang",
       },
       {
         title: "Lộ trình học cho người mất gốc",
-        image: placeholderImage("Side%20culture%2003", 420, 260, "ecfccb", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/160x90/toeic_img/news/2026/03/09/b980cca8-4661-4272-b3ed-c2b1651e3cd8.jpg", 420, 260, "ecfccb", "9a3412"),
         href: "/placement-tests",
       },
     ],

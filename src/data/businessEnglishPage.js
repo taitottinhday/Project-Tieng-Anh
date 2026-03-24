@@ -1,13 +1,36 @@
 const toeic4SkillsPage = require("./toeic4SkillsPage");
 
+const decodePlaceholderLabel = (value) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const placeholderImage = (
   label,
   width = 1400,
   height = 900,
   background = "e6edf9",
   foreground = "1f2937"
-) =>
-  `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(label)}`;
+) => {
+  const value = typeof label === "string" ? label.trim() : "";
+  if (!value) return "";
+  if (
+    /^(?:https?:)?\/\//i.test(value) ||
+    value.startsWith("/") ||
+    value.startsWith("./") ||
+    value.startsWith("../") ||
+    value.startsWith("data:")
+  ) {
+    return value;
+  }
+
+  return `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(
+    decodePlaceholderLabel(value)
+  )}`;
+};
 
 module.exports = {
   slug: "tieng-anh-doanh-nghiep",
@@ -17,13 +40,13 @@ module.exports = {
     text: "Khóa học Tiếng Anh Doanh nghiệp của Thầy Tài TOEIC được xây dựng để đáp ứng sát nhu cầu thực tế của môi trường làm việc hiện đại. Chương trình linh hoạt với hình thức đào tạo theo nhóm hoặc 1:1, tập trung phát triển các kỹ năng ứng dụng trực tiếp trong công việc như giao tiếp, họp, thuyết trình, đàm phán và từ vựng chuyên ngành.",
     ctaLabel: "Nhận tư vấn ngay!",
     ctaHref: "/contact",
-    image: placeholderImage("Hero tieng anh doanh nghiep", 1040, 860, "dbeafe", "1d4ed8"),
+    image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/page/2026/03/17/a7f1ce19-854d-47ea-9925-5d072d572fdf.png", 1040, 860, "dbeafe", "1d4ed8"),
   },
   audience: {
     title: "Doanh nghiệp của bạn có đang gặp tình trạng này?",
     intro:
       "Trong môi trường kinh doanh hội nhập, tiếng Anh là năng lực bắt buộc. Tuy nhiên, nhiều doanh nghiệp vẫn đang đối mặt với những rào cản khiến hiệu quả công việc và cơ hội phát triển bị hạn chế.",
-    image: placeholderImage("Pain points doanh nghiep", 760, 980, "eef6ff", "1d4ed8"),
+    image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/page/2026/03/13/3cda91c3-94a3-4b03-a24a-5d7223069df3.png", 760, 980, "eef6ff", "1d4ed8"),
     left: [
       {
         title: "Nhân sự giỏi chuyên môn nhưng thiếu tự tin khi họp, thuyết trình hoặc làm việc với đối tác quốc tế.",
@@ -84,7 +107,7 @@ module.exports = {
   partners: {
     title: "Hơn 200 đối tác uy tín tin tưởng đồng hành",
     text: "Thầy Tài TOEIC hợp tác cùng các đối tác uy tín hàng đầu, mang đến giá trị vượt trội và trải nghiệm học tập xuất sắc cho học viên. Chính sự tin tưởng từ doanh nghiệp là minh chứng rõ nhất cho chất lượng đào tạo và năng lực triển khai bài bản của đội ngũ.",
-    backgroundImage: placeholderImage("Partners background", 1600, 900, "183b74", "ffffff"),
+    backgroundImage: placeholderImage("https://i.pinimg.com/736x/f9/12/d5/f912d52ef4bf3f58b509c9bb556a5c27.jpg", 1600, 900, "183b74", "ffffff"),
     logos: [
       { name: "Viettel", image: placeholderImage("Viettel", 360, 240, "ffffff", "d71920"), large: true },
       { name: "Panasonic", image: placeholderImage("Panasonic", 240, 180, "ffffff", "1d4ed8") },
@@ -107,25 +130,25 @@ module.exports = {
       {
         title: "Cảm nhận học viên lớp Viettel KV3 HCM",
         excerpt: "Không khí học tập tập trung, lộ trình rõ ràng và sự đồng hành sát sao giúp đội ngũ giữ nhịp đều, học tới đâu ứng dụng tới đó.",
-        image: placeholderImage("Story Viettel", 720, 420, "eef6ff", "1d4ed8"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/03/17/59b1187a-5150-4ade-a5d6-852b89acc02e.jpg", 720, 420, "eef6ff", "1d4ed8"),
         href: "/ve-chung-toi/hoc-vien-diem-cao",
       },
       {
         title: "Không khí học tập sôi nổi của cán bộ công ty",
         excerpt: "Từ lớp học nội bộ đến các buổi workshop thực chiến, doanh nghiệp có thể chủ động xây văn hóa học tập tích cực và bền vững hơn.",
-        image: placeholderImage("Story corporate 02", 720, 420, "fff7ed", "9a3412"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/03/17/1d2c9f5e-f0d3-4acd-a798-dc329693042c.jpg", 720, 420, "fff7ed", "9a3412"),
         href: "/ve-chung-toi/hoc-vien-diem-cao",
       },
       {
         title: "Thầy Tài TOEIC tổ chức thi thử cho nhân viên theo chuẩn đầu ra",
         excerpt: "Bài test mô phỏng bám sát năng lực công việc giúp HR và quản lý nhìn rõ chỗ mạnh, chỗ yếu trước khi thiết kế lộ trình đào tạo tiếp theo.",
-        image: placeholderImage("Story corporate 03", 720, 420, "fef2f2", "be123c"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/03/17/f541c02a-e77f-4496-89b8-a47d23385dcc.jpg", 720, 420, "fef2f2", "be123c"),
         href: "/ve-chung-toi/hoc-vien-diem-cao",
       },
       {
         title: "Khóa học tiếng Anh doanh nghiệp - từ học đến dùng được ngay",
         excerpt: "Điểm khác biệt không chỉ nằm ở kết quả test, mà ở khả năng nhân sự tự tin họp, trao đổi và xử lý tình huống tiếng Anh sau khóa học.",
-        image: placeholderImage("Story corporate 04", 720, 420, "ecfeff", "0f766e"),
+        image: placeholderImage("https://image.ebomb.edu.vn/crop/350x170/toeic_img/news/2026/03/17/ad71c054-af8c-4d43-9334-ded6ba2ee7b8.jpg", 720, 420, "ecfeff", "0f766e"),
         href: "/ve-chung-toi/hoc-vien-diem-cao",
       },
     ],
@@ -136,7 +159,7 @@ module.exports = {
   consult: {
     title: "Tham vấn 1-1 cho doanh nghiệp!",
     text: "Thiết kế lộ trình tiếng Anh phù hợp với mục tiêu, vị trí công việc và ngân sách đào tạo của đội ngũ. Chúng tôi sẽ giúp bạn bắt đầu bằng một kế hoạch rõ ràng và thực tế.",
-    posterImage: placeholderImage("Poster doanh nghiep", 900, 1220, "dbeafe", "1d4ed8"),
+    posterImage: placeholderImage("https://i.pinimg.com/736x/6c/e3/d7/6ce3d726b03253409e76b21f5e63afd1.jpg", 900, 1220, "dbeafe", "1d4ed8"),
     fields: [
       { type: "text", placeholder: "Họ và tên" },
       { type: "tel", placeholder: "Số điện thoại" },

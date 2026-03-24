@@ -1,11 +1,34 @@
+const decodePlaceholderLabel = (value) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const placeholderImage = (
   label,
   width = 1400,
   height = 900,
   background = "e6edf9",
   foreground = "1f2937"
-) =>
-  `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(label)}`;
+) => {
+  const value = typeof label === "string" ? label.trim() : "";
+  if (!value) return "";
+  if (
+    /^(?:https?:)?\/\//i.test(value) ||
+    value.startsWith("/") ||
+    value.startsWith("./") ||
+    value.startsWith("../") ||
+    value.startsWith("data:")
+  ) {
+    return value;
+  }
+
+  return `https://placehold.co/${width}x${height}/${background}/${foreground}?text=${encodeURIComponent(
+    decodePlaceholderLabel(value)
+  )}`;
+};
 
 const courseMenu = [
   { slug: "toeic-2-ky-nang", label: "TOEIC 2 kỹ năng" },
@@ -34,24 +57,12 @@ const coursePages = {
       text: "Lộ trình được thiết kế theo kiểu học cá nhân hóa: không dạy dàn trải tất cả mọi phần ngay từ đầu, mà chọn đúng nhóm kiến thức và kỹ năng cần cho từng giai đoạn để người học rút ngắn thời gian chinh phục mục tiêu.",
       ctaLabel: "Nhận tư vấn ngay",
       ctaHref: "/contact",
+      image: placeholderImage("https://i.postimg.cc/3wprbh5p/8d633b19-e793-4a7d-b4c7-b633c1ae2b26.png", 980, 1180, "f8fafc", "0f172a"),
+      imageAlt: "Ảnh tổng hợp đội ngũ giáo viên TOEIC 2 kỹ năng",
       stats: [
         { value: "300+", label: "Giáo viên TOEIC giàu kinh nghiệm" },
         { value: "1.000.000+", label: "Học viên đã chọn tin tưởng" },
         { value: "30+", label: "Cơ sở và điểm học trên toàn quốc" },
-      ],
-      collage: [
-        { type: "text", label: "TOEIC 950+" },
-        { type: "image", image: placeholderImage("GV 01", 420, 420, "dbeafe", "1d4ed8"), alt: "Giáo viên 1" },
-        { type: "text", label: "300+ giáo viên" },
-        { type: "image", image: placeholderImage("GV 02", 420, 420, "fee2e2", "be123c"), alt: "Giáo viên 2" },
-        { type: "image", image: placeholderImage("GV 03", 420, 420, "fff7ed", "9a3412"), alt: "Giáo viên 3" },
-        { type: "image", image: placeholderImage("GV 04", 420, 420, "ecfeff", "0f766e"), alt: "Giáo viên 4" },
-        { type: "text", label: "Phương pháp R.I.P.L" },
-        { type: "image", image: placeholderImage("GV 05", 420, 420, "ede9fe", "7c3aed"), alt: "Giáo viên 5" },
-        { type: "image", image: placeholderImage("GV 06", 420, 420, "fef2f2", "b91c1c"), alt: "Giáo viên 6" },
-        { type: "image", image: placeholderImage("GV 07", 420, 420, "dbeafe", "1d4ed8"), alt: "Giáo viên 7" },
-        { type: "image", image: placeholderImage("GV 08", 420, 420, "fef3c7", "a16207"), alt: "Giáo viên 8" },
-        { type: "text", label: "Đội ngũ giáo viên" },
       ],
     },
     benefits: {
@@ -65,7 +76,7 @@ const coursePages = {
         "Được miễn 1 số học phần ở trường Đại học",
         "Xét tuyển thẳng vào các trường Đại học top",
       ],
-      image: placeholderImage("Sinh vien tot nghiep", 860, 980, "dbeafe", "1d4ed8"),
+      image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/page/2026/02/10/e4f5e5e6-644b-4187-8f67-60d75da74bd7.png", 860, 980, "dbeafe", "1d4ed8"),
     },
     stories: {
       title: "Chúng tớ đã bứt phá TOEIC",
@@ -75,7 +86,7 @@ const coursePages = {
         excerpt: "Thùy Dương từng là một học viên có nền tảng tiếng Anh nhưng học theo bản năng, ngại luyện đề và dễ hụt nhịp ở phần ngữ pháp. Với nhịp học chỉn chu, chữa bài sát và sự đồng hành của giáo viên, bạn đã đạt kết quả 990 TOEIC và thay đổi hoàn toàn cách tiếp cận đề thi.",
         metaTitle: "Học viên",
         metaValue: "Lại Thùy Dương — Sinh viên năm 4",
-        image: placeholderImage("Story featured 990", 900, 640, "fdf2f8", "831843"),
+        image: placeholderImage("https://image.ebomb.edu.vn/resize/340x280/toeic_img/news/2026/03/04/4e05c338-8887-4ada-9d07-f017e1db51cc.png", 900, 640, "fdf2f8", "831843"),
       },
       items: [
         {
@@ -83,14 +94,14 @@ const coursePages = {
           excerpt: "Bản đồ học tập rõ ràng giúp Quốc Khánh giữ nhịp đều và tạo đà bứt phá dù tuổi còn rất nhỏ.",
           metaTitle: "Học viên",
           metaValue: "Quốc Khánh — Học sinh cấp 2",
-          image: placeholderImage("Story 915", 760, 620, "fff7ed", "9a3412"),
+          image: placeholderImage("https://image.ebomb.edu.vn/crop/200x270/toeic_img/news/2026/03/04/4fa1ec84-e0bf-44b5-815a-02d2f0a6a15a.jpg", 760, 620, "fff7ed", "9a3412"),
         },
         {
           title: "Từ 615 đến 890 TOEIC - Đắc Hiếu bứt phá ngoạn mục",
           excerpt: "Câu chuyện dành cho những ai đang tìm cách tăng điểm nhanh nhưng vẫn cần nền tảng bền và không học mẹo.",
           metaTitle: "Học viên",
           metaValue: "Khắc Hiếu — Sinh viên năm 4",
-          image: placeholderImage("Story 890", 760, 620, "dbeafe", "1d4ed8"),
+          image: placeholderImage("https://image.ebomb.edu.vn/crop/200x270/toeic_img/news/2026/03/04/ca29126a-42ee-4dbb-be3b-d48ae7a759e5.png", 760, 620, "dbeafe", "1d4ed8"),
         },
       ],
       ctaLabel: "Xem thêm...",
@@ -168,10 +179,10 @@ const coursePages = {
     resources: {
       title: "Giáo trình 4.0 – Bệ phóng đạt điểm cao TOEIC",
       items: [
-        { title: "Work Book", subtitle: "Bài tập", image: placeholderImage("Workbook", 720, 520, "eef2ff", "1d4ed8") },
-        { title: "Student Book", subtitle: "Sách học", image: placeholderImage("Student Book", 720, 520, "fff7ed", "9a3412") },
-        { title: "AI Chấm Chữa", subtitle: "Trợ lý học", image: placeholderImage("AI cham chua", 720, 520, "ecfeff", "0f766e") },
-        { title: "App Học Online", subtitle: "Ứng dụng học", image: placeholderImage("App hoc online", 720, 520, "fdf2f8", "831843") },
+        { title: "Work Book", subtitle: "Bài tập", image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/03/04/a127e9a3-c8b7-473c-99dc-90cec3ec37e7.png", 720, 520, "eef2ff", "1d4ed8") },
+        { title: "Student Book", subtitle: "Sách học", image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/03/04/d7bfd30e-379b-4859-ae38-7f66f664baa5.png", 720, 520, "fff7ed", "9a3412") },
+        { title: "AI Chấm Chữa", subtitle: "Trợ lý học", image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/03/04/7e0e0e5b-7c81-4357-b798-9409c8814dfc.png", 720, 520, "ecfeff", "0f766e") },
+        { title: "App Học Online", subtitle: "Ứng dụng học", image: placeholderImage("https://image.ebomb.edu.vn/crop/200x200/toeic_img/page/2026/01/15/8634c2e3-19f6-4152-aba2-d53a8bc50bb3.png", 720, 520, "fdf2f8", "831843") },
       ],
     },
     steps: {
@@ -195,11 +206,11 @@ const coursePages = {
         "Khám phá địa chỉ 30+ cơ sở trên toàn quốc",
       ],
       collage: [
-        placeholderImage("Consult 01", 420, 320, "fef2f2", "be123c"),
-        placeholderImage("Consult 02", 420, 320, "dbeafe", "1d4ed8"),
-        placeholderImage("Consult 03", 420, 320, "fff7ed", "9a3412"),
-        placeholderImage("Consult 04", 420, 320, "ecfeff", "0f766e"),
-        placeholderImage("Consult 05", 420, 320, "ede9fe", "7c3aed"),
+        placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/707718b2-32ba-4a6b-b9f7-86e023e2c993.png", 420, 320, "fef2f2", "be123c"),
+        placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/66bf791d-a2c0-4592-8283-60a8efee961a.png", 420, 320, "dbeafe", "1d4ed8"),
+        placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/39c0abbe-9f7a-4645-8a44-2eb16973a9fd.png", 420, 320, "fff7ed", "9a3412"),
+        placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/6090742c-b199-42ee-a6aa-2b27d066898f.png", 420, 320, "ecfeff", "0f766e"),
+        placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/596be1c4-f342-453a-980e-f4adad599543.png", 420, 320, "ede9fe", "7c3aed"),
       ],
       formTitle: "Tham vấn 1-1 cùng giáo viên!",
       formText: "Chinh phục thần tốc mục tiêu TOEIC với Thầy Tài TOEIC. Hơn 1.000.000 học viên đã thành công cán đích.",
@@ -212,11 +223,11 @@ const coursePages = {
       highlight: "truyền cảm hứng",
       desc: "Chuyên môn giỏi, giàu kinh nghiệm và tận tâm trong từng giờ học.",
       items: [
-        { name: "Mr. Minh Đồng", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("Teacher 01", 480, 620, "dbeafe", "1d4ed8") },
-        { name: "Ms. Ngọc Phụng", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("Teacher 02", 480, 620, "fee2e2", "be123c") },
-        { name: "Mr. Lê Phương", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("Teacher 03", 480, 620, "fff7ed", "9a3412") },
-        { name: "Ms. Thu Hà", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("Teacher 04", 480, 620, "ecfeff", "0f766e") },
-        { name: "Ms. Mỹ Duyên", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("Teacher 05", 480, 620, "ede9fe", "7c3aed") },
+        { name: "Mr. Minh Đồng", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/596be1c4-f342-453a-980e-f4adad599543.png", 480, 620, "dbeafe", "1d4ed8") },
+        { name: "Ms. Ngọc Phụng", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/66bf791d-a2c0-4592-8283-60a8efee961a.png", 480, 620, "fee2e2", "be123c") },
+        { name: "Mr. Lê Phương", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/39c0abbe-9f7a-4645-8a44-2eb16973a9fd.png", 480, 620, "fff7ed", "9a3412") },
+        { name: "Ms. Thu Hà", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/6090742c-b199-42ee-a6aa-2b27d066898f.png", 480, 620, "ecfeff", "0f766e") },
+        { name: "Ms. Mỹ Duyên", role: "Teacher at Thầy Tài TOEIC", image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/teacher/2026/03/04/596be1c4-f342-453a-980e-f4adad599543.png", 480, 620, "ede9fe", "7c3aed") },
       ],
       ctaLabel: "Tìm hiểu đội ngũ giáo viên",
       ctaHref: "/ve-chung-toi/doi-ngu-giao-vien",
