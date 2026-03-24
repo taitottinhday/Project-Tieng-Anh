@@ -3,6 +3,7 @@ const router = express.Router();
 const renderWithLayout = require("../utils/renderHelper");
 const { courseMenu, getCoursePage } = require("../data/courseLandingPages");
 const toeic4SkillsPage = require("../data/toeic4SkillsPage");
+const toeicAcceleratedPage = require("../data/toeicAcceleratedPage");
 
 const overviewCourses = [
   {
@@ -62,6 +63,15 @@ router.get("/:slug", (req, res, next) => {
       title: toeic4SkillsPage.title,
       username: req.session?.user?.username,
       coursePage: toeic4SkillsPage,
+      courseMenu,
+    });
+  }
+
+  if (req.params.slug === "khoa-hoc-cap-toc") {
+    return renderWithLayout(res, "course-program-accelerated", {
+      title: toeicAcceleratedPage.title,
+      username: req.session?.user?.username,
+      coursePage: toeicAcceleratedPage,
       courseMenu,
     });
   }

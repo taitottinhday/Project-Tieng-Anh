@@ -1,0 +1,424 @@
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const page = coursePage || {};
+const menuItems = (courseMenu || []).map((item) => ({
+  ...item,
+  href: `${safeBaseUrl}/courses-blog/${item.slug}`,
+  isActive: item.slug === page.slug,
+}));
+const consultFields = page.consult?.fields || [];
+const faqItems = page.faq || [];
+const trackCols = Math.max((page.roadmap?.tiers || []).length, 1);
+const highlightItems = page.solutionHighlights?.items || [];
+const resources = page.resources?.items || [];
+const storyItems = page.stories?.items || [];
+const supportImages = page.supportContact?.collage || [];
+%>
+
+<style>
+  .acc-page{display:grid;gap:34px;padding:12px 0 54px}
+  .acc-wrap{width:min(100%,1180px);margin:0 auto}
+  .acc-page h1,.acc-page h2,.acc-page h3,.acc-page h4,.acc-page p{margin:0}
+  .acc-page h1,.acc-page h2,.acc-page h3,.acc-page h4{color:#0f172a}
+  .acc-page p{color:#334155;line-height:1.78}
+  .acc-crumbs,.acc-subnav,.acc-chip-row,.acc-actions,.acc-step-grid,.acc-story-grid,.acc-resource-grid{display:flex;flex-wrap:wrap;gap:12px}
+  .acc-crumbs{color:#64748b;font-size:.95rem}
+  .acc-subnav{padding:14px;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 14px 30px rgba(15,23,42,.05)}
+  .acc-subnav a,.acc-link,.acc-btn,.acc-chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-weight:800}
+  .acc-subnav a{min-height:42px;padding:0 14px;color:#475569;background:#f8fafc;border:1px solid rgba(15,23,42,.06)}
+  .acc-subnav a.is-active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#ef4444 0%,#2563eb 100%)}
+  .acc-link{min-height:42px;padding:0 16px;color:#1d4ed8;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .acc-btn{min-height:52px;padding:0 26px;color:#fff;background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);box-shadow:0 16px 28px rgba(239,68,68,.22)}
+  .acc-section{display:grid;gap:22px}
+  .acc-head{display:grid;gap:10px;justify-items:center;text-align:center}
+  .acc-head h1,.acc-head h2{font-family:"Lexend","Be Vietnam Pro",sans-serif;line-height:1.08;letter-spacing:-.05em}
+  .acc-head h1{font-size:clamp(2.2rem,5vw,4rem)}
+  .acc-head h2{font-size:clamp(2rem,4vw,3rem)}
+  .acc-head p{max-width:920px}
+  .acc-underline::after{content:"";display:block;width:min(420px,46vw);height:4px;margin:14px auto 0;border-radius:999px;background:linear-gradient(90deg,#d7e6ff 0%,#3b82f6 100%)}
+  .acc-red{color:#dc2626}
+  .acc-blue{color:#2563eb}
+  .acc-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(350px,.86fr);gap:24px;padding:28px 28px 0;border-radius:34px;background:linear-gradient(135deg,#4c83c5 0%,#a9caf1 100%);box-shadow:0 28px 54px rgba(59,130,246,.18);overflow:hidden}
+  .acc-hero-copy{display:grid;gap:18px;align-content:start;padding:34px 0 40px}
+  .acc-hero-copy h1,.acc-hero-copy p{color:#fff}
+  .acc-hero-copy p{max-width:640px;font-size:1.05rem}
+  .acc-chip{min-height:46px;padding:0 24px;border:2px solid rgba(255,255,255,.75);color:#fff;background:rgba(255,255,255,.08);backdrop-filter:blur(6px);font-size:1.05rem}
+  .acc-divider{height:2px;background:rgba(255,255,255,.42);margin:6px 0 4px}
+  .acc-btn.light{color:#ef4444;background:#fff;box-shadow:none}
+  .acc-hero-visual{min-height:500px;display:grid;align-items:end}
+  .acc-hero-visual img{width:100%;height:100%;object-fit:contain}
+  .acc-highlight-copy{display:grid;gap:10px;justify-items:center;text-align:center}
+  .acc-highlight-copy h2{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(2.1rem,4vw,3.2rem);line-height:1.14;letter-spacing:-.05em}
+  .acc-highlight-copy .acc-kicker{font-size:clamp(1.7rem,3vw,2.4rem);font-weight:900;color:#0f172a}
+  .acc-highlight-copy .acc-accent{color:#dc2626}
+  .acc-highlight-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .acc-highlight-card{display:grid;gap:16px;padding:14px 14px 22px;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 16px 28px rgba(15,23,42,.05)}
+  .acc-highlight-card img{width:100%;height:190px;object-fit:cover;border-radius:18px}
+  .acc-highlight-card h3{font-size:1.48rem;line-height:1.26}
+  .acc-roadmap{display:grid;gap:24px}
+  .acc-road-intro{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+  .acc-stamp{width:120px;min-height:120px;padding:16px;border-radius:50%;border:4px solid rgba(239,68,68,.78);color:#dc2626;display:grid;place-items:center;text-align:center;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:.9rem;line-height:1.15;text-transform:uppercase}
+  .acc-track{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:18px;align-items:end}
+  .acc-track-item{display:grid;gap:12px}
+  .acc-dur{text-align:center;font-weight:800;color:#1f2937}
+  .acc-box{min-height:164px;padding:20px 18px;border-radius:24px 24px 0 0;display:grid;place-items:center;text-align:center;color:#fff;box-shadow:0 18px 28px rgba(15,23,42,.1)}
+  .acc-box.blue{background:linear-gradient(180deg,#67b8f8 0%,#3b93d1 100%)}
+  .acc-box.sky{background:linear-gradient(180deg,#59b9f6 0%,#2f8bca 100%)}
+  .acc-box.teal{background:linear-gradient(180deg,#379bc7 0%,#2278a9 100%)}
+  .acc-box.pink{background:linear-gradient(180deg,#fb7185 0%,#f43f5e 100%)}
+  .acc-box.hotpink{background:linear-gradient(180deg,#ff5c8a 0%,#ff3c6b 100%)}
+  .acc-level{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.05}
+  .acc-scores{display:grid;gap:8px}
+  .acc-score{padding:10px 12px;border-radius:14px;background:rgba(219,234,254,.92);border:1px solid rgba(59,130,246,.16);color:#0f172a;text-align:center}
+  .acc-score small{display:block;color:#475569;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+  .acc-score strong{display:block;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.2rem;line-height:1.1}
+  .acc-labels{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:18px}
+  .acc-label{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.1rem;text-align:center;text-transform:uppercase}
+  .acc-label.active{padding:14px 16px;border-radius:18px;color:#fff;background:linear-gradient(135deg,#ef4444 0%,#f43f5e 100%)}
+  .acc-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px}
+  .acc-anchor,.acc-cell,.acc-table,.acc-resource,.acc-form,.acc-model-card,.acc-faq-item{border-radius:22px}
+  .acc-anchor{padding:24px 18px;text-align:center;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.3rem;color:#0f4c81;background:linear-gradient(180deg,#8fc0f8 0%,#79aee9 100%)}
+  .acc-cell{padding:24px;background:rgba(228,242,255,.82)}
+  .acc-knowledge{display:grid;grid-template-columns:220px repeat(3,minmax(0,1fr));gap:14px}
+  .acc-table{overflow:hidden;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .acc-table table{width:100%;border-collapse:collapse}
+  .acc-table th,.acc-table td{padding:14px;border:1px solid rgba(15,23,42,.08);text-align:left;vertical-align:top}
+  .acc-table th{background:#5b93d5;color:#fff}
+  .acc-table td strong{display:inline-flex;align-items:center;justify-content:center;min-width:220px;padding:10px 14px;background:#16a34a;color:#fff}
+  .acc-model-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.82fr);gap:22px;align-items:stretch}
+  .acc-model-grid.reverse{grid-template-columns:minmax(360px,.82fr) minmax(0,1fr)}
+  .acc-model-photo{min-height:360px;border-radius:26px;overflow:hidden;background:#f8fafc;box-shadow:0 18px 32px rgba(15,23,42,.08)}
+  .acc-model-photo img{width:100%;height:100%;object-fit:cover}
+  .acc-model-card{padding:26px 28px;display:grid;gap:18px;border:1px solid rgba(15,23,42,.08);background:#eef7ff;box-shadow:0 18px 32px rgba(15,23,42,.05)}
+  .acc-model-grid.reverse .acc-model-card{background:#fff1f2}
+  .acc-model-card h3{font-size:2rem;line-height:1.18}
+  .acc-checks{display:grid;gap:14px}
+  .acc-check{display:flex;align-items:flex-start;gap:12px}
+  .acc-check span{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:#fff;border:2px solid #ef4444;color:#ef4444;font-weight:900;flex:0 0 auto}
+  .acc-dark{padding:38px 24px;border-radius:30px;background:radial-gradient(circle at top right,rgba(124,58,237,.18),transparent 22%),radial-gradient(circle at left bottom,rgba(59,130,246,.18),transparent 20%),#08124a}
+  .acc-dark .acc-head h2,.acc-dark .acc-head p{color:#fff}
+  .acc-resource-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .acc-resource{overflow:hidden;background:#fff;border:2px solid rgba(123,163,255,.35)}
+  .acc-resource img{width:100%;height:220px;object-fit:contain;background:#fff}
+  .acc-resource-copy{display:grid;gap:6px;padding:18px;color:#fff;background:linear-gradient(135deg,rgba(44,98,214,.95) 0%,rgba(142,96,214,.95) 100%)}
+  .acc-resource-copy strong,.acc-resource-copy h3{color:#fff}
+  .acc-step{position:relative;flex:1 1 220px;min-height:150px;padding:34px 24px 24px;border-radius:22px;display:grid;align-content:end;background:#eef9ff;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.28rem}
+  .acc-step:nth-child(2){background:#f3ecff}
+  .acc-step:nth-child(3){background:#fff1f2}
+  .acc-step span{position:absolute;top:12px;left:18px;font-size:5rem;line-height:1;color:rgba(15,23,42,.06)}
+  .acc-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 26px;border-radius:24px;background:#f8fafc;border:1px solid rgba(15,23,42,.08)}
+  .acc-banner strong{color:#ef4444}
+  .acc-story-main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.72fr);gap:18px;padding:24px;border-radius:26px;background:linear-gradient(135deg,#faf5ff 0%,#f8fafc 100%);border:1px solid rgba(15,23,42,.08)}
+  .acc-story-copy{display:grid;gap:14px}
+  .acc-story-copy h3{font-size:1.55rem;line-height:1.24}
+  .acc-meta{display:grid;gap:4px;padding-top:18px;border-top:1px solid rgba(15,23,42,.1)}
+  .acc-story-card{flex:1 1 320px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#fff7ed 0%,#f8fafc 100%);border:1px solid rgba(15,23,42,.08)}
+  .acc-story-card.alt{background:linear-gradient(135deg,#eef2ff 0%,#eff6ff 100%)}
+  .acc-thumb{min-height:260px;border-radius:22px;overflow:hidden;background:#f8fafc}
+  .acc-thumb img{width:100%;height:100%;object-fit:cover}
+  .acc-faq{display:grid;gap:16px}
+  .acc-faq-item{overflow:hidden;border:1px solid rgba(15,23,42,.08);background:#fff;box-shadow:0 14px 28px rgba(15,23,42,.04)}
+  .acc-faq-item summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 24px;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.16rem}
+  .acc-faq-item summary::-webkit-details-marker{display:none}
+  .acc-faq-item summary::before{content:"?";width:34px;height:34px;border-radius:999px;display:grid;place-items:center;background:#eff6ff;color:#2563eb;font-weight:900;flex:0 0 auto}
+  .acc-faq-item summary::after{content:"⌄";font-size:1.2rem;color:#64748b}
+  .acc-faq-item[open] summary{background:#4f85c8;color:#fff}
+  .acc-faq-item[open] summary::before{background:rgba(255,255,255,.18);color:#fff}
+  .acc-faq-item[open] summary::after{color:#fff}
+  .acc-faq-answer{padding:0 24px 24px}
+  .acc-consult{display:grid;grid-template-columns:minmax(0,.92fr) minmax(340px,.88fr);gap:24px;padding:28px;border-radius:32px;background:linear-gradient(180deg,#dbeafe 0%,#cfe4ff 100%)}
+  .acc-poster{min-height:660px;padding:20px;border-radius:30px;overflow:hidden;display:grid;align-items:end;background:linear-gradient(180deg,#b9d7ff 0%,#dbeafe 100%)}
+  .acc-poster img{width:100%;height:100%;object-fit:contain}
+  .acc-form{display:grid;gap:12px;padding:26px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 24px 44px rgba(15,23,42,.08)}
+  .acc-form h3{font-size:1.95rem;color:#1e3a8a}
+  .acc-form input,.acc-form textarea,.acc-form select{width:100%;min-height:52px;padding:0 14px;border-radius:16px;border:1px solid rgba(15,23,42,.12);background:#f8fafc;font:inherit;color:#0f172a}
+  .acc-form textarea{min-height:110px;padding:14px;resize:vertical}
+  .acc-promo{color:#ef4444;font-weight:700}
+  .acc-support{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1fr);gap:24px;align-items:center;padding:30px;border-radius:30px;background:linear-gradient(180deg,#fff 0%,#f7fbff 100%);border:1px solid rgba(15,23,42,.08)}
+  .acc-support-copy{display:grid;gap:18px;padding:8px 8px 8px 14px}
+  .acc-support-copy h2{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(2rem,4vw,3rem);line-height:1.12;letter-spacing:-.05em}
+  .acc-support-list{display:grid;gap:14px}
+  .acc-support-item{display:flex;align-items:center;gap:14px}
+  .acc-support-item span{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#eff6ff;color:#2563eb;font-weight:900}
+  .acc-collage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .acc-collage img{width:100%;height:170px;object-fit:cover;border-radius:18px;box-shadow:0 14px 24px rgba(15,23,42,.08)}
+  .acc-collage img:first-child{grid-column:span 2}
+  .acc-collage img:last-child{grid-column:span 2}
+  @media (max-width:1180px){
+    .acc-hero,.acc-consult,.acc-support,.acc-road-intro,.acc-story-main,.acc-model-grid,.acc-model-grid.reverse{grid-template-columns:1fr}
+    .acc-highlight-grid,.acc-resource-grid,.acc-track,.acc-labels,.acc-knowledge{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .acc-row{grid-template-columns:1fr}
+  }
+  @media (max-width:760px){
+    .acc-highlight-grid,.acc-resource-grid,.acc-track,.acc-labels,.acc-step-grid,.acc-story-grid,.acc-collage,.acc-knowledge{display:grid;grid-template-columns:1fr}
+    .acc-story-card,.acc-consult,.acc-support,.acc-story-main,.acc-model-grid,.acc-model-grid.reverse{grid-template-columns:1fr}
+    .acc-banner{flex-direction:column;align-items:flex-start}
+    .acc-chip-row,.acc-actions{display:grid;grid-template-columns:1fr}
+    .acc-chip,.acc-btn,.acc-link{width:100%}
+    .acc-hero{padding:24px}
+    .acc-hero-copy{padding:6px 0 0}
+  }
+</style>
+
+<div class="acc-page acc-wrap">
+  <nav class="acc-crumbs" aria-label="Breadcrumb">
+    <a href="<%= safeBaseUrl %>/">Trang chủ</a><span>&gt;</span>
+    <a href="<%= safeBaseUrl %>/courses-blog">Khóa học</a><span>&gt;</span>
+    <span><%= page.title %></span>
+  </nav>
+
+  <nav class="acc-subnav" aria-label="Danh mục khóa học">
+    <% menuItems.forEach((item) => { %>
+      <a href="<%= item.href %>" class="<%= item.isActive ? 'is-active' : '' %>"><%= item.label %></a>
+    <% }) %>
+  </nav>
+
+  <section class="acc-hero">
+    <div class="acc-hero-copy">
+      <h1><%= page.hero.title %></h1>
+      <p><%= page.hero.text %></p>
+      <div class="acc-chip-row">
+        <% (page.hero.chips || []).forEach((chip) => { %>
+          <span class="acc-chip"><%= chip %></span>
+        <% }) %>
+      </div>
+      <div class="acc-divider"></div>
+      <div class="acc-actions">
+        <a href="<%= safeBaseUrl + page.hero.ctaHref %>" class="acc-btn light"><%= page.hero.ctaLabel %></a>
+      </div>
+    </div>
+    <div class="acc-hero-visual">
+      <img src="<%= page.hero.image %>" alt="<%= page.hero.title %>">
+    </div>
+  </section>
+
+  <section class="acc-section">
+    <div class="acc-highlight-copy">
+      <p class="acc-kicker"><%= page.solutionHighlights.lead %></p>
+      <h2><span class="acc-accent"><%= page.solutionHighlights.title %></span></h2>
+    </div>
+    <div class="acc-highlight-grid">
+      <% highlightItems.forEach((item) => { %>
+        <article class="acc-highlight-card">
+          <img src="<%= item.image %>" alt="<%= item.title %>">
+          <h3><%= item.title %></h3>
+          <p><%= item.text %></p>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="acc-roadmap">
+    <div class="acc-road-intro">
+      <div class="acc-stamp"><span><%= page.roadmap.stamp %></span></div>
+      <div class="acc-head acc-underline">
+        <h2><%= page.roadmap.title %></h2>
+        <h3 style="font-size:clamp(1.7rem,3vw,2.5rem)"><%= page.roadmap.subtitle %></h3>
+      </div>
+    </div>
+
+    <div class="acc-track" style="--cols:<%= trackCols %>;">
+      <% page.roadmap.tiers.forEach((item) => { %>
+        <article class="acc-track-item">
+          <div class="acc-dur"><%= item.duration %></div>
+          <div class="acc-box <%= item.tone %>"><div class="acc-level"><%= item.level %></div></div>
+          <div class="acc-scores">
+            <% item.scores.forEach((score) => { %>
+              <div class="acc-score"><small><%= score.label %></small><strong><%= score.value %></strong></div>
+            <% }) %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+
+    <div class="acc-labels" style="--cols:<%= trackCols %>;">
+      <% page.roadmap.tiers.forEach((item) => { %>
+        <div class="acc-label <%= item.active ? 'active' : '' %>"><%= item.label %></div>
+      <% }) %>
+    </div>
+
+    <% page.roadmap.supportRows.forEach((item) => { %>
+      <div class="acc-row">
+        <div class="acc-anchor"><%= item.label %></div>
+        <div class="acc-cell"><p><%= item.text %></p></div>
+      </div>
+    <% }) %>
+
+    <div class="acc-knowledge">
+      <div class="acc-anchor">Kiến thức chính</div>
+      <% page.roadmap.knowledgeCards.forEach((item) => { %>
+        <div class="acc-cell"><h3><%= item.title %></h3><p><%= item.text %></p></div>
+      <% }) %>
+    </div>
+
+    <div class="acc-row">
+      <div class="acc-anchor">Nội dung chương trình</div>
+      <div class="acc-table">
+        <table>
+          <thead>
+            <tr><th>STT</th><th>TOPIC</th><th>CONTENT</th><th>REVIEW TEST</th></tr>
+          </thead>
+          <tbody>
+            <% page.roadmap.rows.forEach((item) => { %>
+              <tr>
+                <td><%= item.session %></td>
+                <td><% if (item.milestone) { %><strong><%= item.topic %></strong><% } else { %><%= item.topic %><% } %></td>
+                <td><%- item.content %></td>
+                <td><%= item.review || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="acc-section">
+    <div class="acc-head acc-underline">
+      <h2><span class="acc-red"><%= page.learningModel.title %></span></h2>
+      <h3 style="font-size:clamp(1.7rem,3vw,2.5rem)"><%= page.learningModel.subtitle %></h3>
+    </div>
+
+    <div class="acc-model-grid">
+      <div class="acc-model-photo"><img src="<%= page.learningModel.primary.image %>" alt="<%= page.learningModel.primary.title %>"></div>
+      <article class="acc-model-card">
+        <h3><%= page.learningModel.primary.title %></h3>
+        <div class="acc-checks">
+          <% page.learningModel.primary.bullets.forEach((item) => { %>
+            <div class="acc-check"><span>✓</span><p><%= item %></p></div>
+          <% }) %>
+        </div>
+      </article>
+    </div>
+
+    <div class="acc-model-grid reverse">
+      <article class="acc-model-card">
+        <h3><%= page.learningModel.secondary.title %></h3>
+        <div class="acc-checks">
+          <% page.learningModel.secondary.bullets.forEach((item) => { %>
+            <div class="acc-check"><span>✓</span><p><%= item %></p></div>
+          <% }) %>
+        </div>
+      </article>
+      <div class="acc-model-photo"><img src="<%= page.learningModel.secondary.image %>" alt="<%= page.learningModel.secondary.title %>"></div>
+    </div>
+  </section>
+
+  <section class="acc-dark">
+    <div class="acc-head">
+      <h2><%= page.resources.title %></h2>
+    </div>
+    <div class="acc-resource-grid">
+      <% resources.forEach((item) => { %>
+        <article class="acc-resource">
+          <img src="<%= item.image %>" alt="<%= item.title %>">
+          <div class="acc-resource-copy">
+            <strong><%= item.title %></strong>
+            <h3 style="font-size:1.42rem"><%= item.subtitle %></h3>
+            <span class="acc-link" style="width:max-content;color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)">Xem thêm</span>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="acc-section">
+    <div class="acc-head acc-underline">
+      <h2><span class="acc-red"><%= page.steps.title %></span></h2>
+      <h3 style="font-size:clamp(1.8rem,3vw,3rem)"><%= page.steps.highlight %></h3>
+      <p><%= page.steps.desc %></p>
+    </div>
+    <div class="acc-step-grid">
+      <% page.steps.items.forEach((item, index) => { %>
+        <article class="acc-step"><span>0<%= index + 1 %></span><strong><%= item %></strong></article>
+      <% }) %>
+    </div>
+    <div class="acc-banner">
+      <p><%= page.steps.banner %></p>
+      <a href="<%= safeBaseUrl + page.steps.ctaHref %>" class="acc-btn"><%= page.steps.ctaLabel %></a>
+    </div>
+  </section>
+
+  <section class="acc-section">
+    <div class="acc-head acc-underline">
+      <h2><%= page.stories.title %></h2>
+      <h3 style="font-size:clamp(1.8rem,3vw,3rem)"><span class="acc-red"><%= page.stories.highlight %></span></h3>
+    </div>
+    <article class="acc-story-main">
+      <div class="acc-story-copy">
+        <h3><%= page.stories.featured.title %></h3>
+        <p><%= page.stories.featured.excerpt %></p>
+        <div class="acc-meta"><strong><%= page.stories.featured.metaTitle %></strong><span><%= page.stories.featured.metaValue %></span></div>
+      </div>
+      <div class="acc-thumb"><img src="<%= page.stories.featured.image %>" alt="<%= page.stories.featured.title %>"></div>
+    </article>
+    <div class="acc-story-grid">
+      <% storyItems.forEach((item, index) => { %>
+        <article class="acc-story-card <%= index === 1 ? 'alt' : '' %>">
+          <div class="acc-story-copy">
+            <h3><%= item.title %></h3>
+            <p><%= item.excerpt %></p>
+            <div class="acc-meta"><strong><%= item.metaTitle %></strong><span><%= item.metaValue %></span></div>
+          </div>
+          <div class="acc-thumb"><img src="<%= item.image %>" alt="<%= item.title %>"></div>
+        </article>
+      <% }) %>
+    </div>
+    <div class="acc-actions" style="justify-content:center;">
+      <a href="<%= safeBaseUrl + page.stories.ctaHref %>" class="acc-link"><%= page.stories.ctaLabel %></a>
+    </div>
+  </section>
+
+  <section class="acc-section">
+    <div class="acc-head">
+      <h2>Câu hỏi thường gặp?</h2>
+    </div>
+    <div class="acc-faq">
+      <% faqItems.forEach((item, index) => { %>
+        <details class="acc-faq-item" <%= index === 0 ? 'open' : '' %>>
+          <summary><%= item.q %></summary>
+          <div class="acc-faq-answer"><p><%= item.a %></p></div>
+        </details>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="acc-consult">
+    <div class="acc-poster"><img src="<%= page.consult.posterImage %>" alt="<%= page.consult.title %>"></div>
+    <form class="acc-form">
+      <h3><%= page.consult.title %></h3>
+      <p><%= page.consult.text %></p>
+      <% consultFields.forEach((field) => { %>
+        <% if (field.type === 'textarea') { %>
+          <textarea placeholder="<%= field.placeholder %>"></textarea>
+        <% } else if (field.type === 'select') { %>
+          <select>
+            <option><%= field.placeholder %></option>
+            <% field.options.forEach((option) => { %><option><%= option %></option><% }) %>
+          </select>
+        <% } else { %>
+          <input type="<%= field.type %>" placeholder="<%= field.placeholder %>">
+        <% } %>
+      <% }) %>
+      <% if (page.consult.promo) { %><p class="acc-promo"><%= page.consult.promo %></p><% } %>
+      <button type="button" class="acc-btn"><%= page.consult.submitLabel %></button>
+      <p><%= page.consult.note %></p>
+    </form>
+  </section>
+
+  <section class="acc-support">
+    <div class="acc-support-copy">
+      <h2><%= page.supportContact.title %> <span class="acc-red"><%= page.supportContact.highlight %></span></h2>
+      <div class="acc-support-list">
+        <% page.supportContact.bullets.forEach((item, index) => { %>
+          <div class="acc-support-item"><span><%= index + 1 %></span><p><%= item %></p></div>
+        <% }) %>
+      </div>
+    </div>
+    <div class="acc-collage">
+      <% supportImages.forEach((item) => { %>
+        <img src="<%= item %>" alt="Thầy Tài TOEIC support">
+      <% }) %>
+    </div>
+  </section>
+</div>
