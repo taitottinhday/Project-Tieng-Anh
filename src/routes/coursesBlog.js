@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const renderWithLayout = require("../utils/renderHelper");
 const { courseMenu, getCoursePage } = require("../data/courseLandingPages");
+const toeic4SkillsPage = require("../data/toeic4SkillsPage");
 
 const overviewCourses = [
   {
@@ -56,6 +57,15 @@ router.get("/", (req, res) => {
 });
 
 router.get("/:slug", (req, res, next) => {
+  if (req.params.slug === "toeic-4-ky-nang") {
+    return renderWithLayout(res, "course-program-4skills", {
+      title: toeic4SkillsPage.title,
+      username: req.session?.user?.username,
+      coursePage: toeic4SkillsPage,
+      courseMenu,
+    });
+  }
+
   const coursePage = getCoursePage(req.params.slug);
 
   if (!coursePage) {

@@ -1,0 +1,381 @@
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const page = coursePage || {};
+const menuItems = (courseMenu || []).map((item) => ({
+  ...item,
+  href: `${safeBaseUrl}/courses-blog/${item.slug}`,
+  isActive: item.slug === page.slug,
+}));
+const consultFields = page.consult?.fields || [];
+const trackCols = Math.max((page.roadmap?.tiers || []).length, 1);
+%>
+
+<style>
+  .c4-page{display:grid;gap:34px;padding:12px 0 48px}
+  .c4-wrap{width:min(100%,1180px);margin:0 auto}
+  .c4-page h1,.c4-page h2,.c4-page h3,.c4-page h4,.c4-page p{margin:0}
+  .c4-page h1,.c4-page h2,.c4-page h3,.c4-page h4{color:#0f172a}
+  .c4-page p{color:#334155;line-height:1.8}
+  .c4-crumbs,.c4-subnav,.c4-actions,.c4-stats,.c4-step-grid,.c4-teachers{display:flex;flex-wrap:wrap;gap:12px}
+  .c4-crumbs{color:#64748b;font-size:.95rem}
+  .c4-subnav{padding:14px;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 14px 30px rgba(15,23,42,.05)}
+  .c4-subnav a,.c4-link,.c4-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-weight:800}
+  .c4-subnav a{min-height:42px;padding:0 14px;color:#475569;background:#f8fafc;border:1px solid rgba(15,23,42,.06)}
+  .c4-subnav a.is-active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#ef4444 0%,#2563eb 100%)}
+  .c4-link{min-height:42px;padding:0 16px;color:#1d4ed8;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .c4-btn{min-height:52px;padding:0 24px;color:#fff;background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);box-shadow:0 16px 28px rgba(239,68,68,.22)}
+  .c4-section{display:grid;gap:22px}
+  .c4-head{display:grid;gap:10px;justify-items:center;text-align:center}
+  .c4-head h2{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(2rem,4vw,3.2rem);line-height:1.08;letter-spacing:-.05em}
+  .c4-head p{max-width:900px}
+  .c4-underline::after{content:"";display:block;width:min(420px,46vw);height:4px;margin:14px auto 0;border-radius:999px;background:linear-gradient(90deg,#c7ddff 0%,#3b82f6 100%)}
+  .c4-red{color:#ef4444}
+  .c4-hero-shell{padding:26px;border-radius:34px;background:linear-gradient(180deg,#dff0ff 0%,#eef7ff 100%)}
+  .c4-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.95fr);gap:26px;padding:36px;border-radius:34px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 24px 52px rgba(15,23,42,.08)}
+  .c4-hero-copy{display:grid;gap:18px;align-content:start}
+  .c4-kicker{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(2.3rem,5vw,4.2rem);line-height:.97;letter-spacing:-.06em;color:#1d9bf0;text-transform:uppercase}
+  .c4-hero-visual{min-height:430px;border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#dbeafe 0%,#f0f9ff 100%);display:grid;place-items:end}
+  .c4-hero-visual img{width:100%;height:100%;object-fit:contain}
+  .c4-stats{gap:26px;padding-top:14px;border-top:1px solid rgba(15,23,42,.14)}
+  .c4-stat{display:grid;gap:6px;min-width:150px}
+  .c4-stat strong{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:2rem;line-height:1;color:#ef4444}
+  .c4-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:28px;overflow:hidden;border:1px solid rgba(15,23,42,.08);background:#fff;box-shadow:0 18px 40px rgba(15,23,42,.05)}
+  .c4-value{min-height:250px;padding:30px 28px;display:grid;gap:14px;align-content:start;border-right:1px solid rgba(15,23,42,.08)}
+  .c4-value:last-child{border-right:0}
+  .c4-value.primary{background:linear-gradient(180deg,#60a5fa 0%,#2563eb 100%)}
+  .c4-value.primary h3,.c4-value.primary p,.c4-value.primary .c4-icon{color:#fff}
+  .c4-icon{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:3rem;line-height:1;color:rgba(15,23,42,.35)}
+  .c4-value h3{font-size:1.2rem;line-height:1.35}
+  .c4-audience,.c4-solution{display:grid;grid-template-columns:minmax(250px,.9fr) minmax(320px,1fr) minmax(250px,.9fr);gap:20px;align-items:center}
+  .c4-stack{display:grid;gap:20px}
+  .c4-problem,.c4-s-card{padding:20px 22px;border-radius:20px;border:1px solid rgba(15,23,42,.08);box-shadow:0 16px 30px rgba(15,23,42,.05)}
+  .c4-problem{background:#ededed}
+  .c4-ph,.c4-sh{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+  .c4-bad-x,.c4-bad-ok{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:0 0 auto;font-weight:900}
+  .c4-bad-x{background:#dc2626}.c4-bad-ok{background:#16a34a}
+  .c4-figure,.c4-s-figure{min-height:520px;border-radius:28px;overflow:hidden;display:grid;place-items:end center;background:radial-gradient(circle at top,rgba(191,219,254,.6),transparent 58%),#fff}
+  .c4-figure img,.c4-s-figure img{width:100%;height:100%;object-fit:contain}
+  .c4-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .c4-tag{min-height:40px;padding:0 16px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;color:#be123c;background:#fff;border:1px solid rgba(190,24,93,.18);font-weight:700}
+  .c4-roadmap{display:grid;gap:22px}
+  .c4-road-intro{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+  .c4-stamp{width:112px;min-height:112px;padding:16px;border-radius:50%;border:4px solid rgba(239,68,68,.75);color:#dc2626;display:grid;place-items:center;text-align:center;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:.94rem;line-height:1.15;text-transform:uppercase}
+  .c4-track{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:18px;align-items:end}
+  .c4-track-item{display:grid;gap:12px}
+  .c4-dur{text-align:center;font-weight:800;color:#1f2937}
+  .c4-box{min-height:164px;padding:20px 18px;border-radius:24px 24px 0 0;display:grid;place-items:center;text-align:center;color:#fff;box-shadow:0 18px 28px rgba(15,23,42,.1)}
+  .c4-box.blue{background:linear-gradient(180deg,#67b8f8 0%,#3b93d1 100%)}.c4-box.sky{background:linear-gradient(180deg,#59b9f6 0%,#2f8bca 100%)}.c4-box.teal{background:linear-gradient(180deg,#379bc7 0%,#2278a9 100%)}.c4-box.pink{background:linear-gradient(180deg,#fb7185 0%,#f43f5e 100%)}.c4-box.hotpink{background:linear-gradient(180deg,#ff5c8a 0%,#ff3c6b 100%)}
+  .c4-level{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.05}
+  .c4-scores{display:grid;gap:8px}
+  .c4-score{padding:10px 12px;border-radius:14px;background:rgba(219,234,254,.92);border:1px solid rgba(59,130,246,.16);color:#0f172a;text-align:center}
+  .c4-score small{display:block;color:#475569;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+  .c4-score strong{display:block;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.2rem;line-height:1.1}
+  .c4-labels{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:18px}
+  .c4-label{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.15rem;text-align:center;text-transform:uppercase}
+  .c4-label.active{padding:14px 16px;border-radius:18px;color:#fff;background:linear-gradient(135deg,#ef4444 0%,#f43f5e 100%)}
+  .c4-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px}
+  .c4-anchor,.c4-cell,.c4-table,.c4-resource,.c4-form{border-radius:22px}
+  .c4-anchor{padding:24px 18px;text-align:center;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.35rem;color:#0f4c81;background:linear-gradient(180deg,#8fc0f8 0%,#79aee9 100%)}
+  .c4-cell{padding:24px;background:rgba(228,242,255,.82)}
+  .c4-knowledge{display:grid;grid-template-columns:220px repeat(3,minmax(0,1fr));gap:14px}
+  .c4-table{overflow:hidden;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .c4-table table{width:100%;border-collapse:collapse}
+  .c4-table th,.c4-table td{padding:14px;border:1px solid rgba(15,23,42,.08);text-align:left;vertical-align:top}
+  .c4-table th{background:#5b93d5;color:#fff}
+  .c4-table td strong{display:inline-flex;align-items:center;justify-content:center;min-width:220px;padding:10px 14px;background:#16a34a;border-radius:0;color:#fff}
+  .c4-dark{padding:38px 24px;border-radius:30px;background:radial-gradient(circle at top right,rgba(124,58,237,.18),transparent 22%),radial-gradient(circle at left bottom,rgba(59,130,246,.18),transparent 20%),#08124a}
+  .c4-dark .c4-head h2,.c4-dark .c4-head p{color:#fff}
+  .c4-resources{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .c4-resource{overflow:hidden;background:#fff;border:2px solid rgba(123,163,255,.35)}
+  .c4-resource img{width:100%;height:220px;object-fit:contain;background:#fff}
+  .c4-r-copy{display:grid;gap:6px;padding:18px;color:#fff;background:linear-gradient(135deg,rgba(44,98,214,.95) 0%,rgba(142,96,214,.95) 100%)}
+  .c4-r-copy strong,.c4-r-copy h3,.c4-r-copy p{color:#fff}
+  .c4-story-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.72fr);gap:18px;padding:24px;border-radius:26px;background:linear-gradient(135deg,#faf5ff 0%,#f8fafc 100%);border:1px solid rgba(15,23,42,.08)}
+  .c4-story-copy{display:grid;gap:14px}
+  .c4-story-copy h3{font-size:1.65rem;line-height:1.24}
+  .c4-meta{display:grid;gap:4px;padding-top:18px;border-top:1px solid rgba(15,23,42,.1)}
+  .c4-cards{display:flex;flex-wrap:wrap;gap:18px}
+  .c4-card{flex:1 1 320px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#fff7ed 0%,#f8fafc 100%);border:1px solid rgba(15,23,42,.08)}
+  .c4-card.alt{background:linear-gradient(135deg,#eef2ff 0%,#eff6ff 100%)}
+  .c4-step{position:relative;flex:1 1 220px;min-height:150px;padding:34px 24px 24px;border-radius:22px;display:grid;align-content:end;background:#eef9ff;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.28rem}
+  .c4-step:nth-child(2){background:#f3ecff}.c4-step:nth-child(3){background:#fff1f2}
+  .c4-step span{position:absolute;top:12px;left:18px;font-size:5rem;line-height:1;color:rgba(15,23,42,.06)}
+  .c4-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 26px;border-radius:24px;background:#f8fafc;border:1px solid rgba(15,23,42,.08)}
+  .c4-banner strong{color:#ef4444}
+  .c4-teacher{flex:1 1 190px;display:grid;gap:12px}
+  .c4-t-photo{position:relative;min-height:260px;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#36a9e1 0%,#d8f3ff 100%)}
+  .c4-t-photo img{width:100%;height:100%;object-fit:cover}
+  .c4-t-badge{position:absolute;top:16px;left:16px;padding:6px 10px;border-radius:14px;background:rgba(37,99,235,.9);color:#fff;font-size:.85rem;font-weight:800}
+  .c4-consult{display:grid;grid-template-columns:minmax(0,.95fr) minmax(320px,.92fr);gap:24px;padding:28px;border-radius:30px;background:linear-gradient(180deg,#f7fbff 0%,#fff 100%);border:1px solid rgba(15,23,42,.08);box-shadow:0 18px 34px rgba(15,23,42,.05)}
+  .c4-poster{min-height:620px;padding:24px;border-radius:28px;overflow:hidden;background:linear-gradient(180deg,#dbeafe 0%,#eff6ff 100%)}
+  .c4-poster img{width:100%;height:100%;object-fit:contain}
+  .c4-form{display:grid;gap:12px;padding:24px;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .c4-form h3{font-size:1.9rem;color:#1e3a8a}
+  .c4-form input,.c4-form textarea,.c4-form select{width:100%;min-height:52px;padding:0 14px;border-radius:16px;border:1px solid rgba(15,23,42,.12);background:#f8fafc;font:inherit;color:#0f172a}
+  .c4-form textarea{min-height:110px;padding:14px;resize:vertical}
+  @media (max-width:1180px){.c4-hero,.c4-audience,.c4-solution,.c4-story-main,.c4-consult,.c4-road-intro{grid-template-columns:1fr}.c4-values,.c4-resources,.c4-track,.c4-labels,.c4-knowledge{grid-template-columns:repeat(2,minmax(0,1fr))}.c4-row{grid-template-columns:1fr}}
+  @media (max-width:760px){.c4-values,.c4-resources,.c4-track,.c4-labels,.c4-step-grid,.c4-teachers,.c4-cards{display:grid;grid-template-columns:1fr}.c4-banner,.c4-consult,.c4-road-intro{grid-template-columns:1fr}.c4-story-main,.c4-card{grid-template-columns:1fr}.c4-audience,.c4-solution,.c4-knowledge{grid-template-columns:1fr}}
+</style>
+
+<div class="c4-page c4-wrap">
+  <nav class="c4-crumbs" aria-label="Breadcrumb">
+    <a href="<%= safeBaseUrl %>/">Trang chủ</a><span>&gt;</span>
+    <a href="<%= safeBaseUrl %>/courses-blog">Khóa học</a><span>&gt;</span>
+    <span><%= page.title %></span>
+  </nav>
+
+  <nav class="c4-subnav" aria-label="Danh mục khóa học">
+    <% menuItems.forEach((item) => { %>
+      <a href="<%= item.href %>" class="<%= item.isActive ? 'is-active' : '' %>"><%= item.label %></a>
+    <% }) %>
+  </nav>
+
+  <section class="c4-hero-shell">
+    <article class="c4-hero">
+      <div class="c4-hero-copy">
+        <h1 class="c4-kicker"><%= page.hero.title %></h1>
+        <p><%= page.hero.text %></p>
+        <div class="c4-actions"><a href="<%= safeBaseUrl + page.hero.ctaHref %>" class="c4-btn"><%= page.hero.ctaLabel %></a></div>
+        <div class="c4-stats">
+          <% page.hero.stats.forEach((item) => { %>
+            <div class="c4-stat"><strong><%= item.value %></strong><span><%= item.label %></span></div>
+          <% }) %>
+        </div>
+      </div>
+      <div class="c4-hero-visual"><img src="<%= page.hero.image %>" alt="<%= page.hero.title %>"></div>
+    </article>
+  </section>
+
+  <section class="c4-section">
+    <div class="c4-head c4-underline">
+      <h2><%= page.valueGrid.title %></h2>
+      <p><%= page.valueGrid.subtitle %></p>
+      <p><%= page.valueGrid.description %></p>
+    </div>
+    <div class="c4-values">
+      <% page.valueGrid.items.forEach((item) => { %>
+        <article class="c4-value <%= item.tone === 'primary' ? 'primary' : '' %>">
+          <span class="c4-icon"><%= item.icon %></span>
+          <h3><%= item.title %></h3>
+          <p><%= item.text %></p>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="c4-section">
+    <div class="c4-head c4-underline">
+      <h2><%= page.audience.title %></h2>
+      <p><%= page.audience.intro %></p>
+    </div>
+    <div class="c4-audience">
+      <div class="c4-stack">
+        <% page.audience.left.forEach((item) => { %>
+          <article class="c4-problem">
+            <div class="c4-ph"><span class="c4-bad-x">X</span><h3><%= item.title %></h3></div>
+            <p><%= item.text %></p>
+          </article>
+        <% }) %>
+      </div>
+      <div class="c4-figure"><img src="<%= page.audience.image %>" alt="<%= page.audience.title %>"></div>
+      <div class="c4-stack">
+        <% page.audience.right.forEach((item) => { %>
+          <article class="c4-problem">
+            <div class="c4-ph"><span class="c4-bad-x">X</span><h3><%= item.title %></h3></div>
+            <p><%= item.text %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="c4-section">
+    <div class="c4-head">
+      <h2><%= page.solutions.title %></h2>
+    </div>
+    <div class="c4-solution">
+      <div class="c4-stack">
+        <% page.solutions.left.forEach((item) => { %>
+          <article class="c4-s-card">
+            <div class="c4-sh"><span class="c4-bad-ok">✓</span><h3><%= item.title %></h3></div>
+            <p><%= item.text %></p>
+            <% if (item.tags) { %><div class="c4-tags"><% item.tags.forEach((tag) => { %><span class="c4-tag"><%= tag %></span><% }) %></div><% } %>
+          </article>
+        <% }) %>
+      </div>
+      <div class="c4-s-figure"><img src="<%= page.solutions.image %>" alt="<%= page.solutions.title %>"></div>
+      <div class="c4-stack">
+        <% page.solutions.right.forEach((item) => { %>
+          <article class="c4-s-card">
+            <div class="c4-sh"><span class="c4-bad-ok">✓</span><h3><%= item.title %></h3></div>
+            <p><%= item.text %></p>
+            <% if (item.tags) { %><div class="c4-tags"><% item.tags.forEach((tag) => { %><span class="c4-tag"><%= tag %></span><% }) %></div><% } %>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+    <div class="c4-actions" style="justify-content:center;"><a href="<%= safeBaseUrl + page.solutions.ctaHref %>" class="c4-btn"><%= page.solutions.ctaLabel %></a></div>
+  </section>
+
+  <section class="c4-roadmap">
+    <div class="c4-road-intro">
+      <div class="c4-stamp"><span><%= page.roadmap.stamp %></span></div>
+      <div class="c4-head c4-underline">
+        <h2><%= page.roadmap.title %></h2>
+        <h3 style="font-size:clamp(1.7rem,3vw,2.5rem)"><%= page.roadmap.subtitle %></h3>
+      </div>
+    </div>
+
+    <div class="c4-track" style="--cols:<%= trackCols %>;">
+      <% page.roadmap.tiers.forEach((item) => { %>
+        <article class="c4-track-item">
+          <div class="c4-dur"><%= item.duration %></div>
+          <div class="c4-box <%= item.tone %>"><div class="c4-level"><%= item.level %></div></div>
+          <div class="c4-scores">
+            <% item.scores.forEach((score) => { %>
+              <div class="c4-score"><small><%= score.label %></small><strong><%= score.value %></strong></div>
+            <% }) %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+
+    <div class="c4-labels" style="--cols:<%= trackCols %>;">
+      <% page.roadmap.tiers.forEach((item) => { %>
+        <div class="c4-label <%= item.active ? 'active' : '' %>"><%= item.label %></div>
+      <% }) %>
+    </div>
+
+    <% page.roadmap.supportRows.forEach((item) => { %>
+      <div class="c4-row">
+        <div class="c4-anchor"><%= item.label %></div>
+        <div class="c4-cell"><p><%= item.text %></p></div>
+      </div>
+    <% }) %>
+
+    <div class="c4-knowledge">
+      <div class="c4-anchor">Kiến thức chính</div>
+      <% page.roadmap.knowledgeCards.forEach((item) => { %>
+        <div class="c4-cell"><h3><%= item.title %></h3><p><%= item.text %></p></div>
+      <% }) %>
+    </div>
+
+    <div class="c4-row">
+      <div class="c4-anchor">Nội dung chương trình</div>
+      <div class="c4-table">
+        <table>
+          <thead>
+            <tr><th>STT</th><th>TOPIC</th><th>CONTENT</th><th>REVIEW TEST</th></tr>
+          </thead>
+          <tbody>
+            <% page.roadmap.rows.forEach((item) => { %>
+              <tr>
+                <td><%= item.session %></td>
+                <td><% if (item.milestone) { %><strong><%= item.topic %></strong><% } else { %><%= item.topic %><% } %></td>
+                <td><%- item.content %></td>
+                <td><%= item.review || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="c4-dark">
+    <div class="c4-head">
+      <h2><%= page.resources.title %></h2>
+    </div>
+    <div class="c4-resources">
+      <% page.resources.items.forEach((item) => { %>
+        <article class="c4-resource">
+          <img src="<%= item.image %>" alt="<%= item.title %>">
+          <div class="c4-r-copy">
+            <strong><%= item.title %></strong>
+            <h3 style="font-size:1.45rem"><%= item.subtitle %></h3>
+            <span class="c4-link" style="width:max-content;color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)">Xem thêm</span>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="c4-section">
+    <div class="c4-head">
+      <h2><%= page.stories.title %> <span class="c4-red"><%= page.stories.highlight %></span></h2>
+    </div>
+    <article class="c4-story-main">
+      <div class="c4-story-copy">
+        <h3><%= page.stories.featured.title %></h3>
+        <p><%= page.stories.featured.excerpt %></p>
+        <div class="c4-meta"><strong><%= page.stories.featured.metaTitle %></strong><span><%= page.stories.featured.metaValue %></span></div>
+      </div>
+      <div class="c4-hero-visual" style="min-height:320px"><img src="<%= page.stories.featured.image %>" alt="<%= page.stories.featured.title %>"></div>
+    </article>
+    <div class="c4-cards">
+      <% page.stories.items.forEach((item, index) => { %>
+        <article class="c4-card <%= index === 1 ? 'alt' : '' %>">
+          <div class="c4-story-copy">
+            <h3><%= item.title %></h3>
+            <p><%= item.excerpt %></p>
+            <div class="c4-meta"><strong><%= item.metaTitle %></strong><span><%= item.metaValue %></span></div>
+          </div>
+          <div class="c4-hero-visual" style="min-height:260px"><img src="<%= item.image %>" alt="<%= item.title %>"></div>
+        </article>
+      <% }) %>
+    </div>
+    <div class="c4-actions" style="justify-content:center;"><a href="<%= safeBaseUrl + page.stories.ctaHref %>" class="c4-link"><%= page.stories.ctaLabel %></a></div>
+  </section>
+
+  <section class="c4-section">
+    <div class="c4-head c4-underline">
+      <h2><span class="c4-red"><%= page.steps.title %></span></h2>
+      <h3 style="font-size:clamp(1.8rem,3vw,3rem)"><%= page.steps.highlight %></h3>
+      <p><%= page.steps.desc %></p>
+    </div>
+    <div class="c4-step-grid">
+      <% page.steps.items.forEach((item, index) => { %>
+        <article class="c4-step"><span>0<%= index + 1 %></span><strong><%= item %></strong></article>
+      <% }) %>
+    </div>
+    <div class="c4-banner"><p><%= page.steps.banner %></p><a href="<%= safeBaseUrl + page.steps.ctaHref %>" class="c4-btn"><%= page.steps.ctaLabel %></a></div>
+  </section>
+
+  <section class="c4-section">
+    <div class="c4-head">
+      <h2><%= page.teachers.title %> <span class="c4-red"><%= page.teachers.highlight %></span></h2>
+      <p><%= page.teachers.desc %></p>
+    </div>
+    <div class="c4-teachers">
+      <% page.teachers.items.forEach((item) => { %>
+        <article class="c4-teacher">
+          <div class="c4-t-photo"><span class="c4-t-badge"><%= page.teachers.badge %></span><img src="<%= item.image %>" alt="<%= item.name %>"></div>
+          <div><h3><%= item.name %></h3><p><%= item.role %></p></div>
+        </article>
+      <% }) %>
+    </div>
+    <div class="c4-actions" style="justify-content:center;"><a href="<%= safeBaseUrl + page.teachers.ctaHref %>" class="c4-link"><%= page.teachers.ctaLabel %></a></div>
+  </section>
+
+  <section class="c4-consult">
+    <div class="c4-poster"><img src="<%= page.consult.posterImage %>" alt="<%= page.consult.title %>"></div>
+    <form class="c4-form">
+      <h3><%= page.consult.title %></h3>
+      <p><%= page.consult.text %></p>
+      <% consultFields.forEach((field) => { %>
+        <% if (field.type === 'textarea') { %>
+          <textarea placeholder="<%= field.placeholder %>"></textarea>
+        <% } else if (field.type === 'select') { %>
+          <select>
+            <option><%= field.placeholder %></option>
+            <% field.options.forEach((option) => { %><option><%= option %></option><% }) %>
+          </select>
+        <% } else { %>
+          <input type="<%= field.type %>" placeholder="<%= field.placeholder %>">
+        <% } %>
+      <% }) %>
+      <button type="button" class="c4-btn"><%= page.consult.submitLabel %></button>
+      <p><%= page.consult.note %></p>
+    </form>
+  </section>
+</div>
