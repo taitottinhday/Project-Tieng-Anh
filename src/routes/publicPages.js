@@ -1,6 +1,7 @@
 const express = require("express");
 const renderWithLayout = require("../utils/renderHelper");
 const { getFullTestCards } = require("../data/fullTestRegistry");
+const publicPracticeController = require("../controllers/publicPracticeController");
 
 const router = express.Router();
 
@@ -42,6 +43,12 @@ router.get("/lich-khai-giang", (req, res) => {
   });
 });
 
+router.get("/goc-hoc-tap/part-5-6", publicPracticeController.listPart56Practice);
+router.get("/goc-hoc-tap/part-5-6/result/latest", publicPracticeController.showLatestPart56Result);
+router.get("/goc-hoc-tap/part-5-6/:practiceId", publicPracticeController.showPart56Practice);
+router.get("/goc-hoc-tap/part-5-6/:practiceId/take", publicPracticeController.takePart56Practice);
+router.post("/goc-hoc-tap/part-5-6/:practiceId/submit", publicPracticeController.submitPart56Practice);
+
 router.get("/goc-hoc-tap", (req, res) => {
   const safeBaseUrl = res.locals.baseUrl || "";
   const isStudent = Boolean(req.session?.user?.role && req.session.user.role !== "admin" && req.session.user.role !== "teacher");
@@ -75,8 +82,8 @@ router.get("/goc-hoc-tap", (req, res) => {
             tone: "mint",
             kind: "cta",
             title: "Luyện tập TOEIC Part 5-6",
-            href: isStudent ? `${safeBaseUrl}/student/practice/parts` : `${safeBaseUrl}/placement-tests`,
-            action: isStudent ? "Làm thử ngay!" : "Xem đề ngay!",
+            href: `${safeBaseUrl}/goc-hoc-tap/part-5-6`,
+            action: "Xem đề ngay!",
           },
         ],
       },

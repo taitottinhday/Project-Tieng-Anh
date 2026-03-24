@@ -1,0 +1,221 @@
+<%
+const data = catalog || {};
+const items = Array.isArray(data.items) ? data.items : [];
+const current = currentItem || {};
+const practice = exam || {};
+%>
+
+<style>
+  .p56detail-page {
+    width: min(1360px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 22px 0 44px;
+  }
+
+  .p56detail-shell {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    min-height: 620px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.05);
+  }
+
+  .p56detail-sidebar {
+    border-right: 1px solid rgba(15, 23, 42, 0.08);
+    background: #fbfcfe;
+  }
+
+  .p56detail-sidehead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 22px 16px;
+    background: #1f72bf;
+    color: #ffffff;
+  }
+
+  .p56detail-sidehead h1,
+  .p56detail-content h2,
+  .p56detail-content h3 {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.04em;
+  }
+
+  .p56detail-sidehead h1 {
+    font-size: 1.4rem;
+    line-height: 1.1;
+  }
+
+  .p56detail-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .p56detail-list {
+    display: grid;
+  }
+
+  .p56detail-item {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    min-height: 60px;
+    padding: 0 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    color: #2a3f60;
+    text-decoration: none;
+  }
+
+  .p56detail-item.is-active {
+    background: #ffffff;
+    color: #1163c7;
+    font-weight: 800;
+  }
+
+  .p56detail-mark {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1.8px solid currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.74rem;
+    font-weight: 900;
+  }
+
+  .p56detail-label {
+    font-size: 0.98rem;
+  }
+
+  .p56detail-content {
+    padding: 34px 36px;
+    display: grid;
+    align-content: start;
+    gap: 24px;
+    background: #fffdfd;
+  }
+
+  .p56detail-content h2 {
+    font-size: clamp(2.1rem, 3vw, 3.4rem);
+    line-height: 1.04;
+  }
+
+  .p56detail-breadcrumb {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 8px;
+    background: #edf2f8;
+    color: #2273c5;
+    font-weight: 700;
+  }
+
+  .p56detail-copy {
+    display: grid;
+    gap: 14px;
+    color: #30445f;
+    line-height: 1.7;
+    font-size: 1.08rem;
+  }
+
+  .p56detail-copy p {
+    margin: 0;
+  }
+
+  .p56detail-copy strong {
+    color: #17263b;
+  }
+
+  .p56detail-cta {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 26px;
+    border-radius: 999px;
+    background: #1f72bf;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 800;
+    box-shadow: 0 16px 28px rgba(31, 114, 191, 0.2);
+  }
+
+  .p56detail-source {
+    color: #5d6d82;
+    font-size: 0.98rem;
+  }
+
+  @media (max-width: 980px) {
+    .p56detail-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .p56detail-sidebar {
+      border-right: 0;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .p56detail-page {
+      width: min(100% - 16px, 1360px);
+      padding-top: 14px;
+    }
+
+    .p56detail-content {
+      padding: 22px 16px;
+    }
+  }
+</style>
+
+<div class="p56detail-page">
+  <div class="p56detail-shell">
+    <aside class="p56detail-sidebar">
+      <div class="p56detail-sidehead">
+        <h1><%= data.title || "Bài Tập TOEIC Part 5-6" %></h1>
+        <a href="<%= baseUrl %>/goc-hoc-tap/part-5-6" class="p56detail-back" aria-label="Về danh sách">&lsaquo;</a>
+      </div>
+
+      <div class="p56detail-list">
+        <% items.forEach((item) => { %>
+          <a href="<%= item.href %>" class="p56detail-item <%= item.id === current.id ? 'is-active' : '' %>">
+            <span class="p56detail-mark">x</span>
+            <span class="p56detail-label"><%= item.title %></span>
+          </a>
+        <% }) %>
+      </div>
+    </aside>
+
+    <section class="p56detail-content">
+      <h2><%= current.title %></h2>
+      <div class="p56detail-breadcrumb"><%= data.title || "Bài Tập TOEIC Part 5-6" %> &gt; <%= current.title %></div>
+
+      <div class="p56detail-copy">
+        <p><%= practice.subtitle || "Bài test kiểm tra ôn tập phần Part 5 – Part 6." %></p>
+        <p>Thời gian làm bài: <strong><%= practice.durationMinutes || 25 %> phút</strong></p>
+        <p>Tổng số câu hỏi: <strong><%= practice.totalQuestions || 46 %> câu</strong></p>
+      </div>
+
+      <h3><%= current.title %></h3>
+      <a href="<%= practice.takeHref || '#' %>" class="p56detail-cta">Start Quiz</a>
+      <div class="p56detail-source">Nguồn đề: <strong><%= current.subtitle || practice.sourceLabel || "" %></strong></div>
+    </section>
+  </div>
+</div>

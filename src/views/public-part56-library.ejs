@@ -1,0 +1,210 @@
+<%
+const data = catalog || {};
+const items = Array.isArray(data.items) ? data.items : [];
+%>
+
+<style>
+  .p56lib-page {
+    width: min(1280px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 52px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .p56lib-panel {
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #ffffff;
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.04);
+  }
+
+  .p56lib-hero {
+    padding: 34px 28px 26px;
+    display: grid;
+    gap: 20px;
+  }
+
+  .p56lib-head {
+    display: grid;
+    gap: 12px;
+  }
+
+  .p56lib-head h1,
+  .p56lib-quote {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: #050505;
+  }
+
+  .p56lib-head h1 {
+    font-size: clamp(2rem, 3vw, 3rem);
+    line-height: 1.08;
+  }
+
+  .p56lib-line {
+    width: 28px;
+    height: 4px;
+    border-radius: 999px;
+    background: #edf0f5;
+  }
+
+  .p56lib-showcase {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 28px;
+    align-items: end;
+    min-height: 420px;
+  }
+
+  .p56lib-quote {
+    align-self: center;
+    font-size: clamp(2.8rem, 5vw, 5rem);
+    line-height: 0.98;
+  }
+
+  .p56lib-figure {
+    display: grid;
+    justify-items: end;
+  }
+
+  .p56lib-figure img {
+    width: min(100%, 320px);
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+
+  .p56lib-list {
+    display: grid;
+    gap: 16px;
+    padding: 0 28px 28px;
+  }
+
+  .p56lib-item {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    min-height: 64px;
+    padding: 0 20px;
+    border-radius: 8px;
+    border: 1px solid #d9e1ec;
+    color: #183153;
+    text-decoration: none;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .p56lib-item:hover {
+    transform: translateY(-1px);
+    border-color: #acc2df;
+    box-shadow: 0 14px 26px rgba(15, 23, 42, 0.06);
+  }
+
+  .p56lib-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid #2e4c78;
+    color: #2e4c78;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 900;
+  }
+
+  .p56lib-copy {
+    display: grid;
+    gap: 4px;
+  }
+
+  .p56lib-copy strong {
+    font-size: 1rem;
+    color: #1d3557;
+  }
+
+  .p56lib-copy span {
+    color: #6b7a90;
+    font-size: 0.92rem;
+  }
+
+  .p56lib-go {
+    color: #167db6;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 960px) {
+    .p56lib-showcase {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .p56lib-figure {
+      justify-items: center;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .p56lib-page {
+      width: min(100% - 20px, 1280px);
+      padding-top: 18px;
+    }
+
+    .p56lib-hero {
+      padding: 22px 16px 18px;
+    }
+
+    .p56lib-list {
+      padding: 0 16px 18px;
+      gap: 12px;
+    }
+
+    .p56lib-item {
+      grid-template-columns: 24px minmax(0, 1fr);
+      padding: 14px 14px;
+      min-height: 0;
+    }
+
+    .p56lib-go {
+      display: none;
+    }
+
+    .p56lib-quote {
+      font-size: clamp(2.2rem, 11vw, 3.2rem);
+    }
+  }
+</style>
+
+<div class="p56lib-page">
+  <section class="p56lib-panel">
+    <div class="p56lib-hero">
+      <div class="p56lib-head">
+        <h1><%= data.heroTitle || "Bài Tập TOEIC Part 5-6" %></h1>
+        <span class="p56lib-line" aria-hidden="true"></span>
+      </div>
+
+      <div class="p56lib-showcase">
+        <h2 class="p56lib-quote"><%= data.heroQuote || "Practice makes perfect" %></h2>
+        <div class="p56lib-figure">
+          <img src="<%= data.heroImage %>" alt="Giảng viên hướng dẫn luyện tập TOEIC Part 5-6">
+        </div>
+      </div>
+    </div>
+
+    <div class="p56lib-list">
+      <% items.forEach((item) => { %>
+        <a href="<%= item.href %>" class="p56lib-item">
+          <span class="p56lib-icon">x</span>
+          <span class="p56lib-copy">
+            <strong><%= item.title %></strong>
+            <span><%= item.subtitle %></span>
+          </span>
+          <span class="p56lib-go">Xem chi tiết</span>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+</div>

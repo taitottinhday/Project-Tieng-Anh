@@ -25,6 +25,13 @@ const READING_META = Object.freeze({
   parts: [5, 6, 7]
 });
 
+const PART56_META = Object.freeze({
+  durationMinutes: 25,
+  totalQuestions: 46,
+  maxScore: 230,
+  parts: [5, 6]
+});
+
 const READING_BANDS = Object.freeze([
   { key: 'all', label: 'Tất cả' },
   { key: '500-plus', label: '500 +' },
@@ -101,6 +108,10 @@ function buildReadingPracticeId(sourceId) {
   return `${sourceId}__reading`;
 }
 
+function buildPart56PracticeId(sourceId) {
+  return `${sourceId}__part56`;
+}
+
 function parsePartPracticeId(practiceId) {
   const match = String(practiceId || '').match(/^(.*)__part__(\d+)$/);
 
@@ -116,6 +127,18 @@ function parsePartPracticeId(practiceId) {
 
 function parseReadingPracticeId(practiceId) {
   const match = String(practiceId || '').match(/^(.*)__reading$/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    sourceId: match[1]
+  };
+}
+
+function parsePart56PracticeId(practiceId) {
+  const match = String(practiceId || '').match(/^(.*)__part56$/);
 
   if (!match) {
     return null;
@@ -213,6 +236,26 @@ function buildReadingPracticeCard(card, baseUrl = '') {
   };
 }
 
+function buildPart56PracticeCard(card, index, baseUrl = '', pathPrefix = '/goc-hoc-tap/part-5-6') {
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const sourceLabel = formatManagedTitle(card);
+  const practiceId = buildPart56PracticeId(card.id);
+  const serialLabel = String(index + 1).padStart(3, '0');
+
+  return {
+    id: practiceId,
+    sourceId: card.id,
+    serialLabel,
+    title: `BÀI TẬP TOEIC ONLINE ${serialLabel}`,
+    subtitle: sourceLabel,
+    description: 'Bài test kiểm tra ôn tập phần Part 5 – Part 6.',
+    durationMinutes: PART56_META.durationMinutes,
+    totalQuestions: PART56_META.totalQuestions,
+    maxScore: PART56_META.maxScore,
+    href: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`
+  };
+}
+
 function getPartPracticeCatalog(baseUrl = '') {
   const sourceCards = getAvailableSourceCards(baseUrl);
   const cards = sourceCards.flatMap((card) =>
@@ -248,6 +291,36 @@ function getReadingPracticeCatalog(baseUrl = '') {
     searchPlaceholder: 'Nhập tên đề reading muốn tìm...',
     cards,
     totalCards: cards.length
+  };
+}
+
+function getPart56PracticeCatalog(baseUrl = '', options = {}) {
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const limit = Number(options.limit || 12);
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/part-5-6';
+  const heroImage = options.heroImage || 'https://i.postimg.cc/zBCnk3Nt/giangthuy.png';
+  const sourceCards = getAvailableSourceCards(baseUrl)
+    .slice()
+    .sort((left, right) => {
+      const yearGap = Number(right.collectionKey || 0) - Number(left.collectionKey || 0);
+      if (yearGap !== 0) {
+        return yearGap;
+      }
+
+      return (extractTestNumber(left.id) || 0) - (extractTestNumber(right.id) || 0);
+    })
+    .slice(0, limit);
+  const items = sourceCards.map((card, index) => buildPart56PracticeCard(card, index, safeBaseUrl, pathPrefix));
+
+  return {
+    pageKey: 'part56',
+    title: 'Bài Tập TOEIC Part 5-6',
+    heroTitle: 'Bài Tập TOEIC Part 5-6',
+    heroQuote: 'Practice makes perfect',
+    heroImage,
+    pathPrefix,
+    items,
+    totalItems: items.length
   };
 }
 
@@ -405,6 +478,43 @@ function buildReadingPracticeExam(practiceId, baseUrl = '') {
   });
 }
 
+function buildPart56PracticeExam(practiceId, baseUrl = '', options = {}) {
+  const parsed = parsePart56PracticeId(practiceId);
+  if (!parsed) {
+    throw new Error(`Invalid part 5-6 practice id: ${practiceId}`);
+  }
+
+  const sourceExam = getSourceExam(parsed.sourceId);
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/part-5-6';
+  const libraryLabel = options.libraryLabel || 'Bài Tập TOEIC Part 5-6';
+  const sourceLabel = formatManagedTitle({
+    id: parsed.sourceId,
+    title: sourceExam.title,
+    collectionKey: sourceExam.collectionKey
+  });
+
+  return filterExamByParts(sourceExam, PART56_META.parts, {
+    id: practiceId,
+    mode: 'part56',
+    modeLabel: 'Bài Tập TOEIC Part 5-6',
+    title: options.itemTitle || `${sourceLabel} Part 5-6`,
+    subtitle: 'Bài test kiểm tra ôn tập phần Part 5 – Part 6.',
+    durationMinutes: PART56_META.durationMinutes,
+    maxScore: PART56_META.maxScore,
+    sourceLabel,
+    badgeLabel: sourceExam.collectionLabel || sourceExam.bookName || '',
+    accessLabel: 'Free',
+    ctaLabel: 'Start Quiz',
+    libraryHref: `${safeBaseUrl}${pathPrefix}`,
+    libraryLabel,
+    previewHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+    takeHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}/take`,
+    submitHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}/submit`,
+    retryHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`
+  });
+}
+
 function serializeExamQuestions(exam) {
   const sanitizeQuestion = (question) => {
     const nextQuestion = cloneQuestion(question);
@@ -484,9 +594,9 @@ function gradePracticeExam(exam, body = {}) {
   const correctCount = questionResults.filter((item) => item.isCorrect).length;
   const unansweredCount = questionResults.filter((item) => !item.selectedAnswer).length;
   const incorrectCount = Math.max(questionResults.length - correctCount - unansweredCount, 0);
-  const rawMax = exam.mode === 'reading'
+  const rawMax = Number(exam.maxScore || 0) || (exam.mode === 'reading'
     ? READING_META.maxScore
-    : ((PART_PRACTICE_META[questionResults[0] && questionResults[0].partNumber] || {}).maxScore || questionResults.length * 5);
+    : ((PART_PRACTICE_META[questionResults[0] && questionResults[0].partNumber] || {}).maxScore || questionResults.length * 5));
   const rawScore = exam.mode === 'reading'
     ? Math.round((correctCount / Math.max(questionResults.length, 1)) * READING_META.maxScore)
     : correctCount * 5;
@@ -552,11 +662,14 @@ function loadDemoPracticeExam() {
 
 module.exports = {
   PART_PRACTICE_META,
+  PART56_META,
   READING_META,
   getPartPracticeCatalog,
   getReadingPracticeCatalog,
+  getPart56PracticeCatalog,
   buildPartPracticeExam,
   buildReadingPracticeExam,
+  buildPart56PracticeExam,
   serializeExamQuestions,
   getAnswerPayload,
   gradePracticeExam,

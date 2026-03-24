@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle || 'Bài Tập TOEIC Part 5-6' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p56q-bg: #faf8f7;
+      --p56q-surface: #ffffff;
+      --p56q-line: rgba(15, 23, 42, 0.08);
+      --p56q-text: #15253b;
+      --p56q-muted: #617083;
+      --p56q-blue: #1f72bf;
+      --p56q-blue-soft: rgba(31, 114, 191, 0.12);
+      --p56q-dark: #0f1e33;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--p56q-text);
+      background: var(--p56q-bg);
+    }
+
+    a,
+    button,
+    input {
+      font: inherit;
+    }
+
+    body {
+      padding: 0;
+    }
+
+    .p56q-brandbar {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--p56q-line);
+      background: #ffffff;
+    }
+
+    .p56q-brandbar img {
+      width: 110px;
+      height: auto;
+      display: block;
+    }
+
+    .p56q-form {
+      min-height: calc(100vh - 44px);
+    }
+
+    .p56q-shell {
+      display: grid;
+      grid-template-columns: 344px minmax(0, 1fr);
+      min-height: calc(100vh - 44px);
+    }
+
+    .p56q-sidebar {
+      border-right: 1px solid var(--p56q-line);
+      background: #ffffff;
+    }
+
+    .p56q-sidehead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 12px;
+      background: var(--p56q-blue);
+      color: #ffffff;
+    }
+
+    .p56q-sidehead h1,
+    .p56q-main h2,
+    .p56q-main h3,
+    .p56q-question h4 {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .p56q-sidehead h1 {
+      font-size: 1.4rem;
+      line-height: 1.1;
+    }
+
+    .p56q-sideback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.6rem;
+    }
+
+    .p56q-list {
+      display: grid;
+    }
+
+    .p56q-list-item {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-height: 54px;
+      padding: 0 10px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      color: #2a3f60;
+      text-decoration: none;
+    }
+
+    .p56q-list-item.is-active {
+      color: #0d67d1;
+      font-weight: 800;
+      background: #ffffff;
+    }
+
+    .p56q-list-mark {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1.8px solid currentColor;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.74rem;
+      font-weight: 900;
+    }
+
+    .p56q-main {
+      padding: 30px 36px 46px;
+      display: grid;
+      gap: 22px;
+      align-content: start;
+      background: #fffdfd;
+    }
+
+    .p56q-main h2 {
+      font-size: clamp(2rem, 3vw, 3.3rem);
+      line-height: 1.04;
+    }
+
+    .p56q-breadcrumb {
+      display: inline-flex;
+      width: fit-content;
+      min-height: 40px;
+      align-items: center;
+      padding: 0 18px;
+      border-radius: 8px;
+      background: #edf2f8;
+      color: #2273c5;
+      font-weight: 700;
+    }
+
+    .p56q-copy {
+      display: grid;
+      gap: 10px;
+      color: #30445f;
+      font-size: 1.06rem;
+      line-height: 1.7;
+    }
+
+    .p56q-copy p {
+      margin: 0;
+    }
+
+    .p56q-copy strong {
+      color: #17263b;
+    }
+
+    .p56q-tools {
+      display: grid;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 10px;
+      background: #edf2f8;
+    }
+
+    .p56q-timer {
+      display: grid;
+      gap: 10px;
+    }
+
+    .p56q-timer strong {
+      font-size: 1.9rem;
+      color: #1d3557;
+    }
+
+    .p56q-progress {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(31, 114, 191, 0.16);
+      overflow: hidden;
+    }
+
+    .p56q-progress > span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #1f72bf;
+    }
+
+    .p56q-navbox {
+      display: grid;
+      gap: 14px;
+      padding: 16px 10px 8px;
+      border-radius: 10px;
+      background: #f7fafc;
+      border: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    .p56q-navgrid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .p56q-navbtn {
+      min-height: 40px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #1e293b;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .p56q-navbtn:hover {
+      transform: translateY(-1px);
+    }
+
+    .p56q-navbtn.current {
+      border-color: #0ea5e9;
+      box-shadow: inset 0 0 0 1px #0ea5e9;
+    }
+
+    .p56q-navbtn.review {
+      background: #424242;
+      border-color: #424242;
+      color: #ffffff;
+    }
+
+    .p56q-navbtn.answered {
+      background: #2f74c9;
+      border-color: #2f74c9;
+      color: #ffffff;
+    }
+
+    .p56q-navbtn.current.answered {
+      box-shadow: inset 0 0 0 2px #38bdf8;
+    }
+
+    .p56q-legend {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      color: #24364f;
+    }
+
+    .p56q-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .p56q-legend i {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .p56q-legend .current i {
+      border: 2px solid #0ea5e9;
+      background: #ffffff;
+    }
+
+    .p56q-legend .review i {
+      background: #424242;
+    }
+
+    .p56q-legend .answered i {
+      background: #2f74c9;
+    }
+
+    .p56q-submitbar {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .p56q-submit {
+      min-height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 0;
+      background: #1f72bf;
+      color: #ffffff;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 16px 28px rgba(31, 114, 191, 0.22);
+    }
+
+    .p56q-questions {
+      display: grid;
+      gap: 42px;
+    }
+
+    .p56q-question {
+      scroll-margin-top: 20px;
+      display: grid;
+      gap: 18px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .p56q-question-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .p56q-question h4 {
+      font-size: 1.55rem;
+      line-height: 1.4;
+      color: #1f2d3d;
+    }
+
+    .p56q-points {
+      color: #303e50;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .p56q-block {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: #f8fafc;
+      color: #415468;
+      line-height: 1.72;
+      white-space: pre-wrap;
+    }
+
+    .p56q-options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .p56q-option {
+      display: block;
+      cursor: pointer;
+    }
+
+    .p56q-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .p56q-option-ui {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-height: 44px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f4f7fb;
+      border: 1px solid transparent;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .p56q-option:hover .p56q-option-ui {
+      border-color: rgba(15, 23, 42, 0.12);
+    }
+
+    .p56q-option input:checked + .p56q-option-ui {
+      background: #e8f2fe;
+      border-color: rgba(31, 114, 191, 0.2);
+    }
+
+    .p56q-radio {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(15, 23, 42, 0.34);
+      background: #ffffff;
+      position: relative;
+    }
+
+    .p56q-option input:checked + .p56q-option-ui .p56q-radio::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: #1f72bf;
+    }
+
+    .p56q-option-copy {
+      color: #1e293b;
+      line-height: 1.65;
+    }
+
+    .p56q-option-copy strong {
+      margin-right: 6px;
+    }
+
+    .p56q-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .p56q-review {
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      background: #ffffff;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .p56q-review.is-active {
+      background: #424242;
+      border-color: #424242;
+      color: #ffffff;
+    }
+
+    @media (max-width: 1180px) {
+      .p56q-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .p56q-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--p56q-line);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .p56q-navgrid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .p56q-main {
+        padding: 18px 14px 32px;
+      }
+
+      .p56q-navgrid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .p56q-question-head {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%
+    const data = catalog || {};
+    const items = Array.isArray(data.items) ? data.items : [];
+    const current = currentItem || {};
+    const examData = exam || {};
+    const questions = Array.isArray(examData.flatQuestions) ? examData.flatQuestions : [];
+    const groups = Array.isArray(examData.groups) ? examData.groups : [];
+    const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
+    const durationMinutes = Number(examData.durationMinutes || 25);
+    const totalQuestions = Number(examData.totalQuestions || questions.length || 0);
+    const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
+    const questionViews = questions.map((question, index) => {
+      const groupIndex = groups.findIndex((item) => Array.isArray(item.questions) && item.questions.some((candidate) => candidate.number === question.number));
+      const group = groupIndex >= 0 ? groups[groupIndex] : {};
+      const part = partSummary.find((item) => item.partNumber === question.partNumber) || {};
+      return Object.assign({}, question, {
+        navIndex: index + 1,
+        groupIndex,
+        partTitle: part.title || ('Part ' + question.partNumber),
+        partInstructions: part.instructions || '',
+        sharedContent: group.sharedContent || '',
+        sharedAudioUrl: group.sharedAudioUrl || null,
+        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : []
+      });
+    });
+  %>
+
+  <div class="p56q-brandbar">
+    <a href="<%= baseUrl %>/"><img src="<%= brandLogo %>" alt="Logo Lớp TOEIC thầy Long"></a>
+  </div>
+
+  <form action="<%= examData.submitHref || '#' %>" method="POST" class="p56q-form" data-part56-form data-session-key="part56-<%= examData.id || 'quiz' %>">
+    <div class="p56q-shell">
+      <aside class="p56q-sidebar">
+        <div class="p56q-sidehead">
+          <h1><%= data.title || 'Bài Tập TOEIC Part 5-6' %></h1>
+          <a href="<%= examData.libraryHref || (baseUrl + '/goc-hoc-tap/part-5-6') %>" class="p56q-sideback" aria-label="Về chi tiết">&lsaquo;</a>
+        </div>
+
+        <div class="p56q-list">
+          <% items.forEach((item) => { %>
+            <a href="<%= item.href %>" class="p56q-list-item <%= item.id === current.id ? 'is-active' : '' %>">
+              <span class="p56q-list-mark">x</span>
+              <span><%= item.title %></span>
+            </a>
+          <% }) %>
+        </div>
+      </aside>
+
+      <main class="p56q-main">
+        <h2><%= current.title || examData.title || 'Bài Tập TOEIC Online' %></h2>
+        <div class="p56q-breadcrumb"><%= data.title || 'Bài Tập TOEIC Part 5-6' %> &gt; <%= current.title || examData.title %></div>
+
+        <div class="p56q-copy">
+          <p><%= examData.subtitle || 'Bài test kiểm tra ôn tập phần Part 5 – Part 6.' %></p>
+          <p>Thời gian làm bài: <strong><%= durationMinutes %> phút</strong></p>
+          <p>Tổng số câu hỏi: <strong><%= totalQuestions %> câu</strong></p>
+        </div>
+
+        <h3><%= current.title || examData.title %></h3>
+
+        <section class="p56q-tools">
+          <div class="p56q-timer">
+            <strong>Time limit: <span id="p56qTimer" data-duration="<%= durationMinutes %>">00:00:00</span></strong>
+            <div class="p56q-progress" aria-hidden="true"><span id="p56qTimerBar"></span></div>
+          </div>
+
+          <div class="p56q-navbox">
+            <div class="p56q-navgrid">
+              <% questionViews.forEach((question) => { %>
+                <button type="button" class="p56q-navbtn" data-go-question="<%= question.number %>"><%= question.navIndex %></button>
+              <% }) %>
+            </div>
+
+            <div class="p56q-legend">
+              <span class="current"><i></i>Current</span>
+              <span class="review"><i></i>Review</span>
+              <span class="answered"><i></i>Answered</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="p56q-submitbar">
+          <button type="submit" class="p56q-submit">Nộp bài</button>
+        </div>
+
+        <div class="p56q-questions">
+          <% questionViews.forEach((question, index) => { %>
+            <% const showSharedBlock = question.groupIndex >= 0 && (!questionViews[index - 1] || questionViews[index - 1].groupIndex !== question.groupIndex); %>
+            <article class="p56q-question" id="question-<%= question.number %>" data-question-card data-question-id="<%= question.number %>">
+              <div class="p56q-question-head">
+                <h4><%= question.number %>. <%= question.prompt %></h4>
+                <span class="p56q-points">1 point(s)</span>
+              </div>
+
+              <% if (showSharedBlock && question.sharedContent) { %>
+                <div class="p56q-block"><%= question.sharedContent %></div>
+              <% } %>
+
+              <% if (showSharedBlock && question.sharedImages && question.sharedImages.length) { %>
+                <div class="p56q-block">
+                  <% question.sharedImages.forEach((imageUrl) => { %>
+                    <img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>" style="max-width:100%;display:block;margin:0 auto 10px;border-radius:8px;">
+                  <% }) %>
+                </div>
+              <% } %>
+
+              <div class="p56q-options">
+                <% question.options.forEach((option) => { %>
+                  <label class="p56q-option">
+                    <input type="radio" name="<%= question.inputName %>" value="<%= option.label %>" data-question-input="<%= question.number %>">
+                    <span class="p56q-option-ui">
+                      <span class="p56q-radio"></span>
+                      <% if (option.isLetterOnly) { %>
+                        <span class="p56q-option-copy"><strong><%= option.label %></strong></span>
+                      <% } else { %>
+                        <span class="p56q-option-copy"><strong><%= option.label %></strong><%= option.text %></span>
+                      <% } %>
+                    </span>
+                  </label>
+                <% }) %>
+              </div>
+
+              <div class="p56q-actions">
+                <button type="button" class="p56q-review" data-review-toggle="<%= question.number %>">Đánh dấu review</button>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      </main>
+    </div>
+  </form>
+
+  <script>
+    (() => {
+      const form = document.querySelector('[data-part56-form]');
+      if (!form) return;
+
+      const sessionKey = form.dataset.sessionKey || '';
+      const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
+      const questionCards = Array.from(form.querySelectorAll('[data-question-card]'));
+      const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
+      const reviewButtons = Array.from(form.querySelectorAll('[data-review-toggle]'));
+      const timerEl = document.getElementById('p56qTimer');
+      const timerBar = document.getElementById('p56qTimerBar');
+      const orderedIds = questionCards.map((card) => String(card.dataset.questionId));
+      const totalSeconds = Number(timerEl?.dataset.duration || 0) * 60;
+      let currentQuestionId = orderedIds[0] || null;
+      let reviewSet = new Set();
+
+      const readState = () => {
+        if (!sessionKey) return null;
+        try {
+          const raw = sessionStorage.getItem(sessionKey);
+          return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const writeState = (timeLeft = null) => {
+        if (!sessionKey) return;
+        const answers = {};
+        radioInputs.forEach((input) => {
+          if (input.checked) {
+            answers[input.name] = input.value;
+          }
+        });
+
+        try {
+          sessionStorage.setItem(sessionKey, JSON.stringify({
+            currentQuestionId,
+            answers,
+            reviews: Array.from(reviewSet),
+            timeLeft
+          }));
+        } catch (error) {
+          console.warn('Cannot save public practice state:', error);
+        }
+      };
+
+      const restoreState = () => {
+        const stored = readState();
+        if (!stored) return null;
+
+        Object.entries(stored.answers || {}).forEach(([name, value]) => {
+          const matched = form.querySelector(`input[name="${name}"][value="${value}"]`);
+          if (matched) {
+            matched.checked = true;
+          }
+        });
+
+        reviewSet = new Set(Array.isArray(stored.reviews) ? stored.reviews.map(String) : []);
+
+        if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
+          currentQuestionId = String(stored.currentQuestionId);
+        }
+
+        return stored;
+      };
+
+      const getAnsweredSet = () => new Set(
+        radioInputs.filter((input) => input.checked).map((input) => String(input.dataset.questionInput))
+      );
+
+      const syncUi = (persistTimeLeft = null) => {
+        const answeredSet = getAnsweredSet();
+
+        navButtons.forEach((button) => {
+          const questionId = String(button.dataset.goQuestion);
+          button.classList.toggle('current', questionId === String(currentQuestionId));
+          button.classList.toggle('answered', answeredSet.has(questionId));
+          button.classList.toggle('review', reviewSet.has(questionId));
+        });
+
+        reviewButtons.forEach((button) => {
+          const questionId = String(button.dataset.reviewToggle);
+          button.classList.toggle('is-active', reviewSet.has(questionId));
+        });
+
+        writeState(persistTimeLeft);
+      };
+
+      const setCurrentQuestion = (questionId, shouldScroll = true) => {
+        if (!orderedIds.includes(String(questionId))) return;
+        currentQuestionId = String(questionId);
+        if (shouldScroll) {
+          const card = document.getElementById(`question-${String(questionId)}`);
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+        syncUi();
+      };
+
+      const storedState = restoreState();
+      syncUi(storedState && typeof storedState.timeLeft === 'number' ? storedState.timeLeft : null);
+
+      navButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          setCurrentQuestion(button.dataset.goQuestion, true);
+        });
+      });
+
+      radioInputs.forEach((input) => {
+        input.addEventListener('change', () => {
+          currentQuestionId = String(input.dataset.questionInput);
+          syncUi();
+        });
+      });
+
+      reviewButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const questionId = String(button.dataset.reviewToggle);
+          if (reviewSet.has(questionId)) {
+            reviewSet.delete(questionId);
+          } else {
+            reviewSet.add(questionId);
+          }
+          currentQuestionId = questionId;
+          syncUi();
+        });
+      });
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          const visibleEntry = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+
+          if (visibleEntry) {
+            currentQuestionId = String(visibleEntry.target.dataset.questionId);
+            syncUi();
+          }
+        }, {
+          rootMargin: '-20% 0px -60% 0px',
+          threshold: [0.2, 0.45, 0.7]
+        });
+
+        questionCards.forEach((card) => observer.observe(card));
+      }
+
+      form.addEventListener('submit', () => {
+        if (sessionKey) {
+          sessionStorage.removeItem(sessionKey);
+        }
+      });
+
+      if (timerEl) {
+        let timeLeft = storedState && typeof storedState.timeLeft === 'number'
+          ? Number(storedState.timeLeft)
+          : totalSeconds;
+
+        const renderTimer = () => {
+          const safeTimeLeft = Math.max(timeLeft, 0);
+          const hours = Math.floor(safeTimeLeft / 3600);
+          const minutes = Math.floor((safeTimeLeft % 3600) / 60);
+          const seconds = safeTimeLeft % 60;
+          timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+          if (timerBar && totalSeconds > 0) {
+            timerBar.style.width = `${(safeTimeLeft / totalSeconds) * 100}%`;
+          }
+
+          syncUi(safeTimeLeft);
+
+          if (safeTimeLeft <= 0) {
+            alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.');
+            form.submit();
+            return;
+          }
+
+          timeLeft -= 1;
+        };
+
+        renderTimer();
+        setInterval(renderTimer, 1000);
+      }
+    })();
+  </script>
+</body>
+</html>
