@@ -1,0 +1,170 @@
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const page = aboutSection || {};
+const siblings = (aboutMenu || []).map((item) => ({
+  ...item,
+  href: `${safeBaseUrl}/ve-chung-toi/${item.slug}`,
+  isActive: item.slug === page.slug,
+}));
+
+function renderMedia(url, alt, className) {
+  if (url) {
+    return `<div class="${className}"><img src="${url}" alt="${alt}"></div>`;
+  }
+  return `<div class="${className} abt-fallback"><span>${alt}</span></div>`;
+}
+%>
+
+<style>
+  .abt-page { display: grid; gap: 28px; padding: 12px 0 36px; }
+  .abt-page h1, .abt-page h2, .abt-page h3 { margin: 0; color: #0f172a; background: none !important; -webkit-background-clip: initial !important; color: #0f172a !important; }
+  .abt-page p { margin: 0; color: #334155; line-height: 1.8; }
+  .abt-crumbs, .abt-subnav, .abt-actions, .abt-card-actions, .abt-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+  .abt-crumbs { color: #64748b; font-size: .94rem; }
+  .abt-chip, .abt-pill, .abt-subnav a, .abt-link { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 14px; border-radius: 999px; font-weight: 800; }
+  .abt-chip { width: max-content; color: #b91c1c; background: rgba(254, 226, 226, .9); font-size: .82rem; letter-spacing: .08em; text-transform: uppercase; }
+  .abt-subnav { padding: 16px; border-radius: 24px; background: rgba(255,255,255,.82); border: 1px solid rgba(15,23,42,.06); box-shadow: 0 18px 34px rgba(15,23,42,.05); }
+  .abt-subnav a { color: #475569; background: rgba(248,250,252,.88); border: 1px solid rgba(15,23,42,.06); }
+  .abt-subnav a.is-active { color: #fff; border-color: transparent; background: linear-gradient(135deg, #dc2626 0%, #2563eb 100%); }
+  .abt-hero, .abt-panel, .abt-card, .abt-support, .abt-quote { background: rgba(255,255,255,.94); border: 1px solid rgba(15,23,42,.06); box-shadow: 0 20px 38px rgba(15,23,42,.06); }
+  .abt-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr); gap: 24px; padding: clamp(24px, 4vw, 40px); border-radius: 34px; background: radial-gradient(circle at top left, rgba(239,68,68,.12), transparent 28%), radial-gradient(circle at bottom right, rgba(59,130,246,.14), transparent 30%), linear-gradient(135deg, rgba(255,255,255,.94) 0%, rgba(248,250,252,.98) 100%); }
+  .abt-copy { display: grid; gap: 16px; align-content: start; }
+  .abt-copy h1 { font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: clamp(2.3rem, 5vw, 4.4rem); line-height: 1.02; letter-spacing: -.06em; }
+  .abt-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: 999px; font-weight: 800; transition: transform .2s ease; }
+  .abt-btn:hover { transform: translateY(-1px); }
+  .abt-btn-primary { color: #fff; background: linear-gradient(135deg, #dc2626 0%, #2563eb 100%); }
+  .abt-btn-secondary { color: #0f172a; background: rgba(255,255,255,.9); border: 1px solid rgba(15,23,42,.08); }
+  .abt-grid-2, .abt-grid-3, .abt-grid-4, .abt-stats, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities, .abt-method, .abt-diff, .abt-resources { display: grid; gap: 18px; }
+  .abt-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .abt-grid-3, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .abt-grid-4, .abt-method, .abt-diff, .abt-resources, .abt-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .abt-card, .abt-support, .abt-quote { padding: 24px; border-radius: 28px; display: grid; gap: 12px; }
+  .abt-media, .abt-media img, .abt-fallback { display: block; width: 100%; height: 100%; }
+  .abt-media { overflow: hidden; border-radius: 28px; min-height: clamp(280px, 40vw, 520px); background: linear-gradient(135deg, #dbeafe 0%, #fdf2f8 100%); position: relative; }
+  .abt-card .abt-media, .abt-panel .abt-media { min-height: 220px; border-radius: 20px; }
+  .abt-team .abt-media, .abt-resources .abt-media { min-height: 300px; }
+  .abt-media img { object-fit: cover; }
+  .abt-fallback { display: grid; place-items: center; padding: 24px; text-align: center; font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-weight: 700; background: linear-gradient(135deg, #eff6ff 0%, #fff1f2 100%); }
+  .abt-note { position: absolute; left: 16px; right: 16px; bottom: 16px; padding: 12px 14px; border-radius: 18px; background: rgba(15,23,42,.74); color: rgba(255,255,255,.9); font-size: .9rem; line-height: 1.7; }
+  .abt-stat { padding: 18px; border-radius: 22px; background: rgba(255,255,255,.94); border: 1px solid rgba(15,23,42,.06); box-shadow: 0 16px 30px rgba(15,23,42,.05); display: grid; gap: 6px; }
+  .abt-stat strong { font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: clamp(1.4rem, 3vw, 2rem); }
+  .abt-letter { width: 58px; height: 58px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: 1.6rem; font-weight: 800; color: #fff; }
+  .tone-amber .abt-letter { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); }
+  .tone-coral .abt-letter { background: linear-gradient(135deg, #ef4444 0%, #f97316 100%); }
+  .tone-sky .abt-letter { background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%); }
+  .tone-green .abt-letter { background: linear-gradient(135deg, #10b981 0%, #65a30d 100%); }
+  .abt-index { font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: 3rem; line-height: 1; color: rgba(15,23,42,.08); }
+  .abt-mini { display: grid; gap: 12px; padding: 18px; border-radius: 22px; background: rgba(248,250,252,.88); border: 1px dashed rgba(15,23,42,.12); text-align: center; }
+  .abt-mini-photo { width: 104px; height: 104px; margin: 0 auto; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, #dbeafe 0%, #fdf2f8 100%); }
+  .abt-mini-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .abt-panel { padding: 24px; border-radius: 30px; display: grid; gap: 18px; }
+  .abt-skill { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; padding: 22px; border-radius: 28px; background: rgba(255,255,255,.94); border: 1px solid rgba(15,23,42,.06); box-shadow: 0 18px 34px rgba(15,23,42,.05); }
+  .abt-bullets { display: grid; gap: 10px; padding: 0; margin: 0; }
+  .abt-bullets li { list-style: none; position: relative; padding-left: 18px; line-height: 1.8; color: #334155; }
+  .abt-bullets li::before { content: ""; position: absolute; left: 0; top: 12px; width: 8px; height: 8px; border-radius: 50%; background: #2563eb; }
+  .abt-side { display: grid; gap: 18px; grid-template-columns: minmax(0, 1.15fr) 320px; align-items: start; }
+  .abt-tags span, .abt-pill, .abt-link { background: rgba(239,246,255,.92); color: #1d4ed8; font-size: .84rem; }
+  .abt-inline { display: flex; justify-content: center; }
+  @media (max-width: 1180px) {
+    .abt-hero, .abt-skill, .abt-side { grid-template-columns: 1fr; }
+    .abt-grid-3, .abt-grid-4, .abt-stats, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities, .abt-method, .abt-diff, .abt-resources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 760px) {
+    .abt-page { gap: 22px; }
+    .abt-hero { padding: 22px; border-radius: 26px; }
+    .abt-grid-2, .abt-grid-3, .abt-grid-4, .abt-stats, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities, .abt-method, .abt-diff, .abt-resources { grid-template-columns: 1fr; }
+    .abt-card, .abt-support, .abt-quote, .abt-panel { padding: 20px; border-radius: 22px; }
+  }
+</style>
+
+<div class="abt-page">
+  <nav class="abt-crumbs" aria-label="Breadcrumb">
+    <a href="<%= safeBaseUrl %>/">Trang chủ</a><span>&gt;</span>
+    <a href="<%= safeBaseUrl %>/ve-chung-toi">Về chúng tôi</a><span>&gt;</span>
+    <span><%= page.title %></span>
+  </nav>
+
+  <header class="abt-hero">
+    <div class="abt-copy">
+      <span class="abt-chip"><%= page.eyebrow %></span>
+      <h1><%= page.title %></h1>
+      <p><%= page.summary %></p>
+      <div class="abt-actions">
+        <a href="<%= safeBaseUrl %>/contact" class="abt-btn abt-btn-primary">Nhận tư vấn lộ trình</a>
+        <a href="<%= safeBaseUrl %>/ve-chung-toi" class="abt-btn abt-btn-secondary">Quay lại trang chính</a>
+      </div>
+      <% if (page.heroStats && page.heroStats.length) { %>
+        <div class="abt-stats">
+          <% page.heroStats.forEach((item) => { %>
+            <article class="abt-stat"><strong><%= item.value %></strong><span><%= item.label %></span></article>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+    <div style="position: relative;">
+      <%- renderMedia(page.heroImage, page.title, 'abt-media') %>
+      <% if (page.heroNote) { %><div class="abt-note"><%= page.heroNote %></div><% } %>
+    </div>
+  </header>
+
+  <nav class="abt-subnav" aria-label="Danh mục Về chúng tôi">
+    <% siblings.forEach((item) => { %>
+      <a href="<%= item.href %>" class="<%= item.isActive ? 'is-active' : '' %>"><%= item.label %></a>
+    <% }) %>
+  </nav>
+
+  <% if (page.kind === 'story') { %>
+    <section class="abt-grid-3"><% (page.highlightCards || []).forEach((item) => { %><article class="abt-card"><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
+    <section class="abt-grid-2">
+      <article class="abt-panel"><span class="abt-chip">Triết lý</span><h2>Định hình một thương hiệu đào tạo rõ ràng và có trách nhiệm.</h2><% (page.storyBlocks || []).forEach((item) => { %><div><h3><%= item.title %></h3><p><%= item.text %></p></div><% }) %><div class="abt-quote"><p><%= page.quote %></p></div></article>
+      <article class="abt-panel"><span class="abt-chip">Hành trình</span><h2>Những cột mốc quan trọng.</h2><% (page.timeline || []).forEach((item) => { %><div class="abt-card"><span class="abt-pill"><%= item.year %></span><h3><%= item.title %></h3><p><%= item.text %></p></div><% }) %></article>
+    </section>
+  <% } %>
+
+  <% if (page.kind === 'founder') { %>
+    <section class="abt-grid-2">
+      <article class="abt-panel"><span class="abt-chip">Chân dung người sáng lập</span><h2>Dạy thật, theo sát thật và xây hệ thống học thật.</h2><% (page.bioParagraphs || []).forEach((item) => { %><p><%= item %></p><% }) %></article>
+      <article class="abt-panel"><span class="abt-chip">Giá trị cốt lõi</span><h2>Những nguyên tắc luôn xuất hiện trong lớp học của thầy Tài.</h2><% (page.values || []).forEach((item) => { %><div class="abt-card"><h3><%= item.title %></h3><p><%= item.text %></p></div><% }) %></article>
+    </section>
+    <section class="abt-grid-3"><% (page.milestones || []).forEach((item) => { %><article class="abt-card"><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
+  <% } %>
+
+  <% if (page.kind === 'method') { %>
+    <section class="abt-card"><strong><%= page.announcement.title %></strong><p><%= page.announcement.text %></p><a href="<%= safeBaseUrl + page.announcement.href %>" class="abt-link"><%= page.announcement.hrefLabel %></a></section>
+    <section class="abt-method"><% (page.methodCards || []).forEach((item) => { %><article class="abt-card tone-<%= item.tone %>"><span class="abt-letter"><%= item.letter %></span><small><%= item.subtitle %></small><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
+    <section class="abt-diff"><% (page.differentiators || []).forEach((item) => { %><article class="abt-card"><span class="abt-index"><%= item.number %></span><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
+    <section class="abt-panel"><span class="abt-chip">Ứng dụng phương pháp</span><h2>T.A.I.L được triển khai khác nhau ở từng kỹ năng.</h2><div style="display:grid;gap:18px;"><% (page.skillApplications || []).forEach((item) => { %><article class="abt-skill"><div style="display:grid;gap:12px;"><h3><%= item.title %></h3><p><%= item.text %></p><ul class="abt-bullets"><% (item.bullets || []).forEach((bullet) => { %><li><%= bullet %></li><% }) %></ul></div><aside class="abt-mini"><div class="abt-mini-photo"><img src="<%= item.student.image %>" alt="<%= item.student.name %>"></div><strong><%= item.student.name %></strong><span><%= item.student.school %></span><span class="abt-pill" style="margin:0 auto;"><%= item.student.score %></span></aside></article><% }) %></div></section>
+    <section class="abt-grid-2"><div class="abt-stats"><% (page.proofStats || []).forEach((item) => { %><article class="abt-stat"><strong><%= item.value %></strong><span><%= item.label %></span></article><% }) %></div><article class="abt-quote"><p><%= page.proofQuote %></p></article></section>
+    <section class="abt-grid-2"><article class="abt-panel"><%- renderMedia(page.proofImage, page.title, 'abt-media') %></article><article class="abt-panel"><span class="abt-chip">Hình ảnh / video review</span><h2>Thay block này bằng ảnh hoặc video thật của bạn.</h2><p>Phần bên trái đang dùng link placeholder. Bạn chỉ cần thay link là có ngay một block review kiểu landing page mà không phải chỉnh lại layout.</p></article></section>
+    <section class="abt-resources"><% (page.resources || []).forEach((item) => { %><article class="abt-card"><%- renderMedia(item.image, item.title, 'abt-media') %><h3><%= item.title %></h3><strong><%= item.subtitle %></strong><p><%= item.text %></p><a href="<%= safeBaseUrl %>/contact" class="abt-link">Xem thêm</a></article><% }) %></section>
+  <% } %>
+
+  <% if (page.kind === 'campus') { %>
+    <section class="abt-side">
+      <div style="display:grid;gap:18px;"><% (page.campuses || []).forEach((item) => { %><article class="abt-campus-card abt-card"><%- renderMedia(item.image, item.name, 'abt-media') %><h3><%= item.name %></h3><p><%= item.address %></p><div class="abt-tags"><span><%= item.phone %></span><span><%= item.schedule %></span></div><div class="abt-card-actions"><a href="<%= item.mapHref %>" target="_blank" rel="noreferrer" class="abt-link">Mở Google Maps</a><a href="<%= safeBaseUrl %>/lich-khai-giang" class="abt-link">Xem lịch khai giảng</a></div></article><% }) %></div>
+      <aside class="abt-support"><span class="abt-chip">Tư vấn nhanh</span><h2><%= page.supportCard.title %></h2><ul class="abt-bullets"><% (page.supportCard.bullets || []).forEach((item) => { %><li><%= item %></li><% }) %></ul><div class="abt-actions"><a href="<%= safeBaseUrl + page.supportCard.primaryHref %>" class="abt-btn abt-btn-primary"><%= page.supportCard.primaryLabel %></a><a href="<%= safeBaseUrl + page.supportCard.secondaryHref %>" class="abt-btn abt-btn-secondary"><%= page.supportCard.secondaryLabel %></a></div></aside>
+    </section>
+    <section class="abt-promos"><% (page.promoBanners || []).forEach((item) => { %><article class="abt-card"><%- renderMedia(item.image, item.title, 'abt-media') %><h3><%= item.title %></h3><p><%= item.subtitle %></p></article><% }) %></section>
+  <% } %>
+
+  <% if (page.kind === 'team') { %>
+    <section class="abt-grid-2"><article class="abt-panel"><span class="abt-chip">Tiêu chuẩn đội ngũ</span><h2>Giỏi chuyên môn thôi chưa đủ, còn cần khả năng chữa lỗi và giữ nhịp học.</h2><ul class="abt-bullets"><% (page.valuePoints || []).forEach((item) => { %><li><%= item %></li><% }) %></ul></article><article class="abt-panel"><span class="abt-chip">Ảnh profile</span><h2>Mỗi thẻ dưới đây dùng link ảnh riêng để bạn thay dễ dàng.</h2><p>Phần này hợp để đưa ảnh thật, chứng chỉ, mô tả chuyên môn hoặc ảnh đội ngũ trong workshop nội bộ.</p></article></section>
+    <section class="abt-team"><% (page.members || []).forEach((item) => { %><article class="abt-card"><%- renderMedia(item.image, item.name, 'abt-media') %><h3><%= item.name %></h3><strong><%= item.role %></strong><p><%= item.score %></p><div class="abt-tags"><% (item.tags || []).forEach((tag) => { %><span><%= tag %></span><% }) %></div><p><%= item.text %></p></article><% }) %></section>
+  <% } %>
+
+  <% if (page.kind === 'results') { %>
+    <section class="abt-stats"><% (page.resultStats || []).forEach((item) => { %><article class="abt-stat"><strong><%= item.value %></strong><span><%= item.label %></span></article><% }) %></section>
+    <section class="abt-results"><% (page.stories || []).forEach((item) => { %><article class="abt-card"><%- renderMedia(item.image, item.name, 'abt-media') %><h3><%= item.name %></h3><strong><%= item.score %></strong><p><%= item.school %></p><p><%= item.quote %></p></article><% }) %></section>
+  <% } %>
+
+  <% if (page.kind === 'careers') { %>
+    <section class="abt-grid-2"><article class="abt-panel"><span class="abt-chip">Văn hóa tuyển người</span><h2>Ưu tiên người làm thật và phối hợp tốt với đội ngũ.</h2><ul class="abt-bullets"><% (page.culturePoints || []).forEach((item) => { %><li><%= item %></li><% }) %></ul></article><article class="abt-panel"><span class="abt-chip">Quy trình</span><h2>Các bước ứng tuyển minh bạch.</h2><div style="display:grid;gap:12px;"><% (page.process || []).forEach((item, index) => { %><div class="abt-card"><strong>Bước <%= index + 1 %></strong><p><%= item %></p></div><% }) %></div></article></section>
+    <section class="abt-roles"><% (page.roles || []).forEach((item) => { %><article class="abt-role-card abt-card"><h3><%= item.title %></h3><strong><%= item.type %> | <%= item.location %></strong><ul class="abt-bullets"><% (item.bullets || []).forEach((bullet) => { %><li><%= bullet %></li><% }) %></ul></article><% }) %></section>
+    <div class="abt-inline"><a href="<%= page.ctaHref %>" class="abt-btn abt-btn-primary"><%= page.ctaLabel %></a></div>
+  <% } %>
+
+  <% if (page.kind === 'culture') { %>
+    <section class="abt-grid-3"><% (page.culturePillars || []).forEach((item) => { %><article class="abt-card"><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
+    <section class="abt-activities"><% (page.activities || []).forEach((item) => { %><article class="abt-activity-card abt-card"><%- renderMedia(item.image, item.title, 'abt-media') %><span class="abt-pill"><%= item.tag %></span><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
+  <% } %>
+</div>

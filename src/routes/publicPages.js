@@ -1,6 +1,7 @@
 const express = require("express");
 const renderWithLayout = require("../utils/renderHelper");
 const { getFullTestCards } = require("../data/fullTestRegistry");
+const { aboutMenu, getAboutSection } = require("../data/aboutSections");
 const publicPracticeController = require("../controllers/publicPracticeController");
 
 const router = express.Router();
@@ -8,6 +9,20 @@ const router = express.Router();
 router.get("/ve-chung-toi", (req, res) => {
   renderWithLayout(res, "about", {
     title: "Về chúng tôi",
+  });
+});
+
+router.get("/ve-chung-toi/:sectionSlug", (req, res, next) => {
+  const aboutSection = getAboutSection(req.params.sectionSlug);
+
+  if (!aboutSection) {
+    return next();
+  }
+
+  return renderWithLayout(res, "about-section", {
+    title: aboutSection.title,
+    aboutMenu,
+    aboutSection,
   });
 });
 

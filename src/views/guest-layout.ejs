@@ -158,16 +158,19 @@
             gap: 2px;
             min-width: 0;
             flex: 1;
-            overflow-x: auto;
-            scrollbar-width: none;
+            overflow: visible;
             justify-self: stretch;
         }
 
         .g-nav-links::-webkit-scrollbar { display: none; }
 
-        .g-nav-link {
+        .g-nav-item {
             position: relative;
             flex: 0 0 auto;
+        }
+
+        .g-nav-link {
+            position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -180,6 +183,16 @@
             transition: color .2s ease, background .2s ease, transform .2s ease;
         }
 
+        .g-nav-link.is-with-flyout {
+            gap: 8px;
+        }
+
+        .g-nav-caret {
+            width: 14px;
+            height: 14px;
+            transition: transform .2s ease;
+        }
+
         .g-nav-link:hover {
             color: #111827;
             background: linear-gradient(135deg, rgba(47,120,237,.08) 0%, rgba(242,169,210,.12) 100%);
@@ -189,6 +202,56 @@
         .g-nav-link.is-active {
             color: var(--brand);
             background: linear-gradient(135deg, rgba(47,120,237,.10) 0%, rgba(242,183,207,.16) 100%);
+        }
+
+        .g-nav-flyout {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            width: min(300px, 78vw);
+            display: grid;
+            gap: 4px;
+            padding: 12px;
+            border-radius: 24px;
+            border: 1px solid rgba(89,106,191,.14);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.16);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px);
+            pointer-events: none;
+            transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+        }
+
+        .g-nav-item:hover .g-nav-flyout,
+        .g-nav-item:focus-within .g-nav-flyout {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .g-nav-item:hover .g-nav-caret,
+        .g-nav-item:focus-within .g-nav-caret {
+            transform: rotate(180deg);
+        }
+
+        .g-flyout-link {
+            display: flex;
+            align-items: center;
+            min-height: 46px;
+            padding: 0 14px;
+            border-radius: 16px;
+            color: #334155;
+            font-size: .96rem;
+            font-weight: 600;
+            transition: background .2s ease, color .2s ease, transform .2s ease;
+        }
+
+        .g-flyout-link:hover {
+            color: #111827;
+            background: linear-gradient(135deg, rgba(47,120,237,.08) 0%, rgba(242,169,210,.12) 100%);
+            transform: translateX(2px);
         }
 
         .g-actions {
@@ -265,6 +328,29 @@
             padding: 14px 0 18px;
             display: grid;
             gap: 10px;
+        }
+
+        .g-mobile-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .g-mobile-submenu {
+            display: grid;
+            gap: 8px;
+            padding-left: 16px;
+        }
+
+        .g-mobile-sublink {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.46);
+            border: 1px solid rgba(89,106,191,.08);
+            color: #344054;
+            font-size: .95rem;
+            font-weight: 600;
         }
 
         .g-mobile-link,
@@ -469,6 +555,16 @@
     const safeSuccessMessages = typeof success_msg !== 'undefined' ? success_msg : [];
     const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
     const safeInfoMessages = typeof error !== 'undefined' ? error : [];
+    const aboutNavChildren = [
+        { label: 'Về Thầy Tài TOEIC', href: buildHref('/ve-chung-toi/ve-thay-tai-toeic') },
+        { label: 'Về thầy Tài', href: buildHref('/ve-chung-toi/ve-thay-tai') },
+        { label: 'Phương pháp đào tạo', href: buildHref('/ve-chung-toi/phuong-phap-dao-tao') },
+        { label: 'Hệ thống cơ sở', href: buildHref('/ve-chung-toi/he-thong-co-so') },
+        { label: 'Đội ngũ giáo viên', href: buildHref('/ve-chung-toi/doi-ngu-giao-vien') },
+        { label: 'Học viên điểm cao', href: buildHref('/ve-chung-toi/hoc-vien-diem-cao') },
+        { label: 'Tuyển dụng', href: buildHref('/ve-chung-toi/tuyen-dung') },
+        { label: 'Hoạt động nội bộ', href: buildHref('/ve-chung-toi/hoat-dong-noi-bo') }
+    ];
     const guestNavItems = [
         { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
         { label: 'Về chúng tôi', href: buildHref('/ve-chung-toi'), matches: ['/ve-chung-toi'] },
@@ -509,7 +605,24 @@
 
             <nav class="g-nav-links" aria-label="Điều hướng khách">
                 <% guestNavItems.forEach((item) => { %>
-                    <a href="<%= item.href %>" class="g-nav-link <%= isActive(item) ? 'is-active' : '' %>"><%= item.label %></a>
+                    <% const flyoutLinks = item.href === buildHref('/ve-chung-toi') ? aboutNavChildren : []; %>
+                    <div class="g-nav-item">
+                        <a href="<%= item.href %>" class="g-nav-link <%= flyoutLinks.length ? 'is-with-flyout' : '' %> <%= isActive(item) ? 'is-active' : '' %>">
+                            <span><%= item.label %></span>
+                            <% if (flyoutLinks.length) { %>
+                                <svg class="g-nav-caret" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M5 7.5L10 12.5L15 7.5"></path>
+                                </svg>
+                            <% } %>
+                        </a>
+                        <% if (flyoutLinks.length) { %>
+                            <div class="g-nav-flyout" role="menu" aria-label="<%= item.label %>">
+                                <% flyoutLinks.forEach((child) => { %>
+                                    <a href="<%= child.href %>" class="g-flyout-link"><%= child.label %></a>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
                 <% }) %>
             </nav>
 
@@ -530,10 +643,18 @@
         <div class="g-mobile-panel" id="guestMobilePanel">
             <div class="g-mobile-inner">
                 <% guestNavItems.forEach((item) => { %>
+                    <% const mobileFlyoutLinks = item.href === buildHref('/ve-chung-toi') ? aboutNavChildren : []; %>
                     <a href="<%= item.href %>" class="g-mobile-link">
                         <span><%= item.label %></span>
                         <span>→</span>
                     </a>
+                    <% if (mobileFlyoutLinks.length) { %>
+                        <div class="g-mobile-submenu">
+                            <% mobileFlyoutLinks.forEach((child) => { %>
+                                <a href="<%= child.href %>" class="g-mobile-sublink"><%= child.label %></a>
+                            <% }) %>
+                        </div>
+                    <% } %>
                 <% }) %>
                 <a href="<%= buildHref('/placement-tests') %>" class="g-mobile-cta">Kiểm tra đầu vào</a>
                 <a href="<%= buildHref('/login') %>" class="g-mobile-cta">Đăng nhập</a>
