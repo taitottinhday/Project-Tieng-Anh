@@ -574,6 +574,13 @@
         { label: 'Tuyển dụng', href: buildHref('/ve-chung-toi/tuyen-dung') },
         { label: 'Hoạt động nội bộ', href: buildHref('/ve-chung-toi/hoat-dong-noi-bo') }
     ];
+    const courseNavChildren = [
+        { label: 'TOEIC 2 k\u1ef9 n\u0103ng', href: buildHref('/courses-blog/toeic-2-ky-nang') },
+        { label: 'TOEIC 4 k\u1ef9 n\u0103ng', href: buildHref('/courses-blog/toeic-4-ky-nang') },
+        { label: 'Kh\u00f3a h\u1ecdc c\u1ea5p t\u1ed1c', href: buildHref('/courses-blog/khoa-hoc-cap-toc') },
+        { label: 'Ti\u1ebfng Anh doanh nghi\u1ec7p', href: buildHref('/courses-blog/tieng-anh-doanh-nghiep') },
+        { label: 'Kh\u00f3a TOEIC online', href: buildHref('/courses-blog/khoa-toeic-online') }
+    ];
     const guestNavItems = [
         { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
         { label: 'Về chúng tôi', href: buildHref('/ve-chung-toi'), matches: ['/ve-chung-toi'] },
@@ -614,7 +621,9 @@
 
             <nav class="g-nav-links" aria-label="Điều hướng khách">
                 <% guestNavItems.forEach((item) => { %>
-                    <% const flyoutLinks = item.href === buildHref('/ve-chung-toi') ? aboutNavChildren : []; %>
+                    <% const flyoutLinks = item.href === buildHref('/ve-chung-toi')
+                        ? aboutNavChildren
+                        : (item.href === buildHref('/courses-blog') ? courseNavChildren : []); %>
                     <div class="g-nav-item">
                         <a href="<%= item.href %>" class="g-nav-link <%= flyoutLinks.length ? 'is-with-flyout' : '' %> <%= isActive(item) ? 'is-active' : '' %>">
                             <span><%= item.label %></span>
@@ -652,7 +661,9 @@
         <div class="g-mobile-panel" id="guestMobilePanel">
             <div class="g-mobile-inner">
                 <% guestNavItems.forEach((item) => { %>
-                    <% const mobileFlyoutLinks = item.href === buildHref('/ve-chung-toi') ? aboutNavChildren : []; %>
+                    <% const mobileFlyoutLinks = item.href === buildHref('/ve-chung-toi')
+                        ? aboutNavChildren
+                        : (item.href === buildHref('/courses-blog') ? courseNavChildren : []); %>
                     <a href="<%= item.href %>" class="g-mobile-link">
                         <span><%= item.label %></span>
                         <span>→</span>
