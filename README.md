@@ -39,6 +39,14 @@ Nền tảng quản lý trung tâm tiếng Anh xây bằng Node.js, Express, EJS
    PORT=4207
    ```
 
+   Nếu muốn dùng sẵn tài khoản quản trị và giáo viên mặc định trên mọi môi trường, có thể giữ hoặc đổi thêm:
+   ```env
+   DEFAULT_ADMIN_EMAIL=admin@gmail.com
+   DEFAULT_ADMIN_PASSWORD=admin123
+   DEFAULT_TEACHER_EMAIL=hoanganh.teacher@thaytaiedu.vn
+   DEFAULT_TEACHER_PASSWORD=Teacher@123
+   ```
+
 4. Chạy app:
    ```bash
    npm start
@@ -49,7 +57,7 @@ Nền tảng quản lý trung tâm tiếng Anh xây bằng Node.js, Express, EJS
    http://localhost:4207
    ```
 
-Khi app khởi động, hệ thống sẽ tự tạo schema cơ bản và tự seed dữ liệu demo nếu bảng `courses` còn trống.
+Khi app khởi động, hệ thống sẽ tự tạo schema cơ bản, đồng bộ sẵn tài khoản `admin` / `teacher` mặc định trong MySQL, và tự seed dữ liệu demo nếu bảng `courses` còn trống.
 
 ## Đưa lên GitHub
 

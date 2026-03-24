@@ -1,8 +1,127 @@
+const bcrypt = require("bcrypt");
 const db = require("../models/db");
 const { ensurePlatformSupport } = require("./platformSupport");
 const { ensureStudentActivitySupport } = require("./studentActivityService");
+const { DEMO_TEACHERS, DEMO_TEACHER_PASSWORD } = require("./demoSeedService");
 
 let bootstrapReady = false;
+
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim() !== "") {
+      return value.trim();
+    }
+  }
+
+  return "";
+}
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function getDefaultAccessConfig() {
+  const demoTeacher = DEMO_TEACHERS[0] || {};
+
+  return {
+    admin: {
+      username: firstNonEmpty(process.env.DEFAULT_ADMIN_USERNAME, "Admin"),
+      email: normalizeEmail(firstNonEmpty(process.env.DEFAULT_ADMIN_EMAIL, "admin@gmail.com")),
+      password: firstNonEmpty(process.env.DEFAULT_ADMIN_PASSWORD, "admin123"),
+      role: "admin",
+    },
+    teacher: {
+      fullName: firstNonEmpty(process.env.DEFAULT_TEACHER_NAME, demoTeacher.fullName, "Demo Teacher"),
+      phone: firstNonEmpty(process.env.DEFAULT_TEACHER_PHONE, demoTeacher.phone),
+      email: normalizeEmail(
+        firstNonEmpty(process.env.DEFAULT_TEACHER_EMAIL, demoTeacher.email, "teacher@gmail.com")
+      ),
+      password: firstNonEmpty(process.env.DEFAULT_TEACHER_PASSWORD, DEMO_TEACHER_PASSWORD, "Teacher@123"),
+      role: "teacher",
+    },
+  };
+}
+
+async function ensureTeacherProfile({ fullName, phone, email }) {
+  if (!email) {
+    return null;
+  }
+
+  const [rows] = await db.query(
+    "SELECT id, full_name, phone FROM teachers WHERE email = ? LIMIT 1",
+    [email]
+  );
+
+  if (!rows.length) {
+    const [result] = await db.query(
+      "INSERT INTO teachers (full_name, phone, email) VALUES (?, ?, ?)",
+      [fullName, phone || null, email]
+    );
+    return result.insertId;
+  }
+
+  const teacher = rows[0];
+  const nextFullName = firstNonEmpty(teacher.full_name, fullName);
+  const nextPhone = firstNonEmpty(teacher.phone, phone);
+
+  if (nextFullName !== teacher.full_name || nextPhone !== (teacher.phone || "")) {
+    await db.query(
+      "UPDATE teachers SET full_name = ?, phone = ? WHERE id = ?",
+      [nextFullName, nextPhone || null, teacher.id]
+    );
+  }
+
+  return teacher.id;
+}
+
+async function ensurePrivilegedUser({ username, email, password, role }) {
+  if (!email || !password || !role) {
+    return null;
+  }
+
+  const [rows] = await db.query(
+    "SELECT id, username, password, role FROM users WHERE email = ? LIMIT 1",
+    [email]
+  );
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  if (!rows.length) {
+    const [result] = await db.query(
+      "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
+      [username, email, passwordHash, role]
+    );
+    return result.insertId;
+  }
+
+  const user = rows[0];
+  const shouldUpdate =
+    user.username !== username ||
+    user.role !== role ||
+    !(await bcrypt.compare(password, user.password));
+
+  if (shouldUpdate) {
+    await db.query(
+      "UPDATE users SET username = ?, password = ?, role = ? WHERE id = ?",
+      [username, passwordHash, role, user.id]
+    );
+  }
+
+  return user.id;
+}
+
+async function ensureDefaultAccessUsers() {
+  const defaults = getDefaultAccessConfig();
+
+  await ensurePrivilegedUser(defaults.admin);
+  await ensureTeacherProfile(defaults.teacher);
+  await ensurePrivilegedUser({
+    username: defaults.teacher.fullName,
+    email: defaults.teacher.email,
+    password: defaults.teacher.password,
+    role: defaults.teacher.role,
+  });
+}
 
 async function ensureCoreTables() {
   await db.query(`
@@ -148,6 +267,7 @@ async function ensureApplicationSchema() {
   }
 
   await ensureCoreTables();
+  await ensureDefaultAccessUsers();
   await ensurePlatformSupport();
   await ensureStudentActivitySupport();
   bootstrapReady = true;
