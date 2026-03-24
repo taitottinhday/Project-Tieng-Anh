@@ -303,6 +303,12 @@
       line-height: 1.7;
     }
 
+    .wfq-grouphead {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #20344f;
+    }
+
     .wfq-options {
       display: grid;
       gap: 12px;
@@ -430,10 +436,12 @@
     const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
     const summaryText = examData.description || examData.subtitle || "Bài thi gồm 40 câu hỏi, kèm đáp án và giải thích bằng Video. Chúc bạn học tốt ^^";
     const backHref = examData.libraryHref || (baseUrl + "/goc-hoc-tap/wordform");
+    const showPassageHeading = data.showPassageHeading === true;
     const questionViews = questions.map((question, index) => {
       const groupIndex = groups.findIndex((item) => Array.isArray(item.questions) && item.questions.some((candidate) => candidate.number === question.number));
       const group = groupIndex >= 0 ? groups[groupIndex] : {};
       const part = partSummary.find((item) => item.partNumber === question.partNumber) || {};
+      const groupQuestionNumbers = Array.isArray(group.questions) ? group.questions.map((candidate) => candidate.number) : [];
       return Object.assign({}, question, {
         navIndex: index + 1,
         groupIndex,
@@ -441,7 +449,9 @@
         partInstructions: part.instructions || "",
         sharedContent: group.sharedContent || "",
         sharedAudioUrl: group.sharedAudioUrl || null,
-        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : []
+        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : [],
+        groupStartNumber: groupQuestionNumbers[0] || question.number,
+        groupEndNumber: groupQuestionNumbers[groupQuestionNumbers.length - 1] || question.number
       });
     });
   %>
@@ -500,6 +510,10 @@
                 <h4><%= question.number %>. <%= question.prompt %></h4>
                 <span class="wfq-points">1 point(s)</span>
               </div>
+
+              <% if (showSharedBlock && showPassageHeading && (question.sharedContent || (question.sharedImages && question.sharedImages.length))) { %>
+                <div class="wfq-grouphead">Questions <%= question.groupStartNumber %>-<%= question.groupEndNumber %> refer to the following passage.</div>
+              <% } %>
 
               <% if (showSharedBlock && question.sharedContent) { %>
                 <div class="wfq-block"><%= question.sharedContent %></div>

@@ -54,6 +54,11 @@ router.get("/goc-hoc-tap/wordform/result/latest", publicPracticeController.showL
 router.get("/goc-hoc-tap/wordform/:practiceId", publicPracticeController.showWordformPractice);
 router.get("/goc-hoc-tap/wordform/:practiceId/take", publicPracticeController.takeWordformPractice);
 router.post("/goc-hoc-tap/wordform/:practiceId/submit", publicPracticeController.submitWordformPractice);
+router.get("/goc-hoc-tap/part-7", publicPracticeController.listPart7GuidePractice);
+router.get("/goc-hoc-tap/part-7/result/latest", publicPracticeController.showLatestPart7GuideResult);
+router.get("/goc-hoc-tap/part-7/:practiceId", publicPracticeController.showPart7GuidePractice);
+router.get("/goc-hoc-tap/part-7/:practiceId/take", publicPracticeController.takePart7GuidePractice);
+router.post("/goc-hoc-tap/part-7/:practiceId/submit", publicPracticeController.submitPart7GuidePractice);
 
 router.get("/goc-hoc-tap", (req, res) => {
   const safeBaseUrl = res.locals.baseUrl || "";
@@ -119,7 +124,7 @@ router.get("/goc-hoc-tap", (req, res) => {
             tone: "powder",
             kind: "cta",
             title: "Mini test 1",
-            href: isStudent ? `${safeBaseUrl}/student/practice/reading` : `${safeBaseUrl}/placement-tests`,
+            href: `${safeBaseUrl}/goc-hoc-tap/part-7`,
             action: "Làm thử ngay!",
           },
         ],

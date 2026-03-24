@@ -40,6 +40,28 @@ const WORDFORM_META = Object.freeze({
   totalItems: 2
 });
 
+const PART7_GUIDE_META = Object.freeze({
+  durationMinutes: 0,
+  parts: [7],
+  totalItems: 13
+});
+
+const PART7_GUIDE_BLUEPRINTS = Object.freeze([
+  { sourceId: 'ets-2024-test-1', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2024-test-1', groupIndexes: [9, 10] },
+  { sourceId: 'ets-2024-test-2', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2024-test-2', groupIndexes: [9, 10] },
+  { sourceId: 'ets-2024-test-3', groupIndexes: [8, 9] },
+  { sourceId: 'ets-2024-test-4', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2023-test-1', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2023-test-1', groupIndexes: [9, 10] },
+  { sourceId: 'ets-2023-test-4', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2023-test-8', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2022-test-1', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2021-test-1', groupIndexes: [7, 8] },
+  { sourceId: 'ets-2020-test-1', groupIndexes: [7, 8] }
+]);
+
 const READING_BANDS = Object.freeze([
   { key: 'all', label: 'Tất cả' },
   { key: '500-plus', label: '500 +' },
@@ -124,6 +146,10 @@ function buildWordformPracticeId(index) {
   return `wordform-test-${String(index).padStart(3, '0')}`;
 }
 
+function buildPart7GuidePracticeId(index) {
+  return `part7-guide-${String(index).padStart(3, '0')}`;
+}
+
 function parsePartPracticeId(practiceId) {
   const match = String(practiceId || '').match(/^(.*)__part__(\d+)$/);
 
@@ -163,6 +189,18 @@ function parsePart56PracticeId(practiceId) {
 
 function parseWordformPracticeId(practiceId) {
   const match = String(practiceId || '').match(/^wordform-test-(\d{3})$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    index: Number(match[1])
+  };
+}
+
+function parsePart7GuidePracticeId(practiceId) {
+  const match = String(practiceId || '').match(/^part7-guide-(\d{3})$/i);
 
   if (!match) {
     return null;
@@ -339,6 +377,55 @@ function getWordformPracticeBlueprints(baseUrl = '', options = {}) {
   });
 }
 
+function getPart7GuidePracticeBlueprints(baseUrl = '', options = {}) {
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/part-7';
+
+  return PART7_GUIDE_BLUEPRINTS.map((definition, index) => {
+    const sourceExam = getSourceExam(definition.sourceId);
+    const sourceLabel = formatManagedTitle({
+      id: definition.sourceId,
+      title: sourceExam.title,
+      collectionKey: sourceExam.collectionKey
+    });
+    const partSevenGroups = (Array.isArray(sourceExam.groups) ? sourceExam.groups : [])
+      .map((group) => ({
+        ...group,
+        questions: (Array.isArray(group.questions) ? group.questions : [])
+          .filter((question) => Number(question.partNumber) === 7)
+          .map(cloneQuestion)
+      }))
+      .filter((group) => group.questions.length > 0);
+    const selectedGroups = definition.groupIndexes.map((groupIndex) => partSevenGroups[groupIndex - 1]).filter(Boolean);
+
+    if (selectedGroups.length !== definition.groupIndexes.length) {
+      throw new Error(`Cannot resolve part 7 groups for ${definition.sourceId}.`);
+    }
+
+    const practiceId = buildPart7GuidePracticeId(index + 1);
+    const totalQuestions = selectedGroups.reduce((sum, group) => sum + (Array.isArray(group.questions) ? group.questions.length : 0), 0);
+    const heroImage = selectedGroups.flatMap((group) => (Array.isArray(group.sharedImages) ? group.sharedImages : [])).find(Boolean) || '';
+
+    return {
+      id: practiceId,
+      serialLabel: String(index + 1),
+      title: `Bài tập luyện tập phần ${index + 1}`,
+      subtitle: `${totalQuestions} câu luyện tập`,
+      description: `Mini test Part 7 gồm ${totalQuestions} câu, bám passage thật để bạn luyện đọc hiểu và chữa đề chi tiết.`,
+      href: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+      sourceId: definition.sourceId,
+      sourceLabel,
+      totalQuestions,
+      heroImage,
+      groups: selectedGroups.map((group) => ({
+        ...group,
+        questions: (Array.isArray(group.questions) ? group.questions : []).map(cloneQuestion),
+        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages.slice() : []
+      }))
+    };
+  });
+}
+
 function getPartPracticeCatalog(baseUrl = '') {
   const sourceCards = getAvailableSourceCards(baseUrl);
   const cards = sourceCards.flatMap((card) =>
@@ -428,6 +515,38 @@ function getWordformPracticeCatalog(baseUrl = '', options = {}) {
     showBrandBar: false,
     showTimer: false,
     showRepeatTitle: false
+  };
+}
+
+function getPart7GuidePracticeCatalog(baseUrl = '', options = {}) {
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/part-7';
+  const blueprintItems = getPart7GuidePracticeBlueprints(baseUrl, { pathPrefix });
+  const items = blueprintItems.map((item) => ({
+    id: item.id,
+    serialLabel: item.serialLabel,
+    title: item.title,
+    subtitle: item.subtitle,
+    description: item.description,
+    href: item.href
+  }));
+  const heroImage = options.heroImage || (blueprintItems[0] && blueprintItems[0].heroImage) || '';
+
+  return {
+    pageKey: 'part7-guide',
+    title: 'Hướng dẫn TOEIC Part 7',
+    heroTitle: 'Hướng dẫn TOEIC Part 7',
+    heroImage,
+    heroImageAlt: 'Mini test TOEIC Part 7',
+    pathPrefix,
+    items,
+    totalItems: items.length,
+    showStats: false,
+    showSource: false,
+    showBrandBar: false,
+    showTimer: false,
+    showRepeatTitle: false,
+    showPassageHeading: true,
+    listActionLabel: 'Xem chi tiết'
   };
 }
 
@@ -703,6 +822,87 @@ function buildWordformPracticeExam(practiceId, baseUrl = '', options = {}) {
   };
 }
 
+function buildPart7GuidePracticeExam(practiceId, baseUrl = '', options = {}) {
+  const parsed = parsePart7GuidePracticeId(practiceId);
+  if (!parsed) {
+    throw new Error(`Invalid part 7 guide practice id: ${practiceId}`);
+  }
+
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/part-7';
+  const libraryLabel = options.libraryLabel || 'Hướng dẫn TOEIC Part 7';
+  const blueprint = getPart7GuidePracticeBlueprints(baseUrl, { pathPrefix }).find((item) => item.id === practiceId);
+
+  if (!blueprint) {
+    throw new Error(`Cannot find part 7 guide practice: ${practiceId}`);
+  }
+
+  let questionCounter = 1;
+  const groups = blueprint.groups.map((group, groupIndex) => {
+    const questions = (Array.isArray(group.questions) ? group.questions : []).map((question) => {
+      const nextQuestion = cloneQuestion(question);
+      const displayNumber = questionCounter++;
+
+      return {
+        ...nextQuestion,
+        sourceNumber: nextQuestion.number,
+        number: displayNumber,
+        displayOrder: displayNumber,
+        inputName: `question_${displayNumber}`
+      };
+    });
+
+    return {
+      ...group,
+      id: `${practiceId}__group_${groupIndex + 1}`,
+      title: 'Reading Comprehension',
+      instructions: 'Đọc tài liệu và trả lời câu hỏi.',
+      questions
+    };
+  });
+
+  const flatQuestions = groups.flatMap((group) => (Array.isArray(group.questions) ? group.questions : []));
+
+  return {
+    id: practiceId,
+    sourceId: blueprint.sourceId,
+    title: options.itemTitle || blueprint.title,
+    subtitle: 'Mini test Part 7',
+    description: blueprint.description,
+    bookName: 'Part 7',
+    collectionKey: '',
+    collectionLabel: '',
+    durationMinutes: PART7_GUIDE_META.durationMinutes,
+    totalQuestions: flatQuestions.length,
+    listeningCount: 0,
+    readingCount: flatQuestions.length,
+    partsCount: 1,
+    groups,
+    flatQuestions,
+    partSummary: [
+      {
+        partNumber: 7,
+        title: 'Reading Comprehension',
+        instructions: 'Đọc tài liệu và trả lời câu hỏi.',
+        totalQuestions: flatQuestions.length
+      }
+    ],
+    mode: 'part7-guide',
+    modeLabel: 'Hướng dẫn TOEIC Part 7',
+    libraryHref: `${safeBaseUrl}${pathPrefix}`,
+    libraryLabel,
+    previewHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+    takeHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}/take`,
+    submitHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}/submit`,
+    retryHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+    maxScore: flatQuestions.length * 5,
+    sourceLabel: blueprint.sourceLabel,
+    badgeLabel: 'Part 7',
+    accessLabel: 'Free',
+    ctaLabel: 'Start Quiz'
+  };
+}
+
 function serializeExamQuestions(exam) {
   const sanitizeQuestion = (question) => {
     const nextQuestion = cloneQuestion(question);
@@ -853,15 +1053,18 @@ module.exports = {
   PART_PRACTICE_META,
   PART56_META,
   WORDFORM_META,
+  PART7_GUIDE_META,
   READING_META,
   getPartPracticeCatalog,
   getReadingPracticeCatalog,
   getPart56PracticeCatalog,
   getWordformPracticeCatalog,
+  getPart7GuidePracticeCatalog,
   buildPartPracticeExam,
   buildReadingPracticeExam,
   buildPart56PracticeExam,
   buildWordformPracticeExam,
+  buildPart7GuidePracticeExam,
   serializeExamQuestions,
   getAnswerPayload,
   gradePracticeExam,

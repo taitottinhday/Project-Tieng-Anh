@@ -4,11 +4,89 @@ const {
   buildPart56PracticeExam,
   getWordformPracticeCatalog,
   buildWordformPracticeExam,
+  getPart7GuidePracticeCatalog,
+  buildPart7GuidePracticeExam,
   gradePracticeExam
 } = require("../data/practiceCatalog");
 
 const PART56_PATH_PREFIX = "/goc-hoc-tap/part-5-6";
 const WORDFORM_PATH_PREFIX = "/goc-hoc-tap/wordform";
+const PART7_PATH_PREFIX = "/goc-hoc-tap/part-7";
+
+const FLOW_CONFIG = Object.freeze({
+  part56: {
+    pathPrefix: PART56_PATH_PREFIX,
+    catalogView: "public-part56-library",
+    detailView: "public-part56-detail",
+    quizView: "public-part56-quiz",
+    sessionKey: "lastPublicPart56Result",
+    resultTitle: "Kết quả TOEIC Part 5-6",
+    entityLabel: "bài tập TOEIC Part 5-6",
+    introLabel: "trang giới thiệu bài tập TOEIC Part 5-6",
+    quizLabel: "bài quiz TOEIC Part 5-6",
+    submitLabel: "bài TOEIC Part 5-6",
+    getCatalog(baseUrl) {
+      return getPart56PracticeCatalog(baseUrl, {
+        pathPrefix: PART56_PATH_PREFIX
+      });
+    },
+    buildExam(currentItem, baseUrl, catalog) {
+      return buildPart56PracticeExam(currentItem.id, baseUrl, {
+        pathPrefix: PART56_PATH_PREFIX,
+        itemTitle: currentItem.title,
+        libraryLabel: catalog.title
+      });
+    }
+  },
+  wordform: {
+    pathPrefix: WORDFORM_PATH_PREFIX,
+    catalogView: "public-part56-library",
+    detailView: "public-part56-detail",
+    quizView: "public-wordform-quiz",
+    sessionKey: "lastPublicWordformResult",
+    resultTitle: "Kết quả Wordform Test",
+    entityLabel: "bài Wordform",
+    introLabel: "trang giới thiệu Wordform Test",
+    quizLabel: "bài quiz Wordform",
+    submitLabel: "Wordform Test",
+    getCatalog(baseUrl) {
+      return getWordformPracticeCatalog(baseUrl, {
+        pathPrefix: WORDFORM_PATH_PREFIX
+      });
+    },
+    buildExam(currentItem, baseUrl, catalog) {
+      return buildWordformPracticeExam(currentItem.id, baseUrl, {
+        pathPrefix: WORDFORM_PATH_PREFIX,
+        itemTitle: currentItem.title,
+        libraryLabel: catalog.title
+      });
+    }
+  },
+  part7: {
+    pathPrefix: PART7_PATH_PREFIX,
+    catalogView: "public-part7-library",
+    detailView: "public-part56-detail",
+    quizView: "public-wordform-quiz",
+    sessionKey: "lastPublicPart7Result",
+    resultTitle: "Kết quả TOEIC Part 7",
+    entityLabel: "bài TOEIC Part 7",
+    introLabel: "trang giới thiệu TOEIC Part 7",
+    quizLabel: "bài quiz TOEIC Part 7",
+    submitLabel: "bài TOEIC Part 7",
+    getCatalog(baseUrl) {
+      return getPart7GuidePracticeCatalog(baseUrl, {
+        pathPrefix: PART7_PATH_PREFIX
+      });
+    },
+    buildExam(currentItem, baseUrl, catalog) {
+      return buildPart7GuidePracticeExam(currentItem.id, baseUrl, {
+        pathPrefix: PART7_PATH_PREFIX,
+        itemTitle: currentItem.title,
+        libraryLabel: catalog.title
+      });
+    }
+  }
+});
 
 function getSafeBaseUrl(res) {
   return res.locals.baseUrl || "";
@@ -16,30 +94,31 @@ function getSafeBaseUrl(res) {
 
 function respondWithError(res, error, options = {}) {
   const statusCode = Number(options.statusCode || 500);
-  const fallbackMessage = options.fallbackMessage || "Đã xảy ra lỗi trong khi tải bài tập TOEIC Part 5-6.";
+  const fallbackMessage = options.fallbackMessage || "Đã xảy ra lỗi trong khi tải bài luyện tập public.";
 
   console.error("publicPractice error:", error);
   return res.status(statusCode).send(error && error.message ? error.message : fallbackMessage);
 }
 
-function getCatalog(baseUrl = "") {
-  return getPart56PracticeCatalog(baseUrl, {
-    pathPrefix: PART56_PATH_PREFIX
-  });
+function getFlowConfig(flowKey) {
+  const config = FLOW_CONFIG[flowKey];
+  if (!config) {
+    throw new Error(`Unsupported public practice flow: ${flowKey}`);
+  }
+  return config;
 }
 
-function getWordformCatalog(baseUrl = "") {
-  return getWordformPracticeCatalog(baseUrl, {
-    pathPrefix: WORDFORM_PATH_PREFIX
-  });
+function getCatalog(flowKey, baseUrl = "") {
+  return getFlowConfig(flowKey).getCatalog(baseUrl);
 }
 
-function resolveCatalogItem(baseUrl, practiceId) {
-  const catalog = getCatalog(baseUrl);
+function resolveCatalogItem(flowKey, baseUrl, practiceId) {
+  const config = getFlowConfig(flowKey);
+  const catalog = getCatalog(flowKey, baseUrl);
   const currentItem = (catalog.items || []).find((item) => item.id === String(practiceId));
 
   if (!currentItem) {
-    throw new Error("Không tìm thấy bài tập TOEIC Part 5-6.");
+    throw new Error(`Không tìm thấy ${config.entityLabel}.`);
   }
 
   return {
@@ -48,222 +127,166 @@ function resolveCatalogItem(baseUrl, practiceId) {
   };
 }
 
-function buildExamForItem(currentItem, baseUrl, catalog) {
-  return buildPart56PracticeExam(currentItem.id, baseUrl, {
-    pathPrefix: PART56_PATH_PREFIX,
-    itemTitle: currentItem.title,
-    libraryLabel: catalog.title
-  });
+function buildExamForItem(flowKey, currentItem, baseUrl, catalog) {
+  return getFlowConfig(flowKey).buildExam(currentItem, baseUrl, catalog);
 }
 
-function resolveWordformCatalogItem(baseUrl, practiceId) {
-  const catalog = getWordformCatalog(baseUrl);
-  const currentItem = (catalog.items || []).find((item) => item.id === String(practiceId));
+function listPractice(flowKey, req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const config = getFlowConfig(flowKey);
+    const catalog = getCatalog(flowKey, safeBaseUrl);
 
-  if (!currentItem) {
-    throw new Error("KhÃ´ng tÃ¬m tháº¥y bÃ i Wordform.");
+    return renderWithLayout(res, config.catalogView, {
+      title: catalog.title,
+      catalog
+    });
+  } catch (error) {
+    return respondWithError(res, error);
   }
-
-  return {
-    catalog,
-    currentItem
-  };
 }
 
-function buildWordformExamForItem(currentItem, baseUrl, catalog) {
-  return buildWordformPracticeExam(currentItem.id, baseUrl, {
-    pathPrefix: WORDFORM_PATH_PREFIX,
-    itemTitle: currentItem.title,
-    libraryLabel: catalog.title
-  });
+function showPractice(flowKey, req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const config = getFlowConfig(flowKey);
+    const { catalog, currentItem } = resolveCatalogItem(flowKey, safeBaseUrl, req.params.practiceId);
+    const exam = buildExamForItem(flowKey, currentItem, safeBaseUrl, catalog);
+
+    return renderWithLayout(res, config.detailView, {
+      title: currentItem.title,
+      catalog,
+      currentItem,
+      exam
+    });
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 404,
+      fallbackMessage: `Không tìm thấy ${getFlowConfig(flowKey).introLabel}.`
+    });
+  }
+}
+
+function takePractice(flowKey, req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const config = getFlowConfig(flowKey);
+    const { catalog, currentItem } = resolveCatalogItem(flowKey, safeBaseUrl, req.params.practiceId);
+    const exam = buildExamForItem(flowKey, currentItem, safeBaseUrl, catalog);
+
+    return res.render(config.quizView, {
+      pageTitle: currentItem.title,
+      catalog,
+      currentItem,
+      exam,
+      baseUrl: safeBaseUrl
+    });
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 404,
+      fallbackMessage: `Không tìm thấy ${getFlowConfig(flowKey).quizLabel}.`
+    });
+  }
+}
+
+function submitPractice(flowKey, req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const config = getFlowConfig(flowKey);
+    const { catalog, currentItem } = resolveCatalogItem(flowKey, safeBaseUrl, req.params.practiceId);
+    const exam = buildExamForItem(flowKey, currentItem, safeBaseUrl, catalog);
+    const result = gradePracticeExam(exam, req.body || {});
+
+    result.libraryHref = `${safeBaseUrl}${config.pathPrefix}`;
+    result.libraryLabel = catalog.title;
+    req.session[config.sessionKey] = result;
+
+    return res.redirect(`${safeBaseUrl}${config.pathPrefix}/result/latest`);
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 400,
+      fallbackMessage: `Không thể nộp ${getFlowConfig(flowKey).submitLabel}.`
+    });
+  }
+}
+
+function showLatestResult(flowKey, req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const config = getFlowConfig(flowKey);
+    const result = req.session?.[config.sessionKey] || null;
+
+    if (!result) {
+      return res.redirect(`${safeBaseUrl}${config.pathPrefix}`);
+    }
+
+    return renderWithLayout(res, "student-practice-result", {
+      title: config.resultTitle,
+      result
+    });
+  } catch (error) {
+    return respondWithError(res, error);
+  }
 }
 
 function listPart56Practice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const catalog = getCatalog(safeBaseUrl);
-
-    return renderWithLayout(res, "public-part56-library", {
-      title: catalog.title,
-      catalog
-    });
-  } catch (error) {
-    return respondWithError(res, error);
-  }
+  return listPractice("part56", req, res);
 }
 
 function showPart56Practice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const { catalog, currentItem } = resolveCatalogItem(safeBaseUrl, req.params.practiceId);
-    const exam = buildExamForItem(currentItem, safeBaseUrl, catalog);
-
-    return renderWithLayout(res, "public-part56-detail", {
-      title: currentItem.title,
-      catalog,
-      currentItem,
-      exam
-    });
-  } catch (error) {
-    return respondWithError(res, error, {
-      statusCode: 404,
-      fallbackMessage: "Không tìm thấy trang giới thiệu bài tập TOEIC Part 5-6."
-    });
-  }
+  return showPractice("part56", req, res);
 }
 
 function takePart56Practice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const { catalog, currentItem } = resolveCatalogItem(safeBaseUrl, req.params.practiceId);
-    const exam = buildExamForItem(currentItem, safeBaseUrl, catalog);
-
-    return res.render("public-wordform-quiz", {
-      pageTitle: currentItem.title,
-      catalog,
-      currentItem,
-      exam,
-      baseUrl: safeBaseUrl
-    });
-  } catch (error) {
-    return respondWithError(res, error, {
-      statusCode: 404,
-      fallbackMessage: "Không tìm thấy bài quiz TOEIC Part 5-6."
-    });
-  }
+  return takePractice("part56", req, res);
 }
 
 function submitPart56Practice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const { catalog, currentItem } = resolveCatalogItem(safeBaseUrl, req.params.practiceId);
-    const exam = buildExamForItem(currentItem, safeBaseUrl, catalog);
-    const result = gradePracticeExam(exam, req.body || {});
-
-    result.libraryHref = `${safeBaseUrl}${PART56_PATH_PREFIX}`;
-    result.libraryLabel = catalog.title;
-    req.session.lastPublicPart56Result = result;
-
-    return res.redirect(`${safeBaseUrl}${PART56_PATH_PREFIX}/result/latest`);
-  } catch (error) {
-    return respondWithError(res, error, {
-      statusCode: 400,
-      fallbackMessage: "Không thể nộp bài TOEIC Part 5-6."
-    });
-  }
+  return submitPractice("part56", req, res);
 }
 
 function showLatestPart56Result(req, res) {
-  try {
-    const result = req.session?.lastPublicPart56Result || null;
-
-    if (!result) {
-      return res.redirect(`${getSafeBaseUrl(res)}${PART56_PATH_PREFIX}`);
-    }
-
-    return renderWithLayout(res, "student-practice-result", {
-      title: "Kết quả TOEIC Part 5-6",
-      result
-    });
-  } catch (error) {
-    return respondWithError(res, error);
-  }
+  return showLatestResult("part56", req, res);
 }
 
 function listWordformPractice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const catalog = getWordformCatalog(safeBaseUrl);
-
-    return renderWithLayout(res, "public-part56-library", {
-      title: catalog.title,
-      catalog
-    });
-  } catch (error) {
-    return respondWithError(res, error, {
-      fallbackMessage: "ÄÃ£ xáº£y ra lá»—i trong khi táº£i Wordform Test."
-    });
-  }
+  return listPractice("wordform", req, res);
 }
 
 function showWordformPractice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const { catalog, currentItem } = resolveWordformCatalogItem(safeBaseUrl, req.params.practiceId);
-    const exam = buildWordformExamForItem(currentItem, safeBaseUrl, catalog);
-
-    return renderWithLayout(res, "public-part56-detail", {
-      title: currentItem.title,
-      catalog,
-      currentItem,
-      exam
-    });
-  } catch (error) {
-    return respondWithError(res, error, {
-      statusCode: 404,
-      fallbackMessage: "KhÃ´ng tÃ¬m tháº¥y trang giá»›i thiá»‡u Wordform Test."
-    });
-  }
+  return showPractice("wordform", req, res);
 }
 
 function takeWordformPractice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const { catalog, currentItem } = resolveWordformCatalogItem(safeBaseUrl, req.params.practiceId);
-    const exam = buildWordformExamForItem(currentItem, safeBaseUrl, catalog);
-
-    return res.render("public-part56-quiz", {
-      pageTitle: currentItem.title,
-      catalog,
-      currentItem,
-      exam,
-      baseUrl: safeBaseUrl
-    });
-  } catch (error) {
-    return respondWithError(res, error, {
-      statusCode: 404,
-      fallbackMessage: "KhÃ´ng tÃ¬m tháº¥y bÃ i quiz Wordform."
-    });
-  }
+  return takePractice("wordform", req, res);
 }
 
 function submitWordformPractice(req, res) {
-  try {
-    const safeBaseUrl = getSafeBaseUrl(res);
-    const { catalog, currentItem } = resolveWordformCatalogItem(safeBaseUrl, req.params.practiceId);
-    const exam = buildWordformExamForItem(currentItem, safeBaseUrl, catalog);
-    const result = gradePracticeExam(exam, req.body || {});
-
-    result.libraryHref = `${safeBaseUrl}${WORDFORM_PATH_PREFIX}`;
-    result.libraryLabel = catalog.title;
-    req.session.lastPublicWordformResult = result;
-
-    return res.redirect(`${safeBaseUrl}${WORDFORM_PATH_PREFIX}/result/latest`);
-  } catch (error) {
-    return respondWithError(res, error, {
-      statusCode: 400,
-      fallbackMessage: "KhÃ´ng thá»ƒ ná»™p Wordform Test."
-    });
-  }
+  return submitPractice("wordform", req, res);
 }
 
 function showLatestWordformResult(req, res) {
-  try {
-    const result = req.session?.lastPublicWordformResult || null;
+  return showLatestResult("wordform", req, res);
+}
 
-    if (!result) {
-      return res.redirect(`${getSafeBaseUrl(res)}${WORDFORM_PATH_PREFIX}`);
-    }
+function listPart7GuidePractice(req, res) {
+  return listPractice("part7", req, res);
+}
 
-    return renderWithLayout(res, "student-practice-result", {
-      title: "Káº¿t quáº£ Wordform Test",
-      result
-    });
-  } catch (error) {
-    return respondWithError(res, error, {
-      fallbackMessage: "KhÃ´ng thá»ƒ táº£i káº¿t quáº£ Wordform Test."
-    });
-  }
+function showPart7GuidePractice(req, res) {
+  return showPractice("part7", req, res);
+}
+
+function takePart7GuidePractice(req, res) {
+  return takePractice("part7", req, res);
+}
+
+function submitPart7GuidePractice(req, res) {
+  return submitPractice("part7", req, res);
+}
+
+function showLatestPart7GuideResult(req, res) {
+  return showLatestResult("part7", req, res);
 }
 
 module.exports = {
@@ -276,5 +299,10 @@ module.exports = {
   showWordformPractice,
   takeWordformPractice,
   submitWordformPractice,
-  showLatestWordformResult
+  showLatestWordformResult,
+  listPart7GuidePractice,
+  showPart7GuidePractice,
+  takePart7GuidePractice,
+  submitPart7GuidePractice,
+  showLatestPart7GuideResult
 };
