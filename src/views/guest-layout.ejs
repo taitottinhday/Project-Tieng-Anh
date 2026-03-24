@@ -206,7 +206,7 @@
 
         .g-nav-flyout {
             position: absolute;
-            top: calc(100% + 12px);
+            top: calc(100% + 8px);
             left: 0;
             width: min(300px, 78vw);
             display: grid;
@@ -221,6 +221,15 @@
             transform: translateY(8px);
             pointer-events: none;
             transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+        }
+
+        .g-nav-flyout::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -18px;
+            height: 22px;
         }
 
         .g-nav-item:hover .g-nav-flyout,
