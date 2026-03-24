@@ -319,10 +319,19 @@
 
         .g-mobile-panel {
             display: none;
-            position: relative;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
             z-index: 120;
+            max-height: calc(100dvh - 82px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
             border-top: 1px solid rgba(89,106,191,.1);
             background: linear-gradient(180deg, rgba(229, 240, 255, 0.94) 0%, rgba(255, 223, 239, 0.94) 100%);
+            box-shadow: 0 20px 44px rgba(39, 62, 122, 0.12);
         }
 
         body.menu-open .g-mobile-panel { display: block; }
@@ -344,10 +353,54 @@
             gap: 8px;
         }
 
+        .g-mobile-item {
+            display: grid;
+            align-items: center;
+            gap: 12px;
+            min-height: 58px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(201, 223, 255, 0.72) 0%, rgba(255, 214, 234, 0.74) 100%);
+            border: 1px solid rgba(89,106,191,.1);
+        }
+
+        .g-mobile-item.has-children {
+            grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .g-mobile-disclosure {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(89,106,191,.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.48);
+            color: #1f2937;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+
+        .g-mobile-disclosure svg {
+            width: 16px;
+            height: 16px;
+            transition: transform .2s ease;
+        }
+
+        .g-mobile-group.is-open .g-mobile-disclosure svg {
+            transform: rotate(180deg);
+        }
+
         .g-mobile-submenu {
             display: grid;
             gap: 8px;
-            padding-left: 16px;
+            padding-left: 18px;
+            padding-top: 2px;
+        }
+
+        .g-mobile-submenu[hidden] {
+            display: none !important;
         }
 
         .g-mobile-sublink {
@@ -366,17 +419,24 @@
         .g-mobile-cta {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             position: relative;
             z-index: 1;
             pointer-events: auto;
             touch-action: manipulation;
-            padding: 14px 16px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(201, 223, 255, 0.72) 0%, rgba(255, 214, 234, 0.74) 100%);
-            border: 1px solid rgba(89,106,191,.1);
             color: #1f2937;
             font-weight: 700;
+        }
+
+        .g-mobile-link {
+            min-height: 42px;
+            min-width: 0;
+            justify-content: flex-start;
+            padding: 0 4px 0 0;
+        }
+
+        .g-mobile-link span:first-child {
+            flex: 1 1 auto;
+            min-width: 0;
         }
 
         .g-brand,
@@ -390,16 +450,13 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .g-mobile-link span:last-child {
-            font-size: 0;
+        .g-mobile-cta {
+            justify-content: center;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(201, 223, 255, 0.72) 0%, rgba(255, 214, 234, 0.74) 100%);
+            border: 1px solid rgba(89,106,191,.1);
         }
-
-        .g-mobile-link span:last-child::after {
-            content: "->";
-            font-size: 1rem;
-        }
-
-        .g-mobile-cta { justify-content: center; }
         .g-stage { min-height: calc(100vh - 130px); }
 
         .g-content {
@@ -544,6 +601,7 @@
             }
 
             .g-nav { min-height: 74px; }
+            .g-mobile-panel { max-height: calc(100dvh - 74px); }
             .g-brand-copy span { display: none; }
             .g-footer-grid { grid-template-columns: 1fr; }
             .g-content { padding-bottom: 22px; }
@@ -669,19 +727,36 @@
 
         <div class="g-mobile-panel" id="guestMobilePanel">
             <div class="g-mobile-inner">
-                <% guestNavItems.forEach((item) => { %>
+                <% guestNavItems.forEach((item, index) => { %>
                     <% const mobileFlyoutLinks = getNavChildren(item.href); %>
-                    <a href="<%= item.href %>" class="g-mobile-link">
-                        <span><%= item.label %></span>
-                        <span>→</span>
-                    </a>
-                    <% if (mobileFlyoutLinks.length) { %>
-                        <div class="g-mobile-submenu">
-                            <% mobileFlyoutLinks.forEach((child) => { %>
-                                <a href="<%= child.href %>" class="g-mobile-sublink"><%= child.label %></a>
-                            <% }) %>
+                    <% const submenuId = 'guest-mobile-submenu-' + index; %>
+                    <div class="g-mobile-group <%= mobileFlyoutLinks.length ? 'has-children' : '' %>" <%= mobileFlyoutLinks.length ? 'data-mobile-group' : '' %>>
+                        <div class="g-mobile-item <%= mobileFlyoutLinks.length ? 'has-children' : '' %>">
+                            <% if (mobileFlyoutLinks.length) { %>
+                                <button
+                                    type="button"
+                                    class="g-mobile-disclosure"
+                                    data-mobile-disclosure
+                                    aria-expanded="false"
+                                    aria-controls="<%= submenuId %>"
+                                    aria-label="Mo danh muc con <%= item.label %>">
+                                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M5 7.5L10 12.5L15 7.5"></path>
+                                    </svg>
+                                </button>
+                            <% } %>
+                            <a href="<%= item.href %>" class="g-mobile-link">
+                                <span><%= item.label %></span>
+                            </a>
                         </div>
-                    <% } %>
+                        <% if (mobileFlyoutLinks.length) { %>
+                            <div class="g-mobile-submenu" id="<%= submenuId %>" data-mobile-submenu hidden>
+                                <% mobileFlyoutLinks.forEach((child) => { %>
+                                    <a href="<%= child.href %>" class="g-mobile-sublink"><%= child.label %></a>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
                 <% }) %>
                 <a href="<%= buildHref('/placement-tests') %>" class="g-mobile-cta">Kiểm tra đầu vào</a>
                 <a href="<%= buildHref('/login') %>" class="g-mobile-cta">Đăng nhập</a>
@@ -746,10 +821,64 @@
     <script>
         (() => {
             const toggle = document.getElementById('guestMenuToggle');
-            if (!toggle) return;
-            const closeMenu = () => document.body.classList.remove('menu-open');
-            toggle.addEventListener('click', () => document.body.classList.toggle('menu-open'));
-            document.querySelectorAll('#guestMobilePanel a').forEach((link) => link.addEventListener('click', closeMenu));
+            const panel = document.getElementById('guestMobilePanel');
+            if (!toggle || !panel) return;
+
+            const collapsibleGroups = Array.from(panel.querySelectorAll('[data-mobile-group]'));
+
+            const collapseAllSubmenus = () => {
+                collapsibleGroups.forEach((group) => {
+                    group.classList.remove('is-open');
+                    const button = group.querySelector('[data-mobile-disclosure]');
+                    const submenu = group.querySelector('[data-mobile-submenu]');
+                    if (button) button.setAttribute('aria-expanded', 'false');
+                    if (submenu) submenu.hidden = true;
+                });
+            };
+
+            const closeMenu = () => {
+                document.body.classList.remove('menu-open');
+                toggle.setAttribute('aria-expanded', 'false');
+                panel.setAttribute('aria-hidden', 'true');
+                collapseAllSubmenus();
+            };
+
+            const openMenu = () => {
+                document.body.classList.add('menu-open');
+                toggle.setAttribute('aria-expanded', 'true');
+                panel.setAttribute('aria-hidden', 'false');
+            };
+
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.setAttribute('aria-controls', 'guestMobilePanel');
+            panel.setAttribute('aria-hidden', 'true');
+
+            toggle.addEventListener('click', () => {
+                if (document.body.classList.contains('menu-open')) {
+                    closeMenu();
+                    return;
+                }
+                openMenu();
+            });
+
+            panel.querySelectorAll('[data-mobile-disclosure]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const group = button.closest('[data-mobile-group]');
+                    const submenu = group ? group.querySelector('[data-mobile-submenu]') : null;
+                    if (!group || !submenu) return;
+
+                    const shouldOpen = submenu.hidden;
+                    submenu.hidden = !shouldOpen;
+                    group.classList.toggle('is-open', shouldOpen);
+                    button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+                });
+            });
+
+            panel.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+            document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(); });
             window.addEventListener('resize', () => { if (window.innerWidth > 1180) closeMenu(); });
         })();
     </script>
