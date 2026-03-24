@@ -98,7 +98,7 @@ const aboutSections = {
     summary:
       "Trang này kể câu chuyện cá nhân, triết lý giảng dạy và cách thầy Tài xây nên một thương hiệu đào tạo lấy tính rõ ràng, kỷ luật và sự đồng hành dài hạn làm điểm tựa.",
     heroImage: placeholderImage("Chan%20dung%20Thay%20Tai", 1100, 1300, "fef2f2", "7f1d1d"),
-    heroNote: "Thay bằng ảnh chân dung chính của thầy Tài.",
+    heroNote: "",
     heroStats: [
       { value: "1:1", label: "Triết lý kèm sát và cá nhân hóa" },
       { value: "10+", label: "Mốc năng lực và checkpoint trong mỗi lộ trình" },
@@ -168,7 +168,7 @@ const aboutSections = {
     },
     campusGallery: {
       title: "Không gian học tập của Thầy Tài TOEIC",
-      caption: "Bạn có thể thay cụm ảnh này bằng ảnh cơ sở, lớp học, khu vực tiếp đón hoặc ảnh workshop thực tế",
+      caption: "Không gian học tập, workshop và các hoạt động đồng hành cùng học viên tại Thầy Tài TOEIC.",
       images: [
         placeholderImage("https://i.pinimg.com/736x/c5/5f/17/c55f1712fb8b1cd5d0908d757cf8043d.jpg", 900, 700, "fee2e2", "9f1239"),
         placeholderImage("https://i.pinimg.com/736x/b7/08/95/b70895fede22516535ced4cf7569ead6.jpg", 900, 700, "e0f2fe", "075985"),
@@ -265,8 +265,8 @@ const aboutSections = {
           "Luyện cách phân phối thời gian giữa Part 5, 6 và 7.",
         ],
         student: {
-          name: "Phần hồ sơ học viên",
-          school: "Thay bằng tên trường hoặc đơn vị của học viên",
+          name: "Nguyễn Minh Anh",
+          school: "Đại học Kinh tế Quốc dân",
           score: "930 TOEIC",
           image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/02/03/93f33732-b3b3-4c5a-a536-e6977c7ebbac.png", 500, 500, "eff6ff", "0f172a"),
         },
@@ -280,8 +280,8 @@ const aboutSections = {
           "Tăng band theo block mục tiêu để học viên cảm nhận rõ tiến độ.",
         ],
         student: {
-          name: "Phần hồ sơ học viên",
-          school: "Thay bằng tên trường hoặc đơn vị của học viên",
+          name: "Trần Khánh Linh",
+          school: "Đại học Ngoại thương",
           score: "900 TOEIC",
           image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/01/30/907c470c-ce7b-4f89-8771-5518ea1b705a.png", 500, 500, "f8fafc", "0f172a"),
         },
@@ -295,8 +295,8 @@ const aboutSections = {
           "Giảng viên sửa trực tiếp trên bài viết để học viên nhìn ra vấn đề.",
         ],
         student: {
-          name: "Phần hồ sơ học viên",
-          school: "Thay bằng tên trường hoặc đơn vị của học viên",
+          name: "Lê Hoàng Nam",
+          school: "Đại học Bách khoa Hà Nội",
           score: "890+ TOEIC",
           image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/01/30/325f1cf6-6d4d-47b4-bec4-22b0bb3e3e35.png", 500, 500, "fff7ed", "7c2d12"),
         },
@@ -310,8 +310,8 @@ const aboutSections = {
           "Kết hợp luyện phát âm, ngữ điệu và tư duy bố cục câu trả lời.",
         ],
         student: {
-          name: "Phần hồ sơ học viên",
-          school: "Thay bằng tên trường hoặc đơn vị của học viên",
+          name: "Phạm Thu Trang",
+          school: "Đại học Hà Nội",
           score: "Target 8.0",
           image: placeholderImage("https://image.ebomb.edu.vn/crop/350x235/toeic_img/news/2026/01/30/aa27ef32-2f8f-41ee-8cd4-8c7626336559.png", 500, 500, "fdf2f8", "831843"),
         },
@@ -380,10 +380,10 @@ const aboutSections = {
         image: placeholderImage("https://i.postimg.cc/KYDmFz1r/s4.png", 960, 700, "ecfccb", "365314"),
       },
       {
-        name: "Campus mới đang mở rộng",
-        address: "Thay bằng địa chỉ cơ sở mới của bạn",
-        phone: "Thay bằng số hotline riêng nếu có",
-        schedule: "Phù hợp để giới thiệu kế hoạch mở rộng thương hiệu hoặc campus mới",
+        name: "Trung tâm tư vấn & hỗ trợ online",
+        address: "Tư vấn lộ trình và xếp lớp trực tuyến cho học viên trên toàn quốc",
+        phone: "0344 772 436",
+        schedule: "Hỗ trợ hàng ngày 08:00 - 21:00, phù hợp với học viên cần tư vấn từ xa",
         mapHref: "https://maps.google.com",
         image: placeholderImage("https://i.postimg.cc/KYDmFz1r/s4.png", 960, 700, "fee2e2", "881337"),
       },
@@ -493,14 +493,14 @@ const aboutSections = {
     title: "Học viên điểm cao",
     eyebrow: "Student Results",
     summary:
-      "Những kết quả nổi bật dưới đây được trình bày theo kiểu landing page thành tích: có bảng vàng học viên, review ngắn và các câu chuyện thật để bạn dễ thay ảnh, thay điểm số và cập nhật thêm học viên mới về sau.",
+      "Bảng vàng học viên, review thực tế và các câu chuyện nổi bật cho thấy hiệu quả của lộ trình học rõ ràng, chữa bài sát và đồng hành xuyên suốt.",
     heroImage: placeholderImage("https://i.postimg.cc/4ygfT95V/s6.png", 1440, 560, "dbeafe", "1d4ed8"),
     promoStrip: {
       title: "Lộ trình TOEIC theo level",
       text: "Học viên đạt mốc mục tiêu sau khóa, có roadmap rõ ràng và theo sát tiến độ từng giai đoạn.",
       hrefLabel: "Xem thêm",
       href: "/lich-khai-giang",
-      image: placeholderImage("", 220, 220, "fff7ed", "9a3412"),
+      image: placeholderImage("https://i.pinimg.com/736x/07/04/3a/07043a958e8e7ad8ecbb06586aed6596.jpg", 220, 220, "fff7ed", "9a3412"),
     },
     achievementTitle: "Bảng vàng thành tích",
     reviewTitle: "Review học viên nhà Thầy Tài TOEIC",
@@ -526,18 +526,18 @@ const aboutSections = {
         image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/980d49fd-0c68-4c5e-a82b-3ac2b021c59b.png", 860, 660, "eef2ff", "1d4ed8"),
       },
       {
-        name: "https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/8d5d6c23-8998-4769-b49a-6976a86f677c.png",
+        name: "Nguyễn Quỳnh Anh",
         school: "ĐH Kinh tế Quốc dân",
         score: "940",
         quote: "Mình từ khá lo lắng với Reading chuyển sang làm đề tự tin hơn vì được chữa rất kỹ từng lỗi.",
-        image: placeholderImage("Bang%20vang%2003", 860, 660, "fff7ed", "9a3412"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/8d5d6c23-8998-4769-b49a-6976a86f677c.png", 860, 660, "fff7ed", "9a3412"),
       },
       {
         name: "Trương Đức Nhật",
         school: "ĐH Đại Nam",
         score: "925",
         quote: "Mình thích nhất cách thầy cô vừa giữ áp lực đủ tốt vừa không làm học viên bị ngợp.",
-        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/2d9baa38-97c2-4970-9fbc-70a701a9a08b.png", 860, 660, "ecfccb", "365314"),
+        image: placeholderImage("https://r2.ebomb.edu.vn/toeic_img/news/2026/01/30/8d5d6c23-8998-4769-b49a-6976a86f677c.png", 860, 660, "ecfccb", "365314"),
       },
       {
         name: "Vũ Nguyễn Huyền Trân",
@@ -661,7 +661,7 @@ const aboutSections = {
     title: "Tuyển dụng",
     eyebrow: "Careers",
     summary:
-      "Trang này được dựng theo kiểu chuyên mục tin tuyển dụng: có bài nổi bật phía trên, danh sách vị trí đang mở và sidebar tư vấn/kết nối để bạn thay nội dung thật sau này.",
+      "Cập nhật các vị trí tuyển dụng, môi trường làm việc và cơ hội phát triển tại Thầy Tài TOEIC dành cho ứng viên muốn đồng hành lâu dài trong lĩnh vực giáo dục.",
     heroImage: placeholderImage("https://image.ebomb.edu.vn/resize/540x320/toeic_img/news/2026/03/09/21c566eb-7947-4db6-ad8d-f06ab5c4c6a6.jpg", 1440, 700, "fee2e2", "9f1239"),
     newsTitle: "Tuyển dụng",
     featuredPosts: [
@@ -814,7 +814,7 @@ const aboutSections = {
     title: "Hoạt động nội bộ",
     eyebrow: "Culture & Team Life",
     summary:
-      "Trang này được dựng theo kiểu chuyên mục hoạt động nội bộ và sự kiện thương hiệu: có 2 bài nổi bật phía trên, danh sách hoạt động ở cột trái và sidebar tư vấn/kết nối ở cột phải.",
+      "Góc nhìn về đời sống đội ngũ, hoạt động nội bộ và các sự kiện thương hiệu tạo nên văn hóa học tập tích cực tại Thầy Tài TOEIC.",
     heroImage: placeholderImage("Hoat%20dong%20noi%20bo%20banner", 1440, 700, "fee2e2", "be123c"),
     newsTitle: "Hoạt động nội bộ",
     featuredPosts: [
