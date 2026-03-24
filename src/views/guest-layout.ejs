@@ -365,7 +365,7 @@
         }
 
         .g-mobile-item.has-children {
-            grid-template-columns: auto minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr) auto;
         }
 
         .g-mobile-disclosure {
@@ -380,6 +380,8 @@
             justify-content: center;
             cursor: pointer;
             flex: 0 0 auto;
+            order: 2;
+            justify-self: end;
         }
 
         .g-mobile-disclosure svg {
@@ -432,6 +434,7 @@
             min-width: 0;
             justify-content: flex-start;
             padding: 0 4px 0 0;
+            order: 1;
         }
 
         .g-mobile-link span:first-child {
