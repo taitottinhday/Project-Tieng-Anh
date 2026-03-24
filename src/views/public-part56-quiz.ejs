@@ -488,8 +488,14 @@
     const questions = Array.isArray(examData.flatQuestions) ? examData.flatQuestions : [];
     const groups = Array.isArray(examData.groups) ? examData.groups : [];
     const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
-    const durationMinutes = Number(examData.durationMinutes || 25);
+    const durationMinutes = Number(examData.durationMinutes ?? 25);
     const totalQuestions = Number(examData.totalQuestions || questions.length || 0);
+    const showBrandBar = data.showBrandBar !== false;
+    const showTimer = data.showTimer !== false && durationMinutes > 0;
+    const showStats = data.showStats !== false;
+    const showRepeatTitle = data.showRepeatTitle !== false;
+    const summaryText = examData.description || examData.subtitle || 'Bài test kiểm tra ôn tập phần Part 5 - Part 6.';
+    const backHref = examData.libraryHref || data.backHref || (baseUrl + '/goc-hoc-tap/part-5-6');
     const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
     const questionViews = questions.map((question, index) => {
       const groupIndex = groups.findIndex((item) => Array.isArray(item.questions) && item.questions.some((candidate) => candidate.number === question.number));
@@ -507,9 +513,11 @@
     });
   %>
 
+  <% if (showBrandBar) { %>
   <div class="p56q-brandbar">
     <a href="<%= baseUrl %>/"><img src="<%= brandLogo %>" alt="Logo Lớp TOEIC thầy Long"></a>
   </div>
+  <% } %>
 
   <form action="<%= examData.submitHref || '#' %>" method="POST" class="p56q-form" data-part56-form data-session-key="part56-<%= examData.id || 'quiz' %>">
     <div class="p56q-shell">

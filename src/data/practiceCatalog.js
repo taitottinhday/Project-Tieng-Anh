@@ -32,6 +32,14 @@ const PART56_META = Object.freeze({
   parts: [5, 6]
 });
 
+const WORDFORM_META = Object.freeze({
+  durationMinutes: 0,
+  totalQuestions: 40,
+  maxScore: 200,
+  parts: [5],
+  totalItems: 2
+});
+
 const READING_BANDS = Object.freeze([
   { key: 'all', label: 'Tất cả' },
   { key: '500-plus', label: '500 +' },
@@ -112,6 +120,10 @@ function buildPart56PracticeId(sourceId) {
   return `${sourceId}__part56`;
 }
 
+function buildWordformPracticeId(index) {
+  return `wordform-test-${String(index).padStart(3, '0')}`;
+}
+
 function parsePartPracticeId(practiceId) {
   const match = String(practiceId || '').match(/^(.*)__part__(\d+)$/);
 
@@ -146,6 +158,18 @@ function parsePart56PracticeId(practiceId) {
 
   return {
     sourceId: match[1]
+  };
+}
+
+function parseWordformPracticeId(practiceId) {
+  const match = String(practiceId || '').match(/^wordform-test-(\d{3})$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    index: Number(match[1])
   };
 }
 
@@ -249,11 +273,70 @@ function buildPart56PracticeCard(card, index, baseUrl = '', pathPrefix = '/goc-h
     title: `BÀI TẬP TOEIC ONLINE ${serialLabel}`,
     subtitle: sourceLabel,
     description: 'Bài test kiểm tra ôn tập phần Part 5 – Part 6.',
+    description: 'BÃ i test kiá»ƒm tra Ã´n táº­p pháº§n Part 5 â€“ Part 6.',
     durationMinutes: PART56_META.durationMinutes,
     totalQuestions: PART56_META.totalQuestions,
     maxScore: PART56_META.maxScore,
     href: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`
   };
+}
+
+function getPublicSequenceSourceCards(baseUrl = '') {
+  return getAvailableSourceCards(baseUrl)
+    .slice()
+    .sort((left, right) => {
+      const yearGap = Number(right.collectionKey || 0) - Number(left.collectionKey || 0);
+      if (yearGap !== 0) {
+        return yearGap;
+      }
+
+      return (extractTestNumber(left.id) || 0) - (extractTestNumber(right.id) || 0);
+    });
+}
+
+function getWordformPracticeBlueprints(baseUrl = '', options = {}) {
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/wordform';
+  const totalItems = Number(options.totalItems || WORDFORM_META.totalItems || 2);
+  const totalQuestions = Number(options.totalQuestions || WORDFORM_META.totalQuestions || 40);
+  const questionPool = [];
+
+  getPublicSequenceSourceCards(baseUrl).forEach((card) => {
+    const sourceExam = getSourceExam(card.id);
+    const sourceLabel = formatManagedTitle(card);
+    const partFiveQuestions = (Array.isArray(sourceExam.flatQuestions) ? sourceExam.flatQuestions : [])
+      .filter((question) => Number(question.partNumber) === 5)
+      .map((question) => ({
+        sourceId: card.id,
+        sourceLabel,
+        question: cloneQuestion(question)
+      }));
+
+    questionPool.push(...partFiveQuestions);
+  });
+
+  const requiredQuestions = totalItems * totalQuestions;
+  if (questionPool.length < requiredQuestions) {
+    throw new Error(`Wordform practice requires ${requiredQuestions} part 5 questions but only found ${questionPool.length}.`);
+  }
+
+  return Array.from({ length: totalItems }, (_, index) => {
+    const serialLabel = String(index + 1).padStart(3, '0');
+    const startIndex = index * totalQuestions;
+    const entries = questionPool.slice(startIndex, startIndex + totalQuestions);
+    const sourceLabels = Array.from(new Set(entries.map((entry) => entry.sourceLabel)));
+    const practiceId = buildWordformPracticeId(index + 1);
+
+    return {
+      id: practiceId,
+      serialLabel,
+      title: `Wordform Test ${serialLabel}`,
+      subtitle: sourceLabels.join(' + '),
+      description: 'Bài thi gồm 40 câu hỏi, kèm đáp án và giải thích bằng Video. Chúc bạn học tốt ^^',
+      href: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+      entries
+    };
+  });
 }
 
 function getPartPracticeCatalog(baseUrl = '') {
@@ -299,16 +382,7 @@ function getPart56PracticeCatalog(baseUrl = '', options = {}) {
   const limit = Number(options.limit || 12);
   const pathPrefix = options.pathPrefix || '/goc-hoc-tap/part-5-6';
   const heroImage = options.heroImage || 'https://i.postimg.cc/zBCnk3Nt/giangthuy.png';
-  const sourceCards = getAvailableSourceCards(baseUrl)
-    .slice()
-    .sort((left, right) => {
-      const yearGap = Number(right.collectionKey || 0) - Number(left.collectionKey || 0);
-      if (yearGap !== 0) {
-        return yearGap;
-      }
-
-      return (extractTestNumber(left.id) || 0) - (extractTestNumber(right.id) || 0);
-    })
+  const sourceCards = getPublicSequenceSourceCards(baseUrl)
     .slice(0, limit);
   const items = sourceCards.map((card, index) => buildPart56PracticeCard(card, index, safeBaseUrl, pathPrefix));
 
@@ -321,6 +395,39 @@ function getPart56PracticeCatalog(baseUrl = '', options = {}) {
     pathPrefix,
     items,
     totalItems: items.length
+  };
+}
+
+function getWordformPracticeCatalog(baseUrl = '', options = {}) {
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/wordform';
+  const items = getWordformPracticeBlueprints(baseUrl, {
+    pathPrefix,
+    totalItems: options.totalItems || WORDFORM_META.totalItems,
+    totalQuestions: options.totalQuestions || WORDFORM_META.totalQuestions
+  }).map((item) => ({
+    id: item.id,
+    serialLabel: item.serialLabel,
+    title: item.title,
+    subtitle: '',
+    description: item.description,
+    href: item.href
+  }));
+
+  return {
+    pageKey: 'wordform',
+    title: 'Wordform Test',
+    heroTitle: 'Wordform Test',
+    heroQuote: '',
+    heroImage: '',
+    heroSpacerHeight: 180,
+    pathPrefix,
+    items,
+    totalItems: items.length,
+    showStats: false,
+    showSource: false,
+    showBrandBar: false,
+    showTimer: false,
+    showRepeatTitle: false
   };
 }
 
@@ -379,6 +486,7 @@ function filterExamByParts(sourceExam, partNumbers, practiceConfig) {
     sourceId: sourceExam.id,
     title: practiceConfig.title,
     subtitle: practiceConfig.subtitle,
+    description: practiceConfig.description || '',
     bookName: sourceExam.bookName,
     collectionKey: sourceExam.collectionKey || '',
     collectionLabel: sourceExam.collectionLabel || '',
@@ -515,6 +623,86 @@ function buildPart56PracticeExam(practiceId, baseUrl = '', options = {}) {
   });
 }
 
+function buildWordformPracticeExam(practiceId, baseUrl = '', options = {}) {
+  const parsed = parseWordformPracticeId(practiceId);
+  if (!parsed) {
+    throw new Error(`Invalid wordform practice id: ${practiceId}`);
+  }
+
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const pathPrefix = options.pathPrefix || '/goc-hoc-tap/wordform';
+  const libraryLabel = options.libraryLabel || 'Wordform Test';
+  const blueprint = getWordformPracticeBlueprints(baseUrl, {
+    pathPrefix,
+    totalItems: options.totalItems || WORDFORM_META.totalItems,
+    totalQuestions: options.totalQuestions || WORDFORM_META.totalQuestions
+  }).find((item) => item.id === practiceId);
+
+  if (!blueprint) {
+    throw new Error(`Cannot find wordform practice: ${practiceId}`);
+  }
+
+  const flatQuestions = blueprint.entries.map((entry, index) => {
+    const nextQuestion = cloneQuestion(entry.question);
+    const displayNumber = 101 + index;
+
+    return {
+      ...nextQuestion,
+      number: displayNumber,
+      displayOrder: displayNumber,
+      inputName: `question_${displayNumber}`
+    };
+  });
+
+  const groups = [
+    {
+      id: `${practiceId}__group`,
+      partNumber: 5,
+      title: 'Wordform',
+      instructions: '',
+      questions: flatQuestions.map(cloneQuestion)
+    }
+  ];
+
+  return {
+    id: practiceId,
+    sourceId: blueprint.entries.map((entry) => entry.sourceId).join('+'),
+    title: options.itemTitle || blueprint.title,
+    subtitle: 'Wordform Test',
+    description: blueprint.description,
+    bookName: 'Wordform',
+    collectionKey: '',
+    collectionLabel: '',
+    durationMinutes: WORDFORM_META.durationMinutes,
+    totalQuestions: flatQuestions.length,
+    listeningCount: 0,
+    readingCount: flatQuestions.length,
+    partsCount: 1,
+    groups,
+    flatQuestions,
+    partSummary: [
+      {
+        partNumber: 5,
+        title: 'Wordform',
+        totalQuestions: flatQuestions.length
+      }
+    ],
+    mode: 'wordform',
+    modeLabel: 'Wordform Test',
+    libraryHref: `${safeBaseUrl}${pathPrefix}`,
+    libraryLabel,
+    previewHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+    takeHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}/take`,
+    submitHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}/submit`,
+    retryHref: `${safeBaseUrl}${pathPrefix}/${encodeURIComponent(practiceId)}`,
+    maxScore: WORDFORM_META.maxScore,
+    sourceLabel: blueprint.subtitle,
+    badgeLabel: 'Wordform',
+    accessLabel: 'Free',
+    ctaLabel: 'Start Quiz'
+  };
+}
+
 function serializeExamQuestions(exam) {
   const sanitizeQuestion = (question) => {
     const nextQuestion = cloneQuestion(question);
@@ -527,6 +715,7 @@ function serializeExamQuestions(exam) {
     sourceId: exam.sourceId,
     title: exam.title,
     subtitle: exam.subtitle,
+    description: exam.description || '',
     durationMinutes: exam.durationMinutes,
     totalQuestions: exam.totalQuestions,
     bookName: exam.bookName,
@@ -663,13 +852,16 @@ function loadDemoPracticeExam() {
 module.exports = {
   PART_PRACTICE_META,
   PART56_META,
+  WORDFORM_META,
   READING_META,
   getPartPracticeCatalog,
   getReadingPracticeCatalog,
   getPart56PracticeCatalog,
+  getWordformPracticeCatalog,
   buildPartPracticeExam,
   buildReadingPracticeExam,
   buildPart56PracticeExam,
+  buildWordformPracticeExam,
   serializeExamQuestions,
   getAnswerPayload,
   gradePracticeExam,

@@ -49,9 +49,20 @@ router.get("/goc-hoc-tap/part-5-6/:practiceId", publicPracticeController.showPar
 router.get("/goc-hoc-tap/part-5-6/:practiceId/take", publicPracticeController.takePart56Practice);
 router.post("/goc-hoc-tap/part-5-6/:practiceId/submit", publicPracticeController.submitPart56Practice);
 
+router.get("/goc-hoc-tap/wordform", publicPracticeController.listWordformPractice);
+router.get("/goc-hoc-tap/wordform/result/latest", publicPracticeController.showLatestWordformResult);
+router.get("/goc-hoc-tap/wordform/:practiceId", publicPracticeController.showWordformPractice);
+router.get("/goc-hoc-tap/wordform/:practiceId/take", publicPracticeController.takeWordformPractice);
+router.post("/goc-hoc-tap/wordform/:practiceId/submit", publicPracticeController.submitWordformPractice);
+
 router.get("/goc-hoc-tap", (req, res) => {
   const safeBaseUrl = res.locals.baseUrl || "";
-  const isStudent = Boolean(req.session?.user?.role && req.session.user.role !== "admin" && req.session.user.role !== "teacher");
+  const isStudent = Boolean(
+    req.session?.user?.role &&
+    req.session.user.role !== "admin" &&
+    req.session.user.role !== "teacher"
+  );
+
   const fullTestButtons = getFullTestCards(safeBaseUrl)
     .filter((item) => item.isAvailable && item.href)
     .slice(0, 5)
@@ -95,8 +106,8 @@ router.get("/goc-hoc-tap", (req, res) => {
             tone: "sky",
             kind: "cta",
             title: "Wordform Test",
-            href: isStudent ? `${safeBaseUrl}/student/practice/parts` : `${safeBaseUrl}/courses-blog`,
-            action: isStudent ? "Làm thử ngay!" : "Xem lộ trình!",
+            href: `${safeBaseUrl}/goc-hoc-tap/wordform`,
+            action: "Làm thử ngay!",
           },
         ],
       },

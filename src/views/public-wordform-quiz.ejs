@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle || "Wordform Test" %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wfq-bg: #faf8f7;
+      --wfq-surface: #ffffff;
+      --wfq-line: rgba(15, 23, 42, 0.08);
+      --wfq-text: #15253b;
+      --wfq-muted: #617083;
+      --wfq-blue: #1f72bf;
+      --wfq-blue-soft: rgba(31, 114, 191, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--wfq-text);
+      background: var(--wfq-bg);
+    }
+
+    a,
+    button,
+    input {
+      font: inherit;
+    }
+
+    .wfq-form {
+      min-height: 100vh;
+    }
+
+    .wfq-shell {
+      display: grid;
+      grid-template-columns: 344px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .wfq-sidebar {
+      border-right: 1px solid var(--wfq-line);
+      background: #ffffff;
+    }
+
+    .wfq-sidehead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 12px;
+      background: var(--wfq-blue);
+      color: #ffffff;
+    }
+
+    .wfq-sidehead h1,
+    .wfq-main h2,
+    .wfq-question h4 {
+      margin: 0;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .wfq-sidehead h1 {
+      font-size: 1.35rem;
+      line-height: 1.1;
+    }
+
+    .wfq-sideback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .wfq-list {
+      display: grid;
+    }
+
+    .wfq-list-item {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-height: 60px;
+      padding: 0 10px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      color: #2a3f60;
+      text-decoration: none;
+    }
+
+    .wfq-list-item.is-active {
+      background: #ffffff;
+      color: #1163c7;
+      font-weight: 800;
+    }
+
+    .wfq-list-mark {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1.8px solid currentColor;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.74rem;
+      font-weight: 900;
+    }
+
+    .wfq-main {
+      padding: 34px 36px 44px;
+      display: grid;
+      align-content: start;
+      gap: 22px;
+      background: #fffdfd;
+    }
+
+    .wfq-main h2 {
+      font-size: clamp(2.1rem, 3vw, 3.3rem);
+      line-height: 1.04;
+    }
+
+    .wfq-breadcrumb {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 18px;
+      border-radius: 8px;
+      background: #edf2f8;
+      color: #2273c5;
+      font-weight: 700;
+    }
+
+    .wfq-copy {
+      color: #30445f;
+      line-height: 1.7;
+      font-size: 1.08rem;
+    }
+
+    .wfq-copy p {
+      margin: 0;
+    }
+
+    .wfq-tools {
+      display: grid;
+      gap: 18px;
+    }
+
+    .wfq-navbox {
+      padding: 16px 12px 14px;
+      border-radius: 10px;
+      background: #edf2f8;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .wfq-navgrid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .wfq-navbtn {
+      min-height: 38px;
+      border-radius: 6px;
+      border: 1px solid #c7d1de;
+      background: #ffffff;
+      color: #173352;
+      cursor: pointer;
+      transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+    }
+
+    .wfq-navbtn.current {
+      border-color: #1199ff;
+      box-shadow: inset 0 0 0 1px #1199ff;
+    }
+
+    .wfq-navbtn.review {
+      background: #4b4b4b;
+      border-color: #4b4b4b;
+      color: #ffffff;
+    }
+
+    .wfq-navbtn.answered {
+      background: #216dbe;
+      border-color: #216dbe;
+      color: #ffffff;
+    }
+
+    .wfq-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 14px;
+      color: #24384f;
+    }
+
+    .wfq-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wfq-legend i {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid #bfc8d5;
+      background: #ffffff;
+      display: inline-block;
+    }
+
+    .wfq-legend .current i {
+      border-color: #1199ff;
+      box-shadow: inset 0 0 0 1px #1199ff;
+    }
+
+    .wfq-legend .review i {
+      background: #4b4b4b;
+      border-color: #4b4b4b;
+    }
+
+    .wfq-legend .answered i {
+      background: #216dbe;
+      border-color: #216dbe;
+    }
+
+    .wfq-submitbar {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .wfq-submit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 24px;
+      border: 0;
+      border-radius: 999px;
+      background: #1f72bf;
+      color: #ffffff;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 16px 28px rgba(31, 114, 191, 0.2);
+    }
+
+    .wfq-questions {
+      display: grid;
+      gap: 28px;
+    }
+
+    .wfq-question {
+      padding-top: 18px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      display: grid;
+      gap: 18px;
+    }
+
+    .wfq-question-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .wfq-question h4 {
+      font-size: 1.45rem;
+      line-height: 1.55;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .wfq-points {
+      white-space: nowrap;
+      color: #394a61;
+      font-weight: 700;
+    }
+
+    .wfq-block {
+      padding: 18px;
+      border-radius: 12px;
+      background: #f2f6fb;
+      color: #30445f;
+      line-height: 1.7;
+    }
+
+    .wfq-options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .wfq-option {
+      display: block;
+      cursor: pointer;
+    }
+
+    .wfq-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .wfq-option-ui {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-height: 56px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: #eef3f8;
+      border: 1px solid transparent;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .wfq-radio {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1.8px solid #6b7b90;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+
+    .wfq-option input:checked + .wfq-option-ui {
+      border-color: rgba(31, 114, 191, 0.42);
+      background: #e8f2ff;
+    }
+
+    .wfq-option input:checked + .wfq-option-ui .wfq-radio::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #1f72bf;
+      display: block;
+    }
+
+    .wfq-option-copy {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: baseline;
+      color: #20344f;
+      line-height: 1.7;
+    }
+
+    .wfq-actions {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .wfq-review {
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid #d4dce6;
+      background: #ffffff;
+      color: #2f4159;
+      cursor: pointer;
+    }
+
+    .wfq-review.is-active {
+      border-color: #4b4b4b;
+      background: #4b4b4b;
+      color: #ffffff;
+    }
+
+    @media (max-width: 1080px) {
+      .wfq-navgrid {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 980px) {
+      .wfq-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .wfq-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--wfq-line);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .wfq-main {
+        padding: 22px 16px 36px;
+      }
+
+      .wfq-navgrid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .wfq-question-head {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%
+    const data = catalog || {};
+    const items = Array.isArray(data.items) ? data.items : [];
+    const current = currentItem || {};
+    const examData = exam || {};
+    const questions = Array.isArray(examData.flatQuestions) ? examData.flatQuestions : [];
+    const groups = Array.isArray(examData.groups) ? examData.groups : [];
+    const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
+    const summaryText = examData.description || examData.subtitle || "Bài thi gồm 40 câu hỏi, kèm đáp án và giải thích bằng Video. Chúc bạn học tốt ^^";
+    const backHref = examData.libraryHref || (baseUrl + "/goc-hoc-tap/wordform");
+    const questionViews = questions.map((question, index) => {
+      const groupIndex = groups.findIndex((item) => Array.isArray(item.questions) && item.questions.some((candidate) => candidate.number === question.number));
+      const group = groupIndex >= 0 ? groups[groupIndex] : {};
+      const part = partSummary.find((item) => item.partNumber === question.partNumber) || {};
+      return Object.assign({}, question, {
+        navIndex: index + 1,
+        groupIndex,
+        partTitle: part.title || ("Part " + question.partNumber),
+        partInstructions: part.instructions || "",
+        sharedContent: group.sharedContent || "",
+        sharedAudioUrl: group.sharedAudioUrl || null,
+        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : []
+      });
+    });
+  %>
+
+  <form action="<%= examData.submitHref || "#" %>" method="POST" class="wfq-form" data-wordform-form data-session-key="wordform-<%= examData.id || 'quiz' %>">
+    <div class="wfq-shell">
+      <aside class="wfq-sidebar">
+        <div class="wfq-sidehead">
+          <h1><%= data.title || "Wordform Test" %></h1>
+          <a href="<%= backHref %>" class="wfq-sideback" aria-label="Về danh sách">&lsaquo;</a>
+        </div>
+
+        <div class="wfq-list">
+          <% items.forEach((item) => { %>
+            <a href="<%= item.href %>" class="wfq-list-item <%= item.id === current.id ? 'is-active' : '' %>">
+              <span class="wfq-list-mark">x</span>
+              <span><%= item.title %></span>
+            </a>
+          <% }) %>
+        </div>
+      </aside>
+
+      <main class="wfq-main">
+        <h2><%= current.title || examData.title || "Wordform Test" %></h2>
+        <div class="wfq-breadcrumb"><%= data.title || "Wordform Test" %> &gt; <%= current.title || examData.title %></div>
+
+        <div class="wfq-copy">
+          <p><%= summaryText %></p>
+        </div>
+
+        <section class="wfq-tools">
+          <div class="wfq-navbox">
+            <div class="wfq-navgrid">
+              <% questionViews.forEach((question) => { %>
+                <button type="button" class="wfq-navbtn" data-go-question="<%= question.number %>"><%= question.navIndex %></button>
+              <% }) %>
+            </div>
+
+            <div class="wfq-legend">
+              <span class="current"><i></i>Current</span>
+              <span class="review"><i></i>Review</span>
+              <span class="answered"><i></i>Answered</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="wfq-submitbar">
+          <button type="submit" class="wfq-submit">Nộp bài</button>
+        </div>
+
+        <div class="wfq-questions">
+          <% questionViews.forEach((question, index) => { %>
+            <% const showSharedBlock = question.groupIndex >= 0 && (!questionViews[index - 1] || questionViews[index - 1].groupIndex !== question.groupIndex); %>
+            <article class="wfq-question" id="question-<%= question.number %>" data-question-card data-question-id="<%= question.number %>">
+              <div class="wfq-question-head">
+                <h4><%= question.number %>. <%= question.prompt %></h4>
+                <span class="wfq-points">1 point(s)</span>
+              </div>
+
+              <% if (showSharedBlock && question.sharedContent) { %>
+                <div class="wfq-block"><%= question.sharedContent %></div>
+              <% } %>
+
+              <% if (showSharedBlock && question.sharedImages && question.sharedImages.length) { %>
+                <div class="wfq-block">
+                  <% question.sharedImages.forEach((imageUrl) => { %>
+                    <img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>" style="max-width:100%;display:block;margin:0 auto 10px;border-radius:8px;">
+                  <% }) %>
+                </div>
+              <% } %>
+
+              <div class="wfq-options">
+                <% question.options.forEach((option) => { %>
+                  <label class="wfq-option">
+                    <input type="radio" name="<%= question.inputName %>" value="<%= option.label %>" data-question-input="<%= question.number %>">
+                    <span class="wfq-option-ui">
+                      <span class="wfq-radio"></span>
+                      <% if (option.isLetterOnly) { %>
+                        <span class="wfq-option-copy"><strong><%= option.label %></strong></span>
+                      <% } else { %>
+                        <span class="wfq-option-copy"><strong><%= option.label %></strong><%= option.text %></span>
+                      <% } %>
+                    </span>
+                  </label>
+                <% }) %>
+              </div>
+
+              <div class="wfq-actions">
+                <button type="button" class="wfq-review" data-review-toggle="<%= question.number %>">Đánh dấu review</button>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      </main>
+    </div>
+  </form>
+
+  <script>
+    (() => {
+      const form = document.querySelector("[data-wordform-form]");
+      if (!form) return;
+
+      const sessionKey = form.dataset.sessionKey || "";
+      const navButtons = Array.from(form.querySelectorAll("[data-go-question]"));
+      const questionCards = Array.from(form.querySelectorAll("[data-question-card]"));
+      const radioInputs = Array.from(form.querySelectorAll("[data-question-input]"));
+      const reviewButtons = Array.from(form.querySelectorAll("[data-review-toggle]"));
+      const orderedIds = questionCards.map((card) => String(card.dataset.questionId));
+      let currentQuestionId = orderedIds[0] || null;
+      let reviewSet = new Set();
+
+      const readState = () => {
+        if (!sessionKey) return null;
+        try {
+          const raw = sessionStorage.getItem(sessionKey);
+          return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const writeState = () => {
+        if (!sessionKey) return;
+        const answers = {};
+        radioInputs.forEach((input) => {
+          if (input.checked) {
+            answers[input.name] = input.value;
+          }
+        });
+
+        try {
+          sessionStorage.setItem(sessionKey, JSON.stringify({
+            currentQuestionId,
+            answers,
+            reviews: Array.from(reviewSet)
+          }));
+        } catch (error) {
+          console.warn("Cannot save public wordform state:", error);
+        }
+      };
+
+      const restoreState = () => {
+        const stored = readState();
+        if (!stored) return;
+
+        Object.entries(stored.answers || {}).forEach(([name, value]) => {
+          const matched = form.querySelector(`input[name="${name}"][value="${value}"]`);
+          if (matched) {
+            matched.checked = true;
+          }
+        });
+
+        reviewSet = new Set(Array.isArray(stored.reviews) ? stored.reviews.map(String) : []);
+
+        if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
+          currentQuestionId = String(stored.currentQuestionId);
+        }
+      };
+
+      const getAnsweredSet = () => new Set(
+        radioInputs.filter((input) => input.checked).map((input) => String(input.dataset.questionInput))
+      );
+
+      const syncUi = () => {
+        const answeredSet = getAnsweredSet();
+
+        navButtons.forEach((button) => {
+          const questionId = String(button.dataset.goQuestion);
+          button.classList.toggle("current", questionId === String(currentQuestionId));
+          button.classList.toggle("answered", answeredSet.has(questionId));
+          button.classList.toggle("review", reviewSet.has(questionId));
+        });
+
+        reviewButtons.forEach((button) => {
+          const questionId = String(button.dataset.reviewToggle);
+          button.classList.toggle("is-active", reviewSet.has(questionId));
+        });
+
+        writeState();
+      };
+
+      const setCurrentQuestion = (questionId, shouldScroll = true) => {
+        if (!orderedIds.includes(String(questionId))) return;
+        currentQuestionId = String(questionId);
+        if (shouldScroll) {
+          const card = document.getElementById(`question-${String(questionId)}`);
+          if (card) {
+            card.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+        syncUi();
+      };
+
+      restoreState();
+      syncUi();
+
+      navButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setCurrentQuestion(button.dataset.goQuestion);
+        });
+      });
+
+      radioInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          currentQuestionId = String(input.dataset.questionInput);
+          syncUi();
+        });
+      });
+
+      reviewButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const questionId = String(button.dataset.reviewToggle);
+          if (reviewSet.has(questionId)) {
+            reviewSet.delete(questionId);
+          } else {
+            reviewSet.add(questionId);
+          }
+          currentQuestionId = questionId;
+          syncUi();
+        });
+      });
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          const visibleEntry = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+
+          if (visibleEntry) {
+            currentQuestionId = String(visibleEntry.target.dataset.questionId);
+            syncUi();
+          }
+        }, {
+          rootMargin: "-20% 0px -60% 0px",
+          threshold: [0.2, 0.45, 0.7]
+        });
+
+        questionCards.forEach((card) => observer.observe(card));
+      }
+
+      form.addEventListener("submit", () => {
+        if (sessionKey) {
+          sessionStorage.removeItem(sessionKey);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

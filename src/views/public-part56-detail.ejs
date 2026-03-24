@@ -3,6 +3,10 @@ const data = catalog || {};
 const items = Array.isArray(data.items) ? data.items : [];
 const current = currentItem || {};
 const practice = exam || {};
+const showStats = data.showStats !== false;
+const showSource = data.showSource !== false;
+const summaryText = practice.description || practice.subtitle || "Bài test kiểm tra ôn tập phần Part 5 - Part 6.";
+const backHref = practice.libraryHref || data.backHref || "#";
 %>
 
 <style>
@@ -190,7 +194,7 @@ const practice = exam || {};
     <aside class="p56detail-sidebar">
       <div class="p56detail-sidehead">
         <h1><%= data.title || "Bài Tập TOEIC Part 5-6" %></h1>
-        <a href="<%= baseUrl %>/goc-hoc-tap/part-5-6" class="p56detail-back" aria-label="Về danh sách">&lsaquo;</a>
+        <a href="<%= backHref %>" class="p56detail-back" aria-label="Về danh sách">&lsaquo;</a>
       </div>
 
       <div class="p56detail-list">
@@ -208,14 +212,18 @@ const practice = exam || {};
       <div class="p56detail-breadcrumb"><%= data.title || "Bài Tập TOEIC Part 5-6" %> &gt; <%= current.title %></div>
 
       <div class="p56detail-copy">
-        <p><%= practice.subtitle || "Bài test kiểm tra ôn tập phần Part 5 – Part 6." %></p>
-        <p>Thời gian làm bài: <strong><%= practice.durationMinutes || 25 %> phút</strong></p>
-        <p>Tổng số câu hỏi: <strong><%= practice.totalQuestions || 46 %> câu</strong></p>
+        <p><%= summaryText %></p>
+        <% if (showStats) { %>
+          <p>Thời gian làm bài: <strong><%= practice.durationMinutes || 25 %> phút</strong></p>
+          <p>Tổng số câu hỏi: <strong><%= practice.totalQuestions || 46 %> câu</strong></p>
+        <% } %>
       </div>
 
       <h3><%= current.title %></h3>
       <a href="<%= practice.takeHref || '#' %>" class="p56detail-cta">Start Quiz</a>
-      <div class="p56detail-source">Nguồn đề: <strong><%= current.subtitle || practice.sourceLabel || "" %></strong></div>
+      <% if (showSource && (current.subtitle || practice.sourceLabel)) { %>
+        <div class="p56detail-source">Nguồn đề: <strong><%= current.subtitle || practice.sourceLabel || "" %></strong></div>
+      <% } %>
     </section>
   </div>
 </div>

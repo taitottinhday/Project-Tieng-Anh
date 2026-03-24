@@ -1,6 +1,10 @@
 <%
 const data = catalog || {};
 const items = Array.isArray(data.items) ? data.items : [];
+const hasHeroQuote = Boolean(data.heroQuote);
+const hasHeroImage = Boolean(data.heroImage);
+const hasShowcaseContent = hasHeroQuote || hasHeroImage;
+const heroSpacerHeight = Number(data.heroSpacerHeight || 160);
 %>
 
 <style>
@@ -56,6 +60,11 @@ const items = Array.isArray(data.items) ? data.items : [];
     gap: 28px;
     align-items: end;
     min-height: 420px;
+  }
+
+  .p56lib-showcase.is-empty {
+    grid-template-columns: 1fr;
+    min-height: min(42vh, <%= heroSpacerHeight %>px);
   }
 
   .p56lib-quote {
@@ -142,6 +151,10 @@ const items = Array.isArray(data.items) ? data.items : [];
       min-height: auto;
     }
 
+    .p56lib-showcase.is-empty {
+      min-height: 120px;
+    }
+
     .p56lib-figure {
       justify-items: center;
     }
@@ -186,11 +199,16 @@ const items = Array.isArray(data.items) ? data.items : [];
         <span class="p56lib-line" aria-hidden="true"></span>
       </div>
 
-      <div class="p56lib-showcase">
-        <h2 class="p56lib-quote"><%= data.heroQuote || "Practice makes perfect" %></h2>
-        <div class="p56lib-figure">
-          <img src="<%= data.heroImage %>" alt="Giảng viên hướng dẫn luyện tập TOEIC Part 5-6">
-        </div>
+      <div class="p56lib-showcase <%= !hasShowcaseContent ? 'is-empty' : '' %>">
+        <% if (hasHeroQuote) { %>
+          <h2 class="p56lib-quote"><%= data.heroQuote %></h2>
+        <% } %>
+
+        <% if (hasHeroImage) { %>
+          <div class="p56lib-figure">
+            <img src="<%= data.heroImage %>" alt="<%= data.heroImageAlt || 'Giảng viên hướng dẫn luyện tập TOEIC' %>">
+          </div>
+        <% } %>
       </div>
     </div>
 
@@ -200,9 +218,11 @@ const items = Array.isArray(data.items) ? data.items : [];
           <span class="p56lib-icon">x</span>
           <span class="p56lib-copy">
             <strong><%= item.title %></strong>
-            <span><%= item.subtitle %></span>
+            <% if (item.subtitle) { %>
+              <span><%= item.subtitle %></span>
+            <% } %>
           </span>
-          <span class="p56lib-go">Xem chi tiết</span>
+          <span class="p56lib-go"><%= data.listActionLabel || "Xem chi tiết" %></span>
         </a>
       <% }) %>
     </div>
