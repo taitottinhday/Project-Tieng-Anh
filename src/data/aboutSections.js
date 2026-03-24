@@ -96,6 +96,90 @@ const aboutSections = {
       { title: "Phát triển hệ học liệu riêng", text: "Tự biên soạn bộ note, practice sheet, review checklist và bộ sửa lỗi trọng tâm." },
       { title: "Mở rộng sang hệ online", text: "Đưa phần practice và theo dõi tiến độ lên website để học viên học liên tục hơn." },
     ],
+    headline:
+      "Thầy Tài: Hành trình từ lớp học nhỏ đến sứ mệnh truyền cảm hứng chinh phục TOEIC cho người học Việt",
+    introParagraphs: [
+      "Nhiều năm qua, cái tên Thầy Tài TOEIC dần gắn với hình ảnh một người dạy kỹ, rõ và không chấp nhận sự mơ hồ trong lớp học. Đằng sau thương hiệu ấy là một hành trình dài của sự kiên trì, của những buổi chữa bài đến khuya, của việc liên tục mổ xẻ đề thi để tìm ra cách học giúp học viên tiến bộ thật.",
+      "Điều khiến thầy Tài được nhớ đến không chỉ là điểm số đầu ra, mà còn là cách thầy biến việc học TOEIC từ một mục tiêu áp lực thành một quá trình có cấu trúc, có động lực và có người đồng hành.",
+    ],
+    leadFigure: {
+      image: placeholderImage("Gap%20go%20truoc%20lop%20hoc%20cua%20Thay%20Tai", 1400, 920, "e2e8f0", "0f172a"),
+      caption: "Thầy Tài trong một buổi chia sẻ chiến lược học tập cùng học viên và đội ngũ học thuật",
+    },
+    chapters: [
+      {
+        title: "Cội nguồn cảm hứng: Từ người học bền bỉ đến người thầy tâm huyết",
+        paragraphs: [
+          "Khởi đầu của thầy Tài không phải từ một thương hiệu lớn, mà từ niềm tin rất giản dị rằng người học cần được chỉ đường đúng cách. Từ những ngày còn trực tiếp tự ôn luyện, tự phân tích lỗi sai và tự tìm cách bứt khỏi cảm giác học mãi mà không tiến bộ, thầy đã hiểu rõ điều gì khiến một người học dễ bỏ cuộc nhất: thiếu phương pháp và thiếu người đồng hành.",
+          "Cũng từ trải nghiệm đó, thầy chọn cách giảng dạy đi thẳng vào bản chất của vấn đề. Học viên không được học mẹo một cách rời rạc, mà được nhìn thấy lý do vì sao phải làm như vậy, vì sao đang sai ở chỗ đó và cần sửa bằng cách nào.",
+          "Ngọn lửa nghề của thầy Tài lớn dần từ chính những lần nhìn thấy học viên thay đổi ánh mắt sau khi hiểu ra một vấn đề tưởng chừng rất khó. Với thầy, khoảnh khắc học viên bật được tư duy học mới luôn đáng giá hơn mọi lời quảng bá.",
+        ],
+      },
+      {
+        title: "Viên gạch đầu tiên: Từ lớp học đầu tiên đến một cộng đồng học tập rõ mục tiêu",
+        paragraphs: [
+          "Những lớp học đầu tiên của thầy Tài được xây trên tinh thần rất thực tế: lớp nhỏ, chữa sâu, theo sát và đo tiến độ liên tục. Chính sự chỉn chu ở giai đoạn còn nhỏ này đã tạo nên nền móng văn hóa giảng dạy cho cả hệ thống sau này.",
+          "Thầy không chọn tăng trưởng bằng cách mở rộng thật nhanh, mà ưu tiên chuẩn hóa cách giao bài, chữa bài, review lỗi và dẫn dắt học viên. Mỗi giai đoạn phát triển đều bám vào câu hỏi cốt lõi: học viên có hiểu mình đang học gì và tiến bộ đến đâu không?",
+          "Từ một lớp học nhỏ, dần dần hình thành nên một cộng đồng học tập có nhịp điệu rõ ràng hơn: vào học là biết mục tiêu, ra về là có bài tập đúng trọng tâm, và giữa hai buổi luôn có cơ chế theo dõi để tránh đứt mạch học tập.",
+        ],
+      },
+      {
+        title: "Sứ mệnh lớn: Giúp người học Việt tự tin dùng tiếng Anh trong học tập và công việc",
+        paragraphs: [
+          "Mục tiêu của thầy Tài không dừng ở việc tạo ra những lớp luyện đề có đầu ra tốt. Xa hơn, thầy muốn xây một cách học giúp người học Việt cảm thấy tiếng Anh là công cụ mình có thể nắm được, chứ không phải một áp lực kéo dài nhiều năm.",
+          "Từ lớp học trực tiếp đến website practice, từ bài chữa lỗi chi tiết đến kho tài liệu nội bộ, tất cả đang được phát triển theo cùng một hướng: giảm sự mơ hồ, tăng tính chủ động và giúp mỗi người học có cảm giác mình đang thật sự tiến về phía trước.",
+          "Đó cũng là lý do thương hiệu Thầy Tài TOEIC lựa chọn một phong cách đào tạo rõ ràng, có trách nhiệm và lâu dài: không chỉ kéo điểm cho một kỳ thi, mà xây năng lực tự học và sự tự tin để người học mang theo về sau.",
+        ],
+      },
+    ],
+    splitGallery: {
+      caption: "Những hình ảnh đầu tiên từ lớp học và các buổi chia sẻ chiến lược học tập",
+      images: [
+        placeholderImage("Anh%20lop%20hoc%20dau%20tien%201", 900, 700, "fef3c7", "92400e"),
+        placeholderImage("Anh%20lop%20hoc%20dau%20tien%202", 900, 700, "dbeafe", "1d4ed8"),
+      ],
+    },
+    midFigure: {
+      image: placeholderImage("Thay%20Tai%20lam%20viec%20cung%20doi%20ngu", 1400, 980, "f3f4f6", "111827"),
+      caption: "Thầy Tài trong một buổi làm việc cùng đội ngũ học thuật và mentor",
+    },
+    campusGallery: {
+      title: "Không gian học tập của Thầy Tài TOEIC",
+      caption: "Bạn có thể thay cụm ảnh này bằng ảnh cơ sở, lớp học, khu vực tiếp đón hoặc ảnh workshop thực tế",
+      images: [
+        placeholderImage("Co%20so%20Thay%20Tai%2001", 900, 700, "fee2e2", "9f1239"),
+        placeholderImage("Co%20so%20Thay%20Tai%2002", 900, 700, "e0f2fe", "075985"),
+        placeholderImage("Co%20so%20Thay%20Tai%2003", 900, 700, "ecfccb", "365314"),
+        placeholderImage("Co%20so%20Thay%20Tai%2004", 900, 700, "ede9fe", "6d28d9"),
+      ],
+    },
+    pressLinks: [
+      { source: "Báo Giáo Dục", title: "Hành trình xây dựng lớp học TOEIC chú trọng chiều sâu và cá nhân hóa", href: "https://example.com/thay-tai-bao-1" },
+      { source: "VnExpress", title: "Một góc nhìn khác về việc học TOEIC: học để hiểu, không chỉ học để khoanh đáp án", href: "https://example.com/thay-tai-bao-2" },
+      { source: "CafeBiz", title: "Cách một thương hiệu TOEIC phát triển từ sự theo sát trải nghiệm học viên", href: "https://example.com/thay-tai-bao-3" },
+      { source: "Kenh14", title: "Người trẻ học tiếng Anh hiệu quả hơn khi có lộ trình và nhịp học đúng", href: "https://example.com/thay-tai-bao-4" },
+      { source: "Tuổi Trẻ", title: "Câu chuyện phía sau những lớp TOEIC chữa bài sâu và rõ mục tiêu", href: "https://example.com/thay-tai-bao-5" },
+    ],
+    eventCards: [
+      {
+        image: placeholderImage("Su%20kien%20Noi%20bat%2001", 900, 620, "eff6ff", "1d4ed8"),
+        title: "Workshop chiến lược chinh phục TOEIC cho người mới bắt đầu",
+        excerpt: "Một chuỗi chia sẻ dành cho học viên cần xây lại nền tảng và tìm phương pháp học bền vững hơn.",
+        href: "/contact",
+      },
+      {
+        image: placeholderImage("Su%20kien%20Noi%20bat%2002", 900, 620, "fff7ed", "9a3412"),
+        title: "Bộ tài liệu cấu trúc ngữ pháp trọng tâm trong hệ thống của Thầy Tài",
+        excerpt: "Các tài liệu được biên soạn để học viên học gọn hơn, hiểu sâu hơn và bám đúng format đề.",
+        href: "/ve-chung-toi/phuong-phap-dao-tao",
+      },
+      {
+        image: placeholderImage("Su%20kien%20Noi%20bat%2003", 900, 620, "fdf2f8", "831843"),
+        title: "Những dự án học liệu và sản phẩm học tập đang được phát triển",
+        excerpt: "Từ practice online đến workbook nội bộ, mọi tài nguyên đều hướng đến trải nghiệm học đồng nhất.",
+        href: "/goc-hoc-tap",
+      },
+    ],
   },
   "phuong-phap-dao-tao": {
     slug: "phuong-phap-dao-tao",

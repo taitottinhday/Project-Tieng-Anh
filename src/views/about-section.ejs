@@ -65,15 +65,38 @@ function renderMedia(url, alt, className) {
   .abt-side { display: grid; gap: 18px; grid-template-columns: minmax(0, 1.15fr) 320px; align-items: start; }
   .abt-tags span, .abt-pill, .abt-link { background: rgba(239,246,255,.92); color: #1d4ed8; font-size: .84rem; }
   .abt-inline { display: flex; justify-content: center; }
+  .abt-founder { width: min(100%, 1080px); display: grid; gap: 36px; }
+  .abt-founder-head { display: grid; gap: 18px; }
+  .abt-founder-head h1 { font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1.08; letter-spacing: -.05em; }
+  .abt-founder-head p { font-size: 1.08rem; line-height: 1.9; }
+  .abt-founder-section { display: grid; gap: 18px; }
+  .abt-founder-section h2 { font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: clamp(1.85rem, 4vw, 2.8rem); line-height: 1.12; letter-spacing: -.04em; }
+  .abt-founder-figure { display: grid; gap: 12px; }
+  .abt-founder-figure .abt-media { min-height: auto; aspect-ratio: 16 / 10; border-radius: 20px; }
+  .abt-founder-caption { color: #475569; font-size: .98rem; font-style: italic; line-height: 1.7; }
+  .abt-founder-gallery-2, .abt-founder-gallery-4, .abt-founder-events { display: grid; gap: 18px; }
+  .abt-founder-gallery-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .abt-founder-gallery-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .abt-founder-gallery-2 .abt-media, .abt-founder-gallery-4 .abt-media { min-height: auto; aspect-ratio: 4 / 3; border-radius: 18px; }
+  .abt-founder-press { display: grid; gap: 12px; padding-left: 22px; }
+  .abt-founder-press li { color: #1d4ed8; line-height: 1.7; }
+  .abt-founder-press a { color: #1d4ed8; }
+  .abt-founder-events { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .abt-founder-event { display: grid; gap: 14px; }
+  .abt-founder-event .abt-media { min-height: auto; aspect-ratio: 16 / 10; border-radius: 18px; }
+  .abt-founder-event h3 { font-size: 1.3rem; line-height: 1.35; }
+  .abt-founder-event p { color: #475569; }
   @media (max-width: 1180px) {
     .abt-hero, .abt-skill, .abt-side { grid-template-columns: 1fr; }
     .abt-grid-3, .abt-grid-4, .abt-stats, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities, .abt-method, .abt-diff, .abt-resources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .abt-founder-events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 760px) {
     .abt-page { gap: 22px; }
     .abt-hero { padding: 22px; border-radius: 26px; }
     .abt-grid-2, .abt-grid-3, .abt-grid-4, .abt-stats, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities, .abt-method, .abt-diff, .abt-resources { grid-template-columns: 1fr; }
     .abt-card, .abt-support, .abt-quote, .abt-panel { padding: 20px; border-radius: 22px; }
+    .abt-founder-gallery-2, .abt-founder-gallery-4, .abt-founder-events { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -84,6 +107,7 @@ function renderMedia(url, alt, className) {
     <span><%= page.title %></span>
   </nav>
 
+  <% if (page.kind !== 'founder') { %>
   <header class="abt-hero">
     <div class="abt-copy">
       <span class="abt-chip"><%= page.eyebrow %></span>
@@ -106,6 +130,7 @@ function renderMedia(url, alt, className) {
       <% if (page.heroNote) { %><div class="abt-note"><%= page.heroNote %></div><% } %>
     </div>
   </header>
+  <% } %>
 
   <nav class="abt-subnav" aria-label="Danh mục Về chúng tôi">
     <% siblings.forEach((item) => { %>
@@ -122,6 +147,105 @@ function renderMedia(url, alt, className) {
   <% } %>
 
   <% if (page.kind === 'founder') { %>
+    <article class="abt-founder">
+      <header class="abt-founder-head">
+        <span class="abt-chip"><%= page.eyebrow %></span>
+        <h1><%= page.headline || page.title %></h1>
+        <% (page.introParagraphs || [page.summary]).forEach((item) => { %>
+          <p><%= item %></p>
+        <% }) %>
+      </header>
+
+      <% if (page.leadFigure) { %>
+        <figure class="abt-founder-figure">
+          <%- renderMedia(page.leadFigure.image, page.headline || page.title, 'abt-media') %>
+          <% if (page.leadFigure.caption) { %><figcaption class="abt-founder-caption"><%= page.leadFigure.caption %></figcaption><% } %>
+        </figure>
+      <% } %>
+
+      <% if (page.chapters && page.chapters[0]) { %>
+        <section class="abt-founder-section">
+          <h2><%= page.chapters[0].title %></h2>
+          <% (page.chapters[0].paragraphs || []).forEach((paragraph) => { %><p><%= paragraph %></p><% }) %>
+        </section>
+      <% } %>
+
+      <% if (page.splitGallery && page.splitGallery.images && page.splitGallery.images.length) { %>
+        <figure class="abt-founder-figure">
+          <div class="abt-founder-gallery-2">
+            <% page.splitGallery.images.forEach((imageUrl, index) => { %>
+              <%- renderMedia(imageUrl, `${page.title} gallery ${index + 1}`, 'abt-media') %>
+            <% }) %>
+          </div>
+          <% if (page.splitGallery.caption) { %><figcaption class="abt-founder-caption"><%= page.splitGallery.caption %></figcaption><% } %>
+        </figure>
+      <% } %>
+
+      <% if (page.chapters && page.chapters[1]) { %>
+        <section class="abt-founder-section">
+          <h2><%= page.chapters[1].title %></h2>
+          <% (page.chapters[1].paragraphs || []).forEach((paragraph) => { %><p><%= paragraph %></p><% }) %>
+        </section>
+      <% } %>
+
+      <% if (page.midFigure) { %>
+        <figure class="abt-founder-figure">
+          <%- renderMedia(page.midFigure.image, page.midFigure.caption || page.title, 'abt-media') %>
+          <% if (page.midFigure.caption) { %><figcaption class="abt-founder-caption"><%= page.midFigure.caption %></figcaption><% } %>
+        </figure>
+      <% } %>
+
+      <% if (page.chapters && page.chapters[2]) { %>
+        <section class="abt-founder-section">
+          <h2><%= page.chapters[2].title %></h2>
+          <% (page.chapters[2].paragraphs || []).forEach((paragraph) => { %><p><%= paragraph %></p><% }) %>
+        </section>
+      <% } %>
+
+      <% if (page.campusGallery) { %>
+        <section class="abt-founder-section">
+          <h2><%= page.campusGallery.title %></h2>
+          <figure class="abt-founder-figure">
+            <div class="abt-founder-gallery-4">
+              <% (page.campusGallery.images || []).forEach((imageUrl, index) => { %>
+                <%- renderMedia(imageUrl, `${page.campusGallery.title} ${index + 1}`, 'abt-media') %>
+              <% }) %>
+            </div>
+            <% if (page.campusGallery.caption) { %><figcaption class="abt-founder-caption"><%= page.campusGallery.caption %></figcaption><% } %>
+          </figure>
+        </section>
+      <% } %>
+
+      <% if (page.pressLinks && page.pressLinks.length) { %>
+        <section class="abt-founder-section">
+          <h2>Báo chí viết về thầy Tài</h2>
+          <ul class="abt-founder-press">
+            <% page.pressLinks.forEach((item) => { %>
+              <li><a href="<%= item.href %>" target="_blank" rel="noreferrer">[<%= item.source %>] <%= item.title %></a></li>
+            <% }) %>
+          </ul>
+        </section>
+      <% } %>
+
+      <% if (page.eventCards && page.eventCards.length) { %>
+        <section class="abt-founder-section">
+          <h2>Sự kiện nổi bật</h2>
+          <div class="abt-founder-events">
+            <% page.eventCards.forEach((item) => { %>
+              <article class="abt-founder-event">
+                <%- renderMedia(item.image, item.title, 'abt-media') %>
+                <h3><%= item.title %></h3>
+                <p><%= item.excerpt %></p>
+                <a href="<%= safeBaseUrl + item.href %>" class="abt-link">Xem thêm</a>
+              </article>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+    </article>
+  <% } %>
+
+  <% if (page.kind === 'founder-legacy') { %>
     <section class="abt-grid-2">
       <article class="abt-panel"><span class="abt-chip">Chân dung người sáng lập</span><h2>Dạy thật, theo sát thật và xây hệ thống học thật.</h2><% (page.bioParagraphs || []).forEach((item) => { %><p><%= item %></p><% }) %></article>
       <article class="abt-panel"><span class="abt-chip">Giá trị cốt lõi</span><h2>Những nguyên tắc luôn xuất hiện trong lớp học của thầy Tài.</h2><% (page.values || []).forEach((item) => { %><div class="abt-card"><h3><%= item.title %></h3><p><%= item.text %></p></div><% }) %></article>
