@@ -235,7 +235,7 @@ const riplVideoEmbedUrl = getYouTubeEmbedUrl(page.ripl?.videoUrl);
       <h3 style="font-family:'Lexend','Be Vietnam Pro',sans-serif;font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.14;letter-spacing:-.05em"><%= page.ripl.subtitle %></h3>
     </div>
     <div class="biz-ripl">
-      <div class="biz-video <%= riplVideoEmbedUrl ? '' : 'is-static' %>" <%= riplVideoEmbedUrl ? `data-inline-video-src="${riplVideoEmbedUrl}"` : '' %>>
+      <div class="biz-video <%= riplVideoEmbedUrl ? '' : 'is-static' %>"<% if (riplVideoEmbedUrl) { %> data-inline-video-src="<%= riplVideoEmbedUrl %>"<% } %>>
         <img src="<%= page.ripl.videoImage %>" alt="<%= page.ripl.title %>">
         <% if (riplVideoEmbedUrl) { %>
           <button type="button" class="biz-video-trigger" data-inline-video-trigger aria-label="Phát video <%= page.ripl.title %>">
