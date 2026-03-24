@@ -1,0 +1,411 @@
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const page = coursePage || {};
+const menuItems = (courseMenu || []).map((item) => ({
+  ...item,
+  href: `${safeBaseUrl}/courses-blog/${item.slug}`,
+  isActive: item.slug === page.slug,
+}));
+const consultFields = page.consult?.fields || [];
+const trackCols = Math.max((page.roadmap?.tiers || []).length, 1);
+const storyItems = page.stories?.items || [];
+const resources = page.resources?.items || [];
+const teachers = page.teachers?.items || [];
+%>
+
+<style>
+  .biz-page{display:grid;gap:34px;padding:12px 0 56px}
+  .biz-wrap{width:min(100%,1180px);margin:0 auto}
+  .biz-page h1,.biz-page h2,.biz-page h3,.biz-page h4,.biz-page p{margin:0}
+  .biz-page h1,.biz-page h2,.biz-page h3,.biz-page h4{color:#0f172a}
+  .biz-page p{color:#334155;line-height:1.78}
+  .biz-crumbs,.biz-subnav,.biz-actions,.biz-story-grid,.biz-step-grid,.biz-teacher-grid,.biz-resource-grid{display:flex;flex-wrap:wrap;gap:12px}
+  .biz-crumbs{color:#64748b;font-size:.95rem}
+  .biz-subnav{padding:14px;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 14px 30px rgba(15,23,42,.05)}
+  .biz-subnav a,.biz-btn,.biz-link{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-weight:800}
+  .biz-subnav a{min-height:42px;padding:0 14px;color:#475569;background:#f8fafc;border:1px solid rgba(15,23,42,.06)}
+  .biz-subnav a.is-active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#ef4444 0%,#2563eb 100%)}
+  .biz-btn{min-height:52px;padding:0 26px;color:#fff;background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);box-shadow:0 16px 28px rgba(239,68,68,.22)}
+  .biz-link{min-height:42px;padding:0 16px;color:#1d4ed8;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .biz-section{display:grid;gap:22px}
+  .biz-head{display:grid;gap:10px;justify-items:center;text-align:center}
+  .biz-head h2{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(2rem,4vw,3.1rem);line-height:1.08;letter-spacing:-.05em}
+  .biz-head p{max-width:960px}
+  .biz-underline::after{content:"";display:block;width:min(420px,46vw);height:4px;margin:14px auto 0;border-radius:999px;background:linear-gradient(90deg,#d7e6ff 0%,#3b82f6 100%)}
+  .biz-red{color:#dc2626}
+  .biz-hero-shell{padding:24px;border-radius:34px;background:linear-gradient(180deg,#dff0ff 0%,#eef7ff 100%)}
+  .biz-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.92fr);gap:28px;padding:34px;border-radius:34px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 24px 52px rgba(15,23,42,.08)}
+  .biz-hero-copy{display:grid;gap:22px;align-content:start}
+  .biz-hero-copy h1{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(2.3rem,5vw,4rem);line-height:1.02;letter-spacing:-.06em;color:#1d9bf0;text-transform:uppercase}
+  .biz-hero-copy p{max-width:650px}
+  .biz-hero-visual{min-height:420px;border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#dbeafe 0%,#f0f9ff 100%);display:grid;place-items:end}
+  .biz-hero-visual img{width:100%;height:100%;object-fit:contain}
+  .biz-pains{display:grid;grid-template-columns:minmax(250px,.92fr) minmax(320px,1fr) minmax(250px,.92fr);gap:20px;align-items:center}
+  .biz-stack{display:grid;gap:18px}
+  .biz-pain{padding:20px 22px;border-radius:20px;background:#e5e7eb;border:1px solid rgba(15,23,42,.08);display:flex;gap:12px;align-items:flex-start}
+  .biz-pain span{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#dc2626;color:#fff;font-weight:900;flex:0 0 auto}
+  .biz-pain h3{font-size:1.14rem;line-height:1.45}
+  .biz-figure{min-height:520px;border-radius:28px;overflow:hidden;background:radial-gradient(circle at top,rgba(191,219,254,.7),transparent 56%),#fff;display:grid;place-items:end center}
+  .biz-figure img{width:100%;height:100%;object-fit:contain}
+  .biz-benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:28px;overflow:hidden;border:1px solid rgba(15,23,42,.08);background:#fff;box-shadow:0 18px 40px rgba(15,23,42,.05)}
+  .biz-benefit{min-height:250px;padding:30px 24px;display:grid;gap:14px;align-content:start;border-right:1px solid rgba(15,23,42,.08)}
+  .biz-benefit:last-child{border-right:0}
+  .biz-benefit.primary{background:linear-gradient(180deg,#60a5fa 0%,#2563eb 100%)}
+  .biz-benefit.primary h3,.biz-benefit.primary p,.biz-benefit.primary .biz-icon{color:#fff}
+  .biz-icon{font-size:3rem;line-height:1;filter:grayscale(1);opacity:.68}
+  .biz-benefit.primary .biz-icon{filter:none;opacity:1}
+  .biz-benefit h3{font-size:1.28rem;line-height:1.34}
+  .biz-ripl{display:grid;grid-template-columns:minmax(300px,.95fr) minmax(0,1fr);gap:30px;align-items:start}
+  .biz-video{position:relative;min-height:320px;border-radius:28px;overflow:hidden;background:#f8fafc}
+  .biz-video img{width:100%;height:100%;object-fit:cover}
+  .biz-video::after{content:"▶";position:absolute;inset:auto auto 20px 20px;width:88px;height:88px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.78);backdrop-filter:blur(6px);font-size:2rem;color:#ef4444;box-shadow:0 18px 28px rgba(15,23,42,.14)}
+  .biz-ripl-points{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+  .biz-ripl-point{position:relative;min-height:140px;padding:22px;border-radius:24px;background:#fff;border:1px solid rgba(15,23,42,.08);overflow:hidden}
+  .biz-ripl-point strong{position:absolute;top:12px;right:16px;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:5rem;line-height:1;color:rgba(15,23,42,.05)}
+  .biz-ripl-point h3{font-size:1.45rem;line-height:1.2;position:relative}
+  .biz-ripl-point p{position:relative;font-size:1.05rem}
+  .biz-partners{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(0,1fr);gap:24px;padding:36px;border-radius:30px;background:linear-gradient(135deg,rgba(22,61,117,.94) 0%,rgba(59,130,246,.68) 100%),url('<%= page.partners.backgroundImage %>') center/cover;border:1px solid rgba(255,255,255,.08)}
+  .biz-partner-copy{display:grid;gap:18px;align-content:center}
+  .biz-partner-copy h2,.biz-partner-copy p{color:#fff}
+  .biz-logo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:center}
+  .biz-logo{min-height:126px;padding:18px;border-radius:22px;background:#fff;display:grid;place-items:center;box-shadow:0 18px 28px rgba(15,23,42,.12)}
+  .biz-logo.large{grid-column:span 2;min-height:180px}
+  .biz-logo.wide{grid-column:span 2}
+  .biz-logo img{max-width:100%;max-height:100%;object-fit:contain}
+  .biz-roadmap{display:grid;gap:24px}
+  .biz-road-intro{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+  .biz-stamp{width:120px;min-height:120px;padding:16px;border-radius:50%;border:4px solid rgba(239,68,68,.78);color:#dc2626;display:grid;place-items:center;text-align:center;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:.9rem;line-height:1.15;text-transform:uppercase}
+  .biz-track{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:18px;align-items:end}
+  .biz-track-item{display:grid;gap:12px}
+  .biz-dur{text-align:center;font-weight:800;color:#1f2937}
+  .biz-box{min-height:164px;padding:20px 18px;border-radius:24px 24px 0 0;display:grid;place-items:center;text-align:center;color:#fff;box-shadow:0 18px 28px rgba(15,23,42,.1)}
+  .biz-box.blue{background:linear-gradient(180deg,#67b8f8 0%,#3b93d1 100%)}
+  .biz-box.sky{background:linear-gradient(180deg,#59b9f6 0%,#2f8bca 100%)}
+  .biz-box.teal{background:linear-gradient(180deg,#379bc7 0%,#2278a9 100%)}
+  .biz-box.pink{background:linear-gradient(180deg,#fb7185 0%,#f43f5e 100%)}
+  .biz-box.hotpink{background:linear-gradient(180deg,#ff5c8a 0%,#ff3c6b 100%)}
+  .biz-level{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.05}
+  .biz-scores{display:grid;gap:8px}
+  .biz-score{padding:10px 12px;border-radius:14px;background:rgba(219,234,254,.92);border:1px solid rgba(59,130,246,.16);color:#0f172a;text-align:center}
+  .biz-score small{display:block;color:#475569;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+  .biz-score strong{display:block;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.2rem;line-height:1.1}
+  .biz-labels{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:18px}
+  .biz-label{font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.1rem;text-align:center;text-transform:uppercase}
+  .biz-label.active{padding:14px 16px;border-radius:18px;color:#fff;background:linear-gradient(135deg,#ef4444 0%,#f43f5e 100%)}
+  .biz-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px}
+  .biz-anchor,.biz-cell,.biz-table,.biz-resource,.biz-form{border-radius:22px}
+  .biz-anchor{padding:24px 18px;text-align:center;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.3rem;color:#0f4c81;background:linear-gradient(180deg,#8fc0f8 0%,#79aee9 100%)}
+  .biz-cell{padding:24px;background:rgba(228,242,255,.82)}
+  .biz-knowledge{display:grid;grid-template-columns:220px repeat(3,minmax(0,1fr));gap:14px}
+  .biz-table{overflow:hidden;background:#fff;border:1px solid rgba(15,23,42,.08)}
+  .biz-table table{width:100%;border-collapse:collapse}
+  .biz-table th,.biz-table td{padding:14px;border:1px solid rgba(15,23,42,.08);text-align:left;vertical-align:top}
+  .biz-table th{background:#5b93d5;color:#fff}
+  .biz-table td strong{display:inline-flex;align-items:center;justify-content:center;min-width:220px;padding:10px 14px;background:#16a34a;color:#fff}
+  .biz-dark{padding:38px 24px;border-radius:30px;background:radial-gradient(circle at top right,rgba(124,58,237,.18),transparent 22%),radial-gradient(circle at left bottom,rgba(59,130,246,.18),transparent 20%),#08124a}
+  .biz-dark .biz-head h2,.biz-dark .biz-head p{color:#fff}
+  .biz-resource-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .biz-resource{overflow:hidden;background:#fff;border:2px solid rgba(123,163,255,.35)}
+  .biz-resource img{width:100%;height:220px;object-fit:contain;background:#fff}
+  .biz-resource-copy{display:grid;gap:6px;padding:18px;color:#fff;background:linear-gradient(135deg,rgba(44,98,214,.95) 0%,rgba(142,96,214,.95) 100%)}
+  .biz-resource-copy strong,.biz-resource-copy h3{color:#fff}
+  .biz-story-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+  .biz-story{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;align-items:center;padding:18px;border-radius:24px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 16px 30px rgba(15,23,42,.04)}
+  .biz-story img{width:100%;height:156px;object-fit:cover;border-radius:18px}
+  .biz-story h3{font-size:1.5rem;line-height:1.24}
+  .biz-story a{display:inline-flex;align-items:center;gap:6px;color:#475569;font-weight:700}
+  .biz-step{position:relative;flex:1 1 220px;min-height:150px;padding:34px 24px 24px;border-radius:22px;display:grid;align-content:end;background:#eef9ff;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:1.28rem}
+  .biz-step:nth-child(2){background:#f3ecff}
+  .biz-step:nth-child(3){background:#fff1f2}
+  .biz-step span{position:absolute;top:12px;left:18px;font-size:5rem;line-height:1;color:rgba(15,23,42,.06)}
+  .biz-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 26px;border-radius:24px;background:#f8fafc;border:1px solid rgba(15,23,42,.08)}
+  .biz-banner strong{color:#ef4444}
+  .biz-consult{display:grid;grid-template-columns:minmax(0,.92fr) minmax(340px,.88fr);gap:24px;padding:28px;border-radius:32px;background:linear-gradient(180deg,#dbeafe 0%,#cfe4ff 100%)}
+  .biz-poster{min-height:660px;padding:20px;border-radius:30px;overflow:hidden;display:grid;align-items:end;background:linear-gradient(180deg,#b9d7ff 0%,#dbeafe 100%)}
+  .biz-poster img{width:100%;height:100%;object-fit:contain}
+  .biz-form{display:grid;gap:12px;padding:26px;background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 24px 44px rgba(15,23,42,.08)}
+  .biz-form h3{font-size:1.95rem;color:#1e3a8a}
+  .biz-form input,.biz-form textarea,.biz-form select{width:100%;min-height:52px;padding:0 14px;border-radius:16px;border:1px solid rgba(15,23,42,.12);background:#f8fafc;font:inherit;color:#0f172a}
+  .biz-form textarea{min-height:110px;padding:14px;resize:vertical}
+  .biz-promo{color:#ef4444;font-weight:700}
+  .biz-teacher-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
+  .biz-teacher{display:grid;gap:12px}
+  .biz-t-photo{position:relative;min-height:260px;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#36a9e1 0%,#d8f3ff 100%)}
+  .biz-t-photo img{width:100%;height:100%;object-fit:cover}
+  .biz-t-badge{position:absolute;top:16px;left:16px;padding:6px 10px;border-radius:14px;background:rgba(37,99,235,.9);color:#fff;font-size:.85rem;font-weight:800}
+  @media (max-width:1180px){
+    .biz-hero,.biz-pains,.biz-ripl,.biz-partners,.biz-consult{grid-template-columns:1fr}
+    .biz-benefits,.biz-resource-grid,.biz-track,.biz-labels,.biz-knowledge,.biz-teacher-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .biz-row,.biz-story-grid,.biz-logo-grid{grid-template-columns:1fr}
+  }
+  @media (max-width:760px){
+    .biz-benefits,.biz-resource-grid,.biz-track,.biz-labels,.biz-step-grid,.biz-teacher-grid,.biz-story-grid,.biz-logo-grid,.biz-knowledge{display:grid;grid-template-columns:1fr}
+    .biz-story,.biz-consult,.biz-hero,.biz-pains,.biz-ripl,.biz-partners{grid-template-columns:1fr}
+    .biz-banner{flex-direction:column;align-items:flex-start}
+    .biz-subnav,.biz-actions{display:grid;grid-template-columns:1fr}
+    .biz-subnav a,.biz-btn,.biz-link{width:100%}
+    .biz-row{grid-template-columns:1fr}
+  }
+</style>
+
+<div class="biz-page biz-wrap">
+  <nav class="biz-crumbs" aria-label="Breadcrumb">
+    <a href="<%= safeBaseUrl %>/">Trang chủ</a><span>&gt;</span>
+    <a href="<%= safeBaseUrl %>/courses-blog">Khóa học</a><span>&gt;</span>
+    <span><%= page.title %></span>
+  </nav>
+
+  <nav class="biz-subnav" aria-label="Danh mục khóa học">
+    <% menuItems.forEach((item) => { %>
+      <a href="<%= item.href %>" class="<%= item.isActive ? 'is-active' : '' %>"><%= item.label %></a>
+    <% }) %>
+  </nav>
+
+  <section class="biz-hero-shell">
+    <article class="biz-hero">
+      <div class="biz-hero-copy">
+        <h1><%= page.hero.title %></h1>
+        <p><%= page.hero.text %></p>
+        <div class="biz-actions">
+          <a href="<%= safeBaseUrl + page.hero.ctaHref %>" class="biz-btn"><%= page.hero.ctaLabel %></a>
+        </div>
+      </div>
+      <div class="biz-hero-visual">
+        <img src="<%= page.hero.image %>" alt="<%= page.hero.title %>">
+      </div>
+    </article>
+  </section>
+
+  <section class="biz-section">
+    <div class="biz-head biz-underline">
+      <h2><%= page.audience.title %></h2>
+      <p><%= page.audience.intro %></p>
+    </div>
+    <div class="biz-pains">
+      <div class="biz-stack">
+        <% page.audience.left.forEach((item) => { %>
+          <article class="biz-pain"><span>X</span><h3><%= item.title %></h3></article>
+        <% }) %>
+      </div>
+      <div class="biz-figure"><img src="<%= page.audience.image %>" alt="<%= page.audience.title %>"></div>
+      <div class="biz-stack">
+        <% page.audience.right.forEach((item) => { %>
+          <article class="biz-pain"><span>X</span><h3><%= item.title %></h3></article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="biz-section">
+    <div class="biz-head biz-underline">
+      <h2><%= page.benefits.title %></h2>
+      <p><%= page.benefits.subtitle %></p>
+      <p><%= page.benefits.description %></p>
+    </div>
+    <div class="biz-benefits">
+      <% page.benefits.items.forEach((item) => { %>
+        <article class="biz-benefit <%= item.tone === 'primary' ? 'primary' : '' %>">
+          <span class="biz-icon"><%= item.icon %></span>
+          <h3><%= item.title %></h3>
+          <p><%= item.text %></p>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="biz-section">
+    <div class="biz-head biz-underline">
+      <h2><span class="biz-red"><%= page.ripl.title %></span></h2>
+      <h3 style="font-family:'Lexend','Be Vietnam Pro',sans-serif;font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.14;letter-spacing:-.05em"><%= page.ripl.subtitle %></h3>
+    </div>
+    <div class="biz-ripl">
+      <div class="biz-video"><img src="<%= page.ripl.videoImage %>" alt="<%= page.ripl.title %>"></div>
+      <div class="biz-ripl-points">
+        <% page.ripl.points.forEach((item) => { %>
+          <article class="biz-ripl-point">
+            <strong><%= item.number %></strong>
+            <h3><%= item.title %></h3>
+            <p><%= item.text %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="biz-partners">
+    <div class="biz-partner-copy">
+      <h2><%= page.partners.title %></h2>
+      <p><%= page.partners.text %></p>
+    </div>
+    <div class="biz-logo-grid">
+      <% page.partners.logos.forEach((item, index) => { %>
+        <div class="biz-logo <%= item.large ? 'large' : '' %> <%= item.name === 'Agribank' ? 'wide' : '' %>">
+          <img src="<%= item.image %>" alt="<%= item.name %>">
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="biz-roadmap">
+    <div class="biz-road-intro">
+      <div class="biz-stamp"><span><%= page.roadmap.stamp %></span></div>
+      <div class="biz-head biz-underline">
+        <h2><%= page.roadmap.title %></h2>
+        <h3 style="font-size:clamp(1.7rem,3vw,2.5rem)"><%= page.roadmap.subtitle %></h3>
+      </div>
+    </div>
+
+    <div class="biz-track" style="--cols:<%= trackCols %>;">
+      <% page.roadmap.tiers.forEach((item) => { %>
+        <article class="biz-track-item">
+          <div class="biz-dur"><%= item.duration %></div>
+          <div class="biz-box <%= item.tone %>"><div class="biz-level"><%= item.level %></div></div>
+          <div class="biz-scores">
+            <% item.scores.forEach((score) => { %>
+              <div class="biz-score"><small><%= score.label %></small><strong><%= score.value %></strong></div>
+            <% }) %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+
+    <div class="biz-labels" style="--cols:<%= trackCols %>;">
+      <% page.roadmap.tiers.forEach((item) => { %>
+        <div class="biz-label <%= item.active ? 'active' : '' %>"><%= item.label %></div>
+      <% }) %>
+    </div>
+
+    <% page.roadmap.supportRows.forEach((item) => { %>
+      <div class="biz-row">
+        <div class="biz-anchor"><%= item.label %></div>
+        <div class="biz-cell"><p><%= item.text %></p></div>
+      </div>
+    <% }) %>
+
+    <div class="biz-knowledge">
+      <div class="biz-anchor">Kiến thức chính</div>
+      <% page.roadmap.knowledgeCards.forEach((item) => { %>
+        <div class="biz-cell"><h3><%= item.title %></h3><p><%= item.text %></p></div>
+      <% }) %>
+    </div>
+
+    <div class="biz-row">
+      <div class="biz-anchor">Nội dung chương trình</div>
+      <div class="biz-table">
+        <table>
+          <thead>
+            <tr><th>STT</th><th>TOPIC</th><th>CONTENT</th><th>REVIEW TEST</th></tr>
+          </thead>
+          <tbody>
+            <% page.roadmap.rows.forEach((item) => { %>
+              <tr>
+                <td><%= item.session %></td>
+                <td><% if (item.milestone) { %><strong><%= item.topic %></strong><% } else { %><%= item.topic %><% } %></td>
+                <td><%- item.content %></td>
+                <td><%= item.review || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="biz-dark">
+    <div class="biz-head">
+      <h2><%= page.resources.title %></h2>
+    </div>
+    <div class="biz-resource-grid">
+      <% resources.forEach((item) => { %>
+        <article class="biz-resource">
+          <img src="<%= item.image %>" alt="<%= item.title %>">
+          <div class="biz-resource-copy">
+            <strong><%= item.title %></strong>
+            <h3 style="font-size:1.42rem"><%= item.subtitle %></h3>
+            <span class="biz-link" style="width:max-content;color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)">Xem thêm</span>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="biz-section">
+    <div class="biz-head">
+      <h2><%= page.stories.title %></h2>
+    </div>
+    <div class="biz-story-grid">
+      <% storyItems.forEach((item) => { %>
+        <article class="biz-story">
+          <img src="<%= item.image %>" alt="<%= item.title %>">
+          <div class="biz-story-copy">
+            <h3><%= item.title %></h3>
+            <p><%= item.excerpt %></p>
+            <a href="<%= safeBaseUrl + item.href %>">Xem chi tiết →</a>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="biz-section">
+    <div class="biz-head biz-underline">
+      <h2><span class="biz-red"><%= page.steps.title %></span></h2>
+      <h3 style="font-size:clamp(1.8rem,3vw,3rem)"><%= page.steps.highlight %></h3>
+      <p><%= page.steps.desc %></p>
+    </div>
+    <div class="biz-step-grid">
+      <% page.steps.items.forEach((item, index) => { %>
+        <article class="biz-step"><span>0<%= index + 1 %></span><strong><%= item %></strong></article>
+      <% }) %>
+    </div>
+    <div class="biz-banner">
+      <p><%= page.steps.banner %></p>
+      <a href="<%= safeBaseUrl + page.steps.ctaHref %>" class="biz-btn"><%= page.steps.ctaLabel %></a>
+    </div>
+  </section>
+
+  <section class="biz-consult">
+    <div class="biz-poster"><img src="<%= page.consult.posterImage %>" alt="<%= page.consult.title %>"></div>
+    <form class="biz-form">
+      <h3><%= page.consult.title %></h3>
+      <p><%= page.consult.text %></p>
+      <% consultFields.forEach((field) => { %>
+        <% if (field.type === 'textarea') { %>
+          <textarea placeholder="<%= field.placeholder %>"></textarea>
+        <% } else if (field.type === 'select') { %>
+          <select>
+            <option><%= field.placeholder %></option>
+            <% field.options.forEach((option) => { %><option><%= option %></option><% }) %>
+          </select>
+        <% } else { %>
+          <input type="<%= field.type %>" placeholder="<%= field.placeholder %>">
+        <% } %>
+      <% }) %>
+      <% if (page.consult.promo) { %><p class="biz-promo"><%= page.consult.promo %></p><% } %>
+      <button type="button" class="biz-btn"><%= page.consult.submitLabel %></button>
+      <p><%= page.consult.note %></p>
+    </form>
+  </section>
+
+  <section class="biz-section">
+    <div class="biz-head biz-underline">
+      <h2><%= page.teachers.title %></h2>
+      <h3 style="font-size:clamp(1.7rem,3vw,2.6rem)"><span class="biz-red"><%= page.teachers.highlight %></span></h3>
+      <p><%= page.teachers.desc %></p>
+    </div>
+    <div class="biz-teacher-grid">
+      <% teachers.forEach((item) => { %>
+        <article class="biz-teacher">
+          <div class="biz-t-photo">
+            <span class="biz-t-badge"><%= page.teachers.badge %></span>
+            <img src="<%= item.image %>" alt="<%= item.name %>">
+          </div>
+          <div><h3><%= item.name %></h3><p><%= item.role %></p></div>
+        </article>
+      <% }) %>
+    </div>
+    <div class="biz-actions" style="justify-content:center;">
+      <a href="<%= safeBaseUrl + page.teachers.ctaHref %>" class="biz-link"><%= page.teachers.ctaLabel %></a>
+    </div>
+  </section>
+</div>

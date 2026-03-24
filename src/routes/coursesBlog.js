@@ -4,6 +4,11 @@ const renderWithLayout = require("../utils/renderHelper");
 const { courseMenu, getCoursePage } = require("../data/courseLandingPages");
 const toeic4SkillsPage = require("../data/toeic4SkillsPage");
 const toeicAcceleratedPage = require("../data/toeicAcceleratedPage");
+const businessEnglishPage = require("../data/businessEnglishPage");
+
+const visibleCourseMenu = courseMenu.filter(
+  (item) => item.slug !== "khoa-toeic-online"
+);
 
 const overviewCourses = [
   {
@@ -53,7 +58,7 @@ router.get("/", (req, res) => {
     title: "Kh\u00f3a h\u1ecdc TOEIC",
     username: req.session?.user?.username,
     courses: overviewCourses,
-    courseMenu,
+    courseMenu: visibleCourseMenu,
   });
 });
 
@@ -63,7 +68,7 @@ router.get("/:slug", (req, res, next) => {
       title: toeic4SkillsPage.title,
       username: req.session?.user?.username,
       coursePage: toeic4SkillsPage,
-      courseMenu,
+      courseMenu: visibleCourseMenu,
     });
   }
 
@@ -72,8 +77,21 @@ router.get("/:slug", (req, res, next) => {
       title: toeicAcceleratedPage.title,
       username: req.session?.user?.username,
       coursePage: toeicAcceleratedPage,
-      courseMenu,
+      courseMenu: visibleCourseMenu,
     });
+  }
+
+  if (req.params.slug === "tieng-anh-doanh-nghiep") {
+    return renderWithLayout(res, "course-program-business", {
+      title: businessEnglishPage.title,
+      username: req.session?.user?.username,
+      coursePage: businessEnglishPage,
+      courseMenu: visibleCourseMenu,
+    });
+  }
+
+  if (req.params.slug === "khoa-toeic-online") {
+    return next();
   }
 
   const coursePage = getCoursePage(req.params.slug);
@@ -86,7 +104,7 @@ router.get("/:slug", (req, res, next) => {
     title: coursePage.title,
     username: req.session?.user?.username,
     coursePage,
-    courseMenu,
+    courseMenu: visibleCourseMenu,
   });
 });
 
