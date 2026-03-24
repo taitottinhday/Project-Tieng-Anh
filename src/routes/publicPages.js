@@ -1,5 +1,6 @@
 const express = require("express");
 const renderWithLayout = require("../utils/renderHelper");
+const { getFullTestCards } = require("../data/fullTestRegistry");
 
 const router = express.Router();
 
@@ -42,30 +43,75 @@ router.get("/lich-khai-giang", (req, res) => {
 });
 
 router.get("/goc-hoc-tap", (req, res) => {
-  const studySections = [
-    {
-      title: "Luyện đề online",
-      desc: "Làm full test và placement test để kiểm tra trình độ hiện tại.",
-      href: "/placement-tests",
-      action: "Mở đề thi",
-    },
-    {
-      title: "Lộ trình ôn theo từng giai đoạn",
-      desc: "Từ mất gốc đến các mốc 450+, 650+, 850+ với cách chia mục tiêu dễ theo sát hơn.",
-      href: "/courses-blog",
-      action: "Xem khóa học",
-    },
-    {
-      title: "Nhận tư vấn lộ trình",
-      desc: "Gửi thông tin để nhận gợi ý khóa học và khung giờ phù hợp.",
-      href: "/contact",
-      action: "Gửi yêu cầu",
-    },
-  ];
+  const safeBaseUrl = res.locals.baseUrl || "";
+  const isStudent = Boolean(req.session?.user?.role && req.session.user.role !== "admin" && req.session.user.role !== "teacher");
+  const fullTestButtons = getFullTestCards(safeBaseUrl)
+    .filter((item) => item.isAvailable && item.href)
+    .slice(0, 5)
+    .map((item, index) => ({
+      label: `Đề ${String(index + 1).padStart(3, "0")}`,
+      href: item.href,
+      note: item.title,
+    }));
+
+  const studyHub = {
+    heroTitle: "Luyện tập TOEIC online cùng Lớp TOEIC thầy Tài",
+    heroSummary: "Cùng luyện tập những bài test TOEIC được các thầy cô tổng hợp, kèm đáp án chi tiết và lộ trình ôn rõ ràng.",
+    helperText: isStudent
+      ? "Bạn có thể mở trực tiếp thư viện luyện theo part và reading ngay từ các nút bên dưới."
+      : "Một số thư viện luyện sâu sẽ mở tốt nhất sau khi đăng nhập tài khoản học viên.",
+    groups: [
+      {
+        heading: "Luyện đề TOEIC",
+        layout: "two-column",
+        cards: [
+          {
+            tone: "lavender",
+            kind: "list",
+            title: "Đề thi Full TOEIC TEST",
+            actions: fullTestButtons,
+          },
+          {
+            tone: "mint",
+            kind: "cta",
+            title: "Luyện tập TOEIC Part 5-6",
+            href: isStudent ? `${safeBaseUrl}/student/practice/parts` : `${safeBaseUrl}/placement-tests`,
+            action: isStudent ? "Làm thử ngay!" : "Xem đề ngay!",
+          },
+        ],
+      },
+      {
+        heading: "Luyện tập từ vựng",
+        layout: "single",
+        cards: [
+          {
+            tone: "sky",
+            kind: "cta",
+            title: "Wordform Test",
+            href: isStudent ? `${safeBaseUrl}/student/practice/parts` : `${safeBaseUrl}/courses-blog`,
+            action: isStudent ? "Làm thử ngay!" : "Xem lộ trình!",
+          },
+        ],
+      },
+      {
+        heading: "Luyện tập Part 7 + Chữa đề chi tiết",
+        layout: "single",
+        cards: [
+          {
+            tone: "powder",
+            kind: "cta",
+            title: "Mini test 1",
+            href: isStudent ? `${safeBaseUrl}/student/practice/reading` : `${safeBaseUrl}/placement-tests`,
+            action: "Làm thử ngay!",
+          },
+        ],
+      },
+    ],
+  };
 
   renderWithLayout(res, "study-hub", {
     title: "Góc học tập",
-    studySections,
+    studyHub,
   });
 });
 

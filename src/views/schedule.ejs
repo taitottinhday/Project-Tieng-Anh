@@ -1,14 +1,16 @@
-<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const reviewVideoUrl="https://www.youtube.com/watch?v=toJFoM_V5qA"; const reviewVideoEmbedUrl="https://www.youtube.com/embed/toJFoM_V5qA?autoplay=1&rel=0"; const routeGroups=Array.isArray(scheduleGroups) ?
+<% const safeBaseUrl=typeof baseUrl !=="undefined" ? baseUrl : "" ; const reviewVideoEmbedUrl="https://www.youtube.com/embed/toJFoM_V5qA?autoplay=1&rel=0"; const routeGroups=Array.isArray(scheduleGroups) ?
   scheduleGroups : []; const sectionLinks=[ { label: "Lịch khai giảng" , href: "#hero" }, { label: "Lộ trình học" ,
   href: "#lo-trinh-hoc" }, { label: "Tập Sự" , href: "#tap-su" }, { label: "TOEIC A" , href: "#toeic-a" }, {
   label: "TOEIC B" , href: "#toeic-b" }, { label: "TOEIC SW" , href: "#toeic-sw" }, { label: "Điểm học viên" ,
   href: "#bang-diem" }, { label: "Giảng viên" , href: "#giang-vien" }, { label: "Địa chỉ học" , href: "#dia-chi-hoc" },
   { label: "Học phí" , href: "#hoc-phi" }, { label: "Hỏi đáp" , href: "#cau-hoi" }, ]; const heroCards=[ {
-  title: "TOEIC A" , bullets: [ "Hoàn thành Part 1-2-3-4" , "Hệ thống lại ngữ pháp" , "Làm quen với phần Reading cơ bản"
-  , ], price: "3.900.000đ" , sessions: "27 buổi" , image: "https://i.pinimg.com/736x/52/ac/e4/52ace48a08f86d4a6aa20f9750807455.jpg" ,
-  placeholder: "Ảnh lớp TOEIC A" , tone: "violet" , }, { title: "TOEIC B" , bullets: [ "Tập trung vào Reading"
-  , "Tập trung vào Vocab" , "Hoàn thiện toàn bộ kỹ năng" , ], price: "3.500.000đ" , sessions: "25 buổi" ,
-  image: "https://i.pinimg.com/736x/57/4a/1a/574a1ad802fd8bffb9ba7fe46daa80ef.jpg" , placeholder: "Ảnh lớp TOEIC B" , tone: "rose" , }, ]; const
+  eyebrow: "Luyện Speaking & Writing theo format thi thật" , title: "TOEIC S&W" , bullets: [ "Đầu vào TOEIC LR 600-650+"
+  , "Đầu ra 260-300+ điểm S&W" , "Hỗ trợ thi lên tới 2.000.000đ" , ], price: "4.000.000đ" , sessions: "30 buổi" ,
+  image: "https://i.pinimg.com/736x/7c/1c/a2/7c1ca2a6865ba76bea40a6925ba481a0.jpg" , placeholder: "Ảnh lớp TOEIC S&W" ,
+  tone: "aqua" , href: `${safeBaseUrl}/contact`, ctaLabel: "Đăng ký lớp S&W" , }, { eyebrow: "Củng cố nền tảng trước khi tăng band"
+  , title: "TOEIC A" , bullets: [ "Hoàn thành Part 1-2-3-4" , "Hệ thống lại ngữ pháp" , "Làm quen với phần Reading cơ bản"
+  , ], price: "3.900.000đ" , sessions: "27 buổi" , image: "https://i.pinimg.com/736x/66/53/e9/6653e98495ff276ffd2f071d208b9f79.jpg" ,
+  placeholder: "Ảnh lớp TOEIC A" , tone: "lilac" , href: `${safeBaseUrl}/contact`, ctaLabel: "Tư vấn lớp TOEIC A" , }, ]; const
   seededGroups=routeGroups.length ? routeGroups : [ { campus: "Cơ sở Hồ Tùng Mậu" ,
   address: "Số 17, ngõ 20 Hồ Tùng Mậu, Cầu Giấy, Hà Nội" , classes: [ { code: "TẬP SỰ TS20" , course: "Tập Sự TOEIC" ,
   time: "18h-19h30" , days: "Tối 3-5-7" , opening: "31/03" , }, { code: "TẬP SỰ TS24" , course: "Tập Sự TOEIC" ,
@@ -319,23 +321,52 @@
     }
 
     .gs-hero {
+      position: relative;
       overflow: hidden;
-      padding: 42px 34px 0;
+      padding: 26px 28px 0;
       border-radius: 40px;
       background:
-        radial-gradient(circle at top left, rgba(147, 197, 253, 0.42), transparent 28%),
-        radial-gradient(circle at top right, rgba(191, 219, 254, 0.42), transparent 26%),
-        linear-gradient(180deg, #dff1ff 0%, #edf7ff 48%, #f7fbff 100%);
-      border: 1px solid rgba(37, 99, 235, 0.12);
-      box-shadow: 0 30px 56px rgba(37, 99, 235, 0.08);
+        radial-gradient(circle at 12% 10%, rgba(244, 114, 182, 0.16), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(56, 189, 248, 0.2), transparent 22%),
+        radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.82), transparent 42%),
+        linear-gradient(180deg, #eef8ff 0%, #f3f7ff 48%, #f8fbff 100%);
+      border: 1px solid rgba(96, 165, 250, 0.18);
+      box-shadow: 0 30px 56px rgba(74, 109, 180, 0.12);
+    }
+
+    .gs-hero::before {
+      content: "";
+      position: absolute;
+      inset: auto auto -88px -72px;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0) 72%);
+      pointer-events: none;
     }
 
     .gs-hero-top {
+      position: relative;
+      z-index: 1;
       display: grid;
-      gap: 22px;
-      max-width: 920px;
+      gap: 18px;
+    }
+
+    .gs-hero-intro {
+      display: grid;
+      gap: 14px;
+      max-width: 760px;
       margin: 0 auto;
       text-align: center;
+    }
+
+    .gs-hero-kicker {
+      margin: 0;
+      color: #475569;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
     }
 
     .gs-hero-title,
@@ -350,8 +381,16 @@
     }
 
     .gs-hero-title {
-      font-size: clamp(3rem, 8vw, 5.7rem);
-      line-height: 0.95;
+      max-width: 840px;
+      margin: 0 auto;
+      font-size: clamp(2.4rem, 6vw, 4.4rem);
+      line-height: 0.96;
+    }
+
+    .gs-hero-summary {
+      margin: 0;
+      color: #52607a;
+      line-height: 1.8;
     }
 
     .gs-button {
@@ -374,6 +413,12 @@
       background: rgba(255, 255, 255, 0.85);
     }
 
+    .gs-hero-button {
+      min-height: 50px;
+      border-color: rgba(15, 23, 42, 0.08);
+      box-shadow: 0 14px 28px rgba(148, 163, 184, 0.18);
+    }
+
     .gs-button-dark {
       background: #18181b;
       color: #ffffff;
@@ -390,8 +435,8 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
-      max-width: 760px;
-      margin: 0 auto;
+      align-items: center;
+      width: 100%;
     }
 
     .gs-inline-link {
@@ -399,11 +444,24 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 40px;
-      color: #111827;
-      font-size: 1.04rem;
+      min-height: 44px;
+      padding: 0 2px;
+      border: 0;
+      background: transparent;
+      color: #0f172a;
+      font-size: 1.02rem;
       font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
       text-decoration: none;
+    }
+
+    .gs-inline-links > :first-child {
+      justify-self: start;
+    }
+
+    .gs-inline-links > :last-child {
+      justify-self: end;
     }
 
     .gs-inline-link::after {
@@ -411,12 +469,25 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border-radius: 999px;
-      border: 1px solid currentColor;
-      font-size: 0.9rem;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 12px 20px rgba(148, 163, 184, 0.16);
+      font-size: 0.92rem;
       line-height: 1;
+    }
+
+    button.gs-inline-link[data-open-review-video]::after {
+      content: "\25B6";
+      font-size: 0.68rem;
+      padding-left: 2px;
+    }
+
+    a.gs-inline-link::after {
+      content: "\2197";
+      font-size: 0.95rem;
     }
 
     body.gs-video-open {
@@ -501,7 +572,8 @@
 
     .gs-hero-cards {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-top: 28px;
+      margin-top: 24px;
+      gap: 18px;
     }
 
     .gs-hero-card,
@@ -521,43 +593,97 @@
     }
 
     .gs-hero-card {
+      position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, 0.82fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.04fr) minmax(220px, 0.96fr);
+      gap: 20px;
       align-items: end;
-      padding: 22px 22px 0;
-      border-radius: 28px;
-      background: rgba(255, 255, 255, 0.6);
+      min-height: 368px;
+      padding: 28px 24px 0;
+      border: 0;
+      border-radius: 34px;
+      overflow: hidden;
       backdrop-filter: blur(10px);
+    }
+
+    .gs-hero-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -34px -96px auto;
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.44);
+      filter: blur(12px);
+      pointer-events: none;
+    }
+
+    .gs-hero-card::after {
+      content: "";
+      position: absolute;
+      top: 26px;
+      left: 48%;
+      width: 108px;
+      height: 108px;
+      border: 2px dashed rgba(15, 23, 42, 0.18);
+      border-color: rgba(15, 23, 42, 0.18) transparent transparent transparent;
+      border-radius: 50%;
+      transform: rotate(18deg);
+      opacity: 0.62;
+      pointer-events: none;
+    }
+
+    .gs-hero-card.aqua {
+      background:
+        radial-gradient(circle at top left, rgba(45, 212, 191, 0.18), transparent 28%),
+        linear-gradient(135deg, #f2fffd 0%, #ecfcff 46%, #f6fbff 100%);
+      box-shadow: 0 24px 40px rgba(14, 116, 144, 0.14);
+    }
+
+    .gs-hero-card.lilac {
+      background:
+        radial-gradient(circle at top right, rgba(236, 72, 153, 0.16), transparent 26%),
+        linear-gradient(135deg, #fff5fd 0%, #f8f1ff 44%, #f3f7ff 100%);
+      box-shadow: 0 24px 40px rgba(147, 51, 234, 0.14);
     }
 
     .gs-hero-copy {
       display: grid;
-      gap: 14px;
-      padding-bottom: 20px;
+      align-content: center;
+      gap: 16px;
+      padding: 8px 0 30px;
+      position: relative;
+      z-index: 1;
     }
 
-    .gs-course-chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: max-content;
-      min-height: 34px;
-      padding: 0 14px;
-      border-radius: 999px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+    .gs-hero-eyebrow {
+      margin: 0;
+      color: #334155;
+      font-size: 0.96rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .gs-hero-poster-title {
+      margin: 0;
+      font-size: clamp(3rem, 5vw, 4.6rem);
+      line-height: 0.88;
+      letter-spacing: -0.08em;
       text-transform: uppercase;
     }
 
-    .gs-course-chip.violet {
-      background: rgba(168, 85, 247, 0.14);
-      color: #9333ea;
+    .gs-hero-poster-title.aqua {
+      background: linear-gradient(180deg, #2dd4bf 0%, #0ea5e9 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .gs-course-chip.rose {
-      background: rgba(244, 114, 182, 0.16);
-      color: #ef4444;
+    .gs-hero-poster-title.lilac {
+      background: linear-gradient(180deg, #ec4899 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .gs-hero-copy ul,
@@ -570,19 +696,36 @@
     }
 
     .gs-price-line {
-      display: grid;
-      gap: 2px;
-      margin-top: 6px;
+      display: flex;
+      align-items: end;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 2px;
     }
 
     .gs-price-line strong {
-      font-size: 1.9rem;
+      font-size: 2rem;
       letter-spacing: -0.05em;
     }
 
     .gs-price-line span {
-      color: var(--gs-muted);
-      font-weight: 600;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .gs-hero-card-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.92);
+      color: #ffffff;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 16px 24px rgba(15, 23, 42, 0.14);
     }
 
     .gs-media-frame {
@@ -643,8 +786,16 @@
     }
 
     .gs-photo-hero-card {
-      min-height: 320px;
-      border-radius: 24px 24px 0 0;
+      min-height: 360px;
+      border-radius: 30px 30px 0 0;
+      overflow: visible;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.08) 72%, transparent 100%);
+    }
+
+    .gs-photo-hero-card img {
+      object-fit: contain;
+      object-position: center bottom;
+      filter: drop-shadow(0 18px 24px rgba(15, 23, 42, 0.14));
     }
 
     .gs-photo-wide {
@@ -1408,7 +1559,23 @@
 
       .gs-hero-card {
         grid-template-columns: 1fr;
-        padding-bottom: 22px;
+        min-height: auto;
+        padding-bottom: 24px;
+      }
+
+      .gs-hero-card::after {
+        display: none;
+      }
+
+      .gs-photo-hero-card {
+        width: min(100%, 360px);
+        min-height: 320px;
+        margin: 0 auto;
+      }
+
+      .gs-inline-links > :first-child,
+      .gs-inline-links > :last-child {
+        justify-self: stretch;
       }
     }
 
@@ -1449,12 +1616,25 @@
 
       .gs-hero-top {
         gap: 14px;
-        max-width: none;
+      }
+
+      .gs-hero-intro {
+        gap: 12px;
+      }
+
+      .gs-hero-kicker {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
       }
 
       .gs-hero-title {
-        font-size: clamp(2.05rem, 11vw, 3rem);
-        line-height: 1;
+        font-size: clamp(2.05rem, 10.8vw, 3rem);
+        line-height: 0.98;
+      }
+
+      .gs-hero-summary {
+        font-size: 0.94rem;
+        line-height: 1.72;
       }
 
       .gs-section-title {
@@ -1468,13 +1648,17 @@
 
       .gs-hero-card {
         gap: 14px;
-        padding: 16px 16px 0;
-        border-radius: 24px;
+        padding: 18px 16px 20px;
+        border-radius: 26px;
       }
 
       .gs-hero-copy {
         gap: 12px;
         padding-bottom: 0;
+      }
+
+      .gs-hero-poster-title {
+        font-size: clamp(2.5rem, 11vw, 3.45rem);
       }
 
       .gs-hero-copy ul {
@@ -1483,7 +1667,7 @@
       }
 
       .gs-price-line strong {
-        font-size: 1.55rem;
+        font-size: 1.65rem;
       }
 
       .gs-button-outline,
@@ -1555,8 +1739,9 @@
       .gs-photo-hero-card {
         min-height: 280px;
         aspect-ratio: auto;
-        padding: 10px 10px 0;
-        border-radius: 20px;
+        width: min(100%, 320px);
+        padding: 0 8px 0;
+        border-radius: 22px 22px 0 0;
       }
 
       .gs-photo-hero-card img {
@@ -1640,12 +1825,17 @@
       }
 
       .gs-hero-card {
-        padding: 14px 14px 0;
+        padding: 16px 14px 18px;
+      }
+
+      .gs-hero-poster-title {
+        font-size: clamp(2.2rem, 12vw, 2.95rem);
       }
 
       .gs-photo-hero-card {
         min-height: 240px;
-        padding: 8px 8px 0;
+        width: min(100%, 280px);
+        padding: 0 6px 0;
       }
 
       .gs-video-modal {
@@ -1702,22 +1892,31 @@
 
     <section id="hero" class="gs-hero">
       <div class="gs-hero-top">
-        <h1 class="gs-hero-title">Lịch khai giảng<br>&amp; thông tin khóa học</h1>
-        <a href="#lo-trinh-hoc" class="gs-button gs-button-outline">Chọn lộ trình học</a>
-
         <div class="gs-inline-links">
-          <a href="<%= reviewVideoUrl %>" target="_blank" rel="noopener noreferrer" class="gs-inline-link" data-open-review-video>Xem video review</a>
+          <button type="button" class="gs-inline-link" data-open-review-video>Xem video review</button>
           <a href="<%= safeBaseUrl %>/contact" class="gs-inline-link">Đăng ký học</a>
+        </div>
+
+        <div class="gs-hero-intro">
+          <p class="gs-hero-kicker">Lịch khai giảng TOEIC 2026</p>
+          <h1 class="gs-hero-title">Chọn lớp phù hợp với mục tiêu hiện tại</h1>
+          <p class="gs-hero-summary">
+            Xem nhanh 2 khóa học nổi bật đầu trang, sau đó kéo xuống để xem đầy đủ lịch khai giảng theo cơ sở và khung giờ.
+          </p>
+          <a href="#lo-trinh-hoc" class="gs-button gs-button-outline gs-hero-button">Chọn lộ trình học</a>
         </div>
       </div>
 
       <div class="gs-hero-cards">
         <% heroCards.forEach((item)=> { %>
-          <article class="gs-hero-card">
+          <article class="gs-hero-card <%= item.tone %>">
             <div class="gs-hero-copy">
-              <span class="gs-course-chip <%= item.tone %>">
+              <p class="gs-hero-eyebrow">
+                <%= item.eyebrow %>
+              </p>
+              <h2 class="gs-hero-poster-title <%= item.tone %>">
                 <%= item.title %>
-              </span>
+              </h2>
               <ul>
                 <% item.bullets.forEach((bullet)=> { %>
                   <li>
@@ -1733,6 +1932,9 @@
                   <%= item.sessions %>
                 </span>
               </div>
+              <a href="<%= item.href %>" class="gs-hero-card-link">
+                <%= item.ctaLabel %>
+              </a>
             </div>
 
             <%- renderMedia(item.image, item.title, item.placeholder, 'gs-media-frame gs-photo-hero-card' ) %>

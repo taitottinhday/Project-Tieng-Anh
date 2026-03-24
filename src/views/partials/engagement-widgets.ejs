@@ -1,6 +1,6 @@
 <%
   const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
-  const widgetScope = typeof scope !== 'undefined' ? scope : 'guest';
+  const widgetScope = typeof widgetScopeValue !== 'undefined' ? widgetScopeValue : 'guest';
   const chatbotTitle = widgetScope === 'student' ? 'Trợ lý lớp học' : 'Trợ lý tư vấn';
 %>
 
@@ -147,6 +147,7 @@
     border-radius: 18px;
     line-height: 1.7;
     font-size: 0.94rem;
+    white-space: pre-line;
   }
 
   .eng-chat-msg.bot {
@@ -177,6 +178,9 @@
     background: rgba(47, 120, 237, 0.08);
     color: #18416e;
     font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .eng-chat-form {
@@ -206,11 +210,14 @@
     pointer-events: auto;
   }
 
-  @media (max-width: 1024px) {
-    .eng-fixed-left {
-      display: none;
-    }
+  .eng-chat-send:disabled,
+  .eng-chat-input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 
+  @media (max-width: 1024px) {
+    .eng-fixed-left,
     .eng-fixed-stack {
       display: none;
     }
@@ -242,15 +249,15 @@
   <div class="eng-chat-panel" id="engChatPanel">
     <div class="eng-chat-head">
       <strong><%= chatbotTitle %></strong>
-      <span>Hỏi nhanh về học phí, lịch khai giảng, đăng ký Gmail + OTP, bài tập, nộp bài hoặc gọi tổng đài 0344772436.</span>
+      <span>Hỏi nhanh về khóa học, lộ trình điểm, lịch khai giảng, placement test, đăng ký tài khoản, Classroom và cách liên hệ trung tâm.</span>
     </div>
     <div class="eng-chat-body" id="engChatBody">
-      <div class="eng-chat-msg bot">Chào bạn. Tôi có thể tư vấn ngay về khóa học, lịch khai giảng, đăng ký Gmail thật + OTP, bài tập và cách liên hệ tổng đài.</div>
+      <div class="eng-chat-msg bot">Chào bạn. Mình có thể tư vấn khóa học, lộ trình điểm, lịch khai giảng, placement test, đăng ký tài khoản và các tính năng học viên ngay trên website.</div>
     </div>
     <div class="eng-chat-suggestions" id="engChatSuggestions">
-      <button type="button" class="eng-chat-suggestion">Học phí</button>
-      <button type="button" class="eng-chat-suggestion">Lịch khai giảng</button>
-      <button type="button" class="eng-chat-suggestion">Đăng ký Gmail</button>
+      <button type="button" class="eng-chat-suggestion">Mình mất gốc thì nên học khóa nào?</button>
+      <button type="button" class="eng-chat-suggestion">Làm placement test ở đâu?</button>
+      <button type="button" class="eng-chat-suggestion">Cho mình lịch khai giảng mới nhất</button>
     </div>
     <form class="eng-chat-form" id="engChatForm">
       <input class="eng-chat-input" id="engChatInput" type="text" placeholder="Nhập câu hỏi..." autocomplete="off">
@@ -281,9 +288,11 @@
     const input = document.getElementById('engChatInput');
     const body = document.getElementById('engChatBody');
     const suggestionWrap = document.getElementById('engChatSuggestions');
+    const sendButton = form ? form.querySelector('.eng-chat-send') : null;
     const apiUrl = '<%= safeBaseUrl %>/chatbot/respond';
+    const widgetScopeValue = '<%= widgetScope %>';
 
-    if (!panel || !toggle || !form || !input || !body || !suggestionWrap) {
+    if (!panel || !toggle || !form || !input || !body || !suggestionWrap || !sendButton) {
       return;
     }
 
@@ -293,17 +302,38 @@
       node.textContent = text;
       body.appendChild(node);
       body.scrollTop = body.scrollHeight;
+      return node;
     };
 
-    const setSuggestions = (items) => {
+    const setBusy = (isBusy) => {
+      input.disabled = isBusy;
+      sendButton.disabled = isBusy;
+      sendButton.textContent = isBusy ? 'Đang trả lời...' : 'Gửi';
+    };
+
+    const setActions = (actions, fallbackSuggestions) => {
       suggestionWrap.innerHTML = '';
-      (items || []).slice(0, 3).forEach((item) => {
+
+      const normalizedActions = Array.isArray(actions) && actions.length
+        ? actions.slice(0, 4)
+        : (fallbackSuggestions || []).slice(0, 4).map((item) => ({ type: 'message', label: item, value: item }));
+
+      normalizedActions.forEach((action) => {
+        if (action.type === 'link' && action.href) {
+          const link = document.createElement('a');
+          link.className = 'eng-chat-suggestion';
+          link.href = action.href;
+          link.textContent = action.label || action.href;
+          suggestionWrap.appendChild(link);
+          return;
+        }
+
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'eng-chat-suggestion';
-        button.textContent = item;
+        button.textContent = action.label || action.value || '';
         button.addEventListener('click', () => {
-          input.value = item;
+          input.value = action.value || action.label || '';
           form.requestSubmit();
         });
         suggestionWrap.appendChild(button);
@@ -312,12 +342,18 @@
 
     const askBot = async (message) => {
       appendMessage('user', message);
+      const pendingNode = appendMessage('bot', 'Đang trả lời...');
+      setBusy(true);
 
       try {
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({
+            message,
+            scope: widgetScopeValue,
+            currentPath: window.location.pathname,
+          }),
         });
 
         if (!response.ok) {
@@ -325,10 +361,13 @@
         }
 
         const payload = await response.json();
-        appendMessage('bot', payload.answer || 'Tôi chưa xử lý được yêu cầu này lúc này.');
-        setSuggestions(payload.suggestions || []);
+        pendingNode.textContent = payload.answer || 'Mình chưa xử lý được yêu cầu này lúc này.';
+        setActions(payload.actions || [], payload.suggestions || []);
       } catch (error) {
-        appendMessage('bot', 'Hệ thống tư vấn tạm thời bị gián đoạn. Bạn có thể gọi ngay 0344772436 để được hỗ trợ.');
+        pendingNode.textContent = 'Hệ thống tư vấn tạm thời bị gián đoạn. Bạn có thể gọi ngay 0344772436 để được hỗ trợ.';
+      } finally {
+        setBusy(false);
+        input.focus();
       }
     };
 
@@ -351,11 +390,6 @@
       await askBot(message);
     });
 
-    suggestionWrap.querySelectorAll('.eng-chat-suggestion').forEach((button) => {
-      button.addEventListener('click', () => {
-        input.value = button.textContent.trim();
-        form.requestSubmit();
-      });
-    });
+    setActions([], Array.from(suggestionWrap.querySelectorAll('.eng-chat-suggestion')).map((button) => button.textContent.trim()));
   })();
 </script>
