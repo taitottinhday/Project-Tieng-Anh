@@ -97,6 +97,7 @@ module.exports = {
     title: "Khám phá 04 giá trị khác biệt của RIPL",
     subtitle: "& tư duy khoa học chỉ có tại Thầy Tài TOEIC.",
     videoImage: placeholderImage("RIPL doanh nghiep", 960, 620, "eef6ff", "1d4ed8"),
+    videoUrl: "https://youtu.be/CNQtIN5s4Yg",
     points: [
       { number: "01", title: "Lộ trình tinh gọn", text: "Hiệu quả tối đa" },
       { number: "02", title: "x2 thời lượng thực hành,", text: "tăng phản xạ nghe nói" },

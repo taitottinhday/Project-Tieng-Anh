@@ -11,6 +11,16 @@ const trackCols = Math.max((page.roadmap?.tiers || []).length, 1);
 const storyItems = page.stories?.items || [];
 const resources = page.resources?.items || [];
 const teachers = page.teachers?.items || [];
+const getYouTubeId = (url) => {
+  const value = String(url || "");
+  const match = value.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  return match ? match[1] : "";
+};
+const getYouTubeEmbedUrl = (url) => {
+  const id = getYouTubeId(url);
+  return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1` : "";
+};
+const riplVideoEmbedUrl = getYouTubeEmbedUrl(page.ripl?.videoUrl);
 %>
 
 <style>
@@ -57,8 +67,14 @@ const teachers = page.teachers?.items || [];
   .biz-benefit h3{font-size:1.28rem;line-height:1.34}
   .biz-ripl{display:grid;grid-template-columns:minmax(300px,.95fr) minmax(0,1fr);gap:30px;align-items:start}
   .biz-video{position:relative;min-height:320px;border-radius:28px;overflow:hidden;background:#f8fafc}
-  .biz-video img{width:100%;height:100%;object-fit:cover}
-  .biz-video::after{content:"▶";position:absolute;inset:auto auto 20px 20px;width:88px;height:88px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.78);backdrop-filter:blur(6px);font-size:2rem;color:#ef4444;box-shadow:0 18px 28px rgba(15,23,42,.14)}
+  .biz-video img,.biz-video iframe{width:100%;height:100%;display:block}
+  .biz-video img{object-fit:cover}
+  .biz-video iframe{position:absolute;inset:0;border:0;display:none}
+  .biz-video.is-playing img,.biz-video.is-playing .biz-video-trigger{display:none}
+  .biz-video.is-playing iframe{display:block}
+  .biz-video-trigger{position:absolute;inset:0;border:0;padding:20px;display:grid;align-items:end;justify-items:start;background:linear-gradient(180deg,rgba(15,23,42,.06) 0%,rgba(15,23,42,.18) 100%);cursor:pointer}
+  .biz-video-trigger span{width:88px;height:88px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(6px);font-size:2rem;color:#ef4444;box-shadow:0 18px 28px rgba(15,23,42,.14);transition:transform .2s ease}
+  .biz-video-trigger:hover span{transform:scale(1.04)}
   .biz-ripl-points{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
   .biz-ripl-point{position:relative;min-height:140px;padding:22px;border-radius:24px;background:#fff;border:1px solid rgba(15,23,42,.08);overflow:hidden}
   .biz-ripl-point strong{position:absolute;top:12px;right:16px;font-family:"Lexend","Be Vietnam Pro",sans-serif;font-size:5rem;line-height:1;color:rgba(15,23,42,.05)}
@@ -219,7 +235,20 @@ const teachers = page.teachers?.items || [];
       <h3 style="font-family:'Lexend','Be Vietnam Pro',sans-serif;font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.14;letter-spacing:-.05em"><%= page.ripl.subtitle %></h3>
     </div>
     <div class="biz-ripl">
-      <div class="biz-video"><img src="<%= page.ripl.videoImage %>" alt="<%= page.ripl.title %>"></div>
+      <div class="biz-video <%= riplVideoEmbedUrl ? '' : 'is-static' %>" <%= riplVideoEmbedUrl ? `data-inline-video-src="${riplVideoEmbedUrl}"` : '' %>>
+        <img src="<%= page.ripl.videoImage %>" alt="<%= page.ripl.title %>">
+        <% if (riplVideoEmbedUrl) { %>
+          <button type="button" class="biz-video-trigger" data-inline-video-trigger aria-label="Phát video <%= page.ripl.title %>">
+            <span>▶</span>
+          </button>
+          <iframe
+            data-inline-video-frame
+            title="<%= page.ripl.title %>"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <% } %>
+      </div>
       <div class="biz-ripl-points">
         <% page.ripl.points.forEach((item) => { %>
           <article class="biz-ripl-point">
@@ -409,3 +438,22 @@ const teachers = page.teachers?.items || [];
     </div>
   </section>
 </div>
+
+<script>
+  (() => {
+    const players = Array.from(document.querySelectorAll("[data-inline-video-src]"));
+    players.forEach((root) => {
+      const src = root.getAttribute("data-inline-video-src");
+      const trigger = root.querySelector("[data-inline-video-trigger]");
+      const frame = root.querySelector("[data-inline-video-frame]");
+      if (!src || !trigger || !frame) return;
+
+      trigger.addEventListener("click", () => {
+        if (!root.classList.contains("is-playing")) {
+          frame.setAttribute("src", src);
+          root.classList.add("is-playing");
+        }
+      });
+    });
+  })();
+</script>

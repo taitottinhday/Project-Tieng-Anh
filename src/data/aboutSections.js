@@ -325,6 +325,7 @@ const aboutSections = {
     proofQuote:
       "Điều tạo nên sự khác biệt của T.A.I.L không phải những khẩu hiệu lớn, mà là cách mỗi mắt xích trong lộ trình được nối với nhau để học viên đi đều và không bị hụt hơi giữa chặng.",
     proofImage: placeholderImage("https://i.pinimg.com/1200x/38/2a/37/382a379c14a4a8d47daf15eb4ff10310.jpg", 1000, 620, "fee2e2", "7f1d1d"),
+    proofVideoUrl: "https://youtu.be/CNQtIN5s4Yg",
     resources: [
       {
         title: "Workbook",

@@ -19,6 +19,19 @@ function resolveHref(url) {
   if (/^(?:https?:|mailto:|tel:)/.test(url)) return url;
   return `${safeBaseUrl}${url}`;
 }
+
+function getYouTubeId(url) {
+  const value = String(url || "");
+  const match = value.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  return match ? match[1] : "";
+}
+
+function getYouTubeEmbedUrl(url) {
+  const id = getYouTubeId(url);
+  return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1` : "";
+}
+
+const proofVideoEmbedUrl = getYouTubeEmbedUrl(page.proofVideoUrl);
 %>
 
 <style>
@@ -50,6 +63,12 @@ function resolveHref(url) {
   .abt-card .abt-media, .abt-panel .abt-media { min-height: 220px; border-radius: 20px; }
   .abt-team .abt-media, .abt-resources .abt-media { min-height: 300px; }
   .abt-media img { object-fit: cover; }
+  .abt-media-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; }
+  .abt-media-video.is-playing img, .abt-media-video.is-playing .abt-video-trigger { display: none; }
+  .abt-media-video.is-playing iframe { display: block; }
+  .abt-video-trigger { position: absolute; inset: 0; border: 0; padding: 20px; display: grid; align-items: end; justify-items: start; background: linear-gradient(180deg, rgba(15,23,42,.06) 0%, rgba(15,23,42,.22) 100%); cursor: pointer; }
+  .abt-video-trigger span { width: 88px; height: 88px; border-radius: 999px; display: grid; place-items: center; background: rgba(255,255,255,.84); backdrop-filter: blur(6px); font-size: 2rem; color: #dc2626; box-shadow: 0 18px 28px rgba(15,23,42,.14); transition: transform .2s ease; }
+  .abt-video-trigger:hover span { transform: scale(1.04); }
   .abt-fallback { display: grid; place-items: center; padding: 24px; text-align: center; font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-weight: 700; background: linear-gradient(135deg, #eff6ff 0%, #fff1f2 100%); }
   .abt-note { position: absolute; left: 16px; right: 16px; bottom: 16px; padding: 12px 14px; border-radius: 18px; background: rgba(15,23,42,.74); color: rgba(255,255,255,.9); font-size: .9rem; line-height: 1.7; }
   .abt-stat { padding: 18px; border-radius: 22px; background: rgba(255,255,255,.94); border: 1px solid rgba(15,23,42,.06); box-shadow: 0 16px 30px rgba(15,23,42,.05); display: grid; gap: 6px; }
@@ -360,7 +379,7 @@ function resolveHref(url) {
     <section class="abt-diff"><% (page.differentiators || []).forEach((item) => { %><article class="abt-card"><span class="abt-index"><%= item.number %></span><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
     <section class="abt-panel"><span class="abt-chip">Ứng dụng phương pháp</span><h2>T.A.I.L được triển khai khác nhau ở từng kỹ năng.</h2><div style="display:grid;gap:18px;"><% (page.skillApplications || []).forEach((item) => { %><article class="abt-skill"><div style="display:grid;gap:12px;"><h3><%= item.title %></h3><p><%= item.text %></p><ul class="abt-bullets"><% (item.bullets || []).forEach((bullet) => { %><li><%= bullet %></li><% }) %></ul></div><aside class="abt-mini"><div class="abt-mini-photo"><img src="<%= item.student.image %>" alt="<%= item.student.name %>"></div><strong><%= item.student.name %></strong><span><%= item.student.school %></span><span class="abt-pill" style="margin:0 auto;"><%= item.student.score %></span></aside></article><% }) %></div></section>
     <section class="abt-grid-2"><div class="abt-stats"><% (page.proofStats || []).forEach((item) => { %><article class="abt-stat"><strong><%= item.value %></strong><span><%= item.label %></span></article><% }) %></div><article class="abt-quote"><p><%= page.proofQuote %></p></article></section>
-    <section class="abt-grid-2"><article class="abt-panel"><%- renderMedia(page.proofImage, page.title, 'abt-media') %></article><article class="abt-panel"><span class="abt-chip">Hình ảnh / video review</span><h2>Thay block này bằng ảnh hoặc video thật của bạn.</h2><p>Phần bên trái đang dùng link placeholder. Bạn chỉ cần thay link là có ngay một block review kiểu landing page mà không phải chỉnh lại layout.</p></article></section>
+    <section class="abt-grid-2"><article class="abt-panel"><% if (proofVideoEmbedUrl && page.proofImage) { %><div class="abt-media abt-media-video" data-inline-video-src="<%= proofVideoEmbedUrl %>"><img src="<%= page.proofImage %>" alt="<%= page.title %>"><button type="button" class="abt-video-trigger" data-inline-video-trigger aria-label="Phát video <%= page.title %>"><span>▶</span></button><iframe data-inline-video-frame title="<%= page.title %>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><% } else { %><%- renderMedia(page.proofImage, page.title, 'abt-media') %><% } %></article><article class="abt-panel"><span class="abt-chip">Hình ảnh / video review</span><h2>Thay block này bằng ảnh hoặc video thật của bạn.</h2><p>Phần bên trái đang dùng link placeholder. Bạn chỉ cần thay link là có ngay một block review kiểu landing page mà không phải chỉnh lại layout.</p></article></section>
     <section class="abt-resources"><% (page.resources || []).forEach((item) => { %><article class="abt-card"><%- renderMedia(item.image, item.title, 'abt-media') %><h3><%= item.title %></h3><strong><%= item.subtitle %></strong><p><%= item.text %></p><a href="<%= safeBaseUrl %>/contact" class="abt-link">Xem thêm</a></article><% }) %></section>
   <% } %>
 
@@ -632,3 +651,22 @@ function resolveHref(url) {
     <section class="abt-activities"><% (page.activities || []).forEach((item) => { %><article class="abt-activity-card abt-card"><%- renderMedia(item.image, item.title, 'abt-media') %><span class="abt-pill"><%= item.tag %></span><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
   <% } %>
 </div>
+
+<script>
+  (() => {
+    const players = Array.from(document.querySelectorAll("[data-inline-video-src]"));
+    players.forEach((root) => {
+      const src = root.getAttribute("data-inline-video-src");
+      const trigger = root.querySelector("[data-inline-video-trigger]");
+      const frame = root.querySelector("[data-inline-video-frame]");
+      if (!src || !trigger || !frame) return;
+
+      trigger.addEventListener("click", () => {
+        if (!root.classList.contains("is-playing")) {
+          frame.setAttribute("src", src);
+          root.classList.add("is-playing");
+        }
+      });
+    });
+  })();
+</script>
