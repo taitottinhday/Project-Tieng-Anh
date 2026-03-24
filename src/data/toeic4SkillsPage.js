@@ -246,7 +246,7 @@ module.exports = {
       excerpt: "Thùy Dương từng là một học viên có nền tảng tiếng Anh nhưng học theo bản năng, ngại luyện đề và lười học ngữ pháp. Nhờ phương pháp giảng dạy chỉn chu, sát đề và sự tận tâm của đội ngũ giáo viên, bạn đã thay đổi hoàn toàn tư duy làm bài và chạm mốc 990 TOEIC.",
       metaTitle: "Học viên",
       metaValue: "Lại Thùy Dương — Sinh viên năm 4",
-      image: placeholderImage("https://www.anhngumshoa.com/tin-tuc/hanh-trinh-den-990-toeic-nu-sinh-dai-hoc-dai-nam-da-hoc-the-nao-38712.html", 900, 640, "fdf2f8", "831843"),
+      image: "https://image.ebomb.edu.vn/resize/340x280/toeic_img/news/2026/03/04/4e05c338-8887-4ada-9d07-f017e1db51cc.png",
     },
     items: [
       {
