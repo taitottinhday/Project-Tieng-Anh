@@ -13,6 +13,12 @@ function renderMedia(url, alt, className) {
   }
   return `<div class="${className} abt-fallback"><span>${alt}</span></div>`;
 }
+
+function resolveHref(url) {
+  if (!url) return "#";
+  if (/^(?:https?:|mailto:|tel:)/.test(url)) return url;
+  return `${safeBaseUrl}${url}`;
+}
 %>
 
 <style>
@@ -131,11 +137,53 @@ function renderMedia(url, alt, className) {
   .abt-story-copy { display: grid; gap: 10px; }
   .abt-story-copy h3 { font-size: 1.45rem; line-height: 1.22; }
   .abt-story-copy p { color: #475569; }
+  .abt-news-page { width: min(100%, 1140px); display: grid; gap: 28px; }
+  .abt-news-featured { display: grid; gap: 24px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .abt-news-featured-card { display: grid; gap: 14px; }
+  .abt-news-featured-card .abt-media { min-height: auto; aspect-ratio: 16 / 10; border-radius: 26px; }
+  .abt-news-badge { display: inline-flex; width: max-content; align-items: center; justify-content: center; min-height: 34px; padding: 0 12px; border-radius: 999px; font-weight: 900; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: #fff; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+  .abt-news-featured-copy { display: grid; gap: 10px; }
+  .abt-news-featured-copy h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); line-height: 1.2; }
+  .abt-news-date { color: #64748b; font-size: .95rem; }
+  .abt-news-main { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+  .abt-news-list-wrap { display: grid; gap: 20px; }
+  .abt-news-list-wrap h2 { font-family: "Lexend", "Be Vietnam Pro", sans-serif; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.08; letter-spacing: -.04em; }
+  .abt-news-list { display: grid; gap: 28px; }
+  .abt-news-item { display: grid; gap: 18px; grid-template-columns: 320px minmax(0, 1fr); align-items: start; }
+  .abt-news-item .abt-media { min-height: auto; aspect-ratio: 16 / 10; border-radius: 22px; }
+  .abt-news-item-copy { display: grid; gap: 10px; }
+  .abt-news-item-copy h3 { font-size: 1.65rem; line-height: 1.24; }
+  .abt-news-sidebar { display: grid; gap: 18px; }
+  .abt-news-side-cards, .abt-news-quick { display: grid; gap: 14px; }
+  .abt-news-side-card, .abt-news-quick, .abt-news-form, .abt-news-social { padding: 20px; border-radius: 24px; background: rgba(255,255,255,.96); border: 1px solid rgba(15,23,42,.08); box-shadow: 0 18px 34px rgba(15,23,42,.05); }
+  .abt-news-side-card { display: grid; gap: 10px; grid-template-columns: 104px minmax(0, 1fr); align-items: center; }
+  .abt-news-side-card .abt-media { min-height: auto; aspect-ratio: 16 / 10; border-radius: 16px; }
+  .abt-news-side-card h3 { font-size: 1.05rem; line-height: 1.35; }
+  .abt-news-quick h3, .abt-news-form h3, .abt-news-social h3 { font-size: 1.5rem; line-height: 1.2; }
+  .abt-news-quick ul { display: grid; gap: 12px; margin: 0; padding: 0; }
+  .abt-news-quick li { list-style: none; }
+  .abt-news-quick a { color: #0f172a; line-height: 1.6; }
+  .abt-news-form { display: grid; gap: 14px; background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,250,252,.98) 100%); }
+  .abt-news-form-head { padding: 14px 16px; margin: -20px -20px 0; border-radius: 24px 24px 0 0; color: #fff; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+  .abt-news-form-head h3 { color: #fff !important; }
+  .abt-news-form-fields { display: grid; gap: 12px; }
+  .abt-news-form input, .abt-news-form select { width: 100%; min-height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(15,23,42,.12); background: rgba(255,255,255,.96); font: inherit; color: #0f172a; }
+  .abt-news-form-note { color: #64748b; font-size: .94rem; line-height: 1.65; }
+  .abt-news-form button, .abt-news-form .abt-news-secondary { min-height: 50px; border: 0; border-radius: 16px; font-weight: 900; font: inherit; cursor: pointer; }
+  .abt-news-form button { color: #fff; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+  .abt-news-secondary { display: inline-flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%); }
+  .abt-news-social-list { display: grid; gap: 10px; }
+  .abt-news-social-list a, .abt-news-phone { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 14px; background: rgba(248,250,252,.96); border: 1px solid rgba(15,23,42,.08); color: #0f172a; font-weight: 700; }
+  .abt-news-phone strong { color: #dc2626; }
+  .abt-news-pagination { display: grid; gap: 10px; justify-items: start; }
+  .abt-news-pagination .abt-results-pagination { justify-content: flex-start; }
+  .abt-news-pagination p { color: #64748b; font-size: .96rem; }
   @media (max-width: 1180px) {
     .abt-hero, .abt-skill, .abt-side { grid-template-columns: 1fr; }
     .abt-grid-3, .abt-grid-4, .abt-stats, .abt-team, .abt-results, .abt-promos, .abt-roles, .abt-activities, .abt-method, .abt-diff, .abt-resources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .abt-founder-events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .abt-results-achievements, .abt-results-reviews, .abt-story-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .abt-news-featured, .abt-news-main { grid-template-columns: 1fr; }
   }
   @media (max-width: 760px) {
     .abt-page { gap: 22px; }
@@ -149,6 +197,7 @@ function renderMedia(url, alt, className) {
     .abt-story-card { grid-template-columns: 1fr; }
     .abt-achievement-meta { grid-template-columns: 1fr; }
     .abt-achievement-score { justify-items: start; text-align: left; }
+    .abt-news-item, .abt-news-side-card { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -159,7 +208,7 @@ function renderMedia(url, alt, className) {
     <span><%= page.title %></span>
   </nav>
 
-  <% if (page.kind !== 'founder' && page.kind !== 'results') { %>
+  <% if (page.kind !== 'founder' && page.kind !== 'results' && page.kind !== 'careers' && page.kind !== 'culture') { %>
   <header class="abt-hero">
     <div class="abt-copy">
       <span class="abt-chip"><%= page.eyebrow %></span>
@@ -434,7 +483,7 @@ function renderMedia(url, alt, className) {
                 <div class="abt-story-copy">
                   <h3><%= item.title %></h3>
                   <p><%= item.excerpt %></p>
-                  <a href="<%= safeBaseUrl + item.href %>" class="abt-link">Xem chi tiết</a>
+                  <a href="<%= resolveHref(item.href) %>" class="abt-link">Xem chi tiết</a>
                 </div>
               </article>
             <% }) %>
@@ -456,13 +505,129 @@ function renderMedia(url, alt, className) {
     <section class="abt-results"><% (page.stories || []).forEach((item) => { %><article class="abt-card"><%- renderMedia(item.image, item.name, 'abt-media') %><h3><%= item.name %></h3><strong><%= item.score %></strong><p><%= item.school %></p><p><%= item.quote %></p></article><% }) %></section>
   <% } %>
 
-  <% if (page.kind === 'careers') { %>
+  <% if (page.kind === 'careers' || page.kind === 'culture') { %>
+    <article class="abt-news-page">
+      <% if (page.featuredPosts && page.featuredPosts.length) { %>
+        <section class="abt-news-featured">
+          <% page.featuredPosts.forEach((item) => { %>
+            <article class="abt-news-featured-card">
+              <%- renderMedia(item.image, item.title, 'abt-media') %>
+              <div class="abt-news-featured-copy">
+                <% if (item.hot) { %><span class="abt-news-badge">Hot</span><% } %>
+                <h2><%= item.title %></h2>
+                <p><%= item.excerpt %></p>
+                <span class="abt-news-date"><%= item.date %></span>
+              </div>
+            </article>
+          <% }) %>
+        </section>
+      <% } %>
+
+      <section class="abt-news-main">
+        <div class="abt-news-list-wrap">
+          <h2><%= page.newsTitle || page.title %></h2>
+          <div class="abt-news-list">
+            <% (page.articleList || []).forEach((item) => { %>
+              <article class="abt-news-item">
+                <%- renderMedia(item.image, item.title, 'abt-media') %>
+                <div class="abt-news-item-copy">
+                  <h3><%= item.title %></h3>
+                  <p><%= item.excerpt %></p>
+                  <a href="<%= safeBaseUrl + item.href %>" class="abt-link">Xem chi tiết</a>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+
+          <% if (page.pagination) { %>
+            <div class="abt-news-pagination">
+              <div class="abt-results-pagination" aria-label="Phân trang chuyên mục">
+                <% (page.pagination.items || []).forEach((item, index) => { %>
+                  <span class="<%= index === 1 ? 'is-active' : '' %>"><%= item %></span>
+                <% }) %>
+              </div>
+              <% if (page.pagination.summary) { %><p><%= page.pagination.summary %></p><% } %>
+            </div>
+          <% } %>
+        </div>
+
+        <aside class="abt-news-sidebar">
+          <% if (page.sideHighlights && page.sideHighlights.length) { %>
+            <div class="abt-news-side-cards">
+              <% page.sideHighlights.forEach((item) => { %>
+                <a href="<%= resolveHref(item.href) %>" class="abt-news-side-card">
+                  <%- renderMedia(item.image, item.title, 'abt-media') %>
+                  <h3><%= item.title %></h3>
+                </a>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <% if (page.quickLinks && page.quickLinks.length) { %>
+            <section class="abt-news-quick">
+              <h3>Liên kết nhanh</h3>
+              <ul>
+                <% page.quickLinks.forEach((item) => { %>
+                  <li><a href="<%= resolveHref(item.href) %>"><%= item.label %></a></li>
+                <% }) %>
+              </ul>
+            </section>
+          <% } %>
+
+          <% if (page.consultBox) { %>
+            <section class="abt-news-form">
+              <div class="abt-news-form-head">
+                <h3><%= page.consultBox.title %></h3>
+              </div>
+              <div class="abt-news-form-fields">
+                <input type="text" placeholder="Họ tên">
+                <input type="email" placeholder="Email">
+                <input type="tel" placeholder="Số điện thoại">
+                <select>
+                  <option>Bạn hiện đang là</option>
+                  <option>Học sinh</option>
+                  <option>Sinh viên</option>
+                  <option>Người đi làm</option>
+                </select>
+                <select>
+                  <option>Chọn cơ sở</option>
+                  <option>Hồ Tùng Mậu</option>
+                  <option>Lê Đức Thọ</option>
+                  <option>Online</option>
+                </select>
+              </div>
+              <% if (page.consultBox.note) { %><p class="abt-news-form-note"><%= page.consultBox.note %></p><% } %>
+              <button type="button"><%= page.consultBox.submitLabel %></button>
+              <a href="<%= resolveHref(page.consultBox.secondaryHref) %>" class="abt-news-secondary"><%= page.consultBox.secondaryLabel %></a>
+            </section>
+          <% } %>
+
+          <% if (page.socialBox) { %>
+            <section class="abt-news-social">
+              <h3><%= page.socialBox.title %></h3>
+              <div class="abt-news-social-list">
+                <% (page.socialBox.links || []).forEach((item) => { %>
+                  <a href="<%= resolveHref(item.href) %>"><span><%= item.label %></span><span>→</span></a>
+                <% }) %>
+              </div>
+              <div class="abt-news-phone">
+                <span><%= page.socialBox.phoneLabel %></span>
+                <strong><%= page.socialBox.phoneValue %></strong>
+              </div>
+            </section>
+          <% } %>
+        </aside>
+      </section>
+    </article>
+  <% } %>
+
+  <% if (page.kind === 'careers-legacy') { %>
     <section class="abt-grid-2"><article class="abt-panel"><span class="abt-chip">Văn hóa tuyển người</span><h2>Ưu tiên người làm thật và phối hợp tốt với đội ngũ.</h2><ul class="abt-bullets"><% (page.culturePoints || []).forEach((item) => { %><li><%= item %></li><% }) %></ul></article><article class="abt-panel"><span class="abt-chip">Quy trình</span><h2>Các bước ứng tuyển minh bạch.</h2><div style="display:grid;gap:12px;"><% (page.process || []).forEach((item, index) => { %><div class="abt-card"><strong>Bước <%= index + 1 %></strong><p><%= item %></p></div><% }) %></div></article></section>
     <section class="abt-roles"><% (page.roles || []).forEach((item) => { %><article class="abt-role-card abt-card"><h3><%= item.title %></h3><strong><%= item.type %> | <%= item.location %></strong><ul class="abt-bullets"><% (item.bullets || []).forEach((bullet) => { %><li><%= bullet %></li><% }) %></ul></article><% }) %></section>
     <div class="abt-inline"><a href="<%= page.ctaHref %>" class="abt-btn abt-btn-primary"><%= page.ctaLabel %></a></div>
   <% } %>
 
-  <% if (page.kind === 'culture') { %>
+  <% if (page.kind === 'culture-legacy') { %>
     <section class="abt-grid-3"><% (page.culturePillars || []).forEach((item) => { %><article class="abt-card"><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
     <section class="abt-activities"><% (page.activities || []).forEach((item) => { %><article class="abt-activity-card abt-card"><%- renderMedia(item.image, item.title, 'abt-media') %><span class="abt-pill"><%= item.tag %></span><h3><%= item.title %></h3><p><%= item.text %></p></article><% }) %></section>
   <% } %>
