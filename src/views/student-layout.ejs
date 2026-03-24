@@ -115,6 +115,7 @@
         }
 
         .s-brand-copy span {
+            display: none;
             font-size: .72rem;
             color: var(--muted)
         }
@@ -170,8 +171,12 @@
             background: #3b82f6
         }
 
-        .s-link-label-short {
+        .s-link-label-full.is-long {
             display: none
+        }
+
+        .s-link-label-short {
+            display: inline
         }
 
         .s-actions {
@@ -183,7 +188,7 @@
         }
 
         .s-badge {
-            display: inline-flex;
+            display: none;
             align-items: center;
             padding: 7px 12px;
             border-radius: 999px;
@@ -213,7 +218,7 @@
         .s-profile-meta {
             display: grid;
             gap: 2px;
-            max-width: 138px;
+            max-width: 112px;
             padding-left: 4px
         }
 
@@ -500,30 +505,6 @@
             .s-logout {
                 padding: 10px 12px;
                 font-size: .9rem
-            }
-        }
-
-        @media (max-width:1880px) {
-            .s-badge {
-                display: none
-            }
-
-            .s-brand-copy span {
-                display: none
-            }
-        }
-
-        @media (max-width:1840px) {
-            .s-link-label-full.is-long {
-                display: none
-            }
-
-            .s-link-label-short {
-                display: inline
-            }
-
-            .s-profile-meta {
-                max-width: 112px
             }
         }
 
