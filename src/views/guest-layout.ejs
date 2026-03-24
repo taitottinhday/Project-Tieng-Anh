@@ -580,6 +580,18 @@
         { label: 'Kh\u00f3a h\u1ecdc c\u1ea5p t\u1ed1c', href: buildHref('/courses-blog/khoa-hoc-cap-toc') },
         { label: 'Ti\u1ebfng Anh doanh nghi\u1ec7p', href: buildHref('/courses-blog/tieng-anh-doanh-nghiep') }
     ];
+    const studyNavChildren = [
+        { label: 'LUY\u1ec6N T\u1eacP FULL TEST TOEIC', href: buildHref('/placement-tests') },
+        { label: 'Luy\u1ec7n t\u1eadp Part 5-6', href: buildHref('/goc-hoc-tap/part-5-6') },
+        { label: 'H\u01b0\u1edbng d\u1eabn TOEIC Part 7', href: buildHref('/goc-hoc-tap/part-7') },
+        { label: 'Wordform Test', href: buildHref('/goc-hoc-tap/wordform') }
+    ];
+    const getNavChildren = (href) => {
+        if (href === buildHref('/ve-chung-toi')) return aboutNavChildren;
+        if (href === buildHref('/courses-blog')) return courseNavChildren;
+        if (href === buildHref('/goc-hoc-tap')) return studyNavChildren;
+        return [];
+    };
     const guestNavItems = [
         { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
         { label: 'Về chúng tôi', href: buildHref('/ve-chung-toi'), matches: ['/ve-chung-toi'] },
@@ -620,9 +632,7 @@
 
             <nav class="g-nav-links" aria-label="Điều hướng khách">
                 <% guestNavItems.forEach((item) => { %>
-                    <% const flyoutLinks = item.href === buildHref('/ve-chung-toi')
-                        ? aboutNavChildren
-                        : (item.href === buildHref('/courses-blog') ? courseNavChildren : []); %>
+                    <% const flyoutLinks = getNavChildren(item.href); %>
                     <div class="g-nav-item">
                         <a href="<%= item.href %>" class="g-nav-link <%= flyoutLinks.length ? 'is-with-flyout' : '' %> <%= isActive(item) ? 'is-active' : '' %>">
                             <span><%= item.label %></span>
@@ -660,9 +670,7 @@
         <div class="g-mobile-panel" id="guestMobilePanel">
             <div class="g-mobile-inner">
                 <% guestNavItems.forEach((item) => { %>
-                    <% const mobileFlyoutLinks = item.href === buildHref('/ve-chung-toi')
-                        ? aboutNavChildren
-                        : (item.href === buildHref('/courses-blog') ? courseNavChildren : []); %>
+                    <% const mobileFlyoutLinks = getNavChildren(item.href); %>
                     <a href="<%= item.href %>" class="g-mobile-link">
                         <span><%= item.label %></span>
                         <span>→</span>
