@@ -352,11 +352,9 @@ const initialCollection = safeCollections.length ? safeCollections[0].key : 'all
         });
 
         searchButton.addEventListener('click', () => applyFilters({ resetPage: true }));
-        searchInput.addEventListener('input', () => applyFilters({ resetPage: true }));
         searchInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                applyFilters({ resetPage: true });
             }
         });
 

@@ -628,16 +628,9 @@ const toneClass = pageKey === 'reading' ? 'reading' : 'parts';
     });
 
     if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        currentPage = 1;
-        render();
-      });
-
       searchInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
           event.preventDefault();
-          currentPage = 1;
-          render();
         }
       });
     }
