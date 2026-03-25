@@ -12,12 +12,16 @@ async function startServer() {
     `Starting app on port ${PORT} with database ${databaseConfig.database}@${databaseConfig.host}:${databaseConfig.port}`
   );
 
-  await ensureApplicationSchema();
-  await importDataIfEmpty();
-
   app.listen(PORT, () => {
     console.log(`Server running on internal port ${PORT}`);
   });
+
+  try {
+    await ensureApplicationSchema();
+    await importDataIfEmpty();
+  } catch (err) {
+    console.error('Startup bootstrap failed. Server is still running, but database-backed features may be degraded:', err);
+  }
 }
 
 startServer().catch(err => {
