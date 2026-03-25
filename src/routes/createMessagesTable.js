@@ -9,7 +9,7 @@ router.get("/create-messages-table", isAdmin, async (req, res) => {
     res.send("Messages table created.");
   } catch (err) {
     console.error("create-messages-table error:", err);
-    res.status(500).send("Khong the cap nhat schema luc nay.");
+    res.status(500).send("Không thể cập nhật schema lúc này.");
   }
 });
 

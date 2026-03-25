@@ -11,7 +11,7 @@ router.get("/add-role-column", isAdmin, async (req, res) => {
     res.send("Role column added successfully!");
   } catch (err) {
     console.error("add-role-column error:", err);
-    res.status(500).send("Khong the cap nhat schema luc nay.");
+    res.status(500).send("Không thể cập nhật schema lúc này.");
   }
 });
 

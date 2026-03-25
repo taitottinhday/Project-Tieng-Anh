@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
     });
   } catch (err) {
     console.error("registerCourse page error:", err);
-    return sendPublicError(res, err, 500, "Khong the tai trang dang ky khoa hoc luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải trang đăng ký khóa học lúc này.");
   }
 });
 
@@ -119,7 +119,7 @@ router.post("/", express.urlencoded({ extended: true }), async (req, res) => {
     return res.redirect(baseUrl + `/payment/${enrollmentId}?token=${encodeURIComponent(paymentToken)}`);
   } catch (err) {
     console.error("registerCourse submit error:", err);
-    return sendPublicError(res, err, 500, "Khong the tao dang ky khoa hoc luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tạo đăng ký khóa học lúc này.");
   }
 });
 

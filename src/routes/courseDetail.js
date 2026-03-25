@@ -55,7 +55,7 @@ router.get("/:id", async (req, res) => {
 
     } catch (err) {
         console.error("courseDetail error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai chi tiet khoa hoc luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải chi tiết khóa học lúc này.");
     }
 
 });

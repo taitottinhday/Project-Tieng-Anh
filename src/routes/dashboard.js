@@ -69,7 +69,7 @@ router.get("/", isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("[dashboard] Error:", err);
-    return sendPublicError(res, err, 500, "Khong the tai dashboard luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải dashboard lúc này.");
   }
 });
 

@@ -20,7 +20,7 @@ router.get("/createTable", isLoggedIn, isAdmin, async (req, res) => {
     `);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Khong the cap nhat schema luc nay.");
+    res.status(500).send("Không thể cập nhật schema lúc này.");
   }
 });
 
@@ -40,7 +40,7 @@ router.get("/seed", isLoggedIn, isAdmin, async (req, res) => {
     `);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Khong the seed du lieu luc nay.");
+    res.status(500).send("Không thể seed dữ liệu lúc này.");
   }
 });
 

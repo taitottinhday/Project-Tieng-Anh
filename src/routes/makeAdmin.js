@@ -44,7 +44,7 @@ router.get("/make-admin", async (req, res) => {
     res.send("Legacy admin user created.");
   } catch (err) {
     console.error("makeAdmin error:", err);
-    return sendPublicError(res, err, 500, "Khong the dong bo tai khoan quan tri cu luc nay.");
+    return sendPublicError(res, err, 500, "Không thể đồng bộ tài khoản quản trị cũ lúc này.");
   }
 });
 

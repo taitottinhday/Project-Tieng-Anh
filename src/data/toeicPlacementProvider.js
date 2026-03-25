@@ -285,7 +285,7 @@ function getExamCard(exam = loadPlacementExam()) {
   return {
     id: exam.id,
     title: exam.title,
-    description: 'Bai TOEIC 2 ky nang 200 cau, giao dien hien dai, cham diem va goi y khoa hoc tu dong.',
+    description: 'Bài TOEIC 2 kỹ năng 200 câu, giao diện hiện đại, chấm điểm và gợi ý khóa học tự động.',
     durationMinutes: exam.durationMinutes,
     totalQuestions: exam.totalQuestions,
     listeningCount: exam.listeningCount,

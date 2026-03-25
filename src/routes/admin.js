@@ -578,7 +578,7 @@ router.get("/admin", isLoggedIn, isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("[admin] Error:", err);
-    return sendPublicError(res, err, 500, "Khong the tai trang quan tri luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải trang quản trị lúc này.");
   }
 });
 

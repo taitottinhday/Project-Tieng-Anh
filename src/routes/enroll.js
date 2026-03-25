@@ -38,7 +38,7 @@ router.get("/", isLoggedIn, async (req, res) => {
 
     } catch (err) {
         console.error("enroll page error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai trang dang ky luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải trang đăng ký lúc này.");
     }
 });
 
@@ -124,7 +124,7 @@ router.post("/", isLoggedIn, express.urlencoded({ extended: true }), async (req,
         }
 
         console.error("enroll submit error:", err);
-        res.status(500).send("Khong the tao dang ky luc nay.");
+        res.status(500).send("Không thể tạo đăng ký lúc này.");
     }
 
 });

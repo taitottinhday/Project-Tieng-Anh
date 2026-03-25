@@ -420,7 +420,7 @@ function handleTeacherUpload(middleware) {
     return (req, res, next) => {
         middleware(req, res, (err) => {
             if (err) {
-                req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the tai tep len luc nay."));
+                req.flash("error_msg", resolvePublicErrorMessage(err, "Không thể tải tệp lên lúc này."));
                 const classId = Number(req.params.classId || 0);
                 const fallbackPath = classId
                     ? `${req.baseUrl}/classroom/${classId}`
@@ -556,7 +556,7 @@ router.get("/dashboard", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher dashboard error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai dashboard giao vien luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải dashboard giáo viên lúc này.");
     }
 });
 
@@ -587,7 +587,7 @@ router.get("/classes", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher classes error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai danh sach lop phu trach luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải danh sách lớp phụ trách lúc này.");
     }
 });
 
@@ -695,7 +695,7 @@ router.get("/classes/:id", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher class detail error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai chi tiet lop hoc luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải chi tiết lớp học lúc này.");
     }
 });
 
@@ -728,7 +728,7 @@ router.get("/schedule", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher schedule error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai lich day luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải lịch dạy lúc này.");
     }
 });
 
@@ -785,7 +785,7 @@ router.get("/profile", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher profile error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai ho so giao vien luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải hồ sơ giáo viên lúc này.");
     }
 });
 
@@ -820,7 +820,7 @@ router.get("/attendance", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher attendance classes error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai trang diem danh luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải trang điểm danh lúc này.");
     }
 });
 
@@ -875,7 +875,7 @@ router.get("/attendance/:classId", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher attendance detail error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai du lieu diem danh luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải dữ liệu điểm danh lúc này.");
     }
 });
 
@@ -927,7 +927,7 @@ router.post("/attendance/:classId", isTeacher, express.urlencoded({ extended: tr
         return res.redirect(req.baseUrl + `/attendance/${classId}?date=${lessonDate}&success=1`);
     } catch (err) {
         console.error("teacher attendance save error:", err);
-        return sendPublicError(res, err, 500, "Khong the luu diem danh luc nay.");
+        return sendPublicError(res, err, 500, "Không thể lưu điểm danh lúc này.");
     }
 });
 
@@ -1022,7 +1022,7 @@ router.get("/comments", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher comments page error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai trang nhan xet hoc vien luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải trang nhận xét học viên lúc này.");
     }
 });
 
@@ -1077,7 +1077,7 @@ router.post("/comments", isTeacher, express.urlencoded({ extended: true }), asyn
         return res.redirect(req.baseUrl + `/comments?class_id=${classId}&success=1`);
     } catch (err) {
         console.error("teacher comment save error:", err);
-        return sendPublicError(res, err, 500, "Khong the luu nhan xet luc nay.");
+        return sendPublicError(res, err, 500, "Không thể lưu nhận xét lúc này.");
     }
 });
 
@@ -1114,7 +1114,7 @@ router.get("/classroom", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher classroom page error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai khong gian lop hoc so luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải không gian lớp học số lúc này.");
     }
 });
 
@@ -1153,7 +1153,7 @@ router.get("/classroom/:classId", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher classroom detail error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai chi tiet lop hoc so luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải chi tiết lớp học số lúc này.");
     }
 });
 
@@ -1192,7 +1192,7 @@ router.post(
 
             return res.redirect(req.baseUrl + `/classroom/${classId}?success=1`);
         } catch (err) {
-            req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the dang bai luc nay."));
+            req.flash("error_msg", resolvePublicErrorMessage(err, "Không thể đăng bài lúc này."));
             return res.redirect(req.baseUrl + `/classroom/${req.params.classId}`);
         }
     }
@@ -1223,7 +1223,7 @@ router.get("/classroom/:classId/posts/:postId", isTeacher, async (req, res) => {
         });
     } catch (err) {
         console.error("teacher classroom post detail error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai bai tap can cham luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải bài tập cần chấm lúc này.");
     }
 });
 
@@ -1249,7 +1249,7 @@ router.post("/classroom/:classId/posts/:postId/review/:studentId", isTeacher, ex
 
         return res.redirect(req.baseUrl + `/classroom/${classId}/posts/${postId}?success=1`);
     } catch (err) {
-        req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the luu danh gia luc nay."));
+        req.flash("error_msg", resolvePublicErrorMessage(err, "Không thể lưu đánh giá lúc này."));
         return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
     }
 });

@@ -21,7 +21,7 @@ function getRecommendationByToeicScore(score) {
         return {
             level: 'Starter',
             course: 'TOEIC Foundation Starter',
-            note: 'Can xay dung lai nen tang tu vung, ngu phap va nghe hieu co ban.'
+            note: 'Cần xây dựng lại nền tảng từ vựng, ngữ pháp và nghe hiểu cơ bản.'
         };
     }
 
@@ -29,7 +29,7 @@ function getRecommendationByToeicScore(score) {
         return {
             level: 'Elementary',
             course: 'TOEIC 450+',
-            note: 'Phu hop de cung co Part 1-5, mo rong tu vung cong viec va luyen reading can ban.'
+            note: 'Phù hợp để củng cố Part 1-5, mở rộng từ vựng công việc và luyện reading căn bản.'
         };
     }
 
@@ -37,7 +37,7 @@ function getRecommendationByToeicScore(score) {
         return {
             level: 'Pre-Intermediate',
             course: 'TOEIC 650+',
-            note: 'Nen day manh chien luoc lam bai, tang toc do doc va nghe cho bai thi that.'
+            note: 'Nên đẩy mạnh chiến lược làm bài, tăng tốc độ đọc và nghe cho bài thi thật.'
         };
     }
 
@@ -45,14 +45,14 @@ function getRecommendationByToeicScore(score) {
         return {
             level: 'Intermediate',
             course: 'TOEIC 850+',
-            note: 'Da co nen tang tot, can luyen de chuyen sau va toi uu toc do + do chinh xac.'
+            note: 'Đã có nền tảng tốt, cần luyện đề chuyên sâu và tối ưu tốc độ + độ chính xác.'
         };
     }
 
     return {
         level: 'Advanced',
         course: 'TOEIC Mastery 900+',
-        note: 'Phu hop de luyen de kho, cham chinh xac cao va dat muc tieu diem nhom dau.'
+        note: 'Phù hợp để luyện đề khó, đạt độ chính xác cao và chạm mục tiêu điểm nhóm đầu.'
     };
 }
 
@@ -227,7 +227,7 @@ async function listTests(req, res) {
         });
     } catch (error) {
         console.error('listTests error:', error);
-        return sendPublicError(res, error, 500, 'Khong the tai danh sach bai test luc nay.');
+        return sendPublicError(res, error, 500, 'Không thể tải danh sách bài test lúc này.');
     }
 }
 
@@ -263,7 +263,7 @@ async function showTest(req, res) {
         });
     } catch (error) {
         console.error('showTest error:', error);
-        return sendPublicError(res, error, 500, 'Khong the tai bai test luc nay.');
+        return sendPublicError(res, error, 500, 'Không thể tải bài test lúc này.');
     }
 }
 
@@ -306,7 +306,7 @@ async function takeTest(req, res) {
         });
     } catch (error) {
         console.error('takeTest error:', error);
-        return sendPublicError(res, error, 500, 'Khong the tai bai test luc nay.');
+        return sendPublicError(res, error, 500, 'Không thể tải bài test lúc này.');
     }
 }
 
@@ -337,7 +337,7 @@ async function submitTest(req, res) {
 
         const test = await testModel.getTestById(testId);
         if (!test) {
-            return res.status(404).send('Bai test khong ton tai');
+            return res.status(404).send('Bài test không tồn tại');
         }
 
         const questions = await testModel.getListeningQuestionsByTestId(testId);
@@ -393,7 +393,7 @@ async function submitTest(req, res) {
         res.redirect(`/placement-tests/result/${attemptId}`);
     } catch (error) {
         console.error('submitTest error FULL:', error);
-        return sendPublicError(res, error, 500, 'Khong the nop bai test luc nay.');
+        return sendPublicError(res, error, 500, 'Không thể nộp bài test lúc này.');
     }
 }
 
@@ -401,7 +401,7 @@ async function showResult(req, res) {
     try {
         if (req.session && req.session.lastPlacementResult) {
             return res.render('test-result', {
-                pageTitle: 'Ket qua TOEIC placement',
+                pageTitle: 'Kết quả TOEIC placement',
                 result: req.session.lastPlacementResult
             });
         }
@@ -443,7 +443,7 @@ async function showResult(req, res) {
         });
     } catch (error) {
         console.error('showResult error:', error);
-        return sendPublicError(res, error, 500, 'Khong the tai ket qua bai test luc nay.');
+        return sendPublicError(res, error, 500, 'Không thể tải kết quả bài test lúc này.');
     }
 }
 

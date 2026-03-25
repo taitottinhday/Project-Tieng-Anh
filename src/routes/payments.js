@@ -53,7 +53,7 @@ router.get("/", isLoggedIn, isAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error("payments admin page error:", err);
-        return sendPublicError(res, err, 500, "Khong the tai danh sach thanh toan luc nay.");
+        return sendPublicError(res, err, 500, "Không thể tải danh sách thanh toán lúc này.");
     }
 });
 
@@ -68,7 +68,7 @@ router.post("/:id/confirm", isLoggedIn, isAdmin, async (req, res) => {
         res.redirect("/payments");
     } catch (err) {
         console.error("payments confirm error:", err);
-        return sendPublicError(res, err, 500, "Khong the xac nhan thanh toan luc nay.");
+        return sendPublicError(res, err, 500, "Không thể xác nhận thanh toán lúc này.");
     }
 });
 
@@ -83,7 +83,7 @@ router.post("/:id/reject", isLoggedIn, isAdmin, async (req, res) => {
         res.redirect("/payments");
     } catch (err) {
         console.error("payments reject error:", err);
-        return sendPublicError(res, err, 500, "Khong the tu choi thanh toan luc nay.");
+        return sendPublicError(res, err, 500, "Không thể từ chối thanh toán lúc này.");
     }
 });
 

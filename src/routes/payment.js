@@ -30,7 +30,7 @@ router.get("/:enrollmentId", async (req, res) => {
 
         const paymentToken = resolvePaymentToken(req);
         if (!verifyEnrollmentAccessToken(enrollmentId, paymentToken)) {
-            return res.status(403).send("Lien ket thanh toan khong hop le.");
+            return res.status(403).send("Liên kết thanh toán không hợp lệ.");
         }
 
         const [rows] = await db.query(
@@ -81,7 +81,7 @@ router.get("/:enrollmentId", async (req, res) => {
         });
     } catch (err) {
         console.error("payment page error:", err);
-        res.status(500).send("Khong the tai trang thanh toan luc nay.");
+        res.status(500).send("Không thể tải trang thanh toán lúc này.");
     }
 });
 
@@ -98,7 +98,7 @@ router.post("/:enrollmentId/confirm", express.urlencoded({ extended: true }), as
 
         const paymentToken = resolvePaymentToken(req);
         if (!verifyEnrollmentAccessToken(enrollmentId, paymentToken)) {
-            return res.status(403).send("Lien ket thanh toan khong hop le.");
+            return res.status(403).send("Liên kết thanh toán không hợp lệ.");
         }
 
         await db.query(
@@ -113,7 +113,7 @@ router.post("/:enrollmentId/confirm", express.urlencoded({ extended: true }), as
         );
     } catch (err) {
         console.error("payment confirm error:", err);
-        res.status(500).send("Khong the xac nhan thanh toan luc nay.");
+        res.status(500).send("Không thể xác nhận thanh toán lúc này.");
     }
 });
 

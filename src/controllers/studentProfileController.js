@@ -13,7 +13,7 @@ async function showStudentProfile(req, res) {
     const student = await syncStudentProfileFromUser(req.session?.user);
 
     if (!student) {
-      return res.status(404).send("Khong tim thay ho so hoc vien.");
+      return res.status(404).send("Không tìm thấy hồ sơ học viên.");
     }
 
     const activity = await getStudentActivityProfile(student.id, res.locals.baseUrl || "");
@@ -34,7 +34,7 @@ async function showStudentProfile(req, res) {
     });
   } catch (error) {
     console.error("showStudentProfile error:", error);
-    return sendPublicError(res, error, 500, "Khong the tai ho so hoc vien.");
+    return sendPublicError(res, error, 500, "Không thể tải hồ sơ học viên.");
   }
 }
 

@@ -132,7 +132,7 @@ ${message || ""}
     res.redirect(baseUrl + destination + `${separator}success=1`);
   } catch (err) {
     console.error("contact submit error:", err);
-    return sendPublicError(res, err, 500, "Khong the gui yeu cau tu van luc nay.");
+    return sendPublicError(res, err, 500, "Không thể gửi yêu cầu tư vấn lúc này.");
   }
 });
 
@@ -186,7 +186,7 @@ router.get("/messages", isLoggedIn, isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("messages list error:", err);
-    return sendPublicError(res, err, 500, "Khong the tai danh sach yeu cau luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải danh sách yêu cầu lúc này.");
   }
 });
 
@@ -218,7 +218,7 @@ router.post("/messages/:id/viewed", isLoggedIn, isAdmin, async (req, res) => {
     res.redirect(req.baseUrl + "/messages");
   } catch (err) {
     console.error("messages viewed error:", err);
-    return sendPublicError(res, err, 500, "Khong the cap nhat trang thai yeu cau luc nay.");
+    return sendPublicError(res, err, 500, "Không thể cập nhật trạng thái yêu cầu lúc này.");
   }
 });
 
@@ -252,7 +252,7 @@ router.post("/messages/:id/contacted", isLoggedIn, isAdmin, async (req, res) => 
     res.redirect(req.baseUrl + "/messages");
   } catch (err) {
     console.error("messages contacted error:", err);
-    return sendPublicError(res, err, 500, "Khong the cap nhat trang thai lien he luc nay.");
+    return sendPublicError(res, err, 500, "Không thể cập nhật trạng thái liên hệ lúc này.");
   }
 });
 
@@ -285,7 +285,7 @@ router.post("/messages/:id/note", isLoggedIn, isAdmin, async (req, res) => {
     res.redirect(req.baseUrl + "/messages");
   } catch (err) {
     console.error("messages note error:", err);
-    return sendPublicError(res, err, 500, "Khong the luu ghi chu luc nay.");
+    return sendPublicError(res, err, 500, "Không thể lưu ghi chú lúc này.");
   }
 });
 

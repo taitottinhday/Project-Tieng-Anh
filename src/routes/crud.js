@@ -80,7 +80,7 @@ router.get("/", ensureLoggedIn, async (req, res) => {
   } catch (err) {
     console.error("CRUD Error:", err.message);
     console.error("Stack:", err.stack);
-    return sendPublicError(res, err, 500, "Khong the tai trang CRUD luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải trang CRUD lúc này.");
   }
 });
 
@@ -107,7 +107,7 @@ router.post("/create", ensureLoggedIn, async (req, res) => {
     res.redirect(baseUrl + '/app207/crud');
   } catch (err) {
     console.error("CRUD Create Error:", err.message);
-    return sendPublicError(res, err, 500, "Khong the tao diem luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tạo điểm lúc này.");
   }
 });
 
@@ -124,7 +124,7 @@ router.post("/update", ensureLoggedIn, async (req, res) => {
     res.redirect(baseUrl + '/app207/crud');
   } catch (err) {
     console.error("CRUD Update Error:", err.message);
-    return sendPublicError(res, err, 500, "Khong the cap nhat diem luc nay.");
+    return sendPublicError(res, err, 500, "Không thể cập nhật điểm lúc này.");
   }
 });
 
@@ -137,7 +137,7 @@ router.get("/delete/:id", ensureLoggedIn, async (req, res) => {
     res.redirect(baseUrl + '/app207/crud');
   } catch (err) {
     console.error("CRUD Delete Error:", err.message);
-    return sendPublicError(res, err, 500, "Khong the xoa diem luc nay.");
+    return sendPublicError(res, err, 500, "Không thể xóa điểm lúc này.");
   }
 });
 

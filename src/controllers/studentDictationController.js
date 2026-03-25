@@ -15,7 +15,7 @@ function getSafeBaseUrl(res) {
 function respondWithError(res, error, options = {}) {
   const {
     statusCode = 500,
-    fallbackMessage = "Khong the tai du lieu nghe-chep chinh ta."
+    fallbackMessage = "Không thể tải dữ liệu nghe-chép chính tả."
   } = options;
 
   console.error("studentDictation error:", error);
@@ -41,7 +41,7 @@ function showDictationTopic(req, res) {
     const topic = getTopicDetail(req.params.topicId, getSafeBaseUrl(res));
 
     if (!topic) {
-      return respondWithError(res, new Error("Khong tim thay topic nghe-chep."), {
+      return respondWithError(res, new Error("Không tìm thấy topic nghe-chép."), {
         statusCode: 404
       });
     }
@@ -53,7 +53,7 @@ function showDictationTopic(req, res) {
   } catch (error) {
     return respondWithError(res, error, {
       statusCode: 404,
-      fallbackMessage: "Khong tim thay topic nghe-chep."
+      fallbackMessage: "Không tìm thấy topic nghe-chép."
     });
   }
 }
@@ -63,7 +63,7 @@ function showDictationLesson(req, res) {
     const detail = getLessonDetail(req.params.topicId, req.params.lessonId, getSafeBaseUrl(res));
 
     if (!detail) {
-      return respondWithError(res, new Error("Khong tim thay bai nghe-chep."), {
+      return respondWithError(res, new Error("Không tìm thấy bài nghe-chép."), {
         statusCode: 404
       });
     }
@@ -75,7 +75,7 @@ function showDictationLesson(req, res) {
   } catch (error) {
     return respondWithError(res, error, {
       statusCode: 404,
-      fallbackMessage: "Khong tim thay bai nghe-chep."
+      fallbackMessage: "Không tìm thấy bài nghe-chép."
     });
   }
 }
@@ -88,7 +88,7 @@ async function saveDictationSession(req, res) {
     if (!student?.id || !detail) {
       return res.status(404).json({
         ok: false,
-        message: "Khong tim thay du lieu dictation de luu session."
+        message: "Không tìm thấy dữ liệu dictation để lưu session."
       });
     }
 
@@ -114,7 +114,7 @@ async function saveDictationSession(req, res) {
     return res.json({ ok: true });
   } catch (error) {
     console.error("studentDictation saveSession error:", error);
-    return sendPublicJsonError(res, error, 500, "Khong the luu session dictation.");
+    return sendPublicJsonError(res, error, 500, "Không thể lưu session dictation.");
   }
 }
 

@@ -99,7 +99,7 @@ router.get("/", isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("[dbtest] Error:", err);
-    return sendPublicError(res, err, 500, "Khong the tai trang du lieu luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải trang dữ liệu lúc này.");
   }
 });
 
