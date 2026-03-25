@@ -352,7 +352,7 @@ const reviewDetailsJson = JSON.stringify(Array.isArray(review.details) ? review.
   }
 </style>
 
-<section class="rr-shell" id="<%= reviewDomId %>" data-review-root>
+<section class="rr-shell" id="<%= reviewDomId %>" data-review-root hidden>
   <% if (!reviewAvailable) { %>
     <div class="rr-empty">Review sẽ hiển thị ở đây khi kết quả có dữ liệu chi tiết phù hợp.</div>
   <% } else { %>
@@ -479,6 +479,7 @@ const reviewDetailsJson = JSON.stringify(Array.isArray(review.details) ? review.
         return;
       }
 
+      root.hidden = !visible;
       panel.hidden = !visible;
       toggleButtons.forEach((button) => {
         button.textContent = visible ? 'Ẩn review từng phần' : 'Hiện review từng phần';
@@ -579,6 +580,8 @@ const reviewDetailsJson = JSON.stringify(Array.isArray(review.details) ? review.
 
       modal.hidden = false;
     };
+
+    setPanelVisible(false);
 
     toggleButtons.forEach((button) => {
       button.addEventListener('click', () => {
