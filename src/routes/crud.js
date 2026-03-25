@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
+const { sendPublicError } = require("../utils/publicError");
 
 function ensureLoggedIn(req, res, next) {
   if (req.session && req.session.user) return next();
@@ -79,7 +80,7 @@ router.get("/", ensureLoggedIn, async (req, res) => {
   } catch (err) {
     console.error("CRUD Error:", err.message);
     console.error("Stack:", err.stack);
-    res.status(500).send("<h1>CRUD Error</h1><p>" + err.message + "</p><pre>" + err.stack + "</pre>");
+    return sendPublicError(res, err, 500, "Khong the tai trang CRUD luc nay.");
   }
 });
 
@@ -106,7 +107,7 @@ router.post("/create", ensureLoggedIn, async (req, res) => {
     res.redirect(baseUrl + '/app207/crud');
   } catch (err) {
     console.error("CRUD Create Error:", err.message);
-    res.status(500).send("<h1>Error Creating Mark</h1><p>" + err.message + "</p>");
+    return sendPublicError(res, err, 500, "Khong the tao diem luc nay.");
   }
 });
 
@@ -123,7 +124,7 @@ router.post("/update", ensureLoggedIn, async (req, res) => {
     res.redirect(baseUrl + '/app207/crud');
   } catch (err) {
     console.error("CRUD Update Error:", err.message);
-    res.status(500).send("<h1>Error Updating Mark</h1><p>" + err.message + "</p>");
+    return sendPublicError(res, err, 500, "Khong the cap nhat diem luc nay.");
   }
 });
 
@@ -136,7 +137,7 @@ router.get("/delete/:id", ensureLoggedIn, async (req, res) => {
     res.redirect(baseUrl + '/app207/crud');
   } catch (err) {
     console.error("CRUD Delete Error:", err.message);
-    res.status(500).send("<h1>Error Deleting Mark</h1><p>" + err.message + "</p>");
+    return sendPublicError(res, err, 500, "Khong the xoa diem luc nay.");
   }
 });
 

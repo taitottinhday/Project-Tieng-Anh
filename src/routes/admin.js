@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn, isAdmin } = require("./auth");
+const { sendPublicError } = require("../utils/publicError");
 
 function toNumber(value, fallback = 0) {
   const numericValue = Number(value);
@@ -577,7 +578,7 @@ router.get("/admin", isLoggedIn, isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("[admin] Error:", err);
-    res.status(500).send("Error: " + err.message);
+    return sendPublicError(res, err, 500, "Khong the tai trang quan tri luc nay.");
   }
 });
 

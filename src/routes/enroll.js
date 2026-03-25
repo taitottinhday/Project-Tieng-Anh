@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn } = require("./auth");
+const { createEnrollmentAccessToken } = require("../utils/paymentAccess");
+const { sendPublicError } = require("../utils/publicError");
 
 
 // ================================
@@ -35,7 +37,8 @@ router.get("/", isLoggedIn, async (req, res) => {
         });
 
     } catch (err) {
-        res.send("ERROR: " + err.message);
+        console.error("enroll page error:", err);
+        return sendPublicError(res, err, 500, "Khong the tai trang dang ky luc nay.");
     }
 });
 
@@ -97,7 +100,8 @@ router.post("/", isLoggedIn, express.urlencoded({ extended: true }), async (req,
 
         if (check.length > 0) {
             // Đã đăng ký rồi -> đưa sang trang thanh toán luôn
-            return res.redirect(`/payment/${check[0].id}`);
+            const paymentToken = createEnrollmentAccessToken(check[0].id);
+            return res.redirect(`/payment/${check[0].id}?token=${encodeURIComponent(paymentToken)}`);
         }
 
         // tạo enrollment
@@ -110,7 +114,8 @@ router.post("/", isLoggedIn, express.urlencoded({ extended: true }), async (req,
         const enrollmentId = result.insertId;
 
         // chuyển sang trang thanh toán
-        res.redirect(`/payment/${enrollmentId}`);
+        const paymentToken = createEnrollmentAccessToken(enrollmentId);
+        res.redirect(`/payment/${enrollmentId}?token=${encodeURIComponent(paymentToken)}`);
 
     } catch (err) {
 
@@ -118,7 +123,8 @@ router.post("/", isLoggedIn, express.urlencoded({ extended: true }), async (req,
             return res.send("Học viên đã đăng ký lớp này rồi!");
         }
 
-        res.send("ERROR: " + err.message);
+        console.error("enroll submit error:", err);
+        res.status(500).send("Khong the tao dang ky luc nay.");
     }
 
 });

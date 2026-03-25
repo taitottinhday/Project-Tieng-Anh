@@ -1,4 +1,5 @@
 const path = require('path');
+const { resolvePublicErrorMessage } = require('./publicError');
 
 function renderWithLayout(res, viewName, data = {}) {
   const ejs = require('ejs');
@@ -23,7 +24,7 @@ function renderWithLayout(res, viewName, data = {}) {
       return res
         .status(500)
         .type('html')
-        .send('<h1>View Error</h1><p>' + err.message + '</p>');
+        .send('<h1>View Error</h1><p>' + resolvePublicErrorMessage(err, 'Khong the render giao dien luc nay.') + '</p>');
     }
 
     const defaultLayout = !currentUser
@@ -50,7 +51,7 @@ function renderWithLayout(res, viewName, data = {}) {
         return res
           .status(500)
           .type('html')
-          .send('<h1>Layout Error</h1><p>' + layoutErr.message + '</p>');
+          .send('<h1>Layout Error</h1><p>' + resolvePublicErrorMessage(layoutErr, 'Khong the tai layout luc nay.') + '</p>');
       }
 
       res.type('html').send(html);

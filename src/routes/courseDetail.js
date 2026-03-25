@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
+const { sendPublicError } = require("../utils/publicError");
 
 router.get("/:id", async (req, res) => {
 
@@ -53,7 +54,8 @@ router.get("/:id", async (req, res) => {
         });
 
     } catch (err) {
-        res.send("ERROR: " + err.message);
+        console.error("courseDetail error:", err);
+        return sendPublicError(res, err, 500, "Khong the tai chi tiet khoa hoc luc nay.");
     }
 
 });

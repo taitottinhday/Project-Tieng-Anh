@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
+const { createEnrollmentAccessToken } = require("../utils/paymentAccess");
+const { sendPublicError } = require("../utils/publicError");
 
 router.get("/", async (req, res) => {
   try {
@@ -17,7 +19,8 @@ router.get("/", async (req, res) => {
       message: null,
     });
   } catch (err) {
-    res.send("ERROR: " + err.message);
+    console.error("registerCourse page error:", err);
+    return sendPublicError(res, err, 500, "Khong the tai trang dang ky khoa hoc luc nay.");
   }
 });
 
@@ -112,9 +115,11 @@ router.post("/", express.urlencoded({ extended: true }), async (req, res) => {
     }
 
     const baseUrl = res.locals.baseUrl || "";
-    return res.redirect(baseUrl + `/payment/${enrollmentId}`);
+    const paymentToken = createEnrollmentAccessToken(enrollmentId);
+    return res.redirect(baseUrl + `/payment/${enrollmentId}?token=${encodeURIComponent(paymentToken)}`);
   } catch (err) {
-    res.send("ERROR: " + err.message);
+    console.error("registerCourse submit error:", err);
+    return sendPublicError(res, err, 500, "Khong the tao dang ky khoa hoc luc nay.");
   }
 });
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isAdmin } = require("./auth");
+const { sendPublicError } = require("../utils/publicError");
 
 // Query an toàn: nếu bảng chưa tồn tại hoặc lỗi SQL thì trả []
 async function safeQuery(sql, params = []) {
@@ -98,7 +99,7 @@ router.get("/", isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("[dbtest] Error:", err);
-    return res.send("Error: " + err.message);
+    return sendPublicError(res, err, 500, "Khong the tai trang du lieu luc nay.");
   }
 });
 

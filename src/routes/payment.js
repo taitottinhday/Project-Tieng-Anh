@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
+const { createEnrollmentAccessToken, verifyEnrollmentAccessToken } = require("../utils/paymentAccess");
 
 // Cấu hình tài khoản nhận tiền
 const BANK = {
@@ -15,12 +16,21 @@ function buildTransferContent(enrollmentId) {
     return `TT E${enrollmentId}`;
 }
 
+function resolvePaymentToken(req) {
+    return String(req.query.token || req.body.token || "").trim();
+}
+
 // Trang hiển thị chuyển khoản + QR
 router.get("/:enrollmentId", async (req, res) => {
     try {
         const enrollmentId = Number(req.params.enrollmentId);
         if (!enrollmentId) {
             return res.status(400).send("Invalid enrollmentId");
+        }
+
+        const paymentToken = resolvePaymentToken(req);
+        if (!verifyEnrollmentAccessToken(enrollmentId, paymentToken)) {
+            return res.status(403).send("Lien ket thanh toan khong hop le.");
         }
 
         const [rows] = await db.query(
@@ -65,11 +75,13 @@ router.get("/:enrollmentId", async (req, res) => {
             bank: BANK,
             amount,
             content,
+            paymentToken,
             vietqrUrl,
             success: req.query.success || null,
         });
     } catch (err) {
-        res.send("ERROR: " + err.message);
+        console.error("payment page error:", err);
+        res.status(500).send("Khong the tai trang thanh toan luc nay.");
     }
 });
 
@@ -84,6 +96,11 @@ router.post("/:enrollmentId/confirm", express.urlencoded({ extended: true }), as
             return res.status(400).send("Invalid enrollmentId");
         }
 
+        const paymentToken = resolvePaymentToken(req);
+        if (!verifyEnrollmentAccessToken(enrollmentId, paymentToken)) {
+            return res.status(403).send("Lien ket thanh toan khong hop le.");
+        }
+
         await db.query(
             `INSERT INTO payments (enrollment_id, amount, method, note, status)
        VALUES (?, ?, ?, ?, 'pending')`,
@@ -91,9 +108,12 @@ router.post("/:enrollmentId/confirm", express.urlencoded({ extended: true }), as
         );
 
         const baseUrl = res.locals.baseUrl || "";
-        return res.redirect(baseUrl + `/payment/${enrollmentId}?success=1`);
+        return res.redirect(
+            baseUrl + `/payment/${enrollmentId}?token=${encodeURIComponent(createEnrollmentAccessToken(enrollmentId))}&success=1`
+        );
     } catch (err) {
-        res.send("ERROR: " + err.message);
+        console.error("payment confirm error:", err);
+        res.status(500).send("Khong the xac nhan thanh toan luc nay.");
     }
 });
 

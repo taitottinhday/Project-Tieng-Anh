@@ -10,6 +10,7 @@ const {
 } = require('../data/practiceCatalog');
 const { syncStudentProfileFromUser } = require("../services/platformSupport");
 const { recordPracticeSession } = require("../services/studentActivityService");
+const { sendPublicError, sendPublicJsonError } = require("../utils/publicError");
 
 function getSafeBaseUrl(res) {
   return res.locals.baseUrl || '';
@@ -25,13 +26,10 @@ function respondWithError(res, error, options = {}) {
   console.error('studentPractice error:', error);
 
   if (api) {
-    return res.status(statusCode).json({
-      ok: false,
-      message: error && error.message ? error.message : fallbackMessage
-    });
+    return sendPublicJsonError(res, error, statusCode, fallbackMessage);
   }
 
-  return res.status(statusCode).send(error && error.message ? error.message : fallbackMessage);
+  return sendPublicError(res, error, statusCode, fallbackMessage);
 }
 
 function isStudentSession(req) {

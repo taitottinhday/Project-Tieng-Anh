@@ -1,14 +1,15 @@
 const express = require("express");
-const { DEMO_TEACHER_PASSWORD, seedDemoCenterData } = require("../services/demoSeedService");
+const { seedDemoCenterData } = require("../services/demoSeedService");
 const { ensureApplicationSchema } = require("../services/bootstrapService");
+const { isLoggedIn, isAdmin } = require("./auth");
 
 const router = express.Router();
 
-router.get("/test-route", (req, res) => {
+router.get("/test-route", isLoggedIn, isAdmin, (req, res) => {
   res.send("createTable.js is working!");
 });
 
-router.get("/createTable", async (req, res) => {
+router.get("/createTable", isLoggedIn, isAdmin, async (req, res) => {
   try {
     await ensureApplicationSchema();
 
@@ -19,11 +20,11 @@ router.get("/createTable", async (req, res) => {
     `);
   } catch (err) {
     console.error(err);
-    res.send("ERROR: " + err.message);
+    res.status(500).send("Khong the cap nhat schema luc nay.");
   }
 });
 
-router.get("/seed", async (req, res) => {
+router.get("/seed", isLoggedIn, isAdmin, async (req, res) => {
   try {
     const summary = await seedDemoCenterData();
 
@@ -34,12 +35,12 @@ router.get("/seed", async (req, res) => {
       Students: ${summary.totalStudentsAfterSeed}<br/>
       Classes: ${summary.totalClassesAfterSeed}<br/>
       Newly inserted: ${summary.coursesInserted} courses, ${summary.teachersInserted} teachers, ${summary.studentsInserted} students, ${summary.classesInserted} classes, ${summary.enrollmentsInserted} enrollments.<br/>
-      Demo teacher password: <strong>${DEMO_TEACHER_PASSWORD}</strong><br/>
+      Teacher login accounts created: ${summary.teacherUsersInserted}<br/>
       Go to <a href="/dbtest">/dbtest</a> to view tables.
     `);
   } catch (err) {
     console.error(err);
-    res.send("ERROR: " + err.message);
+    res.status(500).send("Khong the seed du lieu luc nay.");
   }
 });
 

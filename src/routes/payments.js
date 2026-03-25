@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn } = require("./auth");
+const { sendPublicError } = require("../utils/publicError");
 
 // Chỉ admin mới được vào
 function isAdmin(req, res, next) {
@@ -51,7 +52,8 @@ router.get("/", isLoggedIn, isAdmin, async (req, res) => {
             pendingCount
         });
     } catch (err) {
-        res.status(500).send("Server Error: " + err.message);
+        console.error("payments admin page error:", err);
+        return sendPublicError(res, err, 500, "Khong the tai danh sach thanh toan luc nay.");
     }
 });
 
@@ -65,7 +67,8 @@ router.post("/:id/confirm", isLoggedIn, isAdmin, async (req, res) => {
         );
         res.redirect("/payments");
     } catch (err) {
-        res.status(500).send("Server Error: " + err.message);
+        console.error("payments confirm error:", err);
+        return sendPublicError(res, err, 500, "Khong the xac nhan thanh toan luc nay.");
     }
 });
 
@@ -79,7 +82,8 @@ router.post("/:id/reject", isLoggedIn, isAdmin, async (req, res) => {
         );
         res.redirect("/payments");
     } catch (err) {
-        res.status(500).send("Server Error: " + err.message);
+        console.error("payments reject error:", err);
+        return sendPublicError(res, err, 500, "Khong the tu choi thanh toan luc nay.");
     }
 });
 

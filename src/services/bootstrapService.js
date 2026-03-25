@@ -20,25 +20,31 @@ function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function buildOptionalPrivilegedUser(config) {
+  if (!config.email || !config.password) {
+    return null;
+  }
+
+  return config;
+}
+
 function getDefaultAccessConfig() {
   const demoTeacher = DEMO_TEACHERS[0] || {};
 
   return {
-    admin: {
+    admin: buildOptionalPrivilegedUser({
       username: firstNonEmpty(process.env.DEFAULT_ADMIN_USERNAME, "Admin"),
-      email: normalizeEmail(firstNonEmpty(process.env.DEFAULT_ADMIN_EMAIL, "admin@gmail.com")),
-      password: firstNonEmpty(process.env.DEFAULT_ADMIN_PASSWORD, "admin123"),
+      email: normalizeEmail(firstNonEmpty(process.env.DEFAULT_ADMIN_EMAIL)),
+      password: firstNonEmpty(process.env.DEFAULT_ADMIN_PASSWORD),
       role: "admin",
-    },
-    teacher: {
+    }),
+    teacher: buildOptionalPrivilegedUser({
       fullName: firstNonEmpty(process.env.DEFAULT_TEACHER_NAME, demoTeacher.fullName, "Demo Teacher"),
       phone: firstNonEmpty(process.env.DEFAULT_TEACHER_PHONE, demoTeacher.phone),
-      email: normalizeEmail(
-        firstNonEmpty(process.env.DEFAULT_TEACHER_EMAIL, demoTeacher.email, "teacher@gmail.com")
-      ),
-      password: firstNonEmpty(process.env.DEFAULT_TEACHER_PASSWORD, DEMO_TEACHER_PASSWORD, "Teacher@123"),
+      email: normalizeEmail(firstNonEmpty(process.env.DEFAULT_TEACHER_EMAIL)),
+      password: firstNonEmpty(process.env.DEFAULT_TEACHER_PASSWORD, DEMO_TEACHER_PASSWORD),
       role: "teacher",
-    },
+    }),
   };
 }
 
@@ -113,14 +119,19 @@ async function ensurePrivilegedUser({ username, email, password, role }) {
 async function ensureDefaultAccessUsers() {
   const defaults = getDefaultAccessConfig();
 
-  await ensurePrivilegedUser(defaults.admin);
-  await ensureTeacherProfile(defaults.teacher);
-  await ensurePrivilegedUser({
-    username: defaults.teacher.fullName,
-    email: defaults.teacher.email,
-    password: defaults.teacher.password,
-    role: defaults.teacher.role,
-  });
+  if (defaults.admin) {
+    await ensurePrivilegedUser(defaults.admin);
+  }
+
+  if (defaults.teacher) {
+    await ensureTeacherProfile(defaults.teacher);
+    await ensurePrivilegedUser({
+      username: defaults.teacher.fullName,
+      email: defaults.teacher.email,
+      password: defaults.teacher.password,
+      role: defaults.teacher.role,
+    });
+  }
 }
 
 async function ensureCoreTables() {

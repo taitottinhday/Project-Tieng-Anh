@@ -36,15 +36,17 @@ Nền tảng quản lý trung tâm tiếng Anh xây bằng Node.js, Express, EJS
    DB_NAME=student_platform
    DB_PORT=3306
    SESSION_SECRET=your-long-random-secret
+   PAYMENT_LINK_SECRET=another-long-random-secret
    PORT=4207
    ```
 
-   Nếu muốn dùng sẵn tài khoản quản trị và giáo viên mặc định trên mọi môi trường, có thể giữ hoặc đổi thêm:
+   Nếu muốn bootstrap sẵn tài khoản quản trị hoặc giáo viên, hãy tự đặt giá trị riêng:
    ```env
-   DEFAULT_ADMIN_EMAIL=admin@gmail.com
-   DEFAULT_ADMIN_PASSWORD=admin123
-   DEFAULT_TEACHER_EMAIL=hoanganh.teacher@thaytaiedu.vn
-   DEFAULT_TEACHER_PASSWORD=Teacher@123
+   DEFAULT_ADMIN_EMAIL=your-admin@example.com
+   DEFAULT_ADMIN_PASSWORD=change-this-admin-password
+   DEFAULT_TEACHER_EMAIL=your-teacher@example.com
+   DEFAULT_TEACHER_PASSWORD=change-this-teacher-password
+   DEMO_TEACHER_PASSWORD=change-this-demo-password
    ```
 
 4. Chạy app:
@@ -57,7 +59,7 @@ Nền tảng quản lý trung tâm tiếng Anh xây bằng Node.js, Express, EJS
    http://localhost:4207
    ```
 
-Khi app khởi động, hệ thống sẽ tự tạo schema cơ bản, đồng bộ sẵn tài khoản `admin` / `teacher` mặc định trong MySQL, và tự seed dữ liệu demo nếu bảng `courses` còn trống.
+Khi app khởi động, hệ thống sẽ tự tạo schema cơ bản. Nếu bạn đã khai báo `DEFAULT_ADMIN_*` hoặc `DEFAULT_TEACHER_*` trong `.env`, app sẽ đồng bộ các tài khoản đó vào MySQL. Dữ liệu demo sẽ tự seed nếu bảng `courses` còn trống.
 
 ## Đưa lên GitHub
 
@@ -90,6 +92,7 @@ Luồng triển khai phù hợp:
 3. Add MySQL service trong cùng project
 4. Điền biến môi trường:
    - `SESSION_SECRET`
+   - `PAYMENT_LINK_SECRET`
    - `PORT` nếu host yêu cầu
    - OAuth / SMTP nếu muốn bật social login hoặc email thật
 5. Deploy
@@ -102,3 +105,4 @@ App hiện đã hỗ trợ đọc cả bộ biến `DB_*` lẫn `MYSQLHOST`, `MY
 - Social login chỉ hoạt động khi điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`
 - SMTP không còn bắt buộc cho đăng ký vì OTP đã được bỏ
 - Production nên đặt `SESSION_SECRET` mạnh và không dùng secret mặc định
+- Giữ `ALLOW_MAINTENANCE_ROUTES=false`, `ALLOW_MAKE_ADMIN_ROUTE=false`, `EXPOSE_ERROR_DETAILS=false` trên production

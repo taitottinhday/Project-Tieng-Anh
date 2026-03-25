@@ -93,6 +93,7 @@
 
                     <!-- BUTTON XÁC NHẬN ĐÃ CHUYỂN KHOẢN -->
                     <form method="POST" action="<%= baseUrl %>/payment/<%= info.enrollment_id %>/confirm">
+                        <input type="hidden" name="token" value="<%= paymentToken %>" />
                         <input type="hidden" name="amount" value="<%= amount %>" />
                         <input type="hidden" name="method" value="bank" />
 

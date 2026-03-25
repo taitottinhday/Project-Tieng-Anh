@@ -2,6 +2,8 @@ node_modules/
 .env
 .env.*
 !.env.example
+data/users.txt
+data/messages.txt
 tmp/
 public/uploads/*
 !public/uploads/audio/

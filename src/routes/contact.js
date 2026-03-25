@@ -4,6 +4,7 @@ const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn, isAdmin } = require("./auth");
 const fs = require("fs");
 const path = require("path");
+const { sendPublicError } = require("../utils/publicError");
 
 // File-based message storage
 const messagesFile = path.join(__dirname, "../data/messages.json");
@@ -130,7 +131,8 @@ ${message || ""}
     const separator = destination.includes("?") ? "&" : "?";
     res.redirect(baseUrl + destination + `${separator}success=1`);
   } catch (err) {
-    res.send("Error: " + err.message);
+    console.error("contact submit error:", err);
+    return sendPublicError(res, err, 500, "Khong the gui yeu cau tu van luc nay.");
   }
 });
 
@@ -183,7 +185,8 @@ router.get("/messages", isLoggedIn, isAdmin, async (req, res) => {
       username: req.session.user?.username,
     });
   } catch (err) {
-    res.send("Error: " + err.message);
+    console.error("messages list error:", err);
+    return sendPublicError(res, err, 500, "Khong the tai danh sach yeu cau luc nay.");
   }
 });
 
@@ -214,7 +217,8 @@ router.post("/messages/:id/viewed", isLoggedIn, isAdmin, async (req, res) => {
 
     res.redirect(req.baseUrl + "/messages");
   } catch (err) {
-    res.send("Error: " + err.message);
+    console.error("messages viewed error:", err);
+    return sendPublicError(res, err, 500, "Khong the cap nhat trang thai yeu cau luc nay.");
   }
 });
 
@@ -247,7 +251,8 @@ router.post("/messages/:id/contacted", isLoggedIn, isAdmin, async (req, res) => 
 
     res.redirect(req.baseUrl + "/messages");
   } catch (err) {
-    res.send("Error: " + err.message);
+    console.error("messages contacted error:", err);
+    return sendPublicError(res, err, 500, "Khong the cap nhat trang thai lien he luc nay.");
   }
 });
 
@@ -279,7 +284,8 @@ router.post("/messages/:id/note", isLoggedIn, isAdmin, async (req, res) => {
 
     res.redirect(req.baseUrl + "/messages");
   } catch (err) {
-    res.send("Error: " + err.message);
+    console.error("messages note error:", err);
+    return sendPublicError(res, err, 500, "Khong the luu ghi chu luc nay.");
   }
 });
 

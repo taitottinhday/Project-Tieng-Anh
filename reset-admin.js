@@ -4,8 +4,13 @@ const db = require("./src/models/db");
 
 (async () => {
     try {
-        const email = "admin@gmail.com";
-        const plain = "admin123";
+        const email = String(process.env.DEFAULT_ADMIN_EMAIL || "").trim().toLowerCase();
+        const plain = String(process.env.DEFAULT_ADMIN_PASSWORD || "");
+
+        if (!email || !plain) {
+            throw new Error("DEFAULT_ADMIN_EMAIL and DEFAULT_ADMIN_PASSWORD must be configured before running reset-admin.js.");
+        }
+
         const hashed = await bcrypt.hash(plain, 10);
 
         // Tạo admin nếu chưa có, nếu có thì reset password + set role=admin
@@ -16,18 +21,18 @@ const db = require("./src/models/db");
                 "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
                 ["Admin", email, hashed, "admin"]
             );
-            console.log("✅ Admin created:", email, "/", plain);
+            console.log("Admin created:", email);
         } else {
             await db.query(
                 "UPDATE users SET password = ?, role = ? WHERE email = ?",
                 [hashed, "admin", email]
             );
-            console.log("✅ Admin password reset:", email, "/", plain);
+            console.log("Admin password reset:", email);
         }
 
         process.exit(0);
     } catch (err) {
-        console.error("❌", err.message);
+        console.error("reset-admin failed:", err.message);
         process.exit(1);
     }
 })();

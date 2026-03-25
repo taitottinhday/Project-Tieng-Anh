@@ -1,7 +1,20 @@
 const bcrypt = require("bcrypt");
 const db = require("../models/db");
 
-const DEMO_TEACHER_PASSWORD = "Teacher@123";
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim() !== "") {
+      return value.trim();
+    }
+  }
+
+  return "";
+}
+
+const DEMO_TEACHER_PASSWORD = firstNonEmpty(
+  process.env.DEMO_TEACHER_PASSWORD,
+  process.env.DEFAULT_TEACHER_PASSWORD
+);
 
 const DEMO_COURSES = [
   { name: "TOEIC Starter 350+", category: "TOEIC", fee: 3200000, durationWeeks: 8 },
@@ -325,7 +338,9 @@ async function seedDemoCenterData(options = {}) {
     return summary;
   }
 
-  const teacherPasswordHash = await bcrypt.hash(DEMO_TEACHER_PASSWORD, 10);
+  const teacherPasswordHash = DEMO_TEACHER_PASSWORD
+    ? await bcrypt.hash(DEMO_TEACHER_PASSWORD, 10)
+    : null;
   const courseIdByName = new Map();
   const teacherIdByEmail = new Map();
 
@@ -337,7 +352,9 @@ async function seedDemoCenterData(options = {}) {
   for (const teacher of DEMO_TEACHERS) {
     const teacherId = await findOrCreateTeacher(teacher, summary);
     teacherIdByEmail.set(teacher.email, teacherId);
-    await findOrCreateTeacherUser(teacher, teacherPasswordHash, summary);
+    if (teacherPasswordHash) {
+      await findOrCreateTeacherUser(teacher, teacherPasswordHash, summary);
+    }
   }
 
   for (const student of DEMO_STUDENTS) {

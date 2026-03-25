@@ -6,6 +6,7 @@ const {
 } = require("../data/dictationCatalog");
 const { syncStudentProfileFromUser } = require("../services/platformSupport");
 const { upsertDictationSession } = require("../services/studentActivityService");
+const { sendPublicError, sendPublicJsonError } = require("../utils/publicError");
 
 function getSafeBaseUrl(res) {
   return res.locals.baseUrl || "";
@@ -19,7 +20,7 @@ function respondWithError(res, error, options = {}) {
 
   console.error("studentDictation error:", error);
 
-  return res.status(statusCode).send(error && error.message ? error.message : fallbackMessage);
+  return sendPublicError(res, error, statusCode, fallbackMessage);
 }
 
 function listDictationTopics(req, res) {
@@ -113,10 +114,7 @@ async function saveDictationSession(req, res) {
     return res.json({ ok: true });
   } catch (error) {
     console.error("studentDictation saveSession error:", error);
-    return res.status(500).json({
-      ok: false,
-      message: error && error.message ? error.message : "Khong the luu session dictation."
-    });
+    return sendPublicJsonError(res, error, 500, "Khong the luu session dictation.");
   }
 }
 

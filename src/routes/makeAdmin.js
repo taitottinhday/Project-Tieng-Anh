@@ -2,12 +2,17 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { readUsers, writeUsers } = require("../models/dataHandler");
+const { sendPublicError } = require("../utils/publicError");
 
 // ONE-TIME ROUTE to create admin
 router.get("/make-admin", async (req, res) => {
   try {
-    const adminEmail = "admin@gmail.com";
-    const adminPassword = "admin123"; // Change it later!
+    const adminEmail = String(process.env.DEFAULT_ADMIN_EMAIL || "").trim().toLowerCase();
+    const adminPassword = String(process.env.DEFAULT_ADMIN_PASSWORD || "");
+
+    if (!adminEmail || !adminPassword) {
+      return res.status(400).send("Legacy admin bootstrap is disabled until DEFAULT_ADMIN_EMAIL and DEFAULT_ADMIN_PASSWORD are configured.");
+    }
 
     // Read existing users
     const users = readUsers();
@@ -18,7 +23,7 @@ router.get("/make-admin", async (req, res) => {
       existing.password = await bcrypt.hash(adminPassword, 10);
       existing.role = "admin";
       writeUsers(users);
-      return res.send("Admin password reset! Use email: admin@gmail.com & password: admin123");
+      return res.send("Legacy admin user synchronized.");
     }
 
     // Hash password
@@ -36,9 +41,10 @@ router.get("/make-admin", async (req, res) => {
     users.push(adminUser);
     writeUsers(users);
 
-    res.send("Admin created! Use email: admin@gmail.com & password: admin123");
+    res.send("Legacy admin user created.");
   } catch (err) {
-    res.send("ERROR: " + err.message);
+    console.error("makeAdmin error:", err);
+    return sendPublicError(res, err, 500, "Khong the dong bo tai khoan quan tri cu luc nay.");
   }
 });
 

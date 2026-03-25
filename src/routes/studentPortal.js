@@ -16,6 +16,7 @@ const {
   markStudentSubmissionComplete,
   saveStudentSubmission,
 } = require("../services/classroomService");
+const { resolvePublicErrorMessage, sendPublicError } = require("../utils/publicError");
 
 function isStudent(req, res, next) {
   const role = req.session?.user?.role;
@@ -35,7 +36,7 @@ function handleStudentUpload(middleware) {
   return (req, res, next) => {
     middleware(req, res, (err) => {
       if (err) {
-        req.flash("error_msg", err.message || "Không thể tải tệp nộp bài lúc này.");
+        req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the tai tep nop bai luc nay."));
         return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
       }
 
@@ -89,7 +90,8 @@ router.get("/classroom", isLoggedIn, isStudent, async (req, res) => {
       success: req.query.success || null,
     });
   } catch (err) {
-    res.send("ERROR: " + err.message);
+    console.error("student classroom list error:", err);
+    return sendPublicError(res, err, 500, "Khong the tai lop hoc cua hoc vien luc nay.");
   }
 });
 
@@ -116,7 +118,8 @@ router.get("/classroom/:classId", isLoggedIn, isStudent, async (req, res) => {
       success: req.query.success || null,
     });
   } catch (err) {
-    res.send("ERROR: " + err.message);
+    console.error("student classroom feed error:", err);
+    return sendPublicError(res, err, 500, "Khong the tai bang tin lop hoc luc nay.");
   }
 });
 
@@ -147,7 +150,8 @@ router.get("/classroom/:classId/posts/:postId", isLoggedIn, isStudent, async (re
       success: req.query.success || null,
     });
   } catch (err) {
-    res.send("ERROR: " + err.message);
+    console.error("student classroom post detail error:", err);
+    return sendPublicError(res, err, 500, "Khong the tai chi tiet bai hoc luc nay.");
   }
 });
 
@@ -175,7 +179,7 @@ router.post(
 
       return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}?success=1`);
     } catch (err) {
-      req.flash("error_msg", err.message || "Không thể nộp bài lúc này.");
+      req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the nop bai luc nay."));
       return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
     }
   }
@@ -197,7 +201,7 @@ router.post("/classroom/:classId/posts/:postId/complete", isLoggedIn, isStudent,
 
     return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}?success=1`);
   } catch (err) {
-    req.flash("error_msg", err.message || "Không thể đánh dấu hoàn thành lúc này.");
+    req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the danh dau hoan thanh luc nay."));
     return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
   }
 });

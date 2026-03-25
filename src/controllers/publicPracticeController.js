@@ -8,6 +8,7 @@ const {
   buildPart7GuidePracticeExam,
   gradePracticeExam
 } = require("../data/practiceCatalog");
+const { sendPublicError } = require("../utils/publicError");
 
 const PART56_PATH_PREFIX = "/goc-hoc-tap/part-5-6";
 const WORDFORM_PATH_PREFIX = "/goc-hoc-tap/wordform";
@@ -97,7 +98,7 @@ function respondWithError(res, error, options = {}) {
   const fallbackMessage = options.fallbackMessage || "Đã xảy ra lỗi trong khi tải bài luyện tập public.";
 
   console.error("publicPractice error:", error);
-  return res.status(statusCode).send(error && error.message ? error.message : fallbackMessage);
+  return sendPublicError(res, error, statusCode, fallbackMessage);
 }
 
 function getFlowConfig(flowKey) {

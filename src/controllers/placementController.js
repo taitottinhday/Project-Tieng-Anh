@@ -8,6 +8,7 @@ const {
     findManagedFullTestDefinition,
     loadManagedFullTest
 } = require('../data/fullTestRegistry');
+const { sendPublicError } = require('../utils/publicError');
 
 function isStudentSession(req) {
     const role = req.session?.user?.role;
@@ -220,7 +221,7 @@ async function listTests(req, res) {
         });
     } catch (error) {
         console.error('listTests error:', error);
-        res.status(500).send(`Lỗi khi tải danh sách bài test: ${error.message}`);
+        return sendPublicError(res, error, 500, 'Khong the tai danh sach bai test luc nay.');
     }
 }
 
@@ -256,7 +257,7 @@ async function showTest(req, res) {
         });
     } catch (error) {
         console.error('showTest error:', error);
-        res.status(500).send(`Lỗi khi tải bài test: ${error.message}`);
+        return sendPublicError(res, error, 500, 'Khong the tai bai test luc nay.');
     }
 }
 
@@ -299,7 +300,7 @@ async function takeTest(req, res) {
         });
     } catch (error) {
         console.error('takeTest error:', error);
-        res.status(500).send(`Lỗi khi tải bài test: ${error.message}`);
+        return sendPublicError(res, error, 500, 'Khong the tai bai test luc nay.');
     }
 }
 
@@ -386,7 +387,7 @@ async function submitTest(req, res) {
         res.redirect(`/placement-tests/result/${attemptId}`);
     } catch (error) {
         console.error('submitTest error FULL:', error);
-        res.status(500).send(`Loi khi nop bai test: ${error.message}`);
+        return sendPublicError(res, error, 500, 'Khong the nop bai test luc nay.');
     }
 }
 
@@ -436,7 +437,7 @@ async function showResult(req, res) {
         });
     } catch (error) {
         console.error('showResult error:', error);
-        res.status(500).send(`Loi khi tai ket qua: ${error.message}`);
+        return sendPublicError(res, error, 500, 'Khong the tai ket qua bai test luc nay.');
     }
 }
 

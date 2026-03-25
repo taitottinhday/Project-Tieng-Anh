@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const crypto = require('crypto');
 const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const { loadPlacementExam } = require('./data/toeicPlacementProvider');
@@ -8,25 +9,72 @@ const { resolveDatabaseConfig } = require('./config/runtime');
 require('dotenv').config();
 
 const app = express();
+app.disable('x-powered-by');
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // Base URL Configuration
 const baseUrl = (process.env.BASE_URL !== undefined) ? process.env.BASE_URL : '';
 
+function createSessionStore() {
+  const configuredStore = String(process.env.SESSION_STORE || 'mysql').trim().toLowerCase();
+
+  if (configuredStore === 'memory') {
+    console.warn('[session] Using in-memory session store for this environment.');
+    return null;
+  }
+
+  try {
+    return new MySQLStore(resolveDatabaseConfig());
+  } catch (error) {
+    console.error('[session] Failed to initialize MySQL session store. Falling back to memory store.', error);
+    return null;
+  }
+}
+
+function resolveSessionSecret() {
+  const configuredSecret = String(process.env.SESSION_SECRET || '').trim();
+
+  if (configuredSecret) {
+    return configuredSecret;
+  }
+
+  console.warn('[session] SESSION_SECRET is missing. Using an ephemeral secret for this process.');
+  return crypto.randomBytes(32).toString('hex');
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Session Store Options
-const sessionOptions = resolveDatabaseConfig();
-const sessionStore = new MySQLStore(sessionOptions);
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+const sessionStore = createSessionStore();
 
 // Session
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'mysecretkey',
+const sessionConfig = {
+  secret: resolveSessionSecret(),
   resave: false,
   saveUninitialized: false,
-  store: sessionStore,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
-}));
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24
+  } // 1 day
+};
+
+if (sessionStore) {
+  sessionConfig.store = sessionStore;
+}
+
+app.use(session(sessionConfig));
 
 // Flash Middleware
 app.use(flash());
@@ -100,7 +148,7 @@ app.use(baseUrl + "/student", studentPortalRoute);
 const adminRoutes = require("./routes/admin");
 app.use(baseUrl, adminRoutes);
 const placementRoutes = require('./routes/placement');
-app.use('/', placementRoutes);
+app.use(baseUrl, placementRoutes);
 // Dashboard route - mapped to /dashboard
 const dashboardRoute = require("./routes/dashboard");
 app.use(baseUrl + '/dashboard', dashboardRoute);
@@ -118,25 +166,35 @@ app.use(baseUrl + "/courses-blog", coursesBlogRoute);
 // ========================
 // DATABASE UTILITY ROUTES
 // ========================
-const createTableRoute = require("./routes/createTable");
-app.use(baseUrl, createTableRoute);
+const allowMaintenanceRoutes = String(process.env.ALLOW_MAINTENANCE_ROUTES || '').trim().toLowerCase() === 'true';
+if (allowMaintenanceRoutes) {
+  const createTableRoute = require("./routes/createTable");
+  app.use(baseUrl, createTableRoute);
+}
 const courseDetailRoute = require("./routes/courseDetail");
 app.use(baseUrl + "/course-detail", courseDetailRoute);
-const createMessagesTableRoute = require("./routes/createMessagesTable");
-app.use(baseUrl, createMessagesTableRoute);
+if (allowMaintenanceRoutes) {
+  const createMessagesTableRoute = require("./routes/createMessagesTable");
+  app.use(baseUrl, createMessagesTableRoute);
+}
 const teacherRoute = require("./routes/teacher");
 app.use(baseUrl + "/teacher", teacherRoute);
-const addRoleColumnRoute = require("./routes/addRoleColumn");
-app.use(baseUrl, addRoleColumnRoute);
+if (allowMaintenanceRoutes) {
+  const addRoleColumnRoute = require("./routes/addRoleColumn");
+  app.use(baseUrl, addRoleColumnRoute);
+}
 
-const makeAdminRoute = require("./routes/makeAdmin");
-app.use(baseUrl, makeAdminRoute);
+const allowLegacyMakeAdminRoute = String(process.env.ALLOW_MAKE_ADMIN_ROUTE || '').trim().toLowerCase() === 'true';
+if (allowLegacyMakeAdminRoute) {
+  const makeAdminRoute = require("./routes/makeAdmin");
+  app.use(baseUrl, makeAdminRoute);
+}
 const registerCourseRoute = require("./routes/registerCourse");
 app.use(baseUrl + "/register-course", registerCourseRoute);
 // Error handler
 app.use((err, req, res, next) => {
   console.error("ERROR:", err);
-  res.status(500).send("Server Error: " + err.message);
+  res.status(500).send("Server Error");
 });
 
 module.exports = app;

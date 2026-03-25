@@ -1,6 +1,7 @@
 const renderWithLayout = require("../utils/renderHelper");
 const { syncStudentProfileFromUser } = require("../services/platformSupport");
 const { getStudentActivityProfile } = require("../services/studentActivityService");
+const { sendPublicError } = require("../utils/publicError");
 
 function toNumber(value, fallback = 0) {
   const numericValue = Number(value);
@@ -33,7 +34,7 @@ async function showStudentProfile(req, res) {
     });
   } catch (error) {
     console.error("showStudentProfile error:", error);
-    return res.status(500).send(error && error.message ? error.message : "Khong the tai ho so hoc vien.");
+    return sendPublicError(res, error, 500, "Khong the tai ho so hoc vien.");
   }
 }
 
