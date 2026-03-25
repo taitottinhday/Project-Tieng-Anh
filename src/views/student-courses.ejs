@@ -424,10 +424,18 @@ function renderMedia(url, alt, placeholder, className) {
     };
 
     const runSearch = () => {
-      const keyword = (input.value || '').trim().toLowerCase();
+      const keyword = String(input.value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
       filtered = !keyword
         ? cards
-        : cards.filter((card) => String(card.dataset.title || '').includes(keyword));
+        : cards.filter((card) => String(card.dataset.title || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .includes(keyword));
       page = 1;
       applyVisibility();
     };

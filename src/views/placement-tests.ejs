@@ -117,6 +117,10 @@ const initialCollection = safeCollections.length ? safeCollections[0].key : 'all
     <section class="ft-body">
         <div class="ft-wrap">
             <div class="ft-toolbar">
+                <div class="ft-toolbar-copy">
+                    <strong><span id="ftResultCount"><%= safeTests.length %></span> đề phù hợp</strong>
+                    <span id="ftResultLabel">Bạn có thể lọc theo năm hoặc tìm theo tên đề.</span>
+                </div>
             
                 <span class="ft-toolbar-badge">120 phút · 200 câu · 7 phần · 990 điểm</span>
             </div>
@@ -211,7 +215,7 @@ const initialCollection = safeCollections.length ? safeCollections[0].key : 'all
         const nextPageButton = document.getElementById('ftNextPage');
         const pageList = document.getElementById('ftPageList');
 
-        if (!tabs.length || !cards.length || !searchInput || !searchButton || !resultCount || !resultLabel || !emptyState || !pagination || !prevPageButton || !nextPageButton || !pageList) {
+        if (!tabs.length || !cards.length || !searchInput || !searchButton || !emptyState || !pagination || !prevPageButton || !nextPageButton || !pageList) {
             return;
         }
 
@@ -300,10 +304,14 @@ const initialCollection = safeCollections.length ? safeCollections[0].key : 'all
                 card.hidden = !visibleCards.includes(card);
             });
 
-            resultCount.textContent = String(filteredCards.length);
-            resultLabel.textContent = keyword
+            if (resultCount) {
+                resultCount.textContent = String(filteredCards.length);
+            }
+            if (resultLabel) {
+                resultLabel.textContent = keyword
                 ? `Kết quả cho từ khóa "${searchInput.value.trim()}".`
                 : `Bạn có thể lọc theo năm hoặc tìm theo tên đề. Trang ${currentPage}/${totalPages}, tối đa ${ITEMS_PER_PAGE} đề/trang.`;
+            }
             emptyState.hidden = filteredCards.length !== 0;
             renderPagination(totalPages);
         };

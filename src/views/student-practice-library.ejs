@@ -528,7 +528,11 @@ const toneClass = pageKey === 'reading' ? 'reading' : 'parts';
     let activeSecondary = secondaryButtons[0] ? secondaryButtons[0].dataset.filterValue : 'all';
     let currentPage = 1;
 
-    const normalize = (value) => String(value || '').trim().toLowerCase();
+    const normalize = (value) => String(value || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
 
     const setActiveButton = (buttons, value) => {
       buttons.forEach((button) => {
@@ -628,10 +632,21 @@ const toneClass = pageKey === 'reading' ? 'reading' : 'parts';
         currentPage = 1;
         render();
       });
+
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          currentPage = 1;
+          render();
+        }
+      });
     }
 
     if (searchTrigger) {
-      searchTrigger.addEventListener('click', render);
+      searchTrigger.addEventListener('click', () => {
+        currentPage = 1;
+        render();
+      });
     }
 
     if (prevButton) {
