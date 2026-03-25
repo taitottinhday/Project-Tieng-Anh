@@ -393,6 +393,76 @@
       color: #ffffff;
     }
 
+    .confirm-backdrop[hidden] {
+      display: none;
+    }
+
+    .confirm-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(8, 16, 28, 0.58);
+      backdrop-filter: blur(3px);
+    }
+
+    .confirm-dialog {
+      width: min(100%, 420px);
+      padding: 22px;
+      border-radius: 22px;
+      background: #ffffff;
+      border: 1px solid var(--wfq-line);
+      box-shadow: 0 28px 58px rgba(8, 16, 28, 0.24);
+    }
+
+    .confirm-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .confirm-head h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: var(--wfq-text);
+    }
+
+    .confirm-close {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      background: #ffffff;
+      color: var(--wfq-text);
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+
+    .confirm-copy {
+      margin: 0;
+      color: var(--wfq-text);
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .confirm-note {
+      margin: 10px 0 0;
+      color: var(--wfq-muted);
+      line-height: 1.6;
+    }
+
+    .confirm-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
     @media (max-width: 1080px) {
       .wfq-navgrid {
         grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -457,6 +527,7 @@
   %>
 
   <form action="<%= examData.submitHref || "#" %>" method="POST" class="wfq-form" data-wordform-form data-session-key="wordform-<%= examData.id || 'quiz' %>">
+    <input type="hidden" name="furthest_question_number" value="<%= questionViews[0] ? questionViews[0].number : '' %>" data-furthest-question>
     <div class="wfq-shell">
       <aside class="wfq-sidebar">
         <div class="wfq-sidehead">
@@ -551,6 +622,21 @@
         </div>
       </main>
     </div>
+
+    <div class="confirm-backdrop" hidden data-submit-confirm>
+      <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wordform-submit-confirm-title">
+        <div class="confirm-head">
+          <h2 id="wordform-submit-confirm-title">Xác nhận</h2>
+          <button type="button" class="confirm-close" data-submit-close aria-label="Đóng">&times;</button>
+        </div>
+        <p class="confirm-copy">Bạn có muốn nộp bài?</p>
+        <div class="confirm-actions">
+          <button type="button" class="wfq-review" data-submit-cancel>Quay lại</button>
+          <button type="button" class="wfq-submit" data-submit-accept>Nộp bài</button>
+        </div>
+        <p class="confirm-note">Hãy kiểm tra lại kỹ bài trước khi nộp.</p>
+      </div>
+    </div>
   </form>
 
   <script>
@@ -563,9 +649,15 @@
       const questionCards = Array.from(form.querySelectorAll("[data-question-card]"));
       const radioInputs = Array.from(form.querySelectorAll("[data-question-input]"));
       const reviewButtons = Array.from(form.querySelectorAll("[data-review-toggle]"));
+      const furthestQuestionInput = form.querySelector("[data-furthest-question]");
+      const submitConfirm = form.querySelector("[data-submit-confirm]");
+      const submitAcceptButton = form.querySelector("[data-submit-accept]");
+      const submitCancelButtons = Array.from(form.querySelectorAll("[data-submit-cancel], [data-submit-close]"));
       const orderedIds = questionCards.map((card) => String(card.dataset.questionId));
       let currentQuestionId = orderedIds[0] || null;
+      let furthestQuestionId = currentQuestionId;
       let reviewSet = new Set();
+      let isSubmitConfirmed = false;
 
       const readState = () => {
         if (!sessionKey) return null;
@@ -589,6 +681,7 @@
         try {
           sessionStorage.setItem(sessionKey, JSON.stringify({
             currentQuestionId,
+            furthestQuestionId,
             answers,
             reviews: Array.from(reviewSet)
           }));
@@ -613,14 +706,64 @@
         if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
           currentQuestionId = String(stored.currentQuestionId);
         }
+
+        if (stored.furthestQuestionId && orderedIds.includes(String(stored.furthestQuestionId))) {
+          furthestQuestionId = String(stored.furthestQuestionId);
+        }
       };
 
       const getAnsweredSet = () => new Set(
         radioInputs.filter((input) => input.checked).map((input) => String(input.dataset.questionInput))
       );
 
+      const updateFurthestQuestion = (questionId) => {
+        const nextIndex = orderedIds.indexOf(String(questionId));
+        const furthestIndex = orderedIds.indexOf(String(furthestQuestionId));
+
+        if (nextIndex !== -1 && (furthestIndex === -1 || nextIndex > furthestIndex)) {
+          furthestQuestionId = String(questionId);
+        }
+
+        if (!furthestQuestionId) {
+          furthestQuestionId = String(questionId);
+        }
+
+        if (furthestQuestionInput) {
+          furthestQuestionInput.value = furthestQuestionId || "";
+        }
+      };
+
+      const closeSubmitConfirm = () => {
+        if (submitConfirm) {
+          submitConfirm.hidden = true;
+        }
+      };
+
+      const openSubmitConfirm = () => {
+        if (submitConfirm) {
+          submitConfirm.hidden = false;
+        }
+      };
+
+      const submitExam = () => {
+        isSubmitConfirmed = true;
+        closeSubmitConfirm();
+
+        if (typeof form.requestSubmit === "function") {
+          form.requestSubmit();
+          return;
+        }
+
+        if (sessionKey) {
+          sessionStorage.removeItem(sessionKey);
+        }
+
+        form.submit();
+      };
+
       const syncUi = () => {
         const answeredSet = getAnsweredSet();
+        updateFurthestQuestion(currentQuestionId);
 
         navButtons.forEach((button) => {
           const questionId = String(button.dataset.goQuestion);
@@ -696,7 +839,35 @@
         questionCards.forEach((card) => observer.observe(card));
       }
 
-      form.addEventListener("submit", () => {
+      submitCancelButtons.forEach((button) => {
+        button.addEventListener("click", closeSubmitConfirm);
+      });
+
+      if (submitConfirm) {
+        submitConfirm.addEventListener("click", (event) => {
+          if (event.target === submitConfirm) {
+            closeSubmitConfirm();
+          }
+        });
+      }
+
+      if (submitAcceptButton) {
+        submitAcceptButton.addEventListener("click", submitExam);
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && submitConfirm && !submitConfirm.hidden) {
+          closeSubmitConfirm();
+        }
+      });
+
+      form.addEventListener("submit", (event) => {
+        if (!isSubmitConfirmed) {
+          event.preventDefault();
+          openSubmitConfirm();
+          return;
+        }
+
         if (sessionKey) {
           sessionStorage.removeItem(sessionKey);
         }

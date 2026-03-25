@@ -196,12 +196,20 @@ function normalizePayload(rawPayload, options = {}) {
       id: `q-${number}`,
       number,
       displayOrder: number,
+      sourceNumber: number,
+      sourceApiExamId: examData.id,
       partNumber,
       skill: partMeta.skill,
+      questionFormat: question.question_format || partMeta.title,
       prompt: buildQuestionPrompt(question, partNumber, number),
       options: parseOptions(question.options, number),
       inputName: `question_${number}`,
-      correctAnswer: answerKey[number] || null
+      correctAnswer: answerKey[number] || null,
+      transcriptHtml: question.transcript || (parent && parent.transcript) || '',
+      translationHtml: question.translate || (parent && parent.translate) || '',
+      explanationHtml: question.explain || '',
+      audioUrl: sharedAudioUrl,
+      imageUrls: groupImages
     };
 
     groupMap.get(groupId).questions.push(normalizedQuestion);

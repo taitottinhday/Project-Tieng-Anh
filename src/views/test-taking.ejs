@@ -502,6 +502,77 @@
       margin-bottom: 22px;
     }
 
+    .confirm-backdrop[hidden] {
+      display: none;
+    }
+
+    .confirm-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(8, 16, 28, 0.56);
+      backdrop-filter: blur(3px);
+    }
+
+    .confirm-dialog {
+      width: min(100%, 420px);
+      padding: 22px;
+      border-radius: 22px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      box-shadow: 0 28px 58px rgba(8, 16, 28, 0.24);
+    }
+
+    .confirm-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .confirm-head h2 {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.4rem;
+      color: var(--navy);
+    }
+
+    .confirm-close {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: #ffffff;
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 1.3rem;
+    }
+
+    .confirm-copy {
+      margin: 0;
+      color: #253f63;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .confirm-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .confirm-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
     @media (max-width: 1200px) {
       .page-shell {
         grid-template-columns: 220px minmax(0, 1fr);
@@ -616,6 +687,7 @@
   <form action="<%= resolvedBaseUrl %>/placement-tests/<%= examData.id %>/submit" method="POST" class="exam-form" data-test-form data-session-key="toeic-placement-<%= examData.id %>">
     <input type="hidden" name="guest_name" value="">
     <input type="hidden" name="guest_email" value="">
+    <input type="hidden" name="furthest_question_number" value="<%= firstQuestion ? firstQuestion.number : '' %>" data-furthest-question>
     <div class="page-shell">
       <aside class="sidebar-card">
         <div class="timer-panel">
@@ -739,6 +811,21 @@
         </div>
       </main>
     </div>
+
+    <div class="confirm-backdrop" hidden data-submit-confirm>
+      <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="placement-submit-confirm-title">
+        <div class="confirm-head">
+          <h2 id="placement-submit-confirm-title">Xác nhận</h2>
+          <button type="button" class="confirm-close" data-submit-close aria-label="Đóng">&times;</button>
+        </div>
+        <p class="confirm-copy">Bạn có muốn nộp bài?</p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-btn" data-submit-cancel>Quay lại</button>
+          <button type="button" class="submit-btn" data-submit-accept>Nộp bài</button>
+        </div>
+        <p class="confirm-note">Hãy kiểm tra lại kỹ bài trước khi nộp.</p>
+      </div>
+    </div>
   </form>
 
   <script>
@@ -755,8 +842,15 @@
       const headlineEl = document.getElementById('currentHeadline');
       const sublineEl = document.getElementById('currentSubline');
       const jumpButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+      const furthestQuestionInput = form.querySelector('[data-furthest-question]');
+      const submitConfirm = form.querySelector('[data-submit-confirm]');
+      const submitAcceptButton = form.querySelector('[data-submit-accept]');
+      const submitCancelButtons = Array.from(form.querySelectorAll('[data-submit-cancel], [data-submit-close]'));
       const orderedIds = screens.map((screen) => String(screen.dataset.questionId));
       let currentQuestionId = orderedIds[0] || null;
+      let furthestQuestionId = currentQuestionId;
+      let lastPendingJumpId = null;
+      let isSubmitConfirmed = false;
 
       const readState = () => {
         if (!sessionKey) return null;
@@ -780,6 +874,8 @@
         try {
           sessionStorage.setItem(sessionKey, JSON.stringify({
             currentQuestionId,
+            furthestQuestionId,
+            lastPendingJumpId,
             answers
           }));
         } catch (error) {
@@ -801,6 +897,14 @@
         if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
           currentQuestionId = String(stored.currentQuestionId);
         }
+
+        if (stored.furthestQuestionId && orderedIds.includes(String(stored.furthestQuestionId))) {
+          furthestQuestionId = String(stored.furthestQuestionId);
+        }
+
+        if (stored.lastPendingJumpId) {
+          lastPendingJumpId = String(stored.lastPendingJumpId);
+        }
       };
 
       const getAnsweredSet = () => new Set(
@@ -815,6 +919,51 @@
         const currentIndex = orderedIds.indexOf(String(questionId));
         if (currentIndex === -1) return null;
         return orderedIds[currentIndex + direction] || null;
+      };
+
+      const updateFurthestQuestion = (questionId) => {
+        const nextIndex = orderedIds.indexOf(String(questionId));
+        const furthestIndex = orderedIds.indexOf(String(furthestQuestionId));
+
+        if (nextIndex !== -1 && (furthestIndex === -1 || nextIndex > furthestIndex)) {
+          furthestQuestionId = String(questionId);
+        }
+
+        if (!furthestQuestionId) {
+          furthestQuestionId = String(questionId);
+        }
+
+        if (furthestQuestionInput) {
+          furthestQuestionInput.value = furthestQuestionId || '';
+        }
+      };
+
+      const closeSubmitConfirm = () => {
+        if (submitConfirm) {
+          submitConfirm.hidden = true;
+        }
+      };
+
+      const openSubmitConfirm = () => {
+        if (submitConfirm) {
+          submitConfirm.hidden = false;
+        }
+      };
+
+      const submitExam = () => {
+        isSubmitConfirmed = true;
+        closeSubmitConfirm();
+
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+          return;
+        }
+
+        if (sessionKey) {
+          sessionStorage.removeItem(sessionKey);
+        }
+
+        form.submit();
       };
 
       const updateFooterControls = () => {
@@ -852,6 +1001,7 @@
 
         if (activeScreen) {
           currentQuestionId = String(activeScreen.dataset.questionId);
+          updateFurthestQuestion(currentQuestionId);
           if (headlineEl) {
             headlineEl.textContent = activeScreen.dataset.headline || ('Câu ' + currentQuestionId);
           }
@@ -871,12 +1021,20 @@
         syncUi();
       };
 
-      const jumpToFirstPending = () => {
+      const jumpToNextPending = () => {
         const answeredSet = getAnsweredSet();
-        const nextPending = orderedIds.find((questionId) => !answeredSet.has(questionId));
-        if (nextPending) {
-          setCurrentQuestion(nextPending);
+        const pendingIds = orderedIds.filter((questionId) => !answeredSet.has(questionId));
+
+        if (!pendingIds.length) {
+          return;
         }
+
+        const nextPending = lastPendingJumpId
+          ? (pendingIds.find((questionId) => Number(questionId) > Number(lastPendingJumpId)) || pendingIds[0])
+          : pendingIds[0];
+
+        lastPendingJumpId = nextPending;
+        setCurrentQuestion(nextPending);
       };
 
       restoreState();
@@ -920,10 +1078,38 @@
       });
 
       jumpButtons.forEach((button) => {
-        button.addEventListener('click', jumpToFirstPending);
+        button.addEventListener('click', jumpToNextPending);
       });
 
-      form.addEventListener('submit', () => {
+      submitCancelButtons.forEach((button) => {
+        button.addEventListener('click', closeSubmitConfirm);
+      });
+
+      if (submitConfirm) {
+        submitConfirm.addEventListener('click', (event) => {
+          if (event.target === submitConfirm) {
+            closeSubmitConfirm();
+          }
+        });
+      }
+
+      if (submitAcceptButton) {
+        submitAcceptButton.addEventListener('click', submitExam);
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && submitConfirm && !submitConfirm.hidden) {
+          closeSubmitConfirm();
+        }
+      });
+
+      form.addEventListener('submit', (event) => {
+        if (!isSubmitConfirmed) {
+          event.preventDefault();
+          openSubmitConfirm();
+          return;
+        }
+
         if (sessionKey) {
           sessionStorage.removeItem(sessionKey);
         }
@@ -938,7 +1124,7 @@
           timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
           if (timeLeft <= 0) {
             alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.');
-            form.submit();
+            submitExam();
             return;
           }
           timeLeft -= 1;

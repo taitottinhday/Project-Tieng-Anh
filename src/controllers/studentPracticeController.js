@@ -134,7 +134,7 @@ async function submitPractice(req, res, mode) {
     const exam = mode === 'reading'
       ? buildReadingPracticeExam(req.params.practiceId, safeBaseUrl)
       : buildPartPracticeExam(req.params.practiceId, safeBaseUrl);
-    const result = gradePracticeExam(exam, req.body || {});
+    const result = await gradePracticeExam(exam, req.body || {});
 
     req.session.lastStudentPracticeResult = result;
 

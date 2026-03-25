@@ -1,0 +1,617 @@
+<%
+const review = reviewData || {};
+const reviewDomId = reviewRootId || 'result-review';
+const reviewAvailable = Boolean(review.available && Array.isArray(review.parts) && review.parts.length);
+const reviewDetailsJson = JSON.stringify(Array.isArray(review.details) ? review.details : []).replace(/</g, '\\u003c');
+%>
+
+<style>
+  .rr-shell {
+    display: grid;
+    gap: 18px;
+  }
+
+  .rr-shell[hidden] {
+    display: none;
+  }
+
+  .rr-panel {
+    display: grid;
+    gap: 18px;
+  }
+
+  .rr-part {
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 22px 48px rgba(15, 23, 42, 0.08);
+  }
+
+  .rr-part-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .rr-part-head h3,
+  .rr-modal-title,
+  .rr-rich strong,
+  .rr-section-title {
+    margin: 0;
+    font-family: "Sora", "Manrope", sans-serif;
+    letter-spacing: -0.04em;
+    color: #132238;
+  }
+
+  .rr-part-head h3 {
+    font-size: 1.45rem;
+  }
+
+  .rr-part-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .rr-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .rr-stat--correct {
+    background: rgba(22, 163, 74, 0.12);
+    color: #15803d;
+  }
+
+  .rr-stat--incorrect {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+  }
+
+  .rr-stat--skipped {
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569;
+  }
+
+  .rr-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .rr-row,
+  .rr-head {
+    display: grid;
+    grid-template-columns: minmax(200px, 1.1fr) 90px 90px 100px minmax(220px, 1fr);
+    gap: 14px;
+    align-items: start;
+    padding: 14px 0;
+  }
+
+  .rr-head {
+    padding-top: 0;
+    color: #5f6b7a;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .rr-row {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .rr-label,
+  .rr-count,
+  .rr-chip-wrap {
+    color: #24364f;
+    line-height: 1.7;
+  }
+
+  .rr-label {
+    font-weight: 700;
+  }
+
+  .rr-count {
+    font-weight: 800;
+  }
+
+  .rr-chip-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .rr-chip {
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 12px;
+    color: #ffffff;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .rr-chip--correct {
+    background: #16a34a;
+  }
+
+  .rr-chip--incorrect {
+    background: #ef4444;
+  }
+
+  .rr-chip--skipped {
+    background: #94a3b8;
+    color: #ffffff;
+  }
+
+  .rr-empty {
+    padding: 18px 20px;
+    border-radius: 22px;
+    border: 1px dashed rgba(15, 23, 42, 0.16);
+    background: rgba(248, 250, 252, 0.92);
+    color: #64748b;
+    line-height: 1.7;
+  }
+
+  .rr-modal[hidden] {
+    display: none;
+  }
+
+  .rr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(8, 16, 28, 0.62);
+    backdrop-filter: blur(3px);
+  }
+
+  .rr-modal-card {
+    width: min(100%, 1280px);
+    max-height: min(92vh, 960px);
+    border-radius: 28px;
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 30px 70px rgba(8, 16, 28, 0.28);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .rr-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .rr-modal-close {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: #ffffff;
+    color: #132238;
+    cursor: pointer;
+    font-size: 1.3rem;
+  }
+
+  .rr-modal-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
+    gap: 18px;
+    min-height: 0;
+    padding: 20px;
+    overflow: auto;
+  }
+
+  .rr-media-col,
+  .rr-detail-col {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .rr-card {
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #f8fafc;
+  }
+
+  .rr-card audio {
+    width: 100%;
+  }
+
+  .rr-tag {
+    display: inline-flex;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  .rr-prompt {
+    color: #1f2d3d;
+    line-height: 1.8;
+  }
+
+  .rr-options {
+    display: grid;
+    gap: 12px;
+  }
+
+  .rr-option {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+  }
+
+  .rr-option--correct {
+    border-color: rgba(22, 163, 74, 0.3);
+    background: rgba(22, 163, 74, 0.08);
+  }
+
+  .rr-option--selected {
+    border-color: rgba(239, 68, 68, 0.28);
+    background: rgba(239, 68, 68, 0.08);
+  }
+
+  .rr-option-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #132238;
+    font-weight: 800;
+  }
+
+  .rr-option-copy {
+    color: #24364f;
+    line-height: 1.7;
+  }
+
+  .rr-option-copy strong {
+    margin-right: 6px;
+  }
+
+  .rr-rich {
+    display: grid;
+    gap: 10px;
+    color: #24364f;
+    line-height: 1.75;
+  }
+
+  .rr-rich p {
+    margin: 0;
+  }
+
+  .rr-images {
+    display: grid;
+    gap: 14px;
+  }
+
+  .rr-images img {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    display: block;
+    background: #ffffff;
+    object-fit: contain;
+    max-height: 620px;
+  }
+
+  @media (max-width: 980px) {
+    .rr-row,
+    .rr-head {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .rr-head {
+      display: none;
+    }
+
+    .rr-row {
+      padding: 16px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 20px;
+      background: #fbfdff;
+    }
+
+    .rr-grid {
+      gap: 14px;
+    }
+
+    .rr-modal-body {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<section class="rr-shell" id="<%= reviewDomId %>" data-review-root>
+  <% if (!reviewAvailable) { %>
+    <div class="rr-empty">Review sẽ hiển thị ở đây khi kết quả có dữ liệu chi tiết phù hợp.</div>
+  <% } else { %>
+    <div class="rr-panel" hidden data-review-panel>
+      <% review.parts.forEach((part) => { %>
+        <section class="rr-part">
+          <div class="rr-part-head">
+            <h3>Part <%= part.partNumber %> - <%= part.title %></h3>
+            <div class="rr-part-stats">
+              <span class="rr-stat rr-stat--correct">Đúng <%= part.correctCount %></span>
+              <span class="rr-stat rr-stat--incorrect">Sai <%= part.incorrectCount %></span>
+              <span class="rr-stat rr-stat--skipped">Bỏ qua <%= part.skippedCount %></span>
+            </div>
+          </div>
+          <div class="rr-grid">
+            <div class="rr-head">
+              <div>Phân loại câu hỏi</div>
+              <div>Đúng</div>
+              <div>Sai</div>
+              <div>Bỏ qua</div>
+              <div>Danh sách câu hỏi</div>
+            </div>
+            <% part.groups.forEach((group) => { %>
+              <div class="rr-row">
+                <div class="rr-label"><%= group.label %></div>
+                <div class="rr-count"><%= group.correctCount %></div>
+                <div class="rr-count"><%= group.incorrectCount %></div>
+                <div class="rr-count"><%= group.skippedCount %></div>
+                <div class="rr-chip-wrap">
+                  <% group.questions.forEach((question) => { %>
+                    <button type="button" class="rr-chip rr-chip--<%= question.status %>" data-review-question="<%= question.number %>"><%= question.number %></button>
+                  <% }) %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </section>
+      <% }) %>
+    </div>
+
+    <div class="rr-modal" hidden data-review-modal>
+      <div class="rr-modal-card" role="dialog" aria-modal="true" aria-labelledby="<%= reviewDomId %>-modal-title">
+        <div class="rr-modal-head">
+          <h3 class="rr-modal-title" id="<%= reviewDomId %>-modal-title" data-review-modal-title></h3>
+          <button type="button" class="rr-modal-close" data-review-close aria-label="Đóng">&times;</button>
+        </div>
+        <div class="rr-modal-body">
+          <div class="rr-media-col">
+            <div class="rr-card" hidden data-review-audio-wrap>
+              <strong class="rr-section-title">Âm thanh</strong>
+              <div data-review-audio></div>
+            </div>
+            <div class="rr-card rr-rich" hidden data-review-passage-wrap>
+              <strong>Ngữ cảnh / đoạn văn</strong>
+              <div data-review-passage></div>
+            </div>
+            <div class="rr-images" data-review-images></div>
+            <div class="rr-card rr-rich" hidden data-review-transcript-wrap>
+              <strong>Bản chép lời</strong>
+              <div data-review-transcript></div>
+            </div>
+            <div class="rr-card rr-rich" hidden data-review-translation-wrap>
+              <strong>Bản dịch</strong>
+              <div data-review-translation></div>
+            </div>
+          </div>
+          <div class="rr-detail-col">
+            <span class="rr-tag" data-review-tag></span>
+            <div class="rr-card rr-rich" hidden data-review-prompt-wrap>
+              <strong>Câu hỏi</strong>
+              <div class="rr-prompt" data-review-prompt></div>
+            </div>
+            <div class="rr-card">
+              <strong class="rr-section-title">Đáp án</strong>
+              <div class="rr-options" data-review-options></div>
+            </div>
+            <div class="rr-card rr-rich" hidden data-review-explanation-wrap>
+              <strong>Giải thích đáp án</strong>
+              <div data-review-explanation></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="application/json" id="<%= reviewDomId %>-payload"><%- reviewDetailsJson %></script>
+  <% } %>
+</section>
+
+<script>
+  (() => {
+    const root = document.getElementById('<%= reviewDomId %>');
+    if (!root || root.dataset.reviewReady === '1') {
+      return;
+    }
+
+    root.dataset.reviewReady = '1';
+    const panel = root.querySelector('[data-review-panel]');
+    const modal = root.querySelector('[data-review-modal]');
+    const toggleButtons = Array.from(document.querySelectorAll(`[data-review-toggle="<%= reviewDomId %>"]`));
+    const payloadEl = document.getElementById('<%= reviewDomId %>-payload');
+    const details = payloadEl ? JSON.parse(payloadEl.textContent || '[]') : [];
+    const detailMap = new Map(details.map((detail) => [String(detail.number), detail]));
+    const titleEl = root.querySelector('[data-review-modal-title]');
+    const tagEl = root.querySelector('[data-review-tag]');
+    const audioWrap = root.querySelector('[data-review-audio-wrap]');
+    const audioEl = root.querySelector('[data-review-audio]');
+    const promptWrap = root.querySelector('[data-review-prompt-wrap]');
+    const promptEl = root.querySelector('[data-review-prompt]');
+    const passageWrap = root.querySelector('[data-review-passage-wrap]');
+    const passageEl = root.querySelector('[data-review-passage]');
+    const transcriptWrap = root.querySelector('[data-review-transcript-wrap]');
+    const transcriptEl = root.querySelector('[data-review-transcript]');
+    const translationWrap = root.querySelector('[data-review-translation-wrap]');
+    const translationEl = root.querySelector('[data-review-translation]');
+    const explanationWrap = root.querySelector('[data-review-explanation-wrap]');
+    const explanationEl = root.querySelector('[data-review-explanation]');
+    const optionsEl = root.querySelector('[data-review-options]');
+    const imagesEl = root.querySelector('[data-review-images]');
+    const closeButtons = Array.from(root.querySelectorAll('[data-review-close]'));
+
+    const setPanelVisible = (visible) => {
+      if (!panel) {
+        return;
+      }
+
+      panel.hidden = !visible;
+      toggleButtons.forEach((button) => {
+        button.textContent = visible ? 'Ẩn review từng phần' : 'Hiện review từng phần';
+        button.setAttribute('aria-expanded', visible ? 'true' : 'false');
+      });
+    };
+
+    const setSectionContent = (wrapper, element, html) => {
+      if (!wrapper || !element) {
+        return;
+      }
+
+      const hasContent = Boolean(html);
+      wrapper.hidden = !hasContent;
+      if (hasContent) {
+        element.innerHTML = html;
+      } else {
+        element.innerHTML = '';
+      }
+    };
+
+    const closeModal = () => {
+      if (!modal) {
+        return;
+      }
+
+      modal.hidden = true;
+      root.querySelectorAll('audio').forEach((audio) => audio.pause());
+    };
+
+    const renderOptions = (detail) => {
+      if (!optionsEl) {
+        return;
+      }
+
+      optionsEl.innerHTML = (Array.isArray(detail.options) ? detail.options : []).map((option) => {
+        const stateClass = option.isCorrect
+          ? 'rr-option--correct'
+          : (option.isSelected ? 'rr-option--selected' : '');
+        const stateNote = option.isCorrect
+          ? ' <strong>(Đáp án đúng)</strong>'
+          : (option.isSelected ? ' <strong>(Bạn đã chọn)</strong>' : '');
+        const optionCopy = option.textHtml
+          ? `<strong>${option.label}</strong>${option.textHtml}${stateNote}`
+          : `<strong>${option.label}</strong>${stateNote}`;
+
+        return `<div class="rr-option ${stateClass}"><span class="rr-option-badge">${option.label}</span><div class="rr-option-copy">${optionCopy}</div></div>`;
+      }).join('');
+    };
+
+    const renderImages = (detail) => {
+      if (!imagesEl) {
+        return;
+      }
+
+      const imageUrls = Array.isArray(detail.imageUrls) ? detail.imageUrls : [];
+      imagesEl.innerHTML = imageUrls.map((imageUrl) => `<img src="${imageUrl}" alt="Tư liệu câu ${detail.number}">`).join('');
+      imagesEl.hidden = imageUrls.length === 0;
+    };
+
+    const renderAudio = (detail) => {
+      if (!audioWrap || !audioEl) {
+        return;
+      }
+
+      if (!detail.audioUrl) {
+        audioWrap.hidden = true;
+        audioEl.innerHTML = '';
+        return;
+      }
+
+      audioWrap.hidden = false;
+      audioEl.innerHTML = `<audio controls preload="metadata" src="${detail.audioUrl}"></audio>`;
+    };
+
+    const openQuestion = (questionNumber) => {
+      const detail = detailMap.get(String(questionNumber));
+      if (!detail || !modal) {
+        return;
+      }
+
+      if (titleEl) {
+        titleEl.textContent = detail.modalTitle || `Review câu ${detail.number}`;
+      }
+
+      if (tagEl) {
+        tagEl.textContent = detail.questionTag || `Part ${detail.partNumber}`;
+      }
+
+      renderAudio(detail);
+      renderImages(detail);
+      renderOptions(detail);
+      setSectionContent(promptWrap, promptEl, detail.promptHtml);
+      setSectionContent(passageWrap, passageEl, detail.passageHtml);
+      setSectionContent(transcriptWrap, transcriptEl, detail.transcriptHtml);
+      setSectionContent(translationWrap, translationEl, detail.translationHtml);
+      setSectionContent(explanationWrap, explanationEl, detail.explanationHtml);
+
+      modal.hidden = false;
+    };
+
+    toggleButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!panel || button.disabled) {
+          return;
+        }
+
+        setPanelVisible(panel.hidden);
+      });
+    });
+
+    root.querySelectorAll('[data-review-question]').forEach((button) => {
+      button.addEventListener('click', () => {
+        openQuestion(button.dataset.reviewQuestion);
+      });
+    });
+
+    closeButtons.forEach((button) => {
+      button.addEventListener('click', closeModal);
+    });
+
+    if (modal) {
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal && !modal.hidden) {
+        closeModal();
+      }
+    });
+  })();
+</script>

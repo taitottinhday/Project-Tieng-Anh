@@ -190,13 +190,13 @@ function takePractice(flowKey, req, res) {
   }
 }
 
-function submitPractice(flowKey, req, res) {
+async function submitPractice(flowKey, req, res) {
   try {
     const safeBaseUrl = getSafeBaseUrl(res);
     const config = getFlowConfig(flowKey);
     const { catalog, currentItem } = resolveCatalogItem(flowKey, safeBaseUrl, req.params.practiceId);
     const exam = buildExamForItem(flowKey, currentItem, safeBaseUrl, catalog);
-    const result = gradePracticeExam(exam, req.body || {});
+    const result = await gradePracticeExam(exam, req.body || {});
 
     result.libraryHref = `${safeBaseUrl}${config.pathPrefix}`;
     result.libraryLabel = catalog.title;

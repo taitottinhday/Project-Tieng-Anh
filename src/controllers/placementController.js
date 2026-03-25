@@ -8,6 +8,7 @@ const {
     findManagedFullTestDefinition,
     loadManagedFullTest
 } = require('../data/fullTestRegistry');
+const { buildExamReviewPayload } = require('../services/examReviewService');
 const { sendPublicError } = require('../utils/publicError');
 
 function isStudentSession(req) {
@@ -86,7 +87,7 @@ function calculateScaledSkillScore(correctCount, totalQuestions) {
     return Math.round((correctCount / totalQuestions) * 495);
 }
 
-function gradeToeicPlacementExam(exam, body) {
+async function gradeToeicPlacementExam(exam, body) {
     const questionResults = exam.flatQuestions.map((question) => {
         const selectedAnswer = body[question.inputName] || null;
         const correctAnswer = question.correctAnswer;
@@ -113,9 +114,13 @@ function gradeToeicPlacementExam(exam, body) {
     const readingScore = calculateScaledSkillScore(readingCorrect, readingResults.length);
     const toeicScore = Math.min(listeningScore + readingScore, 990);
     const recommendation = getRecommendationByToeicScore(toeicScore);
+    const review = await buildExamReviewPayload(exam, questionResults, {
+        furthestQuestionNumber: body && body.furthest_question_number
+    });
 
     return {
         examId: exam.id,
+        examSlug: exam.slug || null,
         examTitle: exam.title,
         bookName: exam.bookName,
         durationMinutes: exam.durationMinutes,
@@ -134,7 +139,8 @@ function gradeToeicPlacementExam(exam, body) {
         readingTotal: readingResults.length,
         recommendation,
         submittedAt: new Date().toISOString(),
-        questionResults
+        questionResults,
+        review
     };
 }
 
@@ -314,7 +320,7 @@ async function submitTest(req, res) {
             : null;
 
         if (managedExam) {
-            const result = gradeToeicPlacementExam(managedExam, req.body || {});
+            const result = await gradeToeicPlacementExam(managedExam, req.body || {});
 
             req.session.lastPlacementResult = {
                 ...result,

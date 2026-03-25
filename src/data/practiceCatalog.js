@@ -6,6 +6,7 @@ const {
   getFullTestCards,
   loadManagedFullTest
 } = require('./fullTestRegistry');
+const { buildExamReviewPayload } = require('../services/examReviewService');
 
 const PART_PRACTICE_META = Object.freeze({
   1: { durationMinutes: 4, totalQuestions: 6, maxScore: 30 },
@@ -575,20 +576,29 @@ function cloneQuestion(question) {
   };
 }
 
+function attachSourceMetadata(question, sourceApiExamId, sourceNumber = null) {
+  return {
+    ...question,
+    sourceApiExamId: sourceApiExamId || question.sourceApiExamId || null,
+    sourceNumber: sourceNumber || question.sourceNumber || question.number
+  };
+}
+
 function filterExamByParts(sourceExam, partNumbers, practiceConfig) {
   const allowedParts = new Set(partNumbers.map(Number));
+  const sourceApiExamId = sourceExam.slug || sourceExam.sourceApiExamId || sourceExam.id;
   const groups = (Array.isArray(sourceExam.groups) ? sourceExam.groups : [])
     .map((group) => ({
       ...group,
       questions: (Array.isArray(group.questions) ? group.questions : [])
         .filter((question) => allowedParts.has(Number(question.partNumber)))
-        .map(cloneQuestion)
+        .map((question) => attachSourceMetadata(cloneQuestion(question), sourceApiExamId))
     }))
     .filter((group) => group.questions.length > 0);
 
   const flatQuestions = (Array.isArray(sourceExam.flatQuestions) ? sourceExam.flatQuestions : [])
     .filter((question) => allowedParts.has(Number(question.partNumber)))
-    .map(cloneQuestion);
+    .map((question) => attachSourceMetadata(cloneQuestion(question), sourceApiExamId));
 
   const partSummary = (Array.isArray(sourceExam.partSummary) ? sourceExam.partSummary : [])
     .filter((part) => allowedParts.has(Number(part.partNumber)))
@@ -603,6 +613,7 @@ function filterExamByParts(sourceExam, partNumbers, practiceConfig) {
   return {
     id: practiceConfig.id,
     sourceId: sourceExam.id,
+    slug: sourceApiExamId,
     title: practiceConfig.title,
     subtitle: practiceConfig.subtitle,
     description: practiceConfig.description || '',
@@ -766,7 +777,11 @@ function buildWordformPracticeExam(practiceId, baseUrl = '', options = {}) {
     const displayNumber = 101 + index;
 
     return {
-      ...nextQuestion,
+      ...attachSourceMetadata(
+        nextQuestion,
+        nextQuestion.sourceApiExamId || null,
+        nextQuestion.sourceNumber || nextQuestion.number
+      ),
       number: displayNumber,
       displayOrder: displayNumber,
       inputName: `question_${displayNumber}`
@@ -786,6 +801,10 @@ function buildWordformPracticeExam(practiceId, baseUrl = '', options = {}) {
   return {
     id: practiceId,
     sourceId: blueprint.entries.map((entry) => entry.sourceId).join('+'),
+    slug: blueprint.entries
+      .map((entry) => entry.question.sourceApiExamId || entry.sourceId || '')
+      .filter(Boolean)
+      .join('+'),
     title: options.itemTitle || blueprint.title,
     subtitle: 'Wordform Test',
     description: blueprint.description,
@@ -838,14 +857,19 @@ function buildPart7GuidePracticeExam(practiceId, baseUrl = '', options = {}) {
   }
 
   let questionCounter = 1;
+  const sourceExam = getSourceExam(blueprint.sourceId);
+  const sourceApiExamId = sourceExam.slug || sourceExam.sourceApiExamId || sourceExam.id;
   const groups = blueprint.groups.map((group, groupIndex) => {
     const questions = (Array.isArray(group.questions) ? group.questions : []).map((question) => {
       const nextQuestion = cloneQuestion(question);
       const displayNumber = questionCounter++;
 
       return {
-        ...nextQuestion,
-        sourceNumber: nextQuestion.number,
+        ...attachSourceMetadata(
+          nextQuestion,
+          nextQuestion.sourceApiExamId || sourceApiExamId,
+          nextQuestion.sourceNumber || nextQuestion.number
+        ),
         number: displayNumber,
         displayOrder: displayNumber,
         inputName: `question_${displayNumber}`
@@ -866,6 +890,7 @@ function buildPart7GuidePracticeExam(practiceId, baseUrl = '', options = {}) {
   return {
     id: practiceId,
     sourceId: blueprint.sourceId,
+    slug: sourceApiExamId,
     title: options.itemTitle || blueprint.title,
     subtitle: 'Mini test Part 7',
     description: blueprint.description,
@@ -964,7 +989,7 @@ function buildFocusMessage(accuracy, exam) {
   return `Phần ${skillLabel} vẫn còn khá hở. Nên học lại mẹo nhận diện dạng bài và luyện thêm từng cụm nhỏ trước khi làm lại toàn bộ.`;
 }
 
-function gradePracticeExam(exam, body = {}) {
+async function gradePracticeExam(exam, body = {}) {
   const questionResults = (Array.isArray(exam.flatQuestions) ? exam.flatQuestions : []).map((question) => {
     const selectedAnswer = body[question.inputName] || null;
     const correctAnswer = question.correctAnswer || null;
@@ -1007,8 +1032,13 @@ function gradePracticeExam(exam, body = {}) {
     };
   });
 
+  const review = await buildExamReviewPayload(exam, questionResults, {
+    furthestQuestionNumber: body.furthest_question_number
+  });
+
   return {
     id: exam.id,
+    slug: exam.slug || null,
     sourceId: exam.sourceId,
     title: exam.title,
     subtitle: exam.subtitle,
@@ -1023,6 +1053,8 @@ function gradePracticeExam(exam, body = {}) {
     rawScore,
     rawMax,
     partBreakdown,
+    questionResults,
+    review,
     focusMessage: buildFocusMessage(accuracy, exam),
     libraryHref: exam.libraryHref,
     libraryLabel: exam.libraryLabel,
