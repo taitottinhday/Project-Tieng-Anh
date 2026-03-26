@@ -557,7 +557,7 @@ function buildAuthReply(normalizedMessage, baseUrl) {
     answer += "Luồng đăng ký hiện tại đã bỏ OTP. Bạn chỉ cần nhập tên hiển thị, email hợp lệ, mật khẩu tối thiểu 6 ký tự, tick ô xác nhận không phải robot và hệ thống sẽ tạo tài khoản ngay. ";
   }
   if (asksForgotPassword) {
-    answer += "Hiện website chưa có trang tự đặt lại mật khẩu riêng. Nếu quên mật khẩu, bạn nên liên hệ trung tâm để được hỗ trợ nhanh. ";
+    answer += "Nếu quên mật khẩu, bạn có thể mở trang Quên mật khẩu, nhập email đăng nhập và nhận liên kết đặt lại mật khẩu qua email. ";
   }
   if (asksGoogle || asksFacebook) {
     const googleEnabled = isOAuthEnabled("google");
@@ -566,7 +566,7 @@ function buildAuthReply(normalizedMessage, baseUrl) {
   }
   if (!answer) {
     answer =
-      "Bạn có thể đăng ký bằng email + mật khẩu hoặc đăng nhập trực tiếp trên trang tài khoản. Nếu muốn dùng Google/Facebook, hệ thống cần bật OAuth tương ứng. Nếu quên mật khẩu, hiện nên liên hệ trung tâm để được hỗ trợ.";
+      "Bạn có thể đăng ký bằng email + mật khẩu hoặc đăng nhập trực tiếp trên trang tài khoản. Nếu muốn dùng Google/Facebook, hệ thống cần bật OAuth tương ứng. Nếu quên mật khẩu, bạn có thể dùng trang Quên mật khẩu để nhận liên kết đặt lại qua email.";
   }
 
   return {
@@ -574,6 +574,7 @@ function buildAuthReply(normalizedMessage, baseUrl) {
     actions: dedupeActions([
       buildLinkAction("Mở đăng ký", "/register", baseUrl),
       buildLinkAction("Mở đăng nhập", "/login", baseUrl),
+      buildLinkAction("Quên mật khẩu", "/forgot-password", baseUrl),
       buildLinkAction("Liên hệ hỗ trợ", "/contact", baseUrl),
     ]),
     matchedTopic: "auth",

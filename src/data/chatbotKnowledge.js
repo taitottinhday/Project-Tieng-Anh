@@ -343,10 +343,10 @@ const FAQ_TOPICS = [
     scope: "all",
     keywords: ["đăng nhập", "login", "mật khẩu", "quên mật khẩu", "google", "facebook", "social login"],
     content:
-      "Người dùng có thể đăng nhập bằng email + mật khẩu. Nút Google/Facebook chỉ hoạt động khi hệ thống đã cấu hình OAuth. Hiện chưa có trang tự đặt lại mật khẩu riêng, nên nếu quên mật khẩu bạn nên liên hệ trung tâm để được hỗ trợ nhanh.",
+      "Người dùng có thể đăng nhập bằng email + mật khẩu. Nút Google/Facebook chỉ hoạt động khi hệ thống đã cấu hình OAuth. Nếu quên mật khẩu, bạn có thể mở trang Quên mật khẩu, nhập email đăng nhập và nhận liên kết đặt lại mật khẩu qua email.",
     actions: [
       { type: "link", label: "Mở đăng nhập", href: "/login" },
-      { type: "link", label: "Liên hệ hỗ trợ", href: "/contact" },
+      { type: "link", label: "Quên mật khẩu", href: "/forgot-password" },
       { type: "message", label: "Hỏi đăng ký", value: "Tạo tài khoản mới như thế nào?" },
     ],
   },

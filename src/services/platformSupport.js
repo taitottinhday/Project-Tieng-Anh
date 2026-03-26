@@ -126,6 +126,24 @@ async function ensurePlatformSupport() {
   `);
 
   await db.query(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      token_hash CHAR(64) NOT NULL,
+      requested_ip VARCHAR(64) NULL,
+      user_agent VARCHAR(255) NULL,
+      expires_at DATETIME NOT NULL,
+      used_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uniq_password_reset_token_hash (token_hash),
+      INDEX idx_password_reset_user (user_id),
+      INDEX idx_password_reset_expires (expires_at),
+      CONSTRAINT fk_password_reset_user FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+    )
+  `);
+
+  await db.query(`
     CREATE TABLE IF NOT EXISTS classroom_posts (
       id INT AUTO_INCREMENT PRIMARY KEY,
       class_id INT NOT NULL,

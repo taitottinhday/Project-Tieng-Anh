@@ -3,11 +3,16 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const db = require("../models/db");
 const {
+  isMailConfigured,
+  sendPasswordResetEmail,
+} = require("../services/mailer");
+const {
   ensurePlatformSupport,
   syncStudentProfileFromUser,
 } = require("../services/platformSupport");
 
 const router = express.Router();
+const PASSWORD_RESET_EXPIRY_MINUTES = 30;
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -26,6 +31,10 @@ function rememberRegisterForm(req, { username = "", email = "" } = {}) {
   req.flash("register_email", normalizeEmail(email));
 }
 
+function rememberForgotPasswordEmail(req, email = "") {
+  req.flash("forgot_email", normalizeEmail(email));
+}
+
 function buildAuthBaseUrl(req) {
   const configuredAuthBaseUrl = trimTrailingSlash(process.env.AUTH_BASE_URL || "");
 
@@ -34,6 +43,31 @@ function buildAuthBaseUrl(req) {
   }
 
   return `${req.protocol}://${req.get("host")}${req.baseUrl || ""}`;
+}
+
+function buildPasswordResetUrl(req, token) {
+  return `${buildAuthBaseUrl(req)}/reset-password?token=${encodeURIComponent(token)}`;
+}
+
+function hashPasswordResetToken(token) {
+  return crypto.createHash("sha256").update(String(token || "")).digest("hex");
+}
+
+function maskEmail(email) {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail.includes("@")) {
+    return normalizedEmail;
+  }
+
+  const [localPart, domainPart] = normalizedEmail.split("@");
+  const visibleLocal = localPart.slice(0, Math.min(3, localPart.length));
+  const localMask = localPart.length > visibleLocal.length
+    ? "*".repeat(Math.min(4, localPart.length - visibleLocal.length))
+    : "";
+  const maskedDomain = domainPart.replace(/(^.).*?(\.[^.]+$)/, "$1***$2");
+
+  return `${visibleLocal}${localMask}@${maskedDomain}`;
 }
 
 function getProviderLabel(provider) {
@@ -337,6 +371,88 @@ async function findOrCreateOAuthUser({ provider, providerUserId, email, username
   return user;
 }
 
+async function findUserByEmail(email) {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  const [rows] = await db.query(
+    "SELECT id, username, email, role FROM users WHERE email = ? LIMIT 1",
+    [normalizedEmail]
+  );
+
+  return rows[0] || null;
+}
+
+async function createPasswordResetToken(req, userId) {
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRY_MINUTES * 60 * 1000);
+
+  await db.query(
+    `
+      UPDATE password_reset_tokens
+      SET used_at = NOW()
+      WHERE user_id = ? AND used_at IS NULL
+    `,
+    [userId]
+  );
+
+  await db.query(
+    `
+      INSERT INTO password_reset_tokens (
+        user_id,
+        token_hash,
+        requested_ip,
+        user_agent,
+        expires_at
+      ) VALUES (?, ?, ?, ?, ?)
+    `,
+    [
+      userId,
+      hashPasswordResetToken(rawToken),
+      req.ip || null,
+      String(req.get("user-agent") || "").slice(0, 255) || null,
+      expiresAt,
+    ]
+  );
+
+  return {
+    rawToken,
+    expiresAt,
+  };
+}
+
+async function getActivePasswordResetRecord(token) {
+  const normalizedToken = String(token || "").trim();
+
+  if (!normalizedToken) {
+    return null;
+  }
+
+  const [rows] = await db.query(
+    `
+      SELECT
+        prt.id,
+        prt.user_id,
+        prt.expires_at,
+        prt.used_at,
+        u.username,
+        u.email
+      FROM password_reset_tokens prt
+      INNER JOIN users u ON u.id = prt.user_id
+      WHERE prt.token_hash = ?
+        AND prt.used_at IS NULL
+        AND prt.expires_at > NOW()
+      LIMIT 1
+    `,
+    [hashPasswordResetToken(normalizedToken)]
+  );
+
+  return rows[0] || null;
+}
+
 router.get("/register", (req, res) => {
   res.render("auth/register", {
     title: "Đăng ký tài khoản",
@@ -423,6 +539,164 @@ router.post("/register/resend-otp", (req, res) => {
 router.post("/register/verify-otp", (req, res) => {
   req.flash("info", "Đăng ký đã chuyển sang xác nhận trực tiếp, không còn dùng OTP.");
   return res.redirect(req.baseUrl + "/register");
+});
+
+router.get("/forgot-password", (req, res) => {
+  res.render("auth/forgot-password", {
+    title: "Quên mật khẩu",
+    pageTitle: "Quên mật khẩu",
+    baseUrl: req.baseUrl,
+    formEmail: req.flash("forgot_email")[0] || "",
+    mailConfigured: isMailConfigured(),
+  });
+});
+
+router.post("/forgot-password", async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  const genericSuccessMessage =
+    "Nếu email tồn tại trong hệ thống, chúng tôi sẽ gửi liên kết đặt lại mật khẩu trong ít phút.";
+
+  try {
+    await ensurePlatformSupport();
+
+    if (!email) {
+      rememberForgotPasswordEmail(req, email);
+      req.flash("error_msg", "Vui lòng nhập email để nhận liên kết đặt lại mật khẩu.");
+      return res.redirect(req.baseUrl + "/forgot-password");
+    }
+
+    if (!isValidEmail(email)) {
+      rememberForgotPasswordEmail(req, email);
+      req.flash("error_msg", "Email chưa đúng định dạng. Vui lòng kiểm tra lại.");
+      return res.redirect(req.baseUrl + "/forgot-password");
+    }
+
+    if (!isMailConfigured()) {
+      rememberForgotPasswordEmail(req, email);
+      req.flash(
+        "error_msg",
+        "Hệ thống chưa sẵn sàng gửi email đặt lại mật khẩu. Vui lòng liên hệ trung tâm để được hỗ trợ nhanh."
+      );
+      return res.redirect(req.baseUrl + "/forgot-password");
+    }
+
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+      req.flash("success_msg", genericSuccessMessage);
+      return res.redirect(req.baseUrl + "/forgot-password");
+    }
+
+    const { rawToken } = await createPasswordResetToken(req, user.id);
+
+    await sendPasswordResetEmail({
+      email: user.email,
+      username: user.username || user.email,
+      resetUrl: buildPasswordResetUrl(req, rawToken),
+      expiresInMinutes: PASSWORD_RESET_EXPIRY_MINUTES,
+    });
+
+    req.flash("success_msg", genericSuccessMessage);
+    return res.redirect(req.baseUrl + "/forgot-password");
+  } catch (err) {
+    console.error("forgot password error:", err);
+    rememberForgotPasswordEmail(req, email);
+    req.flash(
+      "error_msg",
+      "Không thể xử lý yêu cầu đặt lại mật khẩu lúc này. Vui lòng thử lại sau ít phút."
+    );
+    return res.redirect(req.baseUrl + "/forgot-password");
+  }
+});
+
+router.get("/reset-password", async (req, res) => {
+  const token = String(req.query.token || "").trim();
+
+  try {
+    await ensurePlatformSupport();
+
+    const resetRecord = await getActivePasswordResetRecord(token);
+
+    if (!resetRecord) {
+      req.flash(
+        "error_msg",
+        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu một liên kết mới."
+      );
+      return res.redirect(req.baseUrl + "/forgot-password");
+    }
+
+    return res.render("auth/reset-password", {
+      title: "Đặt lại mật khẩu",
+      pageTitle: "Đặt lại mật khẩu",
+      baseUrl: req.baseUrl,
+      token,
+      maskedEmail: maskEmail(resetRecord.email),
+      expiresMinutes: PASSWORD_RESET_EXPIRY_MINUTES,
+    });
+  } catch (err) {
+    console.error("reset password page error:", err);
+    req.flash("error_msg", "Không thể mở liên kết đặt lại mật khẩu lúc này. Vui lòng thử lại.");
+    return res.redirect(req.baseUrl + "/forgot-password");
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  const token = String(req.body.token || "").trim();
+  const password = String(req.body.password || "");
+  const confirmPassword = String(req.body.confirmPassword || "");
+  const redirectToReset = `${req.baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
+
+  try {
+    await ensurePlatformSupport();
+
+    const resetRecord = await getActivePasswordResetRecord(token);
+
+    if (!resetRecord) {
+      req.flash(
+        "error_msg",
+        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu một liên kết mới."
+      );
+      return res.redirect(req.baseUrl + "/forgot-password");
+    }
+
+    if (!password) {
+      req.flash("error_msg", "Vui lòng nhập mật khẩu mới.");
+      return res.redirect(redirectToReset);
+    }
+
+    if (password.length < 6) {
+      req.flash("error_msg", "Mật khẩu mới cần tối thiểu 6 ký tự.");
+      return res.redirect(redirectToReset);
+    }
+
+    if (password !== confirmPassword) {
+      req.flash("error_msg", "Mật khẩu xác nhận chưa khớp. Vui lòng nhập lại.");
+      return res.redirect(redirectToReset);
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await db.query("UPDATE users SET password = ? WHERE id = ?", [
+      passwordHash,
+      resetRecord.user_id,
+    ]);
+
+    await db.query(
+      `
+        UPDATE password_reset_tokens
+        SET used_at = NOW()
+        WHERE user_id = ? AND used_at IS NULL
+      `,
+      [resetRecord.user_id]
+    );
+
+    req.flash("success_msg", "Mật khẩu đã được cập nhật. Bạn có thể đăng nhập ngay bằng mật khẩu mới.");
+    return res.redirect(req.baseUrl + "/login");
+  } catch (err) {
+    console.error("reset password submit error:", err);
+    req.flash("error_msg", "Không thể cập nhật mật khẩu lúc này. Vui lòng thử lại.");
+    return res.redirect(redirectToReset);
+  }
 });
 
 router.get("/login", (req, res) => {
