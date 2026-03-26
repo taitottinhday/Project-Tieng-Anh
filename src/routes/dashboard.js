@@ -4,6 +4,9 @@ const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isAdmin } = require("./auth");
 const { sendPublicError } = require("../utils/publicError");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
+
+router.use(ensureSchemaReady);
 
 // Query an toàn: lỗi hoặc bảng chưa tồn tại thì trả []
 async function safeQuery(sql, params = []) {

@@ -12,6 +12,9 @@ const {
     saveTeacherReview,
 } = require("../services/classroomService");
 const { resolvePublicErrorMessage, sendPublicError } = require("../utils/publicError");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
+
+router.use(ensureSchemaReady);
 
 const ATTENDANCE_STATUSES = new Set(["present", "absent", "late", "excused"]);
 const DAY_DEFINITIONS = [

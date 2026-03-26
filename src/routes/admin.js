@@ -4,6 +4,9 @@ const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn, isAdmin } = require("./auth");
 const { sendPublicError } = require("../utils/publicError");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
+
+router.use(ensureSchemaReady);
 
 function toNumber(value, fallback = 0) {
   const numericValue = Number(value);

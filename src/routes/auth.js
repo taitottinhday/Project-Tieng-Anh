@@ -10,9 +10,12 @@ const {
   ensurePlatformSupport,
   syncStudentProfileFromUser,
 } = require("../services/platformSupport");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
 
 const router = express.Router();
 const PASSWORD_RESET_EXPIRY_MINUTES = 30;
+
+router.use(ensureSchemaReady);
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();

@@ -5,6 +5,7 @@ const { ensureStudentActivitySupport } = require("./studentActivityService");
 const { DEMO_TEACHERS, DEMO_TEACHER_PASSWORD } = require("./demoSeedService");
 
 let bootstrapReady = false;
+let bootstrapPromise = null;
 
 function firstNonEmpty(...values) {
   for (const value of values) {
@@ -26,6 +27,40 @@ function buildOptionalPrivilegedUser(config) {
   }
 
   return config;
+}
+
+async function hasColumn(tableName, columnName) {
+  const [rows] = await db.query(
+    `
+      SELECT 1
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = ?
+        AND COLUMN_NAME = ?
+      LIMIT 1
+    `,
+    [tableName, columnName]
+  );
+
+  return rows.length > 0;
+}
+
+async function addColumnIfMissing(tableName, columnName, definition) {
+  if (await hasColumn(tableName, columnName)) {
+    return false;
+  }
+
+  try {
+    await db.query(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+  } catch (error) {
+    if (error && error.code === "ER_DUP_FIELDNAME") {
+      return false;
+    }
+
+    throw error;
+  }
+
+  return true;
 }
 
 function getDefaultAccessConfig() {
@@ -272,16 +307,54 @@ async function ensureCoreTables() {
   `);
 }
 
+async function ensureLegacySchemaCompatibility() {
+  await addColumnIfMissing(
+    "payments",
+    "status",
+    "ENUM('pending','confirmed','rejected') NOT NULL DEFAULT 'pending' AFTER method"
+  );
+  await addColumnIfMissing(
+    "payments",
+    "txn_ref",
+    "VARCHAR(120) NULL AFTER note"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "status",
+    "ENUM('new','viewed','contacted') NOT NULL DEFAULT 'new' AFTER created_at"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "admin_note",
+    "TEXT NULL AFTER status"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "contacted_at",
+    "DATETIME NULL AFTER admin_note"
+  );
+}
+
 async function ensureApplicationSchema() {
   if (bootstrapReady) {
     return;
   }
 
-  await ensureCoreTables();
-  await ensureDefaultAccessUsers();
-  await ensurePlatformSupport();
-  await ensureStudentActivitySupport();
-  bootstrapReady = true;
+  if (!bootstrapPromise) {
+    bootstrapPromise = (async () => {
+      await ensureCoreTables();
+      await ensureLegacySchemaCompatibility();
+      await ensureDefaultAccessUsers();
+      await ensurePlatformSupport();
+      await ensureStudentActivitySupport();
+      bootstrapReady = true;
+    })().catch((error) => {
+      bootstrapPromise = null;
+      throw error;
+    });
+  }
+
+  await bootstrapPromise;
 }
 
 module.exports = {

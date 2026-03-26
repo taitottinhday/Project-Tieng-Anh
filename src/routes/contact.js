@@ -5,6 +5,9 @@ const { isLoggedIn, isAdmin } = require("./auth");
 const fs = require("fs");
 const path = require("path");
 const { sendPublicError } = require("../utils/publicError");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
+
+router.use(ensureSchemaReady);
 
 // File-based message storage
 const messagesFile = path.join(__dirname, "../data/messages.json");

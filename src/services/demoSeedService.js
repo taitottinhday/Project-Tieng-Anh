@@ -293,7 +293,7 @@ async function ensureEnrollment(studentId, classId, summary) {
   return result.insertId;
 }
 
-async function ensurePayment(enrollmentId, amount, method, note, summary) {
+async function ensurePayment(enrollmentId, amount, method, note, status, summary) {
   const existing = await findSingleValue(
     "SELECT id FROM payments WHERE enrollment_id = ? LIMIT 1",
     [enrollmentId]
@@ -304,8 +304,8 @@ async function ensurePayment(enrollmentId, amount, method, note, summary) {
   }
 
   const [result] = await db.query(
-    "INSERT INTO payments (enrollment_id, amount, method, note) VALUES (?, ?, ?, ?)",
-    [enrollmentId, amount, method, note]
+    "INSERT INTO payments (enrollment_id, amount, method, note, status) VALUES (?, ?, ?, ?, ?)",
+    [enrollmentId, amount, method, note, status]
   );
   summary.paymentsInserted += 1;
   return result.insertId;
@@ -364,6 +364,7 @@ async function seedDemoCenterData(options = {}) {
   const [allStudentRows] = await db.query("SELECT id FROM students ORDER BY id ASC");
   const studentIds = allStudentRows.map((row) => row.id).filter(Boolean);
   const paymentMethods = ["bank", "cash", "momo", "bank"];
+  const paymentStatuses = ["confirmed", "confirmed", "pending", "confirmed"];
 
   for (let classIndex = 0; classIndex < DEMO_CLASSES.length; classIndex += 1) {
     const classroom = DEMO_CLASSES[classIndex];
@@ -380,8 +381,9 @@ async function seedDemoCenterData(options = {}) {
       const enrollmentId = await ensureEnrollment(studentId, classId, summary);
       const paymentAmount = Math.round((courseConfig?.fee || 0) * (enrollmentIndex % 2 === 0 ? 1 : 0.65));
       const paymentMethod = paymentMethods[(classIndex + enrollmentIndex) % paymentMethods.length];
+      const paymentStatus = paymentStatuses[(classIndex + enrollmentIndex) % paymentStatuses.length];
       const paymentNote = enrollmentIndex % 2 === 0 ? "Dong hoc phi demo day du" : "Dong hoc phi demo dot 1";
-      await ensurePayment(enrollmentId, paymentAmount, paymentMethod, paymentNote, summary);
+      await ensurePayment(enrollmentId, paymentAmount, paymentMethod, paymentNote, paymentStatus, summary);
     }
   }
 

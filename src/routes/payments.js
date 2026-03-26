@@ -4,6 +4,9 @@ const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn } = require("./auth");
 const { sendPublicError } = require("../utils/publicError");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
+
+router.use(ensureSchemaReady);
 
 // Chỉ admin mới được vào
 function isAdmin(req, res, next) {
@@ -65,7 +68,7 @@ router.post("/:id/confirm", isLoggedIn, isAdmin, async (req, res) => {
             `UPDATE payments SET status='confirmed', note=CONCAT(IFNULL(note,''), ' | Admin confirmed') WHERE id=?`,
             [id]
         );
-        res.redirect("/payments");
+        res.redirect(req.baseUrl || "/payments");
     } catch (err) {
         console.error("payments confirm error:", err);
         return sendPublicError(res, err, 500, "Không thể xác nhận thanh toán lúc này.");
@@ -80,7 +83,7 @@ router.post("/:id/reject", isLoggedIn, isAdmin, async (req, res) => {
             `UPDATE payments SET status='rejected', note=CONCAT(IFNULL(note,''), ' | Admin rejected') WHERE id=?`,
             [id]
         );
-        res.redirect("/payments");
+        res.redirect(req.baseUrl || "/payments");
     } catch (err) {
         console.error("payments reject error:", err);
         return sendPublicError(res, err, 500, "Không thể từ chối thanh toán lúc này.");

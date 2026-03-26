@@ -3,15 +3,16 @@ const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { createEnrollmentAccessToken, verifyEnrollmentAccessToken } = require("../utils/paymentAccess");
+const ensureSchemaReady = require("../middleware/ensureSchemaReady");
 
-// Cấu hình tài khoản nhận tiền
+router.use(ensureSchemaReady);
+
 const BANK = {
     bankCode: "VCB",
     accountNumber: "0123456789",
     accountName: "TRUNG TAM ANH NGU ABC",
 };
 
-// Tạo nội dung chuyển khoản
 function buildTransferContent(enrollmentId) {
     return `TT E${enrollmentId}`;
 }
@@ -20,7 +21,6 @@ function resolvePaymentToken(req) {
     return String(req.query.token || req.body.token || "").trim();
 }
 
-// Trang hiển thị chuyển khoản + QR
 router.get("/:enrollmentId", async (req, res) => {
     try {
         const enrollmentId = Number(req.params.enrollmentId);
@@ -35,7 +35,7 @@ router.get("/:enrollmentId", async (req, res) => {
 
         const [rows] = await db.query(
             `
-      SELECT 
+      SELECT
         e.id AS enrollment_id,
         e.status AS enrollment_status,
         s.full_name AS student_name,
@@ -61,7 +61,6 @@ router.get("/:enrollmentId", async (req, res) => {
 
         const amount = Number(info.course_fee || 0);
         const content = buildTransferContent(enrollmentId);
-
         const vietqrUrl =
             `https://img.vietqr.io/image/${BANK.bankCode}-${BANK.accountNumber}-compact2.png` +
             `?amount=${amount}` +
@@ -85,7 +84,6 @@ router.get("/:enrollmentId", async (req, res) => {
     }
 });
 
-// Học viên bấm "Tôi đã chuyển khoản"
 router.post("/:enrollmentId/confirm", express.urlencoded({ extended: true }), async (req, res) => {
     try {
         const enrollmentId = Number(req.params.enrollmentId);
@@ -101,11 +99,38 @@ router.post("/:enrollmentId/confirm", express.urlencoded({ extended: true }), as
             return res.status(403).send("Liên kết thanh toán không hợp lệ.");
         }
 
-        await db.query(
-            `INSERT INTO payments (enrollment_id, amount, method, note, status)
-       VALUES (?, ?, ?, ?, 'pending')`,
-            [enrollmentId, amount, method, "Học viên đã chuyển khoản (chờ xác nhận)"]
+        const [existingRows] = await db.query(
+            `
+      SELECT id, status
+      FROM payments
+      WHERE enrollment_id = ?
+      ORDER BY id DESC
+      LIMIT 1
+      `,
+            [enrollmentId]
         );
+
+        const latestPayment = existingRows[0] || null;
+        const pendingNote = "Học viên đã chuyển khoản (chờ xác nhận)";
+
+        if (latestPayment && latestPayment.status === "pending") {
+            await db.query(
+                `
+        UPDATE payments
+        SET amount = ?, method = ?, note = ?, paid_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        `,
+                [amount, method, pendingNote, latestPayment.id]
+            );
+        } else {
+            await db.query(
+                `
+        INSERT INTO payments (enrollment_id, amount, method, note, status)
+        VALUES (?, ?, ?, ?, 'pending')
+        `,
+                [enrollmentId, amount, method, pendingNote]
+            );
+        }
 
         const baseUrl = res.locals.baseUrl || "";
         return res.redirect(
