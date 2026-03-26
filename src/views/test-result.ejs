@@ -75,21 +75,22 @@
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
-      gap: 18px;
-      min-height: 88px;
+      gap: 14px;
+      min-height: 74px;
+      padding: 10px 0;
     }
 
     .tr-brand {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       min-width: 0;
     }
 
     .tr-brand-mark {
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
+      width: 50px;
+      height: 50px;
+      border-radius: 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -114,24 +115,25 @@
 
     .tr-brand-copy strong {
       font-family: "Lexend", "Be Vietnam Pro", sans-serif;
-      font-size: 0.98rem;
+      font-size: 0.92rem;
       letter-spacing: -0.04em;
       color: #101828;
     }
 
     .tr-brand-copy span {
       color: var(--tr-muted);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
     }
 
     .tr-nav {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
-      padding-left: 6px;
-      overflow: visible;
+      padding: 0 4px;
+      overflow-x: auto;
+      overflow-y: hidden;
       scrollbar-width: none;
     }
 
@@ -144,11 +146,11 @@
       align-items: center;
       justify-content: center;
       flex: 0 0 auto;
-      min-height: 42px;
-      padding: 0 14px;
+      min-height: 38px;
+      padding: 0 12px;
       border-radius: 999px;
       color: #344054;
-      font-size: 0.9rem;
+      font-size: 0.84rem;
       font-weight: 700;
       white-space: nowrap;
       transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
@@ -163,16 +165,17 @@
     .tr-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 8px;
+      flex-wrap: nowrap;
+      min-width: max-content;
       justify-content: flex-end;
     }
 
     .tr-user-chip {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 6px 8px 6px 16px;
+      gap: 8px;
+      padding: 4px 6px 4px 12px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.72);
       border: 1px solid rgba(89, 106, 191, 0.12);
@@ -187,25 +190,25 @@
 
     .tr-user-copy strong,
     .tr-user-copy span {
-      max-width: 170px;
+      max-width: 148px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .tr-user-copy strong {
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       color: #1f2937;
     }
 
     .tr-user-copy span {
-      font-size: 0.76rem;
+      font-size: 0.71rem;
       color: var(--tr-muted);
     }
 
     .tr-user-avatar {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
@@ -221,11 +224,12 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 48px;
-      padding: 0 18px;
+      min-height: 42px;
+      padding: 0 16px;
       border-radius: 999px;
       border: 1px solid transparent;
       font: inherit;
+      font-size: 0.9rem;
       font-weight: 800;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
@@ -429,37 +433,37 @@
       gap: 12px;
     }
 
-    @media (max-width: 1560px) {
-      .tr-bar {
-        grid-template-columns: auto minmax(0, 1fr);
-        gap: 14px 18px;
-        align-items: center;
-        padding: 14px 0 16px;
-        min-height: auto;
+    @media (max-width: 1440px) {
+      .tr-brand-copy span,
+      .tr-user-copy span {
+        display: none;
       }
 
-      .tr-brand {
-        grid-column: 1 / 2;
+      .tr-brand-copy strong {
+        font-size: 0.88rem;
       }
 
-      .tr-actions {
-        grid-column: 2 / 3;
-        justify-content: flex-end;
+      .tr-user-copy strong {
+        max-width: 120px;
+        font-size: 0.84rem;
       }
 
-      .tr-nav {
-        grid-column: 1 / -1;
-        width: 100%;
-        overflow-x: auto;
-        padding: 0 0 4px;
+      .tr-link {
+        padding: 0 10px;
+        font-size: 0.81rem;
+      }
+
+      .tr-header-btn {
+        padding: 0 14px;
       }
     }
 
-    @media (max-width: 1260px) {
+    @media (max-width: 1180px) {
       .tr-bar {
         grid-template-columns: 1fr;
         justify-items: start;
-        padding: 14px 0 18px;
+        gap: 10px;
+        padding: 12px 0 14px;
       }
 
       .tr-nav,
@@ -469,8 +473,13 @@
 
       .tr-nav {
         width: 100%;
+        padding: 0 0 4px;
+      }
+
+      .tr-actions {
+        width: 100%;
         overflow-x: auto;
-        padding-left: 0;
+        padding-bottom: 2px;
       }
     }
 
