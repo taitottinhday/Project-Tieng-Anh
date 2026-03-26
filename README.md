@@ -103,6 +103,7 @@ App hiện đã hỗ trợ đọc cả bộ biến `DB_*` lẫn `MYSQLHOST`, `MY
 ## Ghi chú
 
 - Social login chỉ hoạt động khi điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`
+- Có thể điền thêm `AUTH_BASE_URL` để cố định callback OAuth, ví dụ `http://localhost:4209` hoặc domain public của app
 - SMTP không còn bắt buộc cho đăng ký vì OTP đã được bỏ
 - Production nên đặt `SESSION_SECRET` mạnh và không dùng secret mặc định
 - Giữ `ALLOW_MAINTENANCE_ROUTES=false`, `ALLOW_MAKE_ADMIN_ROUTE=false`, `EXPOSE_ERROR_DETAILS=false` trên production

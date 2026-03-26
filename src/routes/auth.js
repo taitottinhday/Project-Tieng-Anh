@@ -13,6 +13,10 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+function trimTrailingSlash(value) {
+  return String(value || "").trim().replace(/\/+$/, "");
+}
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(email));
 }
@@ -23,6 +27,12 @@ function rememberRegisterForm(req, { username = "", email = "" } = {}) {
 }
 
 function buildAuthBaseUrl(req) {
+  const configuredAuthBaseUrl = trimTrailingSlash(process.env.AUTH_BASE_URL || "");
+
+  if (configuredAuthBaseUrl) {
+    return configuredAuthBaseUrl;
+  }
+
   return `${req.protocol}://${req.get("host")}${req.baseUrl || ""}`;
 }
 
@@ -49,6 +59,10 @@ function getOAuthConfig(provider, req) {
       authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
       tokenUrl: "https://oauth2.googleapis.com/token",
       scope: "openid email profile",
+      authorizationParams: {
+        prompt: "select_account",
+        include_granted_scopes: "true",
+      },
     };
   }
 
@@ -60,6 +74,7 @@ function getOAuthConfig(provider, req) {
       authorizationUrl: "https://www.facebook.com/v19.0/dialog/oauth",
       tokenUrl: "https://graph.facebook.com/v19.0/oauth/access_token",
       scope: "email public_profile",
+      authorizationParams: {},
     };
   }
 
@@ -81,15 +96,87 @@ function establishSession(req, user) {
 }
 
 function redirectByRole(req, res, user) {
+  return res.redirect(getRoleRedirectPath(req, user));
+}
+
+function getRoleRedirectPath(req, user) {
   if (user.role === "admin") {
-    return res.redirect(req.baseUrl + "/admin");
+    return req.baseUrl + "/admin";
   }
 
   if (user.role === "teacher") {
-    return res.redirect(req.baseUrl + "/teacher/dashboard");
+    return req.baseUrl + "/teacher/dashboard";
   }
 
-  return res.redirect(req.baseUrl + "/");
+  return req.baseUrl + "/";
+}
+
+function renderOAuthPopupResult(res, { redirectTo = "/", closeDelay = 120 } = {}) {
+  const safeRedirectTo = JSON.stringify(String(redirectTo || "/"));
+  const safeCloseDelay = Number.isFinite(closeDelay) ? Math.max(0, closeDelay) : 120;
+
+  return res.send(`<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Hoàn tất đăng nhập</title>
+</head>
+<body>
+  <script>
+    (function () {
+      var redirectTo = ${safeRedirectTo};
+      var closeDelay = ${safeCloseDelay};
+
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.location.href = redirectTo;
+        } else {
+          window.location.replace(redirectTo);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+        window.location.replace(redirectTo);
+        return;
+      }
+
+      window.setTimeout(function () {
+        window.close();
+      }, closeDelay);
+    })();
+  </script>
+  <p>Đang quay lại cửa sổ chính...</p>
+</body>
+</html>`);
+}
+
+function buildAuthorizationSearchParams(config, state) {
+  const searchParams = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: config.redirectUri,
+    response_type: "code",
+    scope: config.scope,
+    state,
+  });
+
+  Object.entries(config.authorizationParams || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  });
+
+  return searchParams;
+}
+
+function getSyntheticOAuthEmail(provider, providerUserId) {
+  const normalizedProvider = String(provider || "").trim().toLowerCase();
+  const normalizedProviderUserId = String(providerUserId || "").trim();
+
+  if (!normalizedProvider || !normalizedProviderUserId) {
+    return "";
+  }
+
+  return `${normalizedProvider}-${normalizedProviderUserId}@oauth.local`;
 }
 
 async function exchangeOAuthCode(provider, code, req) {
@@ -116,7 +203,10 @@ async function exchangeOAuthCode(provider, code, req) {
     const facebookResponse = await fetch(url.toString());
 
     if (!facebookResponse.ok) {
-      throw new Error("Unable to exchange facebook authorization code.");
+      const responseText = await facebookResponse.text();
+      throw new Error(
+        `Unable to exchange facebook authorization code. ${responseText.slice(0, 500)}`
+      );
     }
 
     return facebookResponse.json();
@@ -131,7 +221,10 @@ async function exchangeOAuthCode(provider, code, req) {
   });
 
   if (!tokenResponse.ok) {
-    throw new Error(`Unable to exchange ${provider} authorization code.`);
+    const responseText = await tokenResponse.text();
+    throw new Error(
+      `Unable to exchange ${provider} authorization code. ${responseText.slice(0, 500)}`
+    );
   }
 
   return tokenResponse.json();
@@ -176,8 +269,11 @@ async function getFacebookProfile(accessToken) {
 async function findOrCreateOAuthUser({ provider, providerUserId, email, username }) {
   await ensurePlatformSupport();
 
-  if (!email) {
-    throw new Error("Tai khoan social chua cung cap email xac thuc.");
+  const normalizedEmail = normalizeEmail(email);
+  const resolvedEmail = normalizedEmail || getSyntheticOAuthEmail(provider, providerUserId);
+
+  if (!resolvedEmail) {
+    throw new Error("Social account is missing a usable email.");
   }
 
   const [identityRows] = await db.query(
@@ -196,7 +292,7 @@ async function findOrCreateOAuthUser({ provider, providerUserId, email, username
   if (!user) {
     const [userRows] = await db.query(
       "SELECT id, username, email, role FROM users WHERE email = ? LIMIT 1",
-      [email]
+      [resolvedEmail]
     );
 
     user = userRows[0] || null;
@@ -205,11 +301,12 @@ async function findOrCreateOAuthUser({ provider, providerUserId, email, username
   if (!user) {
     const randomPassword = crypto.randomBytes(24).toString("hex");
     const passwordHash = await bcrypt.hash(randomPassword, 10);
-    const normalizedUsername = String(username || email.split("@")[0]).trim().slice(0, 100);
+    const fallbackName = resolvedEmail.split("@")[0];
+    const normalizedUsername = String(username || fallbackName).trim().slice(0, 100);
 
     const [result] = await db.query(
       "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-      [normalizedUsername || email.split("@")[0], email, passwordHash, "user"]
+      [normalizedUsername || fallbackName, resolvedEmail, passwordHash, "user"]
     );
 
     const [createdRows] = await db.query(
@@ -232,7 +329,7 @@ async function findOrCreateOAuthUser({ provider, providerUserId, email, username
         user_id = VALUES(user_id),
         provider_email = VALUES(provider_email)
     `,
-    [user.id, provider, providerUserId, email]
+    [user.id, provider, providerUserId, normalizedEmail || null]
   );
 
   await syncStudentProfileFromUser(user);
@@ -379,6 +476,7 @@ router.post("/login", async (req, res) => {
 router.get("/auth/:provider(google|facebook)", async (req, res) => {
   const provider = req.params.provider;
   const providerLabel = getProviderLabel(provider);
+  const usePopup = provider === "facebook" && String(req.query.popup || "") === "1";
 
   try {
     if (!isOAuthConfigured(provider, req)) {
@@ -394,21 +492,75 @@ router.get("/auth/:provider(google|facebook)", async (req, res) => {
     req.session.oauthState = {
       provider,
       value: state,
+      popup: usePopup,
     };
 
-    const searchParams = new URLSearchParams({
-      client_id: config.clientId,
-      redirect_uri: config.redirectUri,
-      response_type: "code",
-      scope: config.scope,
-      state,
-    });
+    const searchParams = buildAuthorizationSearchParams(config, state);
+
+    if (usePopup) {
+      searchParams.set("display", "popup");
+    }
 
     return res.redirect(`${config.authorizationUrl}?${searchParams.toString()}`);
   } catch (err) {
     console.error(`${provider} auth start error:`, err);
     req.flash("error_msg", "Không thể mở đăng nhập social lúc này.");
     return res.redirect(req.baseUrl + "/login");
+  }
+});
+
+router.get("/auth/facebook/callback", async (req, res, next) => {
+  const { code = "", state = "", error = "" } = req.query;
+
+  if (!req.session?.oauthState?.popup) {
+    return next();
+  }
+
+  try {
+    if (
+      req.session.oauthState.provider !== "facebook" ||
+      req.session.oauthState.value !== state
+    ) {
+      req.flash("error_msg", "Phien dang nhap Facebook popup khong hop le. Vui long thu lai.");
+      req.session.oauthState = null;
+      return renderOAuthPopupResult(res, { redirectTo: req.baseUrl + "/login" });
+    }
+
+    req.session.oauthState = null;
+
+    if (error) {
+      req.flash("error_msg", "Ban da huy dang nhap bang Facebook.");
+      return renderOAuthPopupResult(res, { redirectTo: req.baseUrl + "/login" });
+    }
+
+    if (!code) {
+      req.flash("error_msg", "Khong nhan duoc ma xac thuc tu Facebook.");
+      return renderOAuthPopupResult(res, { redirectTo: req.baseUrl + "/login" });
+    }
+
+    const tokenPayload = await exchangeOAuthCode("facebook", code, req);
+    const profile = await getFacebookProfile(tokenPayload.access_token);
+
+    const user = await findOrCreateOAuthUser({
+      provider: "facebook",
+      providerUserId: profile.providerUserId,
+      email: profile.email,
+      username: profile.username,
+    });
+
+    establishSession(req, user);
+
+    return renderOAuthPopupResult(res, {
+      redirectTo: getRoleRedirectPath(req, user),
+    });
+  } catch (err) {
+    console.error("facebook popup callback error:", err);
+    req.flash(
+      "error_msg",
+      "Khong the hoan tat dang nhap bang Facebook luc nay. Vui long thu lai."
+    );
+    req.session.oauthState = null;
+    return renderOAuthPopupResult(res, { redirectTo: req.baseUrl + "/login" });
   }
 });
 
@@ -457,6 +609,12 @@ router.get("/auth/:provider(google|facebook)/callback", async (req, res) => {
     return redirectByRole(req, res, user);
   } catch (err) {
     console.error(`${provider} callback error:`, err);
+    console.error(`${provider} callback context:`, {
+      authBaseUrl: buildAuthBaseUrl(req),
+      redirectUri: getOAuthConfig(provider, req)?.redirectUri,
+      host: req.get("host"),
+      protocol: req.protocol,
+    });
     req.flash(
       "error_msg",
       "Không thể hoàn tất đăng nhập bằng Google/Facebook lúc này. Vui lòng thử lại."
