@@ -429,6 +429,32 @@
       gap: 12px;
     }
 
+    @media (max-width: 1560px) {
+      .tr-bar {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 14px 18px;
+        align-items: center;
+        padding: 14px 0 16px;
+        min-height: auto;
+      }
+
+      .tr-brand {
+        grid-column: 1 / 2;
+      }
+
+      .tr-actions {
+        grid-column: 2 / 3;
+        justify-content: flex-end;
+      }
+
+      .tr-nav {
+        grid-column: 1 / -1;
+        width: 100%;
+        overflow-x: auto;
+        padding: 0 0 4px;
+      }
+    }
+
     @media (max-width: 1260px) {
       .tr-bar {
         grid-template-columns: 1fr;
