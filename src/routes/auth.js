@@ -601,9 +601,16 @@ router.post("/forgot-password", async (req, res) => {
   } catch (err) {
     console.error("forgot password error:", err);
     rememberForgotPasswordEmail(req, email);
+
+    const timeoutLikeError = /timed out|timeout|ETIMEDOUT|ECONNRESET|ECONNREFUSED/i.test(
+      String(err && (err.message || err.code || err))
+    );
+
     req.flash(
       "error_msg",
-      "Không thể xử lý yêu cầu đặt lại mật khẩu lúc này. Vui lòng thử lại sau ít phút."
+      timeoutLikeError
+        ? "Kênh gửi email đang phản hồi chậm hoặc chưa kết nối được. Vui lòng thử lại sau ít phút."
+        : "Không thể xử lý yêu cầu đặt lại mật khẩu lúc này. Vui lòng thử lại sau ít phút."
     );
     return res.redirect(req.baseUrl + "/forgot-password");
   }

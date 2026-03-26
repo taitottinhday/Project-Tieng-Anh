@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 
 let cachedTransporter = null;
+const DEFAULT_SMTP_TIMEOUT_MS = 15000;
 
 function getMailSettings() {
   return {
@@ -11,6 +12,7 @@ function getMailSettings() {
     user: process.env.SMTP_USER || "",
     pass: process.env.SMTP_PASS || "",
     from: process.env.MAIL_FROM || process.env.SMTP_USER || "",
+    timeoutMs: Number(process.env.SMTP_TIMEOUT_MS || DEFAULT_SMTP_TIMEOUT_MS),
   };
 }
 
@@ -39,6 +41,9 @@ function getTransporter() {
     settings.service
       ? {
           service: settings.service,
+          connectionTimeout: settings.timeoutMs,
+          greetingTimeout: settings.timeoutMs,
+          socketTimeout: settings.timeoutMs,
           auth: {
             user: settings.user,
             pass: settings.pass,
@@ -48,6 +53,9 @@ function getTransporter() {
           host: settings.host,
           port: settings.port,
           secure: settings.secure,
+          connectionTimeout: settings.timeoutMs,
+          greetingTimeout: settings.timeoutMs,
+          socketTimeout: settings.timeoutMs,
           auth: {
             user: settings.user,
             pass: settings.pass,
@@ -58,16 +66,44 @@ function getTransporter() {
   return cachedTransporter;
 }
 
+async function sendWithTimeout(transporter, mailOptions, timeoutMs) {
+  let timeoutHandle = null;
+
+  try {
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          reject(new Error("SMTP request timed out."));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+}
+
 async function sendMailMessage({ to, subject, html }) {
   const transporter = getTransporter();
   const settings = getMailSettings();
 
-  await transporter.sendMail({
-    from: settings.from,
-    to,
-    subject,
-    html,
-  });
+  try {
+    await sendWithTimeout(
+      transporter,
+      {
+        from: settings.from,
+        to,
+        subject,
+        html,
+      },
+      settings.timeoutMs
+    );
+  } catch (error) {
+    cachedTransporter = null;
+    throw error;
+  }
 }
 
 async function sendRegistrationOtp({ email, username, otpCode }) {
