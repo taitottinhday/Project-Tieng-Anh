@@ -134,6 +134,12 @@
             display: none
         }
 
+        .s-nav-item {
+            position: relative;
+            display: inline-flex;
+            align-items: center
+        }
+
         .s-link {
             position: relative;
             display: inline-flex;
@@ -147,6 +153,23 @@
             font-weight: 500;
             white-space: nowrap;
             transition: .2s ease
+        }
+
+        .s-link-toggle {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            gap: 7px
+        }
+
+        .s-link-caret {
+            flex: 0 0 auto;
+            transition: transform .2s ease
+        }
+
+        .s-nav-group:hover .s-link-caret,
+        .s-nav-group.is-open .s-link-caret {
+            transform: rotate(180deg)
         }
 
         .s-link:hover {
@@ -177,6 +200,64 @@
 
         .s-link-label-short {
             display: none
+        }
+
+        .s-subnav {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 50%;
+            width: min(350px, 38vw);
+            padding: 14px;
+            border-radius: 28px;
+            border: 1px solid rgba(17, 24, 39, .08);
+            background: rgba(255, 255, 255, .98);
+            box-shadow: 0 28px 60px rgba(17, 24, 39, .14);
+            display: grid;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, 12px);
+            transition: opacity .18s ease, transform .18s ease
+        }
+
+        .s-nav-group:hover .s-subnav,
+        .s-nav-group.is-open .s-subnav {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, 0)
+        }
+
+        .s-subnav-link {
+            display: grid;
+            gap: 4px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            color: #334155;
+            transition: transform .2s ease, background .2s ease, color .2s ease
+        }
+
+        .s-subnav-link:hover {
+            transform: translateY(-1px);
+            background: rgba(37, 99, 235, .08);
+            color: #0f172a
+        }
+
+        .s-subnav-link.active {
+            background: linear-gradient(135deg, rgba(37, 99, 235, .10) 0%, rgba(201, 31, 48, .08) 100%);
+            color: #0f172a
+        }
+
+        .s-subnav-title {
+            font-size: .96rem;
+            font-weight: 700;
+            line-height: 1.35
+        }
+
+        .s-subnav-note {
+            font-size: .78rem;
+            line-height: 1.5;
+            color: #64748b;
+            white-space: normal
         }
 
         .s-actions {
@@ -371,6 +452,71 @@
         .s-mobile-actions {
             display: grid;
             gap: 10px
+        }
+
+        .s-mobile-group {
+            display: grid;
+            gap: 10px
+        }
+
+        .s-mobile-group-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 48px;
+            padding: 0 18px;
+            border: 1px solid rgba(17, 24, 39, .08);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .98);
+            color: #4b5563;
+            font: inherit;
+            font-size: .92rem;
+            font-weight: 700;
+            box-shadow: 0 12px 28px rgba(17, 24, 39, .05)
+        }
+
+        .s-mobile-group-toggle.active,
+        .s-mobile-group.is-open .s-mobile-group-toggle {
+            color: #111827;
+            background: rgba(37, 99, 235, .08);
+            border-color: rgba(59, 130, 246, .12)
+        }
+
+        .s-mobile-group-caret {
+            flex: 0 0 auto;
+            transition: transform .2s ease
+        }
+
+        .s-mobile-group.is-open .s-mobile-group-caret {
+            transform: rotate(180deg)
+        }
+
+        .s-mobile-subnav {
+            display: none;
+            gap: 8px;
+            padding-left: 12px
+        }
+
+        .s-mobile-group.is-open .s-mobile-subnav {
+            display: grid
+        }
+
+        .s-mobile-subnav-link {
+            display: block;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(248, 250, 252, .96);
+            color: #334155;
+            font-size: .9rem;
+            font-weight: 600;
+            transition: background .2s ease, color .2s ease
+        }
+
+        .s-mobile-subnav-link.active {
+            background: rgba(37, 99, 235, .08);
+            color: #111827
         }
 
         .s-mobile .s-link,
@@ -637,7 +783,7 @@
 
         const studentInitial = safeStudentName.trim().charAt(0).toUpperCase() || 'H';
 
-        const navItems = [
+        let navItems = [
         { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
         { label: 'Classroom', shortLabel: 'Classroom', href: buildHref('/student/classroom'), matches: ['/student/classroom'] },
         { label: 'Thi Thử Full Test', href: buildHref('/placement-tests'), matches: ['/placement-tests', '/test-start',
@@ -656,11 +802,43 @@
         ['/register-course', '/payment'] }
         ];
 
+        const studyHubPaths = new Set([
+        buildHref('/placement-tests'),
+        buildHref('/student/practice/parts'),
+        buildHref('/student/practice/reading'),
+        buildHref('/student/dictation')
+        ]);
+
+        const studyHubNotes = new Map([
+        [buildHref('/placement-tests'), 'Làm bộ đề đầy đủ với trải nghiệm gần như bài thi thật.'],
+        [buildHref('/student/practice/parts'), 'Tập trung đúng phần đang yếu và ôn theo từng dạng câu hỏi.'],
+        [buildHref('/student/practice/reading'), 'Tăng tốc đọc hiểu, định vị ý chính và xử lý bài đọc dài.'],
+        [buildHref('/student/dictation'), 'Rèn phản xạ nghe, độ chính xác và vốn từ qua dictation.']
+        ]);
+
+        const studyHubItems = navItems
+        .filter((item) => studyHubPaths.has(item.href))
+        .map((item) => ({
+        ...item,
+        note: studyHubNotes.get(item.href) || ''
+        }));
+
+        navItems = navItems.filter((item) => !studyHubPaths.has(item.href));
+        navItems.splice(2, 0, {
+        label: 'Góc học tập',
+        shortLabel: 'Học tập',
+        children: studyHubItems
+        });
+
         const isActive = (item) => (item.matches || []).some((target) => {
         const normalized = normalizePath(safeBaseUrl + target);
         if (normalized === '/') return currentRoute === '/';
         return currentRoute === normalized || currentRoute.startsWith(normalized + '/');
         });
+
+        const isItemActive = (item) => Array.isArray(item.children) && item.children.length
+        ? item.children.some((child) => isActive(child))
+        : isActive(item);
         %>
 
         <header class="s-header">
@@ -676,18 +854,44 @@
                 </a>
 
                 <nav class="s-nav" aria-label="Điều hướng học viên">
-                    <% navItems.forEach((item)=> { %>
-                        <a href="<%= item.href %>" class="s-link <%= isActive(item) ? 'active' : '' %>">
-                            <span class="s-link-label-full <%= item.shortLabel ? 'is-long' : '' %>">
-                                <%= item.label %>
-                            </span>
-                            <% if (item.shortLabel) { %>
-                                <span class="s-link-label-short">
-                                    <%= item.shortLabel %>
+                    <% navItems.forEach((item)=> { const itemActive = isItemActive(item); %>
+                        <% if (item.children && item.children.length) { %>
+                            <div class="s-nav-item s-nav-group">
+                                <button type="button" class="s-link s-link-toggle <%= itemActive ? 'active' : '' %>" data-subnav-toggle aria-expanded="false">
+                                    <span class="s-link-label-full <%= item.shortLabel ? 'is-long' : '' %>">
+                                        <%= item.label %>
+                                    </span>
+                                    <% if (item.shortLabel) { %>
+                                        <span class="s-link-label-short">
+                                            <%= item.shortLabel %>
+                                        </span>
+                                    <% } %>
+                                    <svg class="s-link-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m6 9 6 6 6-6"></path>
+                                    </svg>
+                                </button>
+                                <div class="s-subnav" role="menu" aria-label="<%= item.label %>">
+                                    <% item.children.forEach((child) => { const childActive = isActive(child); %>
+                                        <a href="<%= child.href %>" class="s-subnav-link <%= childActive ? 'active' : '' %>" role="menuitem">
+                                            <span class="s-subnav-title"><%= child.label %></span>
+                                            <span class="s-subnav-note"><%= child.note %></span>
+                                        </a>
+                                    <% }) %>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <a href="<%= item.href %>" class="s-link <%= itemActive ? 'active' : '' %>">
+                                <span class="s-link-label-full <%= item.shortLabel ? 'is-long' : '' %>">
+                                    <%= item.label %>
                                 </span>
+                                <% if (item.shortLabel) { %>
+                                    <span class="s-link-label-short">
+                                        <%= item.shortLabel %>
+                                    </span>
                                 <% } %>
-                        </a>
-                        <% }) %>
+                            </a>
+                        <% } %>
+                    <% }) %>
                 </nav>
 
                 <div class="s-actions">
@@ -745,11 +949,29 @@
                         </div>
                     </div>
 
-                    <% navItems.forEach((item)=> { %>
-                        <a href="<%= item.href %>" class="s-link <%= isActive(item) ? 'active' : '' %>">
-                            <%= item.label %>
-                        </a>
-                        <% }) %>
+                    <% navItems.forEach((item)=> { const itemActive = isItemActive(item); %>
+                        <% if (item.children && item.children.length) { %>
+                            <div class="s-mobile-group <%= itemActive ? 'is-open' : '' %>">
+                                <button type="button" class="s-mobile-group-toggle <%= itemActive ? 'active' : '' %>" data-mobile-subnav-toggle aria-expanded="<%= itemActive ? 'true' : 'false' %>">
+                                    <span><%= item.label %></span>
+                                    <svg class="s-mobile-group-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m6 9 6 6 6-6"></path>
+                                    </svg>
+                                </button>
+                                <div class="s-mobile-subnav">
+                                    <% item.children.forEach((child) => { %>
+                                        <a href="<%= child.href %>" class="s-mobile-subnav-link <%= isActive(child) ? 'active' : '' %>">
+                                            <%= child.label %>
+                                        </a>
+                                    <% }) %>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <a href="<%= item.href %>" class="s-link <%= itemActive ? 'active' : '' %>">
+                                <%= item.label %>
+                            </a>
+                        <% } %>
+                    <% }) %>
                 </div>
             </div>
         </header>
@@ -824,19 +1046,68 @@
                     (() => {
                         const toggle = document.getElementById('studentMenuToggle');
                         if (!toggle) return;
+                        const desktopGroups = Array.from(document.querySelectorAll('.s-nav-group'));
 
                         const closeMenu = () => document.body.classList.remove('menu-open');
+                        const closeDesktopGroups = (except = null) => {
+                            desktopGroups.forEach((group) => {
+                                if (group === except) return;
+                                group.classList.remove('is-open');
+                                const button = group.querySelector('[data-subnav-toggle]');
+                                if (button) button.setAttribute('aria-expanded', 'false');
+                            });
+                        };
 
                         toggle.addEventListener('click', () => {
                             document.body.classList.toggle('menu-open');
+                        });
+
+                        document.querySelectorAll('[data-subnav-toggle]').forEach((button) => {
+                            const group = button.closest('.s-nav-group');
+                            if (!group) return;
+
+                            button.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+
+                                const shouldOpen = !group.classList.contains('is-open');
+                                closeDesktopGroups(group);
+                                group.classList.toggle('is-open', shouldOpen);
+                                button.setAttribute('aria-expanded', String(shouldOpen));
+                            });
+                        });
+
+                        document.querySelectorAll('[data-mobile-subnav-toggle]').forEach((button) => {
+                            const group = button.closest('.s-mobile-group');
+                            if (!group) return;
+
+                            button.addEventListener('click', () => {
+                                const shouldOpen = !group.classList.contains('is-open');
+                                group.classList.toggle('is-open', shouldOpen);
+                                button.setAttribute('aria-expanded', String(shouldOpen));
+                            });
                         });
 
                         document.querySelectorAll('#studentMobilePanel a').forEach((link) => {
                             link.addEventListener('click', closeMenu);
                         });
 
+                        document.addEventListener('click', () => {
+                            closeDesktopGroups();
+                        });
+
                         window.addEventListener('resize', () => {
-                            if (window.innerWidth > 1440) closeMenu();
+                            if (window.innerWidth > 1440) {
+                                closeMenu();
+                            }
+                            closeDesktopGroups();
+                        });
+
+                        window.addEventListener('keydown', (event) => {
+                            if (event.key === 'Escape') {
+                                closeDesktopGroups();
+                                closeMenu();
+                            }
                         });
                     })();
                 </script>
