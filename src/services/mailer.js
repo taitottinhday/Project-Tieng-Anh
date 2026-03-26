@@ -66,6 +66,113 @@ function getTransporter() {
   return cachedTransporter;
 }
 
+function shouldUseMailjetApi(settings) {
+  return /mailjet\.com$/i.test(String(settings.host || "").trim());
+}
+
+function parseMailbox(value) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return { email: "", name: "" };
+  }
+
+  const angleMatch = rawValue.match(/^(.*?)<([^>]+)>$/);
+  if (angleMatch) {
+    return {
+      name: String(angleMatch[1] || "").trim().replace(/^"|"$/g, ""),
+      email: String(angleMatch[2] || "").trim(),
+    };
+  }
+
+  return {
+    email: rawValue,
+    name: "",
+  };
+}
+
+function toPlainText(html) {
+  return String(html || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\r/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+async function sendViaMailjetApi({ to, subject, html, settings }) {
+  const fromMailbox = parseMailbox(settings.from);
+  const toMailbox = parseMailbox(to);
+
+  if (!fromMailbox.email) {
+    throw new Error("Mailjet sender email is missing.");
+  }
+
+  if (!toMailbox.email) {
+    throw new Error("Mailjet recipient email is missing.");
+  }
+
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => {
+    controller.abort();
+  }, settings.timeoutMs);
+
+  try {
+    const response = await fetch("https://api.mailjet.com/v3.1/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${settings.user}:${settings.pass}`).toString("base64")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        Messages: [
+          {
+            From: {
+              Email: fromMailbox.email,
+              ...(fromMailbox.name ? { Name: fromMailbox.name } : {}),
+            },
+            To: [
+              {
+                Email: toMailbox.email,
+                ...(toMailbox.name ? { Name: toMailbox.name } : {}),
+              },
+            ],
+            Subject: subject,
+            TextPart: toPlainText(html),
+            HTMLPart: html,
+          },
+        ],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+      throw new Error(
+        `Mailjet API request failed (${response.status}). ${responseText.slice(0, 500)}`
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      throw new Error("Mailjet API request timed out.");
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+}
+
 async function sendWithTimeout(transporter, mailOptions, timeoutMs) {
   let timeoutHandle = null;
 
@@ -86,8 +193,19 @@ async function sendWithTimeout(transporter, mailOptions, timeoutMs) {
 }
 
 async function sendMailMessage({ to, subject, html }) {
-  const transporter = getTransporter();
   const settings = getMailSettings();
+
+  if (shouldUseMailjetApi(settings)) {
+    await sendViaMailjetApi({
+      to,
+      subject,
+      html,
+      settings,
+    });
+    return;
+  }
+
+  const transporter = getTransporter();
 
   try {
     await sendWithTimeout(
