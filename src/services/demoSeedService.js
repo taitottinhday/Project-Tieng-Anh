@@ -148,6 +148,26 @@ const DEMO_CLASSES = [
   },
 ];
 
+const DEMO_CONTACT_MESSAGES = [
+  {
+    name: "Nguyen Hoang Minh",
+    email: "minh.hocvien.demo@gmail.com",
+    message: [
+      "SDT: 0912345678",
+      "Muc tieu hoc: Giao tiep va dat 650+ TOEIC",
+      "Khoa hoc quan tam: TOEIC Roadmap 550+",
+      "Khung gio mong muon: Toi trong tuan",
+      "",
+      "Noi dung:",
+      "Em muon duoc tu van lo trinh hoc TOEIC phu hop de thi trong 3 thang toi."
+    ].join("\n"),
+    status: "contacted",
+    adminNote: "Da goi tu van va gui lo trinh demo.",
+    createdAt: "2026-03-26 10:55:50",
+    contactedAt: "2026-03-26 11:04:14",
+  },
+];
+
 function toNumber(value, fallback = 0) {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : fallback;
@@ -311,6 +331,51 @@ async function ensurePayment(enrollmentId, amount, method, note, status, summary
   return result.insertId;
 }
 
+async function ensureDemoContactMessages(summary = null) {
+  const existing = await findSingleValue(
+    "SELECT COUNT(*) AS total FROM messages"
+  );
+
+  if (toNumber(existing?.total) > 0) {
+    return 0;
+  }
+
+  let inserted = 0;
+
+  for (const item of DEMO_CONTACT_MESSAGES) {
+    await db.query(
+      `
+        INSERT INTO messages (
+          name,
+          email,
+          message,
+          created_at,
+          status,
+          admin_note,
+          contacted_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        item.name,
+        item.email,
+        item.message,
+        item.createdAt,
+        item.status,
+        item.adminNote || null,
+        item.contactedAt || null,
+      ]
+    );
+
+    inserted += 1;
+  }
+
+  if (summary && typeof summary === "object") {
+    summary.messagesInserted = toNumber(summary.messagesInserted) + inserted;
+  }
+
+  return inserted;
+}
+
 async function seedDemoCenterData(options = {}) {
   const { onlyWhenEmpty = false } = options;
   const summary = {
@@ -322,6 +387,7 @@ async function seedDemoCenterData(options = {}) {
     classesInserted: 0,
     enrollmentsInserted: 0,
     paymentsInserted: 0,
+    messagesInserted: 0,
     totalCoursesAfterSeed: 0,
     totalTeachersAfterSeed: 0,
     totalStudentsAfterSeed: 0,
@@ -405,5 +471,6 @@ module.exports = {
   DEMO_COURSES,
   DEMO_TEACHERS,
   DEMO_CLASSES,
+  ensureDemoContactMessages,
   seedDemoCenterData,
 };
