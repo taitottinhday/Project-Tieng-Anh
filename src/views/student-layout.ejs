@@ -168,6 +168,7 @@
         }
 
         .s-nav-group:hover .s-link-caret,
+        .s-nav-group:focus-within .s-link-caret,
         .s-nav-group.is-open .s-link-caret {
             transform: rotate(180deg)
         }
@@ -204,7 +205,7 @@
 
         .s-subnav {
             position: absolute;
-            top: calc(100% + 12px);
+            top: calc(100% + 8px);
             left: 50%;
             width: min(350px, 38vw);
             padding: 14px;
@@ -220,7 +221,17 @@
             transition: opacity .18s ease, transform .18s ease
         }
 
+        .s-subnav::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -18px;
+            height: 22px
+        }
+
         .s-nav-group:hover .s-subnav,
+        .s-nav-group:focus-within .s-subnav,
         .s-nav-group.is-open .s-subnav {
             opacity: 1;
             pointer-events: auto;
