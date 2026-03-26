@@ -5,6 +5,7 @@ const renderWithLayout = require("../utils/renderHelper");
 const { isLoggedIn } = require("./auth");
 const { createEnrollmentAccessToken } = require("../utils/paymentAccess");
 const { sendPublicError } = require("../utils/publicError");
+const { findOrCreateEnrollment } = require("../utils/enrollmentCompat");
 
 
 // ================================
@@ -90,28 +91,7 @@ router.post("/", isLoggedIn, express.urlencoded({ extended: true }), async (req,
             return res.send("Thiếu thông tin đăng ký");
         }
 
-        // kiểm tra đã đăng ký chưa
-        const [check] = await db.query(
-            `SELECT id 
-       FROM enrollments 
-       WHERE student_id = ? AND class_id = ?`,
-            [studentId, classId]
-        );
-
-        if (check.length > 0) {
-            // Đã đăng ký rồi -> đưa sang trang thanh toán luôn
-            const paymentToken = createEnrollmentAccessToken(check[0].id);
-            return res.redirect(`/payment/${check[0].id}?token=${encodeURIComponent(paymentToken)}`);
-        }
-
-        // tạo enrollment
-        const [result] = await db.query(
-            `INSERT INTO enrollments (student_id, class_id, status) 
-       VALUES (?, ?, 'active')`,
-            [studentId, classId]
-        );
-
-        const enrollmentId = result.insertId;
+        const enrollmentId = await findOrCreateEnrollment(db, studentId, classId);
 
         // chuyển sang trang thanh toán
         const paymentToken = createEnrollmentAccessToken(enrollmentId);

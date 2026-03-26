@@ -4,6 +4,7 @@ const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
 const { createEnrollmentAccessToken } = require("../utils/paymentAccess");
 const { sendPublicError } = require("../utils/publicError");
+const { findOrCreateEnrollment } = require("../utils/enrollmentCompat");
 
 router.get("/", async (req, res) => {
   try {
@@ -90,29 +91,7 @@ router.post("/", express.urlencoded({ extended: true }), async (req, res) => {
     }
 
     const classId = classes[0].id;
-    const [existingEnrollments] = await db.query(
-      `
-        SELECT id
-        FROM enrollments
-        WHERE student_id = ? AND class_id = ?
-        LIMIT 1
-      `,
-      [studentId, classId]
-    );
-
-    let enrollmentId = existingEnrollments[0]?.id || null;
-
-    if (!enrollmentId) {
-      const [enrollResult] = await db.query(
-        `
-          INSERT INTO enrollments (student_id, class_id, status)
-          VALUES (?, ?, 'active')
-        `,
-        [studentId, classId]
-      );
-
-      enrollmentId = enrollResult.insertId;
-    }
+    const enrollmentId = await findOrCreateEnrollment(db, studentId, classId);
 
     const baseUrl = res.locals.baseUrl || "";
     const paymentToken = createEnrollmentAccessToken(enrollmentId);
