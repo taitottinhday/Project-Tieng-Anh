@@ -102,44 +102,51 @@
     }
 
     .nav-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
     }
 
     .nav-btn {
-      min-height: 40px;
-      border-radius: 10px;
+      width: 50px;
+      min-width: 50px;
+      height: 54px;
+      padding: 0;
+      border-radius: 16px;
       border: 1px solid var(--border-strong);
-      background: #ffffff;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fafe 100%);
       color: #587190;
       font-weight: 700;
       cursor: pointer;
-      transition: 0.18s ease;
+      box-shadow: 0 10px 20px rgba(30, 56, 95, 0.08);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
     }
 
     .nav-btn:hover {
       border-color: #91a8c5;
       color: var(--navy);
       transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(30, 56, 95, 0.12);
     }
 
     .nav-btn.current {
       border-color: var(--navy);
-      color: var(--navy);
-      box-shadow: inset 0 0 0 1px rgba(22, 60, 105, 0.08);
+      background: linear-gradient(180deg, #163c69 0%, #244d7d 100%);
+      color: #ffffff;
+      box-shadow: 0 16px 28px rgba(22, 60, 105, 0.22);
     }
 
     .nav-btn.answered {
-      background: #fff5e6;
+      background: linear-gradient(180deg, #fff7eb 0%, #ffe8c2 100%);
       border-color: #f6c46e;
       color: var(--accent-deep);
     }
 
     .nav-btn.current.answered {
-      background: linear-gradient(180deg, #ffe3b0 0%, #ffd289 100%);
-      border-color: var(--accent-deep);
-      color: #7a4700;
+      background: linear-gradient(180deg, #163c69 0%, #245282 72%, #ef8c00 180%);
+      border-color: var(--navy);
+      color: #ffffff;
     }
 
     .sidebar-footer {
@@ -624,10 +631,6 @@
     }
 
     @media (max-width: 640px) {
-      .nav-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
       .exam-header {
         padding: 14px;
       }
@@ -639,6 +642,17 @@
 
       .stage-top {
         flex-direction: column;
+      }
+
+      .nav-grid {
+        gap: 8px;
+      }
+
+      .nav-btn {
+        width: 46px;
+        min-width: 46px;
+        height: 50px;
+        border-radius: 14px;
       }
     }
   </style>
