@@ -106,7 +106,7 @@ router.post("/", express.urlencoded({ extended: true }), async (req, res) => {
       const [enrollResult] = await db.query(
         `
           INSERT INTO enrollments (student_id, class_id, status)
-          VALUES (?, ?, 'pending')
+          VALUES (?, ?, 'active')
         `,
         [studentId, classId]
       );
