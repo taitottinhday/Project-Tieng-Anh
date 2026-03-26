@@ -127,10 +127,11 @@
     .tr-nav {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 4px;
+      justify-content: flex-start;
+      gap: 6px;
       min-width: 0;
-      overflow-x: auto;
+      padding-left: 6px;
+      overflow: visible;
       scrollbar-width: none;
     }
 
@@ -142,6 +143,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex: 0 0 auto;
       min-height: 42px;
       padding: 0 14px;
       border-radius: 999px;
@@ -441,6 +443,8 @@
 
       .tr-nav {
         width: 100%;
+        overflow-x: auto;
+        padding-left: 0;
       }
     }
 
