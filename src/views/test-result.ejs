@@ -501,7 +501,6 @@
     const displayInitial = (displayName || 'H').trim().charAt(0).toUpperCase() || 'H';
     const retakeHref = data.examId ? buildHref(`/placement-tests/${data.examId}`) : buildHref('/placement-tests');
     const quickLinks = [
-      { label: 'Trang chủ', href: buildHref('/') },
       { label: 'Classroom', href: buildHref('/student/classroom') },
       { label: 'Góc học tập', href: buildHref('/goc-hoc-tap') },
       { label: 'Khóa học', href: buildHref('/courses-blog') },
