@@ -237,17 +237,169 @@ function establishSession(req, user) {
   };
 }
 
+function getAppRelativeTarget(target) {
+  const normalizedTarget = normalizeRedirectTarget(target);
+
+  if (!normalizedTarget) {
+    return "";
+  }
+
+  const configuredBaseUrl = trimTrailingSlash(process.env.BASE_URL || "");
+
+  if (!configuredBaseUrl || configuredBaseUrl === "/") {
+    return normalizedTarget;
+  }
+
+  if (normalizedTarget === configuredBaseUrl) {
+    return "/";
+  }
+
+  if (normalizedTarget.startsWith(`${configuredBaseUrl}/`)) {
+    return normalizedTarget.slice(configuredBaseUrl.length) || "/";
+  }
+
+  return normalizedTarget;
+}
+
+function isAdminRedirectTarget(target) {
+  const normalizedTarget = getAppRelativeTarget(target);
+
+  if (!normalizedTarget) {
+    return false;
+  }
+
+  if (normalizedTarget.startsWith("/admin")) {
+    return true;
+  }
+
+  return [
+    "/messages",
+    "/payments",
+    "/dashboard",
+    "/database",
+    "/createTable",
+    "/create-messages-table",
+    "/add-role-column",
+    "/test-route",
+  ].some((item) => normalizedTarget === item || normalizedTarget.startsWith(`${item}/`));
+}
+
+function isTeacherRedirectTarget(target) {
+  const normalizedTarget = getAppRelativeTarget(target);
+  return Boolean(normalizedTarget && normalizedTarget.startsWith("/teacher"));
+}
+
+function isRedirectAllowedForRole(role, target) {
+  const normalizedTarget = getAppRelativeTarget(target);
+
+  if (!normalizedTarget) {
+    return false;
+  }
+
+  if (role === "admin") {
+    return isAdminRedirectTarget(normalizedTarget);
+  }
+
+  if (role === "teacher") {
+    return isTeacherRedirectTarget(normalizedTarget);
+  }
+
+  if (role === "user") {
+    return !isAdminRedirectTarget(normalizedTarget) && !isTeacherRedirectTarget(normalizedTarget);
+  }
+
+  return false;
+}
+
+async function refreshSessionUser(req) {
+  if (Object.prototype.hasOwnProperty.call(req, "_freshSessionUser")) {
+    return req._freshSessionUser;
+  }
+
+  const sessionUser = req.session?.user;
+  const userId = Number(sessionUser?.id || 0);
+
+  if (!userId) {
+    req._freshSessionUser = null;
+    return null;
+  }
+
+  const [rows] = await db.query(
+    "SELECT id, username, email, role FROM users WHERE id = ? LIMIT 1",
+    [userId]
+  );
+
+  const freshUser = rows[0] || null;
+
+  if (!freshUser) {
+    if (req.session) {
+      delete req.session.user;
+    }
+    req._freshSessionUser = null;
+    return null;
+  }
+
+  req.session.user = {
+    ...sessionUser,
+    id: freshUser.id,
+    username: freshUser.username,
+    email: freshUser.email,
+    role: freshUser.role,
+  };
+
+  req._freshSessionUser = req.session.user;
+  return req.session.user;
+}
+
+function getAppBaseUrl(res) {
+  return res.locals?.baseUrl || "";
+}
+
+function buildLoginRedirectUrl(req, res) {
+  const loginPath = `${getAppBaseUrl(res)}/login`;
+  const redirectTarget = normalizeRedirectTarget(req.originalUrl || req.url || "");
+
+  return redirectTarget
+    ? `${loginPath}?redirect=${encodeURIComponent(redirectTarget)}`
+    : loginPath;
+}
+
+function roleLabel(role) {
+  if (role === "admin") {
+    return "quản trị";
+  }
+
+  if (role === "teacher") {
+    return "giáo viên";
+  }
+
+  return "học viên";
+}
+
+function redirectToRoleLogin(req, res, expectedRole) {
+  const currentRole = req.session?.user?.role;
+
+  if (currentRole) {
+    req.flash(
+      "info",
+      `Bạn đang đăng nhập bằng tài khoản ${roleLabel(currentRole)}. Hãy đăng nhập tài khoản ${roleLabel(expectedRole)} để tiếp tục.`
+    );
+  } else {
+    req.flash("info", `Vui lòng đăng nhập tài khoản ${roleLabel(expectedRole)} để tiếp tục.`);
+  }
+
+  return res.redirect(buildLoginRedirectUrl(req, res));
+}
+
 function redirectByRole(req, res, user) {
   return res.redirect(getRoleRedirectPath(req, user));
 }
 
 function getRoleRedirectPath(req, user) {
-  if (user.role === "user") {
-    const redirectTarget = consumeAuthRedirect(req);
+  const redirectTarget = consumeAuthRedirect(req);
 
-    if (redirectTarget) {
-      return redirectTarget;
-    }
+  if (redirectTarget && isRedirectAllowedForRole(user.role, redirectTarget)) {
+    return redirectTarget;
   }
 
   if (user.role === "admin") {
@@ -1083,35 +1235,74 @@ router.get("/auth/:provider(google|facebook)/callback", async (req, res) => {
   }
 });
 
-function isLoggedIn(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect(req.baseUrl + "/login");
+async function isLoggedIn(req, res, next) {
+  try {
+    const sessionUser = await refreshSessionUser(req);
+
+    if (!sessionUser) {
+      req.flash("info", "Vui lòng đăng nhập để tiếp tục.");
+      return res.redirect(buildLoginRedirectUrl(req, res));
+    }
+
+    return next();
+  } catch (error) {
+    console.error("isLoggedIn refresh error:", error);
+    if (!req.session?.user) {
+      req.flash("info", "Vui lòng đăng nhập để tiếp tục.");
+      return res.redirect(buildLoginRedirectUrl(req, res));
+    }
+    return next();
   }
-  next();
 }
 
-function isAdmin(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect(req.baseUrl + "/login");
-  }
+async function isAdmin(req, res, next) {
+  try {
+    const sessionUser = await refreshSessionUser(req);
 
-  if (req.session.user.role !== "admin") {
-    return res.status(403).send("Access Denied - Admins Only");
-  }
+    if (!sessionUser) {
+      return redirectToRoleLogin(req, res, "admin");
+    }
 
-  next();
+    if (sessionUser.role !== "admin") {
+      return redirectToRoleLogin(req, res, "admin");
+    }
+
+    return next();
+  } catch (error) {
+    console.error("isAdmin refresh error:", error);
+    if (!req.session?.user) {
+      return redirectToRoleLogin(req, res, "admin");
+    }
+    if (req.session.user.role !== "admin") {
+      return redirectToRoleLogin(req, res, "admin");
+    }
+    return next();
+  }
 }
 
-function isTeacher(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect(req.baseUrl + "/login");
-  }
+async function isTeacher(req, res, next) {
+  try {
+    const sessionUser = await refreshSessionUser(req);
 
-  if (req.session.user.role !== "teacher") {
-    return res.status(403).send("Access Denied - Teachers Only");
-  }
+    if (!sessionUser) {
+      return redirectToRoleLogin(req, res, "teacher");
+    }
 
-  next();
+    if (sessionUser.role !== "teacher") {
+      return redirectToRoleLogin(req, res, "teacher");
+    }
+
+    return next();
+  } catch (error) {
+    console.error("isTeacher refresh error:", error);
+    if (!req.session?.user) {
+      return redirectToRoleLogin(req, res, "teacher");
+    }
+    if (req.session.user.role !== "teacher") {
+      return redirectToRoleLogin(req, res, "teacher");
+    }
+    return next();
+  }
 }
 
 router.get("/logout", (req, res) => {
@@ -1124,3 +1315,5 @@ module.exports = router;
 module.exports.isLoggedIn = isLoggedIn;
 module.exports.isAdmin = isAdmin;
 module.exports.isTeacher = isTeacher;
+module.exports.refreshSessionUser = refreshSessionUser;
+module.exports.redirectToRoleLogin = redirectToRoleLogin;

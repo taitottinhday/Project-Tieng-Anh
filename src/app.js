@@ -167,7 +167,7 @@ app.get(baseUrl || '/', ensureSchemaReady, async (req, res) => {
   const isStudent = role && role !== 'admin' && role !== 'teacher';
 
   if (isStudent) {
-    return renderWithLayout(res, 'student-home', { title: 'Trang chá»§ há»c viÃªn' });
+    return renderWithLayout(res, 'student-home', { title: 'Trang chủ học viên' });
     try {
       const userId = Number(req.session?.user?.id || 0);
       const [notifications, unreadCount] = await Promise.all([

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const renderWithLayout = require("../utils/renderHelper");
 const ensureSchemaReady = require("../middleware/ensureSchemaReady");
-const { isLoggedIn } = require("./auth");
+const { isLoggedIn, refreshSessionUser, redirectToRoleLogin } = require("./auth");
 const studentPracticeController = require("../controllers/studentPracticeController");
 const studentDictationController = require("../controllers/studentDictationController");
 const studentProfileController = require("../controllers/studentProfileController");
@@ -35,14 +35,26 @@ const { resolvePublicErrorMessage, sendPublicError } = require("../utils/publicE
 
 router.use(ensureSchemaReady);
 
-function isStudent(req, res, next) {
-  const role = req.session?.user?.role;
+async function isStudent(req, res, next) {
+  try {
+    const sessionUser = await refreshSessionUser(req);
+    const role = sessionUser?.role;
 
-  if (!role || role === "admin" || role === "teacher") {
-    return res.status(403).send("Access Denied - Students Only");
+    if (!role || role === "admin" || role === "teacher") {
+      return redirectToRoleLogin(req, res, "user");
+    }
+
+    return next();
+  } catch (error) {
+    console.error("isStudent refresh error:", error);
+    const role = req.session?.user?.role;
+
+    if (!role || role === "admin" || role === "teacher") {
+      return redirectToRoleLogin(req, res, "user");
+    }
+
+    return next();
   }
-
-  next();
 }
 
 async function getCurrentStudent(req) {
@@ -87,7 +99,7 @@ router.use("/schedule", isLoggedIn, isStudent, async (req, res, next) => {
     });
 
     return renderWithLayout(res, "student-schedule", {
-      title: "Thá»i khÃ³a biá»ƒu há»c viÃªn",
+      title: "Thời khóa biểu học viên",
       student,
       schedules,
       pendingEnrollment:
@@ -95,7 +107,7 @@ router.use("/schedule", isLoggedIn, isStudent, async (req, res, next) => {
     });
   } catch (err) {
     console.error("student schedule error:", err);
-    return sendPublicError(res, err, 500, "KhÃ´ng thá»ƒ táº£i thá»i khÃ³a biá»ƒu lÃºc nÃ y.");
+    return sendPublicError(res, err, 500, "Không thể tải thời khóa biểu lúc này.");
   }
 });
 
@@ -204,7 +216,7 @@ router.get("/courses/:slug", isLoggedIn, isStudent, (req, res) => {
 
 router.get("/schedule", isLoggedIn, isStudent, (req, res) => {
   renderWithLayout(res, "student-schedule", {
-    title: "Lịch khai giảng học viên",
+    title: "Thời khóa biểu học viên",
   });
 });
 

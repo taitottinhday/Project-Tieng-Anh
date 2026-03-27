@@ -8,6 +8,7 @@ const selectedKey = selected && selected.courseKey
   : String(typeof selectedCourseKey !== "undefined" ? selectedCourseKey : "").trim();
 const discountRate = Number(typeof discountRatePercent !== "undefined" ? discountRatePercent : 25);
 const blocker = typeof registrationBlocker !== "undefined" && registrationBlocker ? registrationBlocker : null;
+const canChooseCourse = !blocker;
 
 function formatMoney(value) {
   return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
@@ -350,8 +351,8 @@ function formatMoney(value) {
 
     <article class="gr-form">
       <div>
-        <h2>Thông tin đăng ký</h2>
-        <p>Bạn có thể chỉnh lại khóa học ngay tại đây, giá niêm yết và giá sau giảm sẽ cập nhật tức thì.</p>
+        <h2><%= canChooseCourse ? "Thông tin đăng ký" : "Trạng thái đăng ký hiện tại" %></h2>
+        <p><%= canChooseCourse ? "Bạn có thể chỉnh lại khóa học ngay tại đây, giá niêm yết và giá sau giảm sẽ cập nhật tức thì." : "Bạn đang có một lớp hoặc một đăng ký đang mở, nên hệ thống tạm ẩn phần chọn khóa học mới để tránh đăng ký trùng." %></p>
       </div>
 
       <% if (typeof message !== "undefined" && message) { %>
@@ -379,6 +380,7 @@ function formatMoney(value) {
         </section>
       <% } %>
 
+      <% if (canChooseCourse) { %>
       <section class="gr-summary" id="courseSummary">
         <h3>Khóa học bạn đang chọn</h3>
         <div class="gr-summary-title" id="courseSummaryTitle"><%= selected ? selected.optionLabel : "Chưa chọn khóa học" %></div>
@@ -392,8 +394,9 @@ function formatMoney(value) {
           Chọn một khóa học để hệ thống hiển thị ngay mức học phí thực cần thanh toán.
         </p>
       </section>
+      <% } %>
 
-      <% if (!blocker) { %>
+      <% if (canChooseCourse) { %>
         <form method="POST" action="<%= safeBaseUrl %>/register-course" class="gr-form-grid" id="registerCourseForm">
           <input type="hidden" name="course_key" id="selectedCourseKey" value="<%= selectedKey %>">
 

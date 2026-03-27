@@ -2,7 +2,7 @@
 const router = express.Router();
 const db = require("../models/db");
 const renderWithLayout = require("../utils/renderHelper");
-const { isLoggedIn } = require("./auth");
+const { isLoggedIn, refreshSessionUser, redirectToRoleLogin } = require("./auth");
 const { sendPublicError } = require("../utils/publicError");
 const ensureSchemaReady = require("../middleware/ensureSchemaReady");
 const { createStudentNotification } = require("../services/studentNotificationService");
@@ -10,10 +10,22 @@ const { createStudentNotification } = require("../services/studentNotificationSe
 router.use(ensureSchemaReady);
 
 // Chỉ admin mới được vào
-function isAdmin(req, res, next) {
-    const role = req.session?.user?.role;
-    if (role === "admin") return next();
-    return res.status(403).send("Forbidden: Admin only");
+async function isAdmin(req, res, next) {
+    try {
+        const sessionUser = await refreshSessionUser(req);
+        if (sessionUser?.role === "admin") {
+            return next();
+        }
+
+        return redirectToRoleLogin(req, res, "admin");
+    } catch (error) {
+        console.error("payments isAdmin refresh error:", error);
+        if (req.session?.user?.role === "admin") {
+            return next();
+        }
+
+        return redirectToRoleLogin(req, res, "admin");
+    }
 }
 
 function appendAuditNote(currentNote, suffix) {
