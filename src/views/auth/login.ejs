@@ -474,6 +474,16 @@
     const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
     const safeInfoMessages = typeof info !== 'undefined' ? info : [];
     const emailValue = typeof formEmail !== 'undefined' ? formEmail : '';
+    const intendedRedirect = typeof redirectTarget !== 'undefined' ? redirectTarget : '';
+    const registerHref = intendedRedirect
+      ? `${safeBaseUrl}/register?redirect=${encodeURIComponent(intendedRedirect)}`
+      : `${safeBaseUrl}/register`;
+    const googleHref = intendedRedirect
+      ? `${safeBaseUrl}/auth/google?redirect=${encodeURIComponent(intendedRedirect)}`
+      : `${safeBaseUrl}/auth/google`;
+    const facebookHref = intendedRedirect
+      ? `${safeBaseUrl}/auth/facebook?popup=1&redirect=${encodeURIComponent(intendedRedirect)}`
+      : `${safeBaseUrl}/auth/facebook?popup=1`;
     const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
   %>
 
@@ -509,6 +519,7 @@
             <% } %>
 
             <form action="<%= safeBaseUrl %>/login" method="POST" class="auth-form">
+              <input type="hidden" name="redirect" value="<%= intendedRedirect %>">
               <div class="auth-fieldset">
                 <div class="auth-field-head">
                   <span>Gmail / Email</span>
@@ -552,14 +563,14 @@
 
               <div class="auth-social-row" aria-label="Đăng nhập social">
                 <a
-                  href="<%= safeBaseUrl %>/auth/google"
+                  href="<%= googleHref %>"
                   class="auth-social"
                 >
                   <span class="auth-social-icon">G</span>
                   <span>Google</span>
                 </a>
                 <a
-                  href="<%= safeBaseUrl %>/auth/facebook?popup=1"
+                  href="<%= facebookHref %>"
                   class="auth-social"
                   id="facebookAuthLink"
                 >
@@ -578,7 +589,7 @@
       </section>
 
       <div class="auth-footer">
-        Chưa có tài khoản? <a href="<%= safeBaseUrl %>/register">Đăng ký ngay</a>
+        Chưa có tài khoản? <a href="<%= registerHref %>">Đăng ký ngay</a>
       </div>
     </div>
   </main>

@@ -46,6 +46,13 @@ async function findOrCreateEnrollment(db, studentId, classId) {
   const attempts = [
     {
       sql: `
+        INSERT INTO enrollments (student_id, class_id, status)
+        VALUES (?, ?, 'pending')
+      `,
+      params: [studentId, classId],
+    },
+    {
+      sql: `
         INSERT INTO enrollments (student_id, class_id)
         VALUES (?, ?)
       `,
@@ -55,13 +62,6 @@ async function findOrCreateEnrollment(db, studentId, classId) {
       sql: `
         INSERT INTO enrollments (student_id, class_id, status)
         VALUES (?, ?, 'active')
-      `,
-      params: [studentId, classId],
-    },
-    {
-      sql: `
-        INSERT INTO enrollments (student_id, class_id, status)
-        VALUES (?, ?, 'pending')
       `,
       params: [studentId, classId],
     },

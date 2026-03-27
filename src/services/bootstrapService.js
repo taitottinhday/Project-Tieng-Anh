@@ -184,11 +184,13 @@ async function ensureCoreTables() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS students (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NULL,
       full_name VARCHAR(150) NOT NULL,
       phone VARCHAR(30),
       email VARCHAR(150),
       dob DATE NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_students_user_id (user_id)
     )
   `);
 
@@ -235,7 +237,7 @@ async function ensureCoreTables() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       student_id INT NOT NULL,
       class_id INT NOT NULL,
-      status ENUM('active','completed','canceled') DEFAULT 'active',
+      status ENUM('pending','active','completed','canceled') DEFAULT 'pending',
       enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       CONSTRAINT fk_enroll_student FOREIGN KEY (student_id) REFERENCES students(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -299,15 +301,72 @@ async function ensureCoreTables() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NULL,
       name VARCHAR(100),
       email VARCHAR(100),
+      phone VARCHAR(40) NULL,
+      goal VARCHAR(150) NULL,
+      course_interest VARCHAR(150) NULL,
+      schedule_preference VARCHAR(150) NULL,
+      preferred_contact_method VARCHAR(50) NULL,
       message TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      status ENUM('new','viewed','contacted') NOT NULL DEFAULT 'new',
+      admin_note TEXT NULL,
+      viewed_at DATETIME NULL,
+      contacted_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_messages_status_created (status, created_at),
+      INDEX idx_messages_email (email),
+      INDEX idx_messages_user (user_id)
+    )
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS message_responses (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      message_id INT NOT NULL,
+      admin_user_id INT NULL,
+      admin_name VARCHAR(120) NULL,
+      contact_method VARCHAR(80) NULL,
+      contact_location VARCHAR(255) NULL,
+      contact_schedule VARCHAR(255) NULL,
+      request_phone TINYINT(1) NOT NULL DEFAULT 0,
+      message_to_student TEXT NULL,
+      is_visible_to_student TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_message_responses_message (message_id),
+      CONSTRAINT fk_message_responses_message FOREIGN KEY (message_id) REFERENCES messages(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+    )
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS student_notifications (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      title VARCHAR(180) NOT NULL,
+      message TEXT NULL,
+      href VARCHAR(255) NULL,
+      is_read TINYINT(1) NOT NULL DEFAULT 0,
+      read_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_student_notifications_user_created (user_id, created_at),
+      INDEX idx_student_notifications_user_read (user_id, is_read),
+      CONSTRAINT fk_student_notifications_user FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
     )
   `);
 }
 
 async function ensureLegacySchemaCompatibility() {
+  await addColumnIfMissing(
+    "students",
+    "user_id",
+    "INT NULL AFTER id"
+  );
   await addColumnIfMissing(
     "payments",
     "status",
@@ -317,6 +376,36 @@ async function ensureLegacySchemaCompatibility() {
     "payments",
     "txn_ref",
     "VARCHAR(120) NULL AFTER note"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "user_id",
+    "INT NULL AFTER id"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "phone",
+    "VARCHAR(40) NULL AFTER email"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "goal",
+    "VARCHAR(150) NULL AFTER phone"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "course_interest",
+    "VARCHAR(150) NULL AFTER goal"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "schedule_preference",
+    "VARCHAR(150) NULL AFTER course_interest"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "preferred_contact_method",
+    "VARCHAR(50) NULL AFTER schedule_preference"
   );
   await addColumnIfMissing(
     "messages",
@@ -330,9 +419,69 @@ async function ensureLegacySchemaCompatibility() {
   );
   await addColumnIfMissing(
     "messages",
-    "contacted_at",
+    "viewed_at",
     "DATETIME NULL AFTER admin_note"
   );
+  await addColumnIfMissing(
+    "messages",
+    "contacted_at",
+    "DATETIME NULL AFTER viewed_at"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "updated_at",
+    "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at"
+  );
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS message_responses (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      message_id INT NOT NULL,
+      admin_user_id INT NULL,
+      admin_name VARCHAR(120) NULL,
+      contact_method VARCHAR(80) NULL,
+      contact_location VARCHAR(255) NULL,
+      contact_schedule VARCHAR(255) NULL,
+      request_phone TINYINT(1) NOT NULL DEFAULT 0,
+      message_to_student TEXT NULL,
+      is_visible_to_student TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_message_responses_message (message_id),
+      CONSTRAINT fk_message_responses_message FOREIGN KEY (message_id) REFERENCES messages(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+    )
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS student_notifications (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      title VARCHAR(180) NOT NULL,
+      message TEXT NULL,
+      href VARCHAR(255) NULL,
+      is_read TINYINT(1) NOT NULL DEFAULT 0,
+      read_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_student_notifications_user_created (user_id, created_at),
+      INDEX idx_student_notifications_user_read (user_id, is_read),
+      CONSTRAINT fk_student_notifications_user FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+    )
+  `);
+
+  try {
+    await db.query(`
+      ALTER TABLE enrollments
+      MODIFY COLUMN status ENUM('pending','active','completed','canceled') NOT NULL DEFAULT 'pending'
+    `);
+  } catch (error) {
+    const code = String(error?.code || "").toUpperCase();
+    if (!["ER_DUP_FIELDNAME", "ER_PARSE_ERROR"].includes(code)) {
+      throw error;
+    }
+  }
 }
 
 async function ensureApplicationSchema() {

@@ -1,193 +1,341 @@
-<div class="max-w-7xl mx-auto space-y-8">
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const safeMessages = Array.isArray(messages) ? messages : [];
+const safeSuccessMessages = typeof success_msg !== "undefined" ? success_msg : [];
+const safeErrorMessages = typeof error_msg !== "undefined" ? error_msg : [];
+const totalMessages = safeMessages.length;
+const totalNew = safeMessages.filter((item) => (item.status || "new") === "new").length;
+const totalViewed = safeMessages.filter((item) => item.status === "viewed").length;
+const totalContacted = safeMessages.filter((item) => item.status === "contacted").length;
 
-  <section class="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 md:p-10 text-white shadow-lg">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+function formatDateTime(value) {
+  if (!value) {
+    return "Chưa có thời gian";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Chưa có thời gian";
+  }
+
+  return date.toLocaleString("vi-VN");
+}
+
+function statusMeta(status) {
+  if (status === "contacted") {
+    return { label: "Đã liên hệ", className: "is-contacted" };
+  }
+
+  if (status === "viewed") {
+    return { label: "Đã xem", className: "is-viewed" };
+  }
+
+  return { label: "Mới gửi", className: "is-new" };
+}
+%>
+
+<style>
+  .am-page{display:grid;gap:24px}
+  .am-hero,.am-stat,.am-card,.am-side-panel,.am-request-body,.am-response-card,.am-empty{border-radius:30px}
+  .am-hero,.am-stat,.am-card,.am-side-panel,.am-request-body,.am-response-card,.am-empty{border:1px solid rgba(96,165,250,.18);box-shadow:0 20px 44px rgba(2,6,23,.24)}
+  .am-hero{padding:34px;background:linear-gradient(135deg,#172554 0%,#1e3a8a 45%,#0f172a 100%);color:#f8fafc;display:grid;gap:16px}
+  .am-hero-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px}
+  .am-hero h1,.am-card h2,.am-title,.am-side-panel h3{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.04em}
+  .am-hero h1{font-size:clamp(2rem,4vw,3rem);line-height:1.04}
+  .am-hero p{margin:0;max-width:860px;color:rgba(226,232,240,.92);line-height:1.85}
+  .am-hero-badge{display:grid;gap:4px;min-width:220px;padding:18px 20px;border-radius:24px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16)}
+  .am-hero-badge span{color:#cbd5e1;font-size:.92rem}
+  .am-hero-badge strong{font-size:2rem;color:#fff}
+  .am-flash-stack{display:grid;gap:12px}
+  .am-flash{padding:14px 16px;border-radius:18px;font-weight:700}
+  .am-flash.success{background:rgba(34,197,94,.12);color:#dcfce7;border:1px solid rgba(34,197,94,.26)}
+  .am-flash.error{background:rgba(239,68,68,.12);color:#fee2e2;border:1px solid rgba(239,68,68,.24)}
+  .am-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .am-stat{padding:22px;background:linear-gradient(180deg,#111827 0%,#0f172a 100%)}
+  .am-stat span{display:block;color:#94a3b8;font-size:.92rem}
+  .am-stat strong{display:block;margin-top:12px;font-size:2.2rem;color:#f8fafc}
+  .am-stat.is-new strong{color:#93c5fd}
+  .am-stat.is-viewed strong{color:#fcd34d}
+  .am-stat.is-contacted strong{color:#86efac}
+  .am-list{display:grid;gap:20px}
+  .am-card{padding:22px;background:linear-gradient(180deg,#0f172a 0%,#111827 100%);color:#e5eefb}
+  .am-card-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .am-title{font-size:1.45rem;color:#fff}
+  .am-subtitle{margin-top:6px;color:#cbd5e1}
+  .am-chip-row{display:flex;flex-wrap:wrap;gap:10px}
+  .am-badge,.am-chip{display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;font-weight:800}
+  .am-badge.is-new{background:rgba(59,130,246,.16);color:#bfdbfe}
+  .am-badge.is-viewed{background:rgba(245,158,11,.16);color:#fde68a}
+  .am-badge.is-contacted{background:rgba(34,197,94,.16);color:#bbf7d0}
+  .am-chip{background:rgba(148,163,184,.14);color:#dbeafe;font-size:.88rem}
+  .am-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.82fr);gap:18px}
+  .am-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .am-info{padding:16px;border-radius:20px;background:rgba(15,23,42,.56);border:1px solid rgba(148,163,184,.14)}
+  .am-info label{display:block;margin-bottom:6px;color:#93a7c3;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .am-info strong{display:block;color:#fff;font-size:1rem;line-height:1.6}
+  .am-request-body{padding:18px;background:rgba(15,23,42,.48)}
+  .am-request-body strong,.am-response-card strong{color:#fff}
+  .am-request-body p{margin:10px 0 0;color:#e2e8f0;line-height:1.85}
+  .am-history{display:grid;gap:14px}
+  .am-response-card{padding:18px;background:rgba(15,23,42,.48);border:1px solid rgba(96,165,250,.12)}
+  .am-response-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+  .am-response-top h4{margin:0;color:#fff;font-size:1.02rem}
+  .am-response-time{color:#93a7c3;font-size:.9rem}
+  .am-response-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+  .am-response-grid div{padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(148,163,184,.12)}
+  .am-response-grid span{display:block;color:#93a7c3;font-size:.82rem;font-weight:700}
+  .am-response-grid strong{display:block;margin-top:6px}
+  .am-response-note{margin-top:12px;padding:14px 16px;border-radius:18px;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.16);color:#dbeafe;line-height:1.8}
+  .am-side-panel{padding:18px;background:rgba(15,23,42,.62);display:grid;gap:14px}
+  .am-side-panel h3{font-size:1.05rem;color:#fff}
+  .am-form{display:grid;gap:12px}
+  .am-form label{display:grid;gap:8px;color:#dbeafe;font-size:.92rem;font-weight:700}
+  .am-form input,.am-form select,.am-form textarea{width:100%;min-height:48px;padding:0 14px;border-radius:16px;border:1px solid rgba(148,163,184,.18);background:#0f172a;color:#f8fafc;font:inherit}
+  .am-form textarea{min-height:112px;padding:14px;resize:vertical}
+  .am-form input:focus,.am-form select:focus,.am-form textarea:focus{outline:none;border-color:rgba(96,165,250,.42);box-shadow:0 0 0 4px rgba(59,130,246,.12)}
+  .am-checkbox{display:flex;align-items:flex-start;gap:10px;color:#dbeafe;line-height:1.6;font-weight:600}
+  .am-checkbox input{width:18px;height:18px;min-height:auto;margin-top:2px}
+  .am-actions{display:grid;gap:10px}
+  .am-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:16px;border:0;font-weight:800;cursor:pointer}
+  .am-btn-primary{background:linear-gradient(135deg,#2563eb 0%,#3b82f6 100%);color:#fff}
+  .am-btn-muted{background:#f59e0b;color:#111827}
+  .am-btn-success{background:#16a34a;color:#fff}
+  .am-note-preview{padding:14px 16px;border-radius:18px;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.16);color:#dcfce7;line-height:1.7}
+  .am-help{padding-top:10px;border-top:1px solid rgba(148,163,184,.12);color:#93a7c3;font-size:.9rem;line-height:1.8}
+  .am-empty{padding:38px;background:linear-gradient(180deg,#111827 0%,#0f172a 100%);text-align:center;color:#cbd5e1}
+  .am-empty strong{display:block;margin-bottom:8px;font-size:1.18rem;color:#fff}
+  @media (max-width:1180px){.am-stats,.am-grid,.am-info-grid,.am-response-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:760px){.am-stats,.am-grid,.am-info-grid,.am-response-grid{grid-template-columns:1fr}.am-hero,.am-stat,.am-card,.am-side-panel,.am-request-body,.am-response-card,.am-empty{border-radius:24px}.am-hero,.am-stat,.am-card,.am-side-panel,.am-empty{padding:18px}}
+</style>
+
+<div class="am-page">
+  <section class="am-hero">
+    <div class="am-hero-head">
       <div>
-        <h1 class="text-4xl font-bold">📩 Yêu cầu tư vấn từ học viên</h1>
-        <p class="mt-3 text-white/85 text-lg leading-8 max-w-3xl">
-          Danh sách học viên đã gửi yêu cầu tư vấn khóa học. Admin có thể đọc nhu cầu,
-          đánh dấu đã xem, lưu ghi chú và xác nhận đã liên hệ.
-        </p>
+        <h1>Danh sách yêu cầu tư vấn</h1>
+        <p>Mỗi yêu cầu tư vấn giờ được xử lý như một ca hỗ trợ hoàn chỉnh: admin có thể đánh dấu đã xem, lưu ghi chú nội bộ, lên lịch hẹn, chọn kênh liên hệ và gửi phản hồi trực tiếp về tài khoản học viên.</p>
       </div>
-
-      <div class="bg-white/10 rounded-2xl px-6 py-5 min-w-[180px]">
-        <p class="text-sm text-white/70">Tổng yêu cầu</p>
-        <p class="text-4xl font-bold">
-          <%= messages.length %>
-        </p>
+      <div class="am-hero-badge">
+        <span>Quản trị viên đang thao tác</span>
+        <strong><%= username || "Admin" %></strong>
       </div>
     </div>
+
+    <% if (safeSuccessMessages.length || safeErrorMessages.length) { %>
+      <div class="am-flash-stack">
+        <% safeSuccessMessages.forEach((item) => { %>
+          <div class="am-flash success"><%= item %></div>
+        <% }) %>
+        <% safeErrorMessages.forEach((item) => { %>
+          <div class="am-flash error"><%= item %></div>
+        <% }) %>
+      </div>
+    <% } %>
   </section>
 
-  <section class="grid gap-6 md:grid-cols-3">
-    <div class="bg-gray-800 rounded-2xl p-6 shadow">
-      <p class="text-sm text-gray-400">Mới gửi</p>
-      <p class="text-4xl font-bold text-blue-400 mt-2">
-        <%= messages.filter(m=> (m.status || 'new') === 'new').length %>
-      </p>
-    </div>
-
-    <div class="bg-gray-800 rounded-2xl p-6 shadow">
-      <p class="text-sm text-gray-400">Đã xem</p>
-      <p class="text-4xl font-bold text-yellow-300 mt-2">
-        <%= messages.filter(m=> m.status === 'viewed').length %>
-      </p>
-    </div>
-
-    <div class="bg-gray-800 rounded-2xl p-6 shadow">
-      <p class="text-sm text-gray-400">Đã liên hệ</p>
-      <p class="text-4xl font-bold text-green-400 mt-2">
-        <%= messages.filter(m=> m.status === 'contacted').length %>
-      </p>
-    </div>
+  <section class="am-stats">
+    <article class="am-stat">
+      <span>Tổng yêu cầu</span>
+      <strong><%= totalMessages %></strong>
+    </article>
+    <article class="am-stat is-new">
+      <span>Mới gửi</span>
+      <strong><%= totalNew %></strong>
+    </article>
+    <article class="am-stat is-viewed">
+      <span>Đã xem</span>
+      <strong><%= totalViewed %></strong>
+    </article>
+    <article class="am-stat is-contacted">
+      <span>Đã liên hệ</span>
+      <strong><%= totalContacted %></strong>
+    </article>
   </section>
 
-  <section class="bg-gray-800 rounded-2xl p-6 md:p-8 shadow space-y-6">
+  <% if (!safeMessages.length) { %>
+    <section class="am-empty">
+      <strong>Chưa có yêu cầu tư vấn mới.</strong>
+      <p>Khi học viên hoặc khách truy cập gửi form tư vấn, từng yêu cầu sẽ xuất hiện tại đây để đội ngũ tiếp nhận và phản hồi theo đúng quy trình.</p>
+    </section>
+  <% } else { %>
+    <section class="am-list">
+      <% safeMessages.forEach((item, index) => { const status = statusMeta(item.status); %>
+        <article class="am-card">
+          <div class="am-card-head">
+            <div>
+              <h2 class="am-title"><%= item.name || "Chưa có tên học viên" %></h2>
+              <div class="am-subtitle"><%= item.email || "Chưa cung cấp email" %> • Gửi lúc <%= formatDateTime(item.created_at) %></div>
+            </div>
+            <div class="am-chip-row">
+              <span class="am-chip">#<%= index + 1 %></span>
+              <span class="am-badge <%= status.className %>"><%= status.label %></span>
+              <% if (item.response_count) { %>
+                <span class="am-chip"><%= item.response_count %> phản hồi đã gửi</span>
+              <% } %>
+            </div>
+          </div>
 
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h2 class="text-2xl font-bold">Danh sách yêu cầu tư vấn</h2>
-        <p class="text-gray-400 mt-1">
-          Mỗi yêu cầu được gửi từ form Contact trên website.
-        </p>
-      </div>
-
-      <div class="bg-gray-900 rounded-xl px-4 py-3">
-        <span class="text-sm text-gray-400">Quản trị viên:</span>
-        <span class="font-semibold text-white ml-2">
-          <%= username || 'Admin' %>
-        </span>
-      </div>
-    </div>
-
-    <% if (messages && messages.length> 0) { %>
-      <div class="space-y-5">
-
-        <% messages.forEach(function(m, index) { %>
-          <article
-            class="bg-gray-900 rounded-2xl p-6 border border-gray-700 shadow hover:border-blue-500/50 transition">
-
-            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
-
-              <div class="space-y-4 flex-1">
-                <div class="flex flex-wrap items-center gap-3">
-                  <span
-                    class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600/20 text-blue-300 font-bold">
-                    <%= index + 1 %>
-                  </span>
-
-                  <div>
-                    <h3 class="text-xl font-bold">
-                      <%= m.name || 'Chưa có tên' %>
-                    </h3>
-                    <p class="text-sm text-gray-400">
-                      <%= m.email || 'Chưa có email' %>
-                    </p>
-                  </div>
-
-                  <% if ((m.status || 'new' )==='new' ) { %>
-                    <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-sm font-semibold">
-                      Mới gửi
-                    </span>
-                    <% } else if (m.status==='viewed' ) { %>
-                      <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300 text-sm font-semibold">
-                        Đã xem
-                      </span>
-                      <% } else if (m.status==='contacted' ) { %>
-                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm font-semibold">
-                          Đã liên hệ
-                        </span>
-                        <% } %>
+          <div class="am-grid">
+            <div style="display:grid;gap:16px">
+              <div class="am-info-grid">
+                <div class="am-info">
+                  <label>Email</label>
+                  <strong><%= item.email || "Chưa cung cấp" %></strong>
                 </div>
-
-                <div class="grid gap-4 md:grid-cols-2">
-                  <div class="bg-gray-800 rounded-xl p-4">
-                    <p class="text-sm text-gray-400 mb-1">Thông tin liên hệ</p>
-                    <p class="text-white font-medium">
-                      <%= m.email || 'Không có email' %>
-                    </p>
-                  </div>
-
-                  <div class="bg-gray-800 rounded-xl p-4">
-                    <p class="text-sm text-gray-400 mb-1">Thời gian gửi</p>
-                    <p class="text-white font-medium">
-                      <%= m.created_at ? new Date(m.created_at).toLocaleString("vi-VN") : "Không rõ" %>
-                    </p>
-                  </div>
+                <div class="am-info">
+                  <label>Điện thoại / Zalo</label>
+                  <strong><%= item.phone || "Chưa cung cấp" %></strong>
                 </div>
-
-                <% if (m.contacted_at) { %>
-                  <div class="bg-gray-800 rounded-xl p-4">
-                    <p class="text-sm text-gray-400 mb-1">Đã liên hệ lúc</p>
-                    <p class="text-white font-medium">
-                      <%= new Date(m.contacted_at).toLocaleString("vi-VN") %>
-                    </p>
-                  </div>
-                  <% } %>
-
-                    <div class="bg-gray-800 rounded-xl p-5">
-                      <p class="text-sm text-gray-400 mb-3">Nội dung yêu cầu tư vấn</p>
-                      <pre
-                        class="whitespace-pre-wrap break-words text-gray-200 leading-7 font-sans"><%= m.message || 'Không có nội dung' %></pre>
-                    </div>
-              </div>
-
-              <div class="lg:w-[280px] shrink-0">
-                <div class="bg-gray-800 rounded-2xl p-5 space-y-4">
-                  <h4 class="font-semibold text-lg">Thao tác quản lý</h4>
-
-                  <form method="POST" action="/messages/<%= m.id %>/contacted">
-                    <button type="submit"
-                      class="w-full rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-3 font-semibold">
-                      Liên hệ tư vấn
-                    </button>
-                  </form>
-
-                  <form method="POST" action="/messages/<%= m.id %>/viewed">
-                    <button type="submit"
-                      class="w-full rounded-xl bg-yellow-600 hover:bg-yellow-500 px-4 py-3 font-semibold">
-                      Đánh dấu đã xem
-                    </button>
-                  </form>
-
-                  <form method="POST" action="/messages/<%= m.id %>/note" class="space-y-3">
-                    <textarea name="admin_note" rows="4" placeholder="Nhập ghi chú của admin..."
-                      class="w-full rounded-xl bg-gray-900 border border-gray-700 px-4 py-3 outline-none focus:border-blue-500"><%= m.admin_note || '' %></textarea>
-
-                    <button type="submit"
-                      class="w-full rounded-xl bg-green-600 hover:bg-green-500 px-4 py-3 font-semibold">
-                      Lưu ghi chú
-                    </button>
-                  </form>
-
-                  <div class="pt-2 border-t border-gray-700">
-                    <p class="text-xs text-gray-400 leading-6">
-                      Gợi ý: Sau khi gọi điện hoặc nhắn tin cho học viên, hãy bấm
-                      <b>Liên hệ tư vấn</b> để cập nhật trạng thái.
-                    </p>
-                  </div>
+                <div class="am-info">
+                  <label>Mục tiêu hỗ trợ</label>
+                  <strong><%= item.goal || "Chưa chọn" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Khóa học quan tâm</label>
+                  <strong><%= item.course_interest || "Chưa chọn" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Khung giờ mong muốn</label>
+                  <strong><%= item.schedule_preference || "Chưa chọn" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Kênh phản hồi mong muốn</label>
+                  <strong><%= item.preferred_contact_method || "Chưa chọn" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Đã xem lúc</label>
+                  <strong><%= item.viewed_at ? formatDateTime(item.viewed_at) : "Chưa cập nhật" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Đã liên hệ lúc</label>
+                  <strong><%= item.contacted_at ? formatDateTime(item.contacted_at) : "Chưa cập nhật" %></strong>
                 </div>
               </div>
 
+              <div class="am-request-body">
+                <strong>Nội dung học viên gửi</strong>
+                <p><%= item.message_body || item.message || "Không có nội dung." %></p>
+              </div>
+
+              <% if (item.responses && item.responses.length) { %>
+                <div class="am-history">
+                  <% item.responses.forEach((response) => { %>
+                    <article class="am-response-card">
+                      <div class="am-response-top">
+                        <div>
+                          <h4>Đã phản hồi cho học viên</h4>
+                          <div class="am-response-time"><%= response.admin_name || "Tư vấn viên" %> • <%= formatDateTime(response.created_at) %></div>
+                        </div>
+                        <div class="am-chip-row">
+                          <% if (response.contact_method) { %>
+                            <span class="am-chip"><%= response.contact_method %></span>
+                          <% } %>
+                          <% if (response.request_phone) { %>
+                            <span class="am-chip">Đang xin số điện thoại/Zalo</span>
+                          <% } %>
+                        </div>
+                      </div>
+
+                      <div class="am-response-grid">
+                        <div>
+                          <span>Kênh liên hệ</span>
+                          <strong><%= response.contact_method || "Nhắn trong hệ thống" %></strong>
+                        </div>
+                        <div>
+                          <span>Khung giờ / lịch hẹn</span>
+                          <strong><%= response.contact_schedule || "Chưa đặt lịch cụ thể" %></strong>
+                        </div>
+                        <div>
+                          <span>Địa điểm / cách thức</span>
+                          <strong><%= response.contact_location || "Chưa cập nhật" %></strong>
+                        </div>
+                        <div>
+                          <span>Hiển thị với học viên</span>
+                          <strong><%= response.is_visible_to_student ? "Có" : "Không" %></strong>
+                        </div>
+                      </div>
+
+                      <% if (response.message_to_student) { %>
+                        <div class="am-response-note"><%= response.message_to_student %></div>
+                      <% } %>
+                    </article>
+                  <% }) %>
+                </div>
+              <% } %>
             </div>
 
-          </article>
-          <% }) %>
+            <aside style="display:grid;gap:16px">
+              <section class="am-side-panel">
+                <h3>Liên hệ tư vấn</h3>
+                <form method="POST" action="<%= safeBaseUrl %>/messages/<%= item.id %>/contacted" class="am-form">
+                  <label>
+                    Kênh liên hệ
+                    <select name="contact_method">
+                      <option value="Nhắn trong hệ thống">Nhắn trong hệ thống</option>
+                      <option value="Gọi điện">Gọi điện</option>
+                      <option value="Zalo">Zalo</option>
+                      <option value="Email">Email</option>
+                      <option value="Tư vấn trực tiếp">Tư vấn trực tiếp</option>
+                    </select>
+                  </label>
 
-      </div>
-      <% } else { %>
+                  <label>
+                    Khung giờ / lịch hẹn
+                    <input type="text" name="contact_schedule" placeholder="Ví dụ: 19:30 Thứ 3, hoặc tối 2-4-6">
+                  </label>
 
-        <div class="bg-gray-900 rounded-2xl p-10 text-center">
-          <div class="text-6xl mb-4">📭</div>
-          <h3 class="text-2xl font-bold mb-2">Chưa có yêu cầu tư vấn nào</h3>
-          <p class="text-gray-400 max-w-2xl mx-auto leading-7">
-            Khi học viên gửi thông tin tại trang Contact, các yêu cầu tư vấn sẽ xuất hiện tại đây
-            để admin dễ dàng theo dõi và xử lý.
-          </p>
-        </div>
+                  <label>
+                    Địa điểm / cách thức
+                    <input type="text" name="contact_location" placeholder="Ví dụ: Cơ sở Hồ Tùng Mậu, Google Meet, Zalo">
+                  </label>
 
-        <% } %>
+                  <label class="am-checkbox">
+                    <input type="checkbox" name="request_phone" value="1">
+                    <span>Yêu cầu học viên bổ sung số điện thoại hoặc Zalo để trung tâm liên hệ nhanh hơn.</span>
+                  </label>
 
-  </section>
+                  <label>
+                    Tin nhắn gửi học viên
+                    <textarea name="message_to_student" placeholder="Ví dụ: Trung tâm đã giữ chỗ tư vấn trực tiếp cho bạn tại cơ sở Hồ Tùng Mậu vào tối thứ 5. Nếu thuận tiện, vui lòng xác nhận lại và bổ sung số Zalo để đội ngũ gửi hướng dẫn nhanh hơn."></textarea>
+                  </label>
 
+                  <div class="am-actions">
+                    <button type="submit" class="am-btn am-btn-primary">Liên hệ tư vấn</button>
+                  </div>
+                </form>
+              </section>
+
+              <section class="am-side-panel">
+                <h3>Trạng thái & ghi chú nội bộ</h3>
+                <div class="am-actions">
+                  <form method="POST" action="<%= safeBaseUrl %>/messages/<%= item.id %>/viewed">
+                    <button type="submit" class="am-btn am-btn-muted">Đánh dấu đã xem</button>
+                  </form>
+                </div>
+
+                <form method="POST" action="<%= safeBaseUrl %>/messages/<%= item.id %>/note" class="am-form">
+                  <label>
+                    Ghi chú nội bộ
+                    <textarea name="admin_note" placeholder="Ví dụ: Học viên hỏi lịch khai giảng TOEIC A, ưu tiên liên hệ sau 18h và có thể chốt qua Zalo."><%= item.admin_note || "" %></textarea>
+                  </label>
+                  <div class="am-actions">
+                    <button type="submit" class="am-btn am-btn-success">Lưu ghi chú</button>
+                  </div>
+                </form>
+
+                <% if (item.admin_note) { %>
+                  <div class="am-note-preview"><strong>Ghi chú hiện tại:</strong><br><%= item.admin_note %></div>
+                <% } %>
+
+                <div class="am-help">
+                  Dùng <strong>Lưu ghi chú</strong> cho trao đổi nội bộ của đội ngũ.
+                  Dùng <strong>Liên hệ tư vấn</strong> khi muốn gửi lịch hẹn, địa điểm, kênh liên hệ hoặc lời nhắn thật sự về tài khoản học viên.
+                </div>
+              </section>
+            </aside>
+          </div>
+        </article>
+      <% }) %>
+    </section>
+  <% } %>
 </div>

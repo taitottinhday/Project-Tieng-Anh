@@ -98,6 +98,15 @@ const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
             <option value="Cuối tuần">Cuối tuần</option>
           </select>
         </div>
+        <div class="gf-field">
+          <label>Kênh phản hồi mong muốn</label>
+          <select name="preferred_contact_method">
+            <option value="Gọi điện">Gọi điện</option>
+            <option value="Zalo">Zalo</option>
+            <option value="Email">Email</option>
+            <option value="Tư vấn trực tiếp">Tư vấn trực tiếp</option>
+          </select>
+        </div>
         <div class="gf-field"><label>Nội dung cần tư vấn</label><textarea name="message" placeholder="Ví dụ: mình muốn học lại nền tảng và tìm lớp phù hợp với lịch đi làm..." required></textarea></div>
         <button type="submit" class="gf-btn gf-btn-primary">Gửi yêu cầu</button>
       </form>

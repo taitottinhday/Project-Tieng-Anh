@@ -1,35 +1,6 @@
 <%
 const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
-const learningCards = [
-  {
-    title: 'Chữa đề thi TOEIC Part 5',
-    teacher: 'Ms. Minh Hạnh',
-    subtitle: 'Chữa đề thi',
-    image: 'https://i.postimg.cc/YCV0Dd4J/t8.png',
-    placeholder: 'Ảnh học phần 01',
-    href: `${safeBaseUrl}/placement-tests`,
-    tone: 'gold'
-  },
-  {
-    title: 'Ngữ pháp trong bài thi TOEIC',
-    teacher: 'Ms. Khánh Huyền',
-    subtitle: 'Ngữ pháp',
-    image: 'https://i.postimg.cc/9MBW2bMf/t9.png',
-    placeholder: 'Ảnh học phần 02',
-    href: `${safeBaseUrl}/courses-blog`,
-    tone: 'gray'
-  },
-  {
-    title: 'Ôn tập từ vựng lớp Tập Sự',
-    teacher: 'Ms. Kim Liên',
-    subtitle: 'Ôn tập từ vựng',
-    image: 'https://i.postimg.cc/7ZTwhw6z/t10.png',
-    placeholder: 'Ảnh học phần 03',
-    href: `${safeBaseUrl}/courses-blog`,
-    tone: 'soft'
-  },
-
-];
+const learningCards = Array.isArray(typeof courseCards !== 'undefined' ? courseCards : null) ? courseCards : [];
 
 function renderMedia(url, alt, placeholder, className) {
   if (url) {
@@ -370,13 +341,13 @@ function renderMedia(url, alt, placeholder, className) {
     const applyVisibility = () => {
       const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
       page = Math.min(page, totalPages);
+      const start = (page - 1) * perPage;
+      const end = page * perPage;
 
       cards.forEach((card) => {
-        card.hidden = !filtered.includes(card);
-      });
-
-      filtered.forEach((card, index) => {
-        const visible = index >= (page - 1) * perPage && index < page * perPage;
+        const filteredIndex = filtered.indexOf(card);
+        const visible = filteredIndex >= start && filteredIndex < end;
+        card.hidden = filteredIndex === -1;
         card.style.display = visible ? '' : 'none';
       });
 

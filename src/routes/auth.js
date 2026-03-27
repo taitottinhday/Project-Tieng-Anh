@@ -14,6 +14,8 @@ const ensureSchemaReady = require("../middleware/ensureSchemaReady");
 
 const router = express.Router();
 const PASSWORD_RESET_EXPIRY_MINUTES = 30;
+const REGISTER_CAPTCHA_TTL_MS = 10 * 60 * 1000;
+const REGISTER_CAPTCHA_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 router.use(ensureSchemaReady);
 
@@ -23,6 +25,53 @@ function normalizeEmail(email) {
 
 function trimTrailingSlash(value) {
   return String(value || "").trim().replace(/\/+$/, "");
+}
+
+function normalizeRedirectTarget(value) {
+  const target = String(value || "").trim();
+
+  if (!target || !target.startsWith("/") || target.startsWith("//") || target.includes("://")) {
+    return "";
+  }
+
+  return target;
+}
+
+function rememberAuthRedirect(req, value = "") {
+  const normalizedTarget = normalizeRedirectTarget(value);
+
+  if (req.session) {
+    if (normalizedTarget) {
+      req.session.authRedirect = normalizedTarget;
+    } else {
+      delete req.session.authRedirect;
+    }
+  }
+
+  return normalizedTarget;
+}
+
+function resolveAuthRedirect(req) {
+  return normalizeRedirectTarget(
+    req.body?.redirect || req.query?.redirect || req.session?.authRedirect || ""
+  );
+}
+
+function consumeAuthRedirect(req) {
+  const normalizedTarget = resolveAuthRedirect(req);
+
+  if (req.session) {
+    delete req.session.authRedirect;
+  }
+
+  return normalizedTarget;
+}
+
+function buildAuthRedirectUrl(req, path, redirectTarget = "") {
+  const normalizedTarget = normalizeRedirectTarget(redirectTarget || req.session?.authRedirect || "");
+  const href = `${req.baseUrl}${path}`;
+
+  return normalizedTarget ? `${href}?redirect=${encodeURIComponent(normalizedTarget)}` : href;
 }
 
 function isValidEmail(email) {
@@ -36,6 +85,62 @@ function rememberRegisterForm(req, { username = "", email = "" } = {}) {
 
 function rememberForgotPasswordEmail(req, email = "") {
   req.flash("forgot_email", normalizeEmail(email));
+}
+
+function rememberRegisterCaptchaUi(req, isOpen = false) {
+  if (isOpen) {
+    req.flash("register_captcha_open", "1");
+  }
+}
+
+function consumeRegisterCaptchaUi(req) {
+  return req.flash("register_captcha_open")[0] === "1";
+}
+
+function generateRegisterCaptchaCode(length = 6) {
+  let output = "";
+
+  for (let index = 0; index < length; index += 1) {
+    output += REGISTER_CAPTCHA_ALPHABET[crypto.randomInt(0, REGISTER_CAPTCHA_ALPHABET.length)];
+  }
+
+  return output;
+}
+
+function clearRegisterCaptcha(req) {
+  if (req.session) {
+    delete req.session.registerCaptcha;
+  }
+}
+
+function issueRegisterCaptcha(req) {
+  const code = generateRegisterCaptchaCode();
+
+  if (req.session) {
+    req.session.registerCaptcha = {
+      answer: code,
+      issuedAt: Date.now(),
+    };
+  }
+
+  return code;
+}
+
+function getRegisterCaptcha(req) {
+  const captcha = req.session?.registerCaptcha;
+
+  if (!captcha?.answer) {
+    return null;
+  }
+
+  if (Date.now() - Number(captcha.issuedAt || 0) > REGISTER_CAPTCHA_TTL_MS) {
+    clearRegisterCaptcha(req);
+    return null;
+  }
+
+  return {
+    answer: String(captcha.answer || "").trim().toUpperCase(),
+  };
 }
 
 function buildAuthBaseUrl(req) {
@@ -137,14 +242,31 @@ function redirectByRole(req, res, user) {
 }
 
 function getRoleRedirectPath(req, user) {
+  if (user.role === "user") {
+    const redirectTarget = consumeAuthRedirect(req);
+
+    if (redirectTarget) {
+      return redirectTarget;
+    }
+  }
+
   if (user.role === "admin") {
+    if (req.session) {
+      delete req.session.authRedirect;
+    }
     return req.baseUrl + "/admin";
   }
 
   if (user.role === "teacher") {
+    if (req.session) {
+      delete req.session.authRedirect;
+    }
     return req.baseUrl + "/teacher/dashboard";
   }
 
+  if (req.session) {
+    delete req.session.authRedirect;
+  }
   return req.baseUrl + "/";
 }
 
@@ -457,10 +579,18 @@ async function getActivePasswordResetRecord(token) {
 }
 
 router.get("/register", (req, res) => {
+  const redirectTarget = rememberAuthRedirect(req, req.query.redirect || req.session?.authRedirect || "");
+  const captchaOpen = consumeRegisterCaptchaUi(req);
+  const captchaCode = issueRegisterCaptcha(req);
   res.render("auth/register", {
     title: "Đăng ký tài khoản",
     pageTitle: "Đăng ký tài khoản",
     baseUrl: req.baseUrl,
+    redirectTarget,
+    captcha: {
+      code: captchaCode,
+      open: captchaOpen,
+    },
     formData: {
       username: req.flash("register_username")[0] || "",
       email: req.flash("register_email")[0] || "",
@@ -473,29 +603,53 @@ router.post("/register", async (req, res) => {
   const email = normalizeEmail(req.body.email);
   const password = String(req.body.password || "");
   const notRobotChecked = String(req.body.not_robot || "").trim().toLowerCase() === "on";
+  const captchaAnswer = String(req.body.captcha_answer || "").trim().toUpperCase();
+  const shouldKeepCaptchaOpen = notRobotChecked || Boolean(captchaAnswer);
+  const redirectTarget = rememberAuthRedirect(
+    req,
+    req.body.redirect || req.query.redirect || req.session?.authRedirect || ""
+  );
 
   try {
     await ensurePlatformSupport();
     rememberRegisterForm(req, { username, email });
+    rememberRegisterCaptchaUi(req, shouldKeepCaptchaOpen);
 
     if (!username || !email || !password) {
       req.flash("error_msg", "Vui lòng nhập đầy đủ tên hiển thị, email và mật khẩu.");
-      return res.redirect(req.baseUrl + "/register");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
     }
 
     if (!isValidEmail(email)) {
       req.flash("error_msg", "Email đăng nhập không hợp lệ.");
-      return res.redirect(req.baseUrl + "/register");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
     }
 
     if (password.length < 6) {
       req.flash("error_msg", "Mật khẩu cần tối thiểu 6 ký tự.");
-      return res.redirect(req.baseUrl + "/register");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
     }
 
     if (!notRobotChecked) {
       req.flash("error_msg", "Vui lòng xác nhận bạn không phải robot trước khi đăng ký.");
-      return res.redirect(req.baseUrl + "/register");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
+    }
+
+    const registerCaptcha = getRegisterCaptcha(req);
+
+    if (!registerCaptcha) {
+      req.flash("error_msg", "Mã captcha đã hết hạn. Vui lòng tick lại ô xác nhận để nhận mã mới.");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
+    }
+
+    if (!captchaAnswer) {
+      req.flash("error_msg", "Vui lòng nhập mã captcha hiển thị để hoàn tất đăng ký.");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
+    }
+
+    if (registerCaptcha.answer !== captchaAnswer) {
+      req.flash("error_msg", "Mã captcha chưa chính xác. Vui lòng nhập lại theo dãy ký tự được hiển thị.");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
     }
 
     const [existingRows] = await db.query(
@@ -504,8 +658,9 @@ router.post("/register", async (req, res) => {
     );
 
     if (existingRows.length) {
+      clearRegisterCaptcha(req);
       req.flash("error_msg", "Email này đã được đăng ký. Vui lòng dùng email khác hoặc đăng nhập.");
-      return res.redirect(req.baseUrl + "/register");
+      return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -520,17 +675,24 @@ router.post("/register", async (req, res) => {
     );
 
     await syncStudentProfileFromUser(userRows[0]);
+    clearRegisterCaptcha(req);
+    if (redirectTarget) {
+      establishSession(req, userRows[0]);
+      req.flash("success_msg", "Đăng ký thành công. Chào mừng bạn đến với khu học viên.");
+      return res.redirect(redirectTarget);
+    }
     req.flash("success_msg", "Đăng ký thành công. Bạn có thể đăng nhập ngay.");
-    return res.redirect(req.baseUrl + "/login");
+    return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
+      clearRegisterCaptcha(req);
       req.flash("error_msg", "Email này đã có tài khoản. Vui lòng đăng nhập.");
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
     console.error("register error:", err);
     req.flash("error_msg", "Không thể đăng ký lúc này. Vui lòng thử lại.");
-    return res.redirect(req.baseUrl + "/register");
+    return res.redirect(buildAuthRedirectUrl(req, "/register", redirectTarget));
   }
 });
 
@@ -711,11 +873,13 @@ router.post("/reset-password", async (req, res) => {
 
 router.get("/login", (req, res) => {
   const loginEmail = req.flash("login_email")[0] || "";
+  const redirectTarget = rememberAuthRedirect(req, req.query.redirect || req.session?.authRedirect || "");
 
   res.render("auth/login", {
     title: "Đăng nhập",
     pageTitle: "Đăng nhập",
     baseUrl: req.baseUrl,
+    redirectTarget,
     formEmail: loginEmail,
     googleConfigured: isOAuthConfigured("google", req),
     facebookConfigured: isOAuthConfigured("facebook", req),
@@ -725,6 +889,10 @@ router.get("/login", (req, res) => {
 router.post("/login", async (req, res) => {
   const email = normalizeEmail(req.body.email);
   const password = String(req.body.password || "");
+  const redirectTarget = rememberAuthRedirect(
+    req,
+    req.body.redirect || req.query.redirect || req.session?.authRedirect || ""
+  );
 
   try {
     const [rows] = await db.query(
@@ -735,7 +903,7 @@ router.post("/login", async (req, res) => {
     if (rows.length === 0) {
       req.flash("login_email", email || "");
       req.flash("error_msg", "Email hoặc mật khẩu không chính xác.");
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
     const user = rows[0];
@@ -744,7 +912,7 @@ router.post("/login", async (req, res) => {
     if (!passwordMatch) {
       req.flash("login_email", email || "");
       req.flash("error_msg", "Email hoặc mật khẩu không chính xác.");
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
     establishSession(req, user);
@@ -753,7 +921,7 @@ router.post("/login", async (req, res) => {
     console.error("login error:", err);
     req.flash("login_email", email || "");
     req.flash("error_msg", "Không thể đăng nhập lúc này. Vui lòng thử lại.");
-    return res.redirect(req.baseUrl + "/login");
+    return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
   }
 });
 
@@ -761,6 +929,10 @@ router.get("/auth/:provider(google|facebook)", async (req, res) => {
   const provider = req.params.provider;
   const providerLabel = getProviderLabel(provider);
   const usePopup = provider === "facebook" && String(req.query.popup || "") === "1";
+  const redirectTarget = rememberAuthRedirect(
+    req,
+    req.query.redirect || req.session?.authRedirect || ""
+  );
 
   try {
     if (!isOAuthConfigured(provider, req)) {
@@ -768,7 +940,7 @@ router.get("/auth/:provider(google|facebook)", async (req, res) => {
         "error_msg",
         `${providerLabel} OAuth chưa được cấu hình. Điền CLIENT ID và CLIENT SECRET để bật đăng nhập ${providerLabel}.`
       );
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
     const config = getOAuthConfig(provider, req);
@@ -777,6 +949,7 @@ router.get("/auth/:provider(google|facebook)", async (req, res) => {
       provider,
       value: state,
       popup: usePopup,
+      redirectTarget,
     };
 
     const searchParams = buildAuthorizationSearchParams(config, state);
@@ -789,7 +962,7 @@ router.get("/auth/:provider(google|facebook)", async (req, res) => {
   } catch (err) {
     console.error(`${provider} auth start error:`, err);
     req.flash("error_msg", "Không thể mở đăng nhập social lúc này.");
-    return res.redirect(req.baseUrl + "/login");
+    return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
   }
 });
 
@@ -810,6 +983,7 @@ router.get("/auth/facebook/callback", async (req, res, next) => {
       return renderOAuthPopupResult(res, { redirectTo: req.baseUrl + "/login" });
     }
 
+    rememberAuthRedirect(req, req.session?.oauthState?.redirectTarget || req.session?.authRedirect || "");
     req.session.oauthState = null;
 
     if (error) {
@@ -852,6 +1026,7 @@ router.get("/auth/:provider(google|facebook)/callback", async (req, res) => {
   const provider = req.params.provider;
   const providerLabel = getProviderLabel(provider);
   const { code = "", state = "", error = "" } = req.query;
+  const redirectTarget = req.session?.oauthState?.redirectTarget || req.session?.authRedirect || "";
 
   try {
     if (
@@ -860,19 +1035,20 @@ router.get("/auth/:provider(google|facebook)/callback", async (req, res) => {
       req.session.oauthState.value !== state
     ) {
       req.flash("error_msg", "Phiên đăng nhập social không hợp lệ. Vui lòng thử lại.");
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
+    rememberAuthRedirect(req, req.session?.oauthState?.redirectTarget || req.session?.authRedirect || "");
     req.session.oauthState = null;
 
     if (error) {
       req.flash("error_msg", `Bạn đã hủy đăng nhập bằng ${providerLabel}.`);
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
     if (!code) {
       req.flash("error_msg", `Không nhận được mã xác thực từ ${providerLabel}.`);
-      return res.redirect(req.baseUrl + "/login");
+      return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
     }
 
     const tokenPayload = await exchangeOAuthCode(provider, code, req);
@@ -903,7 +1079,7 @@ router.get("/auth/:provider(google|facebook)/callback", async (req, res) => {
       "error_msg",
       "Không thể hoàn tất đăng nhập bằng Google/Facebook lúc này. Vui lòng thử lại."
     );
-    return res.redirect(req.baseUrl + "/login");
+    return res.redirect(buildAuthRedirectUrl(req, "/login", redirectTarget));
   }
 });
 

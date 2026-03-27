@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const renderWithLayout = require("../utils/renderHelper");
+const { getGuestCourseHubData } = require("../data/courseSalesCatalog");
 const { courseMenu, getCoursePage } = require("../data/courseLandingPages");
 const toeic4SkillsPage = require("../data/toeic4SkillsPage");
 const toeicAcceleratedPage = require("../data/toeicAcceleratedPage");
@@ -58,6 +59,7 @@ router.get("/", (req, res) => {
     title: "Kh\u00f3a h\u1ecdc TOEIC",
     username: req.session?.user?.username,
     courses: overviewCourses,
+    courseHub: getGuestCourseHubData(res.locals.baseUrl || ""),
     courseMenu: visibleCourseMenu,
   });
 });

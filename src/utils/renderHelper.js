@@ -43,7 +43,10 @@ function renderWithLayout(res, viewName, data = {}) {
       currentPath: res.locals.currentPath || '/',
       success_msg: res.locals.success_msg || [],
       error_msg: res.locals.error_msg || [],
-      error: res.locals.error || []
+      error: res.locals.error || [],
+      info: res.locals.info || [],
+      studentNotifications: res.locals.studentNotifications || [],
+      unreadStudentNotificationCount: res.locals.unreadStudentNotificationCount || 0
     };
 
     ejs.renderFile(layoutPath, layoutData, (layoutErr, html) => {

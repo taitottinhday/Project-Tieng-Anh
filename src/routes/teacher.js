@@ -453,6 +453,7 @@ async function getTeacherClassCards(teacherId, todayIso) {
           SELECT COUNT(*)
           FROM enrollments e
           WHERE e.class_id = c.id
+            AND e.status = 'active'
         ) AS total_students,
         (
           SELECT COUNT(*)
@@ -659,6 +660,7 @@ router.get("/classes/:id", isTeacher, async (req, res) => {
           FROM enrollments e
           LEFT JOIN students s ON e.student_id = s.id
           WHERE e.class_id = ?
+            AND e.status = 'active'
           ORDER BY s.full_name ASC
         `, [teacher.id, teacher.id, classId], []);
 
@@ -762,6 +764,7 @@ router.get("/profile", isTeacher, async (req, res) => {
           FROM enrollments e
           INNER JOIN classes c ON c.id = e.class_id
           WHERE c.teacher_id = ?
+            AND e.status = 'active'
         `, [teacher.id], 0);
         const expertiseClusters = await safeQuery(`
           SELECT
@@ -861,6 +864,7 @@ router.get("/attendance/:classId", isTeacher, async (req, res) => {
             AND a.class_id = e.class_id
             AND a.lesson_date = ?
           WHERE e.class_id = ?
+            AND e.status = 'active'
           ORDER BY s.full_name ASC
         `, [lessonDate, classId], []);
 
@@ -910,6 +914,7 @@ router.post("/attendance/:classId", isTeacher, express.urlencoded({ extended: tr
           SELECT student_id
           FROM enrollments
           WHERE class_id = ?
+            AND status = 'active'
         `, [classId]);
 
         for (const row of enrolledStudents) {
@@ -965,6 +970,7 @@ router.get("/comments", isTeacher, async (req, res) => {
               FROM enrollments e
               LEFT JOIN students s ON e.student_id = s.id
               WHERE e.class_id = ?
+                AND e.status = 'active'
               ORDER BY s.full_name ASC
             `, [classId], []);
 
@@ -1064,7 +1070,7 @@ router.post("/comments", isTeacher, express.urlencoded({ extended: true }), asyn
         const [studentRows] = await db.query(`
           SELECT 1
           FROM enrollments
-          WHERE class_id = ? AND student_id = ?
+          WHERE class_id = ? AND student_id = ? AND status = 'active'
           LIMIT 1
         `, [classId, studentId]);
 

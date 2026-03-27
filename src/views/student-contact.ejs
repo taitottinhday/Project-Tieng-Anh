@@ -1,47 +1,125 @@
 <%
-const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
-const studentName = user && user.username ? user.username : '';
-const studentEmail = user && user.email ? user.email : '';
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const studentName = user && user.username ? user.username : "";
+const studentEmail = user && user.email ? user.email : "";
+const safeSuccessMessages = typeof success_msg !== "undefined" ? success_msg : [];
+const safeErrorMessages = typeof error_msg !== "undefined" ? error_msg : [];
+const consultationList = Array.isArray(consultations) ? consultations : [];
 const channels = [
-  { label: 'Hotline tư vấn', value: '0344772436', note: 'Phản hồi nhanh giờ hành chính' },
-  { label: 'Email', value: 'realtoeiccentral@gmail.com', note: 'Phù hợp cho câu hỏi chi tiết' },
-  { label: 'Fanpage', value: 'Lớp TOEIC thầy Tài', note: 'Nhắn trực tiếp để được hỗ trợ' }
+  { label: "Hotline tư vấn", value: "0344772436", note: "Phản hồi nhanh trong giờ hành chính" },
+  { label: "Email", value: "realtoeiccentral@gmail.com", note: "Phù hợp cho yêu cầu chi tiết hoặc cần gửi tài liệu" },
+  { label: "Cơ sở hỗ trợ", value: "Hồ Tùng Mậu • Lê Đức Thọ", note: "Có thể hẹn tư vấn trực tiếp theo lịch" },
 ];
+
+function formatDateTime(value) {
+  if (!value) {
+    return "Chưa có thời gian";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Chưa có thời gian";
+  }
+
+  return date.toLocaleString("vi-VN");
+}
+
+function getStatusMeta(status) {
+  if (status === "contacted") {
+    return { label: "Đã phản hồi", className: "is-contacted" };
+  }
+
+  if (status === "viewed") {
+    return { label: "Đang xử lý", className: "is-viewed" };
+  }
+
+  return { label: "Mới gửi", className: "is-new" };
+}
 %>
 
 <style>
-  .st-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px;display:grid;gap:24px}
-  .st-hero,.st-form-shell,.st-channel-grid article{padding:30px;border-radius:34px;background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.06);box-shadow:0 24px 44px rgba(17,24,39,.08)}
-  .st-hero{display:grid;gap:16px;background:linear-gradient(135deg,#fff 0%,#eff6ff 55%,#eef2ff 100%)}
-  .st-hero h1,.st-form-shell h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.05em;color:#111827}
-  .st-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1.02}
-  .st-hero p,.st-form-shell p,.st-channel-grid span{margin:0;color:#667085;line-height:1.8}
-  .st-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-  .st-channel-grid strong{display:block;font-size:1.15rem;color:#111827}
-  .st-channel-grid span{display:block;margin-top:10px}
-  .st-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
-  .st-field{display:grid;gap:8px}
-  .st-field.full{grid-column:1 / -1}
-  .st-field label{font-weight:700;color:#344054}
-  .st-field input,.st-field select,.st-field textarea{width:100%;min-height:52px;padding:0 16px;border-radius:18px;border:1px solid rgba(17,24,39,.10);background:#fff;font:inherit;color:#111827}
-  .st-field textarea{min-height:150px;padding:14px 16px;resize:vertical}
-  .st-actions{display:flex;justify-content:flex-start;margin-top:20px}
-  .st-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
-  .st-success{padding:14px 16px;border-radius:18px;background:rgba(34,197,94,.10);color:#166534;border:1px solid rgba(34,197,94,.16)}
-  @media (max-width:980px){.st-channel-grid,.st-form-grid{grid-template-columns:1fr}}
-  @media (max-width:720px){.st-page{width:min(100% - 20px,1380px);padding:22px 0 28px}.st-hero,.st-form-shell,.st-channel-grid article{padding:20px;border-radius:24px}}
+  .sc-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 48px;display:grid;gap:24px}
+  .sc-hero,.sc-panel,.sc-channel-grid article,.sc-request-card,.sc-response-card{border-radius:32px;border:1px solid rgba(15,23,42,.08);box-shadow:0 18px 40px rgba(15,23,42,.06)}
+  .sc-hero{padding:30px;background:linear-gradient(135deg,#f8fbff 0%,#eff6ff 52%,#eef2ff 100%);display:grid;gap:14px}
+  .sc-hero h1,.sc-panel h2,.sc-request-title,.sc-response-card h4{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.04em;color:#0f172a}
+  .sc-hero h1{font-size:clamp(2.2rem,4vw,3.6rem);line-height:1.04}
+  .sc-hero p,.sc-panel p,.sc-channel-grid span,.sc-request-body,.sc-empty p{margin:0;color:#475569;line-height:1.8}
+  .sc-flash-stack{display:grid;gap:12px}
+  .sc-flash{padding:14px 16px;border-radius:18px;font-weight:700}
+  .sc-flash.success{background:rgba(34,197,94,.10);color:#166534;border:1px solid rgba(34,197,94,.18)}
+  .sc-flash.error{background:rgba(239,68,68,.10);color:#b91c1c;border:1px solid rgba(239,68,68,.18)}
+  .sc-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .sc-channel-grid article,.sc-panel,.sc-request-card,.sc-response-card{background:rgba(255,255,255,.96)}
+  .sc-channel-grid article{padding:24px}
+  .sc-channel-grid strong{display:block;font-size:1.05rem;color:#0f172a}
+  .sc-channel-grid span{display:block;margin-top:8px}
+  .sc-panel{padding:28px}
+  .sc-panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .sc-panel-kicker{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#e0ecff;color:#1d4ed8;font-weight:800}
+  .sc-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}
+  .sc-field{display:grid;gap:8px}
+  .sc-field.full{grid-column:1 / -1}
+  .sc-field label{font-weight:700;color:#334155}
+  .sc-field input,.sc-field select,.sc-field textarea{width:100%;min-height:54px;padding:0 16px;border-radius:18px;border:1px solid rgba(15,23,42,.10);background:#fff;color:#0f172a;font:inherit}
+  .sc-field textarea{min-height:150px;padding:14px 16px;resize:vertical}
+  .sc-field input:focus,.sc-field select:focus,.sc-field textarea:focus{outline:none;border-color:rgba(37,99,235,.34);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+  .sc-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
+  .sc-btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
+  .sc-hint{color:#64748b;font-size:.95rem;line-height:1.7}
+  .sc-request-list{display:grid;gap:18px}
+  .sc-request-card{padding:24px;display:grid;gap:18px}
+  .sc-request-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px}
+  .sc-request-title{font-size:1.4rem}
+  .sc-request-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .sc-badge{display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;font-weight:800}
+  .sc-badge.is-new{background:rgba(59,130,246,.12);color:#1d4ed8}
+  .sc-badge.is-viewed{background:rgba(245,158,11,.14);color:#b45309}
+  .sc-badge.is-contacted{background:rgba(34,197,94,.14);color:#15803d}
+  .sc-time{color:#64748b;font-weight:600}
+  .sc-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .sc-detail{padding:16px;border-radius:20px;background:#f8fafc;border:1px solid rgba(148,163,184,.18)}
+  .sc-detail label{display:block;margin-bottom:6px;color:#64748b;font-size:.88rem;font-weight:700}
+  .sc-detail strong{color:#0f172a;font-size:1rem}
+  .sc-request-body{padding:18px;border-radius:22px;background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);border:1px solid rgba(15,23,42,.08)}
+  .sc-request-body strong,.sc-response-card strong{color:#0f172a}
+  .sc-response-list{display:grid;gap:14px}
+  .sc-response-card{padding:20px;background:linear-gradient(180deg,#f8fbff 0%,#fff 100%)}
+  .sc-response-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .sc-response-meta{display:flex;flex-wrap:wrap;gap:8px}
+  .sc-chip{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;background:#e0ecff;color:#1d4ed8;font-weight:800;font-size:.88rem}
+  .sc-response-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+  .sc-response-grid div{padding:14px;border-radius:18px;background:#fff;border:1px solid rgba(148,163,184,.18)}
+  .sc-response-grid span{display:block;color:#64748b;font-size:.84rem;font-weight:700}
+  .sc-response-grid strong{display:block;margin-top:6px}
+  .sc-alert{margin-top:12px;padding:14px 16px;border-radius:18px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.16);color:#1e3a8a;font-weight:700;line-height:1.7}
+  .sc-empty{padding:30px;border-radius:28px;background:#fff;border:1px dashed rgba(148,163,184,.4);text-align:center}
+  .sc-empty strong{display:block;margin-bottom:8px;font-size:1.15rem;color:#0f172a}
+  @media (max-width:1100px){.sc-channel-grid,.sc-detail-grid,.sc-response-grid,.sc-form-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:760px){.sc-page{width:min(100% - 20px,1380px);padding:22px 0 30px}.sc-channel-grid,.sc-detail-grid,.sc-response-grid,.sc-form-grid{grid-template-columns:1fr}.sc-hero,.sc-panel,.sc-channel-grid article,.sc-request-card,.sc-response-card{border-radius:24px}.sc-hero,.sc-panel,.sc-channel-grid article,.sc-request-card,.sc-response-card{padding:20px}}
 </style>
 
-<div class="st-page">
-  <section class="st-hero">
-    <h1>Liên hệ trong tài khoản học viên</h1>
-    <p>Học viên có thể gửi câu hỏi về lịch học, khóa học, thanh toán hoặc cần đội ngũ tư vấn hỗ trợ nhanh ngay trong khu vực tài khoản.</p>
-    <% if (success) { %>
-      <div class="st-success">Tin nhắn của bạn đã được gửi thành công. Đội ngũ sẽ phản hồi sớm nhất có thể.</div>
-    <% } %>
+<div class="sc-page">
+  <section class="sc-hero">
+    <span class="sc-panel-kicker">Hộp thư tư vấn học viên</span>
+    <h1>Gửi câu hỏi và theo dõi phản hồi của trung tâm ngay trong tài khoản.</h1>
+    <p>Học viên có thể để lại nhu cầu tư vấn về khóa học, lịch khai giảng, thanh toán hoặc lịch hẹn trực tiếp. Khi trung tâm cập nhật, phản hồi sẽ hiện ngay ở bên dưới để bạn theo dõi rõ ràng.</p>
   </section>
 
-  <section class="st-channel-grid">
+  <% if (success || safeSuccessMessages.length || safeErrorMessages.length) { %>
+    <div class="sc-flash-stack">
+      <% if (success) { %>
+        <div class="sc-flash success">Yêu cầu của bạn đã được gửi thành công. Trung tâm sẽ phản hồi sớm nhất có thể.</div>
+      <% } %>
+      <% safeSuccessMessages.forEach((item) => { %>
+        <div class="sc-flash success"><%= item %></div>
+      <% }) %>
+      <% safeErrorMessages.forEach((item) => { %>
+        <div class="sc-flash error"><%= item %></div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <section class="sc-channel-grid">
     <% channels.forEach((item) => { %>
       <article>
         <strong><%= item.label %></strong>
@@ -51,47 +129,181 @@ const channels = [
     <% }) %>
   </section>
 
-  <section class="st-form-shell">
-    <h2>Gửi câu hỏi đến trung tâm</h2>
-    <p>Điền nhanh thông tin bên dưới, hệ thống sẽ chuyển trực tiếp đến phần tin nhắn để đội ngũ hỗ trợ xử lý.</p>
+  <section class="sc-panel">
+    <div class="sc-panel-head">
+      <div>
+        <h2>Tạo yêu cầu tư vấn mới</h2>
+        <p>Điền thông tin càng rõ, trung tâm càng dễ hẹn đúng khung giờ, đúng cơ sở và đúng người hỗ trợ cho bạn.</p>
+      </div>
+      <span class="sc-panel-kicker">Biểu mẫu an toàn</span>
+    </div>
 
-    <form action="<%= safeBaseUrl %>/contact" method="POST" class="st-form-grid">
+    <form action="<%= safeBaseUrl %>/contact" method="POST">
       <input type="hidden" name="return_to" value="/student/contact">
-      <div class="st-field">
-        <label>Họ tên</label>
-        <input type="text" name="name" value="<%= studentName %>" required>
+
+      <div class="sc-form-grid">
+        <div class="sc-field">
+          <label>Họ tên</label>
+          <input type="text" name="name" value="<%= studentName %>" required>
+        </div>
+        <div class="sc-field">
+          <label>Email</label>
+          <input type="email" name="email" value="<%= studentEmail %>" required>
+        </div>
+        <div class="sc-field">
+          <label>Số điện thoại hoặc Zalo</label>
+          <input type="text" name="phone" placeholder="Ví dụ: 0344xxxxxx">
+        </div>
+        <div class="sc-field">
+          <label>Kênh phản hồi mong muốn</label>
+          <select name="preferred_contact_method">
+            <option value="Nhắn trong hệ thống">Nhắn trong hệ thống</option>
+            <option value="Gọi điện">Gọi điện</option>
+            <option value="Zalo">Zalo</option>
+            <option value="Email">Email</option>
+            <option value="Tư vấn trực tiếp">Tư vấn trực tiếp</option>
+          </select>
+        </div>
+        <div class="sc-field">
+          <label>Mục tiêu hỗ trợ</label>
+          <select name="goal">
+            <option value="Tư vấn khóa học học viên">Tư vấn khóa học</option>
+            <option value="Hỏi lịch khai giảng">Hỏi lịch khai giảng</option>
+            <option value="Hỗ trợ thanh toán">Hỗ trợ thanh toán</option>
+            <option value="Hẹn tư vấn trực tiếp">Hẹn tư vấn trực tiếp</option>
+            <option value="Hỗ trợ tài khoản">Hỗ trợ tài khoản</option>
+          </select>
+        </div>
+        <div class="sc-field">
+          <label>Khóa học quan tâm</label>
+          <input type="text" name="course_interest" placeholder="Ví dụ: TOEIC A, TOEIC B, Tập Sự">
+        </div>
+        <div class="sc-field full">
+          <label>Khung giờ mong muốn</label>
+          <input type="text" name="schedule_preference" placeholder="Ví dụ: Tối 2-4-6, cuối tuần, sau 19:00">
+        </div>
+        <div class="sc-field full">
+          <label>Nội dung cần tư vấn</label>
+          <textarea name="message" placeholder="Ví dụ: Em muốn được tư vấn lộ trình, xin lịch hẹn trực tiếp ở cơ sở Hồ Tùng Mậu, và nếu cần thì trung tâm có thể liên hệ qua Zalo." required></textarea>
+        </div>
       </div>
-      <div class="st-field">
-        <label>Email</label>
-        <input type="email" name="email" value="<%= studentEmail %>" required>
-      </div>
-      <div class="st-field">
-        <label>Số điện thoại</label>
-        <input type="text" name="phone" placeholder="Nhập số điện thoại">
-      </div>
-      <div class="st-field">
-        <label>Mục tiêu hỗ trợ</label>
-        <select name="goal">
-          <option value="Tư vấn khóa học học viên">Tư vấn khóa học</option>
-          <option value="Hỏi lịch khai giảng">Hỏi lịch khai giảng</option>
-          <option value="Hỗ trợ tài khoản">Hỗ trợ tài khoản</option>
-        </select>
-      </div>
-      <div class="st-field">
-        <label>Khóa học quan tâm</label>
-        <input type="text" name="course_interest" placeholder="Ví dụ: TOEIC A, TOEIC B, Tập Sự">
-      </div>
-      <div class="st-field">
-        <label>Khung giờ mong muốn</label>
-        <input type="text" name="schedule_preference" placeholder="Ví dụ: Tối 2-4-6">
-      </div>
-      <div class="st-field full">
-        <label>Nội dung</label>
-        <textarea name="message" placeholder="Mô tả câu hỏi hoặc nhu cầu của bạn..." required></textarea>
-      </div>
-      <div class="st-actions">
-        <button type="submit" class="st-btn">Gửi liên hệ</button>
+
+      <div class="sc-actions">
+        <button type="submit" class="sc-btn">Gửi yêu cầu tư vấn</button>
+        <span class="sc-hint">Mỗi cập nhật từ admin sẽ được lưu lại ngay trong hộp thư bên dưới để bạn không bỏ lỡ.</span>
       </div>
     </form>
+  </section>
+
+  <section class="sc-panel">
+    <div class="sc-panel-head">
+      <div>
+        <h2>Theo dõi yêu cầu của bạn</h2>
+        <p>Trạng thái xử lý, lịch hẹn, địa điểm tư vấn và lời nhắn từ trung tâm sẽ được cập nhật theo từng yêu cầu.</p>
+      </div>
+      <span class="sc-panel-kicker"><%= consultationList.length %> yêu cầu</span>
+    </div>
+
+    <% if (!consultationList.length) { %>
+      <div class="sc-empty">
+        <strong>Bạn chưa có yêu cầu tư vấn nào.</strong>
+        <p>Hãy gửi biểu mẫu ở trên, trung tâm sẽ tiếp nhận và cập nhật phản hồi trực tiếp vào tài khoản này.</p>
+      </div>
+    <% } else { %>
+      <div class="sc-request-list">
+        <% consultationList.forEach((item) => { const statusMeta = getStatusMeta(item.status); %>
+          <article class="sc-request-card">
+            <div class="sc-request-head">
+              <div>
+                <h3 class="sc-request-title"><%= item.goal || "Yêu cầu tư vấn khóa học" %></h3>
+                <div class="sc-time">Gửi lúc <%= formatDateTime(item.created_at) %></div>
+              </div>
+              <div class="sc-request-meta">
+                <span class="sc-badge <%= statusMeta.className %>"><%= statusMeta.label %></span>
+                <% if (item.contacted_at) { %>
+                  <span class="sc-time">Cập nhật gần nhất <%= formatDateTime(item.contacted_at) %></span>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="sc-detail-grid">
+              <div class="sc-detail">
+                <label>Email</label>
+                <strong><%= item.email || "Chưa cung cấp" %></strong>
+              </div>
+              <div class="sc-detail">
+                <label>Điện thoại / Zalo</label>
+                <strong><%= item.phone || "Chưa cung cấp" %></strong>
+              </div>
+              <div class="sc-detail">
+                <label>Khóa học quan tâm</label>
+                <strong><%= item.course_interest || "Chưa chọn" %></strong>
+              </div>
+              <div class="sc-detail">
+                <label>Khung giờ mong muốn</label>
+                <strong><%= item.schedule_preference || "Chưa chọn" %></strong>
+              </div>
+            </div>
+
+            <div class="sc-request-body">
+              <strong>Nội dung bạn đã gửi</strong>
+              <p><%= item.message_body || item.message || "Không có nội dung." %></p>
+            </div>
+
+            <% if (item.responses && item.responses.length) { %>
+              <div class="sc-response-list">
+                <% item.responses.forEach((response) => { %>
+                  <article class="sc-response-card">
+                    <div class="sc-response-top">
+                      <div>
+                        <h4>Phản hồi từ <%= response.admin_name || "Tư vấn viên" %></h4>
+                        <div class="sc-time"><%= formatDateTime(response.created_at) %></div>
+                      </div>
+                      <div class="sc-response-meta">
+                        <% if (response.contact_method) { %>
+                          <span class="sc-chip"><%= response.contact_method %></span>
+                        <% } %>
+                        <% if (response.request_phone) { %>
+                          <span class="sc-chip">Cần bổ sung số điện thoại/Zalo</span>
+                        <% } %>
+                      </div>
+                    </div>
+
+                    <div class="sc-response-grid">
+                      <div>
+                        <span>Kênh liên hệ</span>
+                        <strong><%= response.contact_method || "Nhắn trong hệ thống" %></strong>
+                      </div>
+                      <div>
+                        <span>Khung giờ / lịch hẹn</span>
+                        <strong><%= response.contact_schedule || "Trung tâm sẽ cập nhật thêm nếu cần" %></strong>
+                      </div>
+                      <div>
+                        <span>Địa điểm / cách thức</span>
+                        <strong><%= response.contact_location || "Theo dõi tin nhắn hoặc hotline để chốt lịch" %></strong>
+                      </div>
+                      <div>
+                        <span>Trạng thái</span>
+                        <strong>Đã có phản hồi từ trung tâm</strong>
+                      </div>
+                    </div>
+
+                    <% if (response.message_to_student) { %>
+                      <div class="sc-alert"><%= response.message_to_student %></div>
+                    <% } %>
+
+                    <% if (response.request_phone) { %>
+                      <div class="sc-alert">Trung tâm đang cần thêm số điện thoại hoặc Zalo để hỗ trợ nhanh hơn. Bạn có thể gửi thêm thông tin ở biểu mẫu phía trên hoặc gọi trực tiếp hotline.</div>
+                    <% } %>
+                  </article>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="sc-alert">Yêu cầu của bạn đã được ghi nhận. Khi đội ngũ tư vấn cập nhật lịch hẹn, địa điểm hoặc lời nhắn, nội dung sẽ xuất hiện ngay tại đây.</div>
+            <% } %>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
   </section>
 </div>

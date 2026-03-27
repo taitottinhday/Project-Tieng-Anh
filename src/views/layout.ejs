@@ -848,16 +848,18 @@
                         <% }) %>
                 </nav>
 
-                <section class="sidebar-note">
-                    <p class="sidebar-kicker">Ghi chú nhanh</p>
-                    <h3><%= noteTitle %></h3>
-                    <p>
-                        <%= noteText %>
-                    </p>
-                    <a href="<%= noteLinkHref %>" class="note-link">
-                        <%= noteLinkLabel %>
-                    </a>
-                </section>
+                <% if (!user || user.role !== 'admin') { %>
+                    <section class="sidebar-note">
+                        <p class="sidebar-kicker">Ghi chú nhanh</p>
+                        <h3><%= noteTitle %></h3>
+                        <p>
+                            <%= noteText %>
+                        </p>
+                        <a href="<%= noteLinkHref %>" class="note-link">
+                            <%= noteLinkLabel %>
+                        </a>
+                    </section>
+                <% } %>
             </aside>
 
             <div class="app-main">

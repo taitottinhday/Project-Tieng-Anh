@@ -126,22 +126,25 @@
     }
 
     .tr-nav {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: flex-start;
+      flex-wrap: wrap;
       gap: 4px;
       min-width: 0;
       padding: 0 4px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
+      overflow: visible;
     }
 
-    .tr-nav::-webkit-scrollbar {
-      display: none;
+    .tr-nav-item {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
     }
 
-    .tr-link {
+    .tr-link,
+    .tr-link-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -156,10 +159,119 @@
       transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
     }
 
-    .tr-link:hover {
+    .tr-link-toggle {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      gap: 6px;
+      font: inherit;
+    }
+
+    .tr-link-caret {
+      flex: 0 0 auto;
+      transition: transform 0.2s ease;
+    }
+
+    .tr-nav-group:hover .tr-link-caret,
+    .tr-nav-group:focus-within .tr-link-caret,
+    .tr-nav-group.is-open .tr-link-caret {
+      transform: rotate(180deg);
+    }
+
+    .tr-link:hover,
+    .tr-link-toggle:hover {
       color: #111827;
       background: linear-gradient(135deg, rgba(47, 120, 237, 0.08) 0%, rgba(242, 169, 210, 0.12) 100%);
       transform: translateY(-1px);
+    }
+
+    .tr-link.is-active,
+    .tr-link-toggle.is-active {
+      position: relative;
+      color: #111827;
+      background: linear-gradient(135deg, rgba(47, 120, 237, 0.1) 0%, rgba(242, 169, 210, 0.14) 100%);
+    }
+
+    .tr-link.is-active::after,
+    .tr-link-toggle.is-active::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 2px;
+      height: 3px;
+      border-radius: 999px;
+      background: #2f78ed;
+    }
+
+    .tr-subnav {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      z-index: 80;
+      width: min(410px, calc(100vw - 40px));
+      padding: 14px;
+      border-radius: 28px;
+      border: 1px solid rgba(89, 106, 191, 0.12);
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 24px 54px rgba(39, 62, 122, 0.16);
+      display: grid;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      backdrop-filter: blur(16px);
+    }
+
+    .tr-subnav::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -18px;
+      height: 22px;
+    }
+
+    .tr-nav-group:hover .tr-subnav,
+    .tr-nav-group:focus-within .tr-subnav,
+    .tr-nav-group.is-open .tr-subnav {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    .tr-subnav-link {
+      display: grid;
+      gap: 4px;
+      padding: 16px 18px;
+      border-radius: 22px;
+      color: #334155;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .tr-subnav-link:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, rgba(47, 120, 237, 0.08) 0%, rgba(242, 169, 210, 0.12) 100%);
+      color: #0f172a;
+    }
+
+    .tr-subnav-link.is-active {
+      background: linear-gradient(135deg, rgba(47, 120, 237, 0.12) 0%, rgba(232, 155, 188, 0.14) 100%);
+      color: #0f172a;
+    }
+
+    .tr-subnav-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .tr-subnav-note {
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: var(--tr-muted);
+      white-space: normal;
     }
 
     .tr-actions {
@@ -476,6 +588,22 @@
         padding: 0 0 4px;
       }
 
+      .tr-nav-group {
+        position: static;
+      }
+
+      .tr-subnav {
+        left: 0;
+        width: min(420px, calc(100vw - 32px));
+        transform: translateY(12px);
+      }
+
+      .tr-nav-group:hover .tr-subnav,
+      .tr-nav-group:focus-within .tr-subnav,
+      .tr-nav-group.is-open .tr-subnav {
+        transform: translateY(0);
+      }
+
       .tr-actions {
         width: 100%;
         overflow-x: auto;
@@ -525,6 +653,14 @@
         width: 100%;
         justify-content: space-between;
       }
+
+      .tr-nav {
+        gap: 8px;
+      }
+
+      .tr-subnav {
+        width: min(100%, calc(100vw - 24px));
+      }
     }
   </style>
 </head>
@@ -535,18 +671,69 @@
     const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
     const buildHref = (path) => `${safeBaseUrl}${path}`;
     const reviewAvailable = Boolean(data.review && data.review.available && Array.isArray(data.review.parts) && data.review.parts.length);
-    const displayName = (typeof studentName !== 'undefined' && studentName) ? studentName : (data.guestName || 'Học viên');
-    const displaySubline = data.guestEmail || 'Đã hoàn thành bài kiểm tra đầu vào';
+    const currentUser = typeof user !== 'undefined' && user ? user : null;
+    const resolvedStudentName =
+      data.viewerName
+        ? data.viewerName
+        : 
+      (typeof studentName !== 'undefined' && studentName)
+        ? studentName
+        : (currentUser && (currentUser.full_name || currentUser.username || currentUser.email))
+          ? (currentUser.full_name || currentUser.username || currentUser.email)
+          : null;
+    const resolvedStudentEmail = data.viewerEmail || (currentUser && currentUser.email ? currentUser.email : (data.guestEmail || null));
+    const displayName = resolvedStudentName || data.guestName || 'Học viên';
+    const displaySubline = resolvedStudentEmail || 'Đã hoàn thành bài kiểm tra đầu vào';
     const displayInitial = (displayName || 'H').trim().charAt(0).toUpperCase() || 'H';
     const retakeHref = data.examId ? buildHref(`/placement-tests/${data.examId}`) : buildHref('/placement-tests');
-    const quickLinks = [
-      { label: 'Classroom', href: buildHref('/student/classroom') },
-      { label: 'Góc học tập', href: buildHref('/goc-hoc-tap') },
-      { label: 'Khóa học', href: buildHref('/courses-blog') },
-      { label: 'Lịch khai giảng', href: buildHref('/lich-khai-giang') },
-      { label: 'Liên hệ', href: buildHref('/contact') },
-      { label: 'Góp ý', href: buildHref('/student/feedback') }
+    const normalizePath = (value) => {
+      const cleanValue = String(value || '').split('?')[0].split('#')[0];
+      const trimmedValue = cleanValue.replace(/\/+$/, '');
+      return trimmedValue || '/';
+    };
+    const currentRoute = normalizePath(typeof currentPath !== 'undefined' ? currentPath : '');
+    const studyHubItems = [
+      {
+        label: 'Thi Thử Full Test',
+        href: buildHref('/placement-tests'),
+        matches: ['/placement-tests'],
+        note: 'Làm bộ đề đầy đủ với trải nghiệm gần như bài thi thật.'
+      },
+      {
+        label: 'Luyện Tập Theo Part',
+        href: buildHref('/student/practice/parts'),
+        matches: ['/student/practice/parts'],
+        note: 'Tập trung đúng phần đang yếu và ôn theo từng dạng câu hỏi.'
+      },
+      {
+        label: 'Luyện Tập Reading',
+        href: buildHref('/student/practice/reading'),
+        matches: ['/student/practice/reading'],
+        note: 'Tăng tốc đọc hiểu, định vị ý chính và xử lý bài đọc dài.'
+      },
+      {
+        label: 'Nghe - Chép chính tả',
+        href: buildHref('/student/dictation'),
+        matches: ['/student/dictation'],
+        note: 'Rèn phản xạ nghe, độ chính xác và vốn từ qua dictation.'
+      }
     ];
+    const quickLinks = [
+      { label: 'Classroom', href: buildHref('/student/classroom'), matches: ['/student/classroom'] },
+      { label: 'Góc học tập', children: studyHubItems },
+      { label: 'Khóa học', href: buildHref('/courses-blog'), matches: ['/courses-blog', '/course-detail', '/register-course', '/payment'] },
+      { label: 'Lịch khai giảng', href: buildHref('/lich-khai-giang'), matches: ['/lich-khai-giang'] },
+      { label: 'Liên hệ', href: buildHref('/contact'), matches: ['/contact'] },
+      { label: 'Góp ý', href: buildHref('/student/feedback'), matches: ['/student/feedback'] }
+    ];
+    const isActive = (item) => Array.isArray(item.matches) && item.matches.some((target) => {
+      const normalizedTarget = normalizePath(buildHref(target));
+      if (normalizedTarget === '/') return currentRoute === '/';
+      return currentRoute === normalizedTarget || currentRoute.startsWith(`${normalizedTarget}/`);
+    });
+    const isItemActive = (item) => Array.isArray(item.children) && item.children.length
+      ? item.children.some((child) => isActive(child))
+      : isActive(item);
   %>
 
   <header class="tr-header">
@@ -562,8 +749,27 @@
       </a>
 
       <nav class="tr-nav" aria-label="Điều hướng nhanh">
-        <% quickLinks.forEach((item) => { %>
-          <a href="<%= item.href %>" class="tr-link"><%= item.label %></a>
+        <% quickLinks.forEach((item) => { const itemActive = isItemActive(item); %>
+          <% if (item.children && item.children.length) { %>
+            <div class="tr-nav-item tr-nav-group">
+              <button type="button" class="tr-link-toggle <%= itemActive ? 'is-active' : '' %>" data-tr-subnav-toggle aria-expanded="false">
+                <span><%= item.label %></span>
+                <svg class="tr-link-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </button>
+              <div class="tr-subnav" role="menu" aria-label="<%= item.label %>">
+                <% item.children.forEach((child) => { const childActive = isActive(child); %>
+                  <a href="<%= child.href %>" class="tr-subnav-link <%= childActive ? 'is-active' : '' %>" role="menuitem">
+                    <span class="tr-subnav-title"><%= child.label %></span>
+                    <span class="tr-subnav-note"><%= child.note %></span>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          <% } else { %>
+            <a href="<%= item.href %>" class="tr-link <%= itemActive ? 'is-active' : '' %>"><%= item.label %></a>
+          <% } %>
         <% }) %>
       </nav>
 
@@ -626,8 +832,8 @@
       </div>
       <div class="tr-panel tr-card tr-mini">
         <span>Thí sinh</span>
-        <strong><%= data.guestName || 'Khách' %></strong>
-        <p><%= data.guestEmail || 'Chưa cung cấp email' %></p>
+        <strong><%= displayName || 'Khách' %></strong>
+        <p><%= resolvedStudentEmail || 'Chưa cung cấp email' %></p>
       </div>
     </section>
 
@@ -659,5 +865,45 @@
       }) %>
     <% } %>
   </main>
+  <script>
+    (() => {
+      const groups = Array.from(document.querySelectorAll('.tr-nav-group'));
+      if (!groups.length) return;
+
+      const closeGroups = (except = null) => {
+        groups.forEach((group) => {
+          if (group === except) return;
+          group.classList.remove('is-open');
+          const button = group.querySelector('[data-tr-subnav-toggle]');
+          if (button) button.setAttribute('aria-expanded', 'false');
+        });
+      };
+
+      document.querySelectorAll('[data-tr-subnav-toggle]').forEach((button) => {
+        const group = button.closest('.tr-nav-group');
+        if (!group) return;
+
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const shouldOpen = !group.classList.contains('is-open');
+          closeGroups(group);
+          group.classList.toggle('is-open', shouldOpen);
+          button.setAttribute('aria-expanded', String(shouldOpen));
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('.tr-nav-group')) return;
+        closeGroups();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        closeGroups();
+      });
+    })();
+  </script>
 </body>
 </html>

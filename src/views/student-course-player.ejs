@@ -1,0 +1,332 @@
+<%
+const data = coursePlayer || {};
+const activeLesson = data.activeLesson || {};
+const sections = Array.isArray(data.sections) ? data.sections : [];
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const hasEmbed = Boolean(activeLesson.embedUrl);
+%>
+
+<style>
+  .scp-page {
+    width: min(1540px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 18px 0 30px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .scp-topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    color: #667085;
+    font-size: 0.94rem;
+  }
+
+  .scp-topbar a {
+    color: #475467;
+    text-decoration: none;
+  }
+
+  .scp-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 430px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .scp-player-shell,
+  .scp-sidebar {
+    border-radius: 22px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 20px 46px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .scp-player-head {
+    min-height: 54px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, #5b4ee6 0%, #6254ea 100%);
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .scp-player-head strong {
+    font-size: 0.96rem;
+  }
+
+  .scp-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.92);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .scp-player-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #0f172a;
+  }
+
+  .scp-player-stage iframe,
+  .scp-player-stage img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+  }
+
+  .scp-player-stage img {
+    object-fit: cover;
+  }
+
+  .scp-placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 16px;
+    padding: 30px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.14) 0%, rgba(15, 23, 42, 0.34) 100%);
+    text-align: center;
+  }
+
+  .scp-placeholder-play {
+    width: 94px;
+    height: 94px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.86);
+    color: #ef4444;
+    font-size: 2rem;
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+  }
+
+  .scp-placeholder-copy {
+    max-width: 520px;
+    color: #fff;
+    display: grid;
+    gap: 8px;
+  }
+
+  .scp-placeholder-copy strong {
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    letter-spacing: -0.04em;
+  }
+
+  .scp-placeholder-copy p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.88);
+    line-height: 1.7;
+  }
+
+  .scp-player-foot {
+    padding: 16px 18px;
+    display: grid;
+    gap: 6px;
+  }
+
+  .scp-player-foot h1,
+  .scp-sidebar-head h2,
+  .scp-section summary,
+  .scp-lesson strong {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: #344054;
+  }
+
+  .scp-player-foot h1 {
+    font-size: 1.28rem;
+  }
+
+  .scp-player-foot p {
+    margin: 0;
+    color: #667085;
+    line-height: 1.7;
+  }
+
+  .scp-sidebar {
+    padding: 18px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .scp-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .scp-sidebar-head a {
+    color: #475467;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .scp-sidebar-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .scp-section {
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .scp-section summary {
+    padding: 16px 16px 12px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1rem;
+  }
+
+  .scp-section summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .scp-section-body {
+    display: grid;
+    gap: 8px;
+    padding: 0 12px 12px;
+  }
+
+  .scp-lesson {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 12px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #475467;
+    background: transparent;
+    border: 1px solid transparent;
+  }
+
+  .scp-lesson:hover {
+    background: #f8fafc;
+    border-color: rgba(15, 23, 42, 0.06);
+  }
+
+  .scp-lesson.is-active {
+    background: #f3f4f6;
+    border-color: rgba(15, 23, 42, 0.08);
+    box-shadow: inset -2px 0 0 #2f2f34;
+  }
+
+  .scp-lesson-meta {
+    display: grid;
+    gap: 6px;
+  }
+
+  .scp-lesson span {
+    color: #98a2b3;
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 1140px) {
+    .scp-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .scp-page {
+      width: min(100% - 14px, 1540px);
+      padding: 12px 0 24px;
+    }
+
+    .scp-player-head {
+      align-items: flex-start;
+      padding: 12px 14px;
+    }
+  }
+</style>
+
+<div class="scp-page">
+  <div class="scp-topbar">
+    <div>
+      <a href="<%= safeBaseUrl %>/student/courses/video-bai-giang">Video bài giảng</a>
+      <span>/</span>
+      <a href="<%= data.href || '#' %>"><%= data.title || "Khóa học" %></a>
+      <span>/</span>
+      <span><%= activeLesson.title || "Tiếp tục bài học" %></span>
+    </div>
+  </div>
+
+  <div class="scp-layout">
+    <section class="scp-player-shell">
+      <div class="scp-player-head">
+        <strong><%= activeLesson.title || data.title || "Bài học" %></strong>
+        <a href="<%= data.href || '#' %>" class="scp-close" aria-label="Quay lại chi tiết khóa học">×</a>
+      </div>
+
+      <div class="scp-player-stage">
+        <% if (hasEmbed) { %>
+          <iframe
+            src="<%= activeLesson.embedUrl %>"
+            title="<%= activeLesson.title || data.title %>"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <% } else { %>
+          <img src="<%= activeLesson.posterImage || data.image %>" alt="<%= activeLesson.title || data.title %>">
+          <div class="scp-placeholder">
+            <div class="scp-placeholder-play">▶</div>
+            <div class="scp-placeholder-copy">
+              <strong><%= activeLesson.title || data.title || "Bài học đang được cập nhật" %></strong>
+              <p>Nội dung bài giảng đang được cập nhật. Vui lòng quay lại sau.</p>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="scp-player-foot">
+        <h1><%= activeLesson.title || data.title || "Bài học" %></h1>
+        <p><%= data.teacher || "Đang cập nhật" %> · Thời lượng <%= activeLesson.duration || "Đang cập nhật" %></p>
+      </div>
+    </section>
+
+    <aside class="scp-sidebar">
+      <div class="scp-sidebar-head">
+        <h2>Nội dung khóa học</h2>
+        <a href="<%= data.href || '#' %>">Quay lại</a>
+      </div>
+
+      <div class="scp-sidebar-list">
+        <% sections.forEach((section) => { %>
+          <details class="scp-section" open>
+            <summary><%= section.title %></summary>
+            <div class="scp-section-body">
+              <% (section.lessons || []).forEach((lesson) => { %>
+                <a href="<%= lesson.href %>" class="scp-lesson <%= activeLesson.id === lesson.id ? 'is-active' : '' %>">
+                  <div class="scp-lesson-meta">
+                    <strong><%= lesson.title %></strong>
+                  </div>
+                  <span><%= lesson.duration %></span>
+                </a>
+              <% }) %>
+            </div>
+          </details>
+        <% }) %>
+      </div>
+    </aside>
+  </div>
+</div>

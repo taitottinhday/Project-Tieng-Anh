@@ -89,7 +89,7 @@ async function getTeacherClassroomList(teacherId) {
         c.end_date,
         co.name AS course_name,
         co.category,
-        COUNT(DISTINCT CASE WHEN e.status <> 'canceled' THEN e.id END) AS student_count,
+        COUNT(DISTINCT CASE WHEN e.status = 'active' THEN e.id END) AS student_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'lecture' THEN cp.id END) AS lecture_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count,
         COUNT(DISTINCT CASE WHEN cs.status IN ('submitted', 'completed', 'reviewed') THEN cs.id END) AS submission_count,
@@ -139,7 +139,7 @@ async function getTeacherClassroomHome(teacherId, classId) {
         c.end_date,
         co.name AS course_name,
         co.category,
-        COUNT(DISTINCT CASE WHEN e.status <> 'canceled' THEN e.id END) AS student_count,
+        COUNT(DISTINCT CASE WHEN e.status = 'active' THEN e.id END) AS student_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'lecture' THEN cp.id END) AS lecture_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count
       FROM classes c
@@ -207,7 +207,7 @@ async function getTeacherClassroomHome(teacherId, classId) {
         e.status AS enrollment_status
       FROM enrollments e
       INNER JOIN students s ON s.id = e.student_id
-      WHERE e.class_id = ? AND e.status <> 'canceled'
+      WHERE e.class_id = ? AND e.status = 'active'
       ORDER BY s.full_name ASC
     `,
     [classId]
@@ -289,7 +289,7 @@ async function createClassroomPost({
       `
         SELECT student_id
         FROM enrollments
-        WHERE class_id = ? AND status <> 'canceled'
+        WHERE class_id = ? AND status = 'active'
       `,
       [classId]
     );
@@ -349,7 +349,7 @@ async function getTeacherAssignmentBoard(teacherId, classId, postId) {
       INNER JOIN students s ON s.id = e.student_id
       LEFT JOIN classroom_submissions cs
         ON cs.post_id = ? AND cs.student_id = s.id
-      WHERE e.class_id = ? AND e.status <> 'canceled'
+      WHERE e.class_id = ? AND e.status = 'active'
       ORDER BY s.full_name ASC
     `,
     [postId, classId]
@@ -450,7 +450,7 @@ async function getStudentClassroomList(studentId) {
       LEFT JOIN classroom_submissions cs
         ON cs.post_id = cp.id
         AND cs.student_id = ?
-      WHERE e.student_id = ? AND e.status <> 'canceled'
+      WHERE e.student_id = ? AND e.status = 'active'
       GROUP BY
         c.id,
         c.code,
@@ -493,7 +493,7 @@ async function getStudentClassroomFeed(studentId, classId) {
       INNER JOIN classes c ON c.id = e.class_id
       LEFT JOIN courses co ON co.id = c.course_id
       LEFT JOIN teachers t ON t.id = c.teacher_id
-      WHERE e.class_id = ? AND e.student_id = ? AND e.status <> 'canceled'
+      WHERE e.class_id = ? AND e.student_id = ? AND e.status = 'active'
       LIMIT 1
     `,
     [classId, studentId]
@@ -580,7 +580,7 @@ async function getStudentPostDetail(studentId, classId, postId) {
       INNER JOIN classroom_posts cp ON cp.class_id = c.id
       LEFT JOIN courses co ON co.id = c.course_id
       LEFT JOIN teachers t ON t.id = c.teacher_id
-      WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status <> 'canceled'
+      WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status = 'active'
       LIMIT 1
     `,
     [studentId, classId, postId]
@@ -631,7 +631,7 @@ async function saveStudentSubmission({
       SELECT cp.id, cp.post_type
       FROM enrollments e
       INNER JOIN classroom_posts cp ON cp.class_id = e.class_id
-      WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status <> 'canceled'
+      WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status = 'active'
       LIMIT 1
     `,
     [studentId, classId, postId]
@@ -679,7 +679,7 @@ async function markStudentSubmissionComplete({
       SELECT cp.id, cp.post_type
       FROM enrollments e
       INNER JOIN classroom_posts cp ON cp.class_id = e.class_id
-      WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status <> 'canceled'
+      WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status = 'active'
       LIMIT 1
     `,
     [studentId, classId, postId]

@@ -1,4 +1,5 @@
 ﻿const testModel = require('../models/testModel');
+const db = require("../models/db");
 const renderWithLayout = require('../utils/renderHelper');
 const { syncStudentProfileFromUser } = require("../services/platformSupport");
 const { recordFullTestSession } = require("../services/studentActivityService");
@@ -14,6 +15,45 @@ const { sendPublicError } = require('../utils/publicError');
 function isStudentSession(req) {
     const role = req.session?.user?.role;
     return Boolean(role && role !== 'admin' && role !== 'teacher');
+}
+
+async function hydrateSessionUser(sessionUser) {
+    if (!sessionUser || !sessionUser.id) {
+        return sessionUser || null;
+    }
+
+    if (sessionUser.email && sessionUser.username) {
+        return sessionUser;
+    }
+
+    const [rows] = await db.query(
+        "SELECT id, username, email, role FROM users WHERE id = ? LIMIT 1",
+        [sessionUser.id]
+    );
+
+    return rows[0] || sessionUser;
+}
+
+async function resolveViewerContext(req) {
+    const sessionUser = await hydrateSessionUser(req.session?.user || null);
+
+    if (req.session?.user && sessionUser) {
+        req.session.user = {
+            ...req.session.user,
+            ...sessionUser
+        };
+    }
+
+    const student = sessionUser && sessionUser.role !== 'admin' && sessionUser.role !== 'teacher'
+        ? await syncStudentProfileFromUser(sessionUser)
+        : null;
+
+    return {
+        sessionUser,
+        student,
+        viewerName: student?.full_name || sessionUser?.username || null,
+        viewerEmail: student?.email || sessionUser?.email || null
+    };
 }
 
 function getRecommendationByToeicScore(score) {
@@ -315,9 +355,7 @@ async function submitTest(req, res) {
         const testId = req.params.id;
         const { guest_name, guest_email } = req.body || {};
         const managedExam = loadManagedFullTest(testId);
-        const student = isStudentSession(req)
-            ? await syncStudentProfileFromUser(req.session?.user)
-            : null;
+        const { student, viewerName, viewerEmail } = await resolveViewerContext(req);
 
         if (managedExam) {
             const result = await gradeToeicPlacementExam(managedExam, req.body || {});
@@ -325,7 +363,9 @@ async function submitTest(req, res) {
             req.session.lastPlacementResult = {
                 ...result,
                 guestName: guest_name || null,
-                guestEmail: guest_email || null
+                guestEmail: guest_email || null,
+                viewerName,
+                viewerEmail
             };
 
             if (student?.id) {
@@ -399,10 +439,18 @@ async function submitTest(req, res) {
 
 async function showResult(req, res) {
     try {
+        const { sessionUser, viewerName, viewerEmail } = await resolveViewerContext(req);
+
         if (req.session && req.session.lastPlacementResult) {
             return res.render('test-result', {
                 pageTitle: 'Kết quả TOEIC placement',
-                result: req.session.lastPlacementResult
+                user: sessionUser,
+                studentName: viewerName,
+                result: {
+                    ...req.session.lastPlacementResult,
+                    viewerName,
+                    viewerEmail
+                }
             });
         }
 
@@ -415,6 +463,8 @@ async function showResult(req, res) {
 
         res.render('test-result', {
             pageTitle: 'Kết quả bài test',
+            user: sessionUser,
+            studentName: viewerName,
             result: {
                 toeicScore: attempt.score,
                 recommendation: {
@@ -438,7 +488,9 @@ async function showResult(req, res) {
                 listeningTotal: 0,
                 readingTotal: 0,
                 unansweredCount: 0,
-                incorrectCount: 0
+                incorrectCount: 0,
+                viewerName,
+                viewerEmail
             }
         });
     } catch (error) {

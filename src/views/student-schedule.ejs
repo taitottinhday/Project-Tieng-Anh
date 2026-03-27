@@ -1,98 +1,578 @@
 <%
-const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
-const campuses = [
-  {
-    name: 'Cơ sở Hồ Tùng Mậu',
-    address: 'Số 17, ngõ 20 Hồ Tùng Mậu, Cầu Giấy, Hà Nội',
-    classes: [
-      { code: 'TẬP SỰ TS20', time: 'Tối 3-5-7 | 18h-19h30', opening: '31/03', teacher: 'Ms. Thu Linh' },
-      { code: 'TOEIC A23', time: 'Tối 3-5-7 | 18h-19h30', opening: '24/03', teacher: 'Ms. Mỹ Ngọc' },
-      { code: 'TOEIC B88', time: 'Tối 2-4-6 | 20h15-21h45', opening: '01/04', teacher: 'Ms. Trang Trang' }
-    ]
-  },
-  {
-    name: 'Cơ sở Lê Đức Thọ',
-    address: 'Số 9 ngách 59 ngõ 21 Lê Đức Thọ, Nam Từ Liêm, Hà Nội',
-    classes: [
-      { code: 'TẬP SỰ LT01', time: 'Tối 3-5 | 17h45-19h15', opening: '06/04', teacher: 'Ms. Minh Hạnh' },
-      { code: 'TOEIC A LT02', time: 'Tối 3-5-CN | 19h15-20h45', opening: '10/04', teacher: 'Ms. Thu Linh' },
-      { code: 'TOEIC SW82', time: 'Thứ 7-CN | 09h-11h', opening: '17/04', teacher: 'Ms. Trang Vũ' }
-    ]
-  },
-  {
-    name: 'Cơ sở Hà Đông',
-    address: '197 Trần Phú, Văn Quán, Hà Đông, Hà Nội',
-    classes: [
-      { code: 'TẬP SỰ SH10', time: 'Tối 2-4-6 | 20h-21h30', opening: '01/04', teacher: 'Mr. Mạnh Huy' },
-      { code: 'TOEIC AH09', time: 'Tối 3-5-7 | 18h-19h30', opening: '07/04', teacher: 'Mr. Minh Trí' },
-      { code: 'TOEIC AH11', time: 'Tối 2-4-6 | 18h-19h30', opening: '27/03', teacher: 'Mr. Mạnh Huy' }
-    ]
-  }
-];
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const studentRecord = typeof student !== "undefined" && student ? student : null;
+const studentDisplayName = studentRecord?.full_name || (user && user.username) || "Học viên";
+const scheduleItems = Array.isArray(typeof schedules !== "undefined" ? schedules : null) ? schedules : [];
+const pending = typeof pendingEnrollment !== "undefined" && pendingEnrollment ? pendingEnrollment : null;
+const hasSchedules = scheduleItems.length > 0;
+
+const allUpcomingSessions = scheduleItems
+  .flatMap((item) =>
+    (Array.isArray(item.upcomingSessions) ? item.upcomingSessions : []).map((session) => ({
+      ...session,
+      classCode: item.class_code || "Lớp đang cập nhật",
+      courseName: item.course_name || "Khóa học",
+      classroomHref: item.classroomHref || "",
+    }))
+  )
+  .sort((a, b) => String(a.isoDate || "").localeCompare(String(b.isoDate || "")));
+
+const nextSession = allUpcomingSessions[0] || null;
 %>
 
 <style>
-  .ss-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px;display:grid;gap:26px}
-  .ss-hero,.ss-campus{padding:30px;border-radius:34px;background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.06);box-shadow:0 24px 44px rgba(17,24,39,.08)}
-  .ss-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;background:linear-gradient(135deg,#ffffff 0%,#f5f3ff 52%,#eef2ff 100%)}
-  .ss-title,.ss-campus h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.05em;color:#111827}
-  .ss-title{font-size:clamp(2.5rem,5vw,4rem);line-height:1.02}
-  .ss-hero p,.ss-campus p{margin:0;color:#667085;line-height:1.8}
-  .ss-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
-  .ss-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:999px;text-decoration:none;font-weight:800;transition:transform .2s ease}
-  .ss-btn:hover{transform:translateY(-1px)}
-  .ss-btn-dark{background:#111827;color:#fff}
-  .ss-btn-soft{background:#eef2ff;color:#3730a3}
-  .ss-next{display:grid;gap:12px;padding:22px;border-radius:28px;background:#111827;color:#fff}
-  .ss-next strong{font-size:1.15rem}
-  .ss-next span{color:rgba(255,255,255,.78);line-height:1.7}
-  .ss-grid{display:grid;gap:18px}
-  .ss-table{display:grid;gap:12px;margin-top:18px}
-  .ss-row{display:grid;grid-template-columns:1.2fr 1.4fr .7fr 1fr;gap:12px;padding:16px 18px;border-radius:22px;background:#f8fafc;border:1px solid rgba(17,24,39,.06)}
-  .ss-row.head{background:#1f2937;color:#fff;font-weight:800}
-  .ss-code{font-weight:800;color:#1d4ed8}
-  @media (max-width:980px){.ss-hero,.ss-row{grid-template-columns:1fr}.ss-row.head{display:none}}
-  @media (max-width:720px){.ss-page{width:min(100% - 20px,1380px);padding:22px 0 28px}.ss-hero,.ss-campus{padding:20px;border-radius:24px}}
+  .st-page {
+    display: grid;
+    gap: 24px;
+    width: min(1380px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 30px 0 42px;
+  }
+
+  .st-hero,
+  .st-empty,
+  .st-pending,
+  .st-card,
+  .st-stat {
+    border-radius: 32px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+  }
+
+  .st-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    gap: 22px;
+    padding: 34px;
+    background:
+      radial-gradient(circle at top right, rgba(96, 165, 250, 0.22), transparent 28%),
+      radial-gradient(circle at bottom left, rgba(251, 191, 36, 0.14), transparent 24%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(239, 246, 255, 0.96) 100%);
+  }
+
+  .st-kicker {
+    margin: 0 0 12px;
+    color: #2563eb;
+    font-size: 0.86rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .st-title,
+  .st-card h2,
+  .st-empty h2,
+  .st-pending h2,
+  .st-side h3,
+  .st-schedule-title {
+    margin: 0;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.05em;
+    color: #0f172a;
+  }
+
+  .st-title {
+    font-size: clamp(2.3rem, 5vw, 3.8rem);
+    line-height: 1.02;
+  }
+
+  .st-hero p,
+  .st-side p,
+  .st-empty p,
+  .st-pending p,
+  .st-meta span,
+  .st-day-note,
+  .st-session-note,
+  .st-pending-list li {
+    margin: 0;
+    color: #5f6f87;
+    line-height: 1.82;
+  }
+
+  .st-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .st-btn,
+  .st-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .st-btn:hover,
+  .st-link:hover {
+    transform: translateY(-1px);
+  }
+
+  .st-btn.primary {
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+    color: #fff;
+    box-shadow: 0 18px 30px rgba(37, 99, 235, 0.22);
+  }
+
+  .st-btn.soft,
+  .st-link {
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+  }
+
+  .st-side {
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+    border-radius: 28px;
+    background: rgba(15, 23, 42, 0.94);
+    color: #fff;
+  }
+
+  .st-side h3 {
+    color: #fff;
+    font-size: 1.3rem;
+  }
+
+  .st-side p {
+    color: rgba(226, 232, 240, 0.88);
+  }
+
+  .st-side-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .st-side-item {
+    padding: 14px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .st-side-item strong {
+    display: block;
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .st-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .st-stat {
+    padding: 22px 24px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .st-stat-label {
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .st-stat-value {
+    color: #0f172a;
+    font-family: "Sora", "Be Vietnam Pro", sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+  }
+
+  .st-schedule-list {
+    display: grid;
+    gap: 22px;
+  }
+
+  .st-card {
+    padding: 28px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .st-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .st-card-title-group {
+    display: grid;
+    gap: 10px;
+  }
+
+  .st-card-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .st-schedule-title {
+    font-size: clamp(1.7rem, 4vw, 2.35rem);
+  }
+
+  .st-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .st-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .st-week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .st-day {
+    padding: 16px 14px;
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: #f8fafc;
+    display: grid;
+    gap: 8px;
+    min-height: 144px;
+    align-content: start;
+  }
+
+  .st-day.is-study {
+    border-color: rgba(37, 99, 235, 0.16);
+    background: linear-gradient(180deg, rgba(239, 246, 255, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+    box-shadow: 0 14px 24px rgba(37, 99, 235, 0.08);
+  }
+
+  .st-day-label {
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .st-day-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.16);
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .st-day.is-study .st-day-status {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+  }
+
+  .st-day-note strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #0f172a;
+    font-size: 0.92rem;
+  }
+
+  .st-session-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .st-session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    border-radius: 22px;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .st-session-title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .st-session-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    font-size: 0.74rem;
+    font-weight: 800;
+  }
+
+  .st-session-time {
+    color: #1d4ed8;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .st-empty,
+  .st-pending {
+    padding: 30px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .st-pending {
+    border-color: rgba(245, 158, 11, 0.18);
+    background: linear-gradient(135deg, rgba(255, 251, 235, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+  }
+
+  .st-pending-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.14);
+    color: #b45309;
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .st-pending-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  @media (max-width: 1180px) {
+    .st-hero,
+    .st-stat-grid,
+    .st-week {
+      grid-template-columns: 1fr;
+    }
+
+    .st-week {
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .st-page {
+      width: min(100% - 20px, 1380px);
+      padding: 20px 0 28px;
+    }
+
+    .st-hero,
+    .st-card,
+    .st-empty,
+    .st-pending,
+    .st-stat {
+      padding: 20px;
+      border-radius: 24px;
+    }
+
+    .st-card-head,
+    .st-session-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 </style>
 
-<div class="ss-page">
-  <section class="ss-hero">
+<div class="st-page">
+  <section class="st-hero">
     <div>
-      <h1 class="ss-title">Lịch khai giảng cho học viên</h1>
-      <p>Theo dõi nhanh các lớp sắp mở theo từng cơ sở, so sánh thời gian học và giữ chỗ ngay trong tài khoản học viên.</p>
-      <div class="ss-actions">
-        <a href="<%= safeBaseUrl %>/register-course" class="ss-btn ss-btn-dark">Giữ chỗ ngay</a>
-        <a href="<%= safeBaseUrl %>/student/courses" class="ss-btn ss-btn-soft">Xem khóa học</a>
+      <p class="st-kicker">Student timetable</p>
+      <h1 class="st-title">Thời khóa biểu của <%= studentDisplayName %></h1>
+      <p>
+        Lịch học sẽ được cập nhật ngay khi trung tâm xác nhận thanh toán và thêm bạn vào lớp chính thức.
+        Tại đây bạn có thể xem rõ ngày học, ngày nghỉ, khung giờ học và các buổi sắp tới trong tuần.
+      </p>
+      <div class="st-actions">
+        <a href="<%= safeBaseUrl %>/student/classroom" class="st-btn primary">Mở Classroom</a>
+        <a href="<%= safeBaseUrl %>/student/courses" class="st-btn soft">Xem tổng hợp khóa học</a>
       </div>
     </div>
-    <aside class="ss-next">
-      <strong>Mốc gần nhất</strong>
-      <span>Tập Sự TS20 khai giảng ngày 31/03 tại cơ sở Hồ Tùng Mậu. Bạn có thể đăng ký sớm để được ưu tiên xếp lớp.</span>
+
+    <aside class="st-side">
+      <h3>Tóm tắt nhanh</h3>
+      <p>Không gian này được thiết kế để học viên kiểm tra lịch học theo phong cách rõ ràng, chuyên nghiệp và dễ theo dõi.</p>
+      <div class="st-side-list">
+        <div class="st-side-item">
+          <strong><%= hasSchedules ? `${scheduleItems.length} lớp đang hoạt động` : "Chưa có lớp hoạt động" %></strong>
+          <span><%= hasSchedules ? "Lịch học thực tế đang được đồng bộ từ lớp bạn đã được mở quyền." : "Sau khi admin xác nhận thanh toán, lịch sẽ xuất hiện tự động tại đây." %></span>
+        </div>
+        <div class="st-side-item">
+          <strong><%= nextSession ? `${nextSession.dateLabel} • ${nextSession.timeRangeLabel}` : "Đang chờ buổi học đầu tiên" %></strong>
+          <span><%= nextSession ? `${nextSession.courseName} • ${nextSession.classCode}` : "Nếu chưa có lớp, bạn có thể đăng ký khóa học mới từ thư viện khóa học." %></span>
+        </div>
+      </div>
     </aside>
   </section>
 
-  <section class="ss-grid">
-    <% campuses.forEach((campus) => { %>
-      <article class="ss-campus">
-        <h2><%= campus.name %></h2>
-        <p><%= campus.address %></p>
-        <div class="ss-table">
-          <div class="ss-row head">
-            <div>Mã lớp</div>
-            <div>Thời gian học</div>
-            <div>Khai giảng</div>
-            <div>Giáo viên</div>
-          </div>
-          <% campus.classes.forEach((item) => { %>
-            <div class="ss-row">
-              <div><span class="ss-code"><%= item.code %></span></div>
-              <div><%= item.time %></div>
-              <div><strong><%= item.opening %></strong></div>
-              <div><%= item.teacher %></div>
-            </div>
-          <% }) %>
-        </div>
-      </article>
-    <% }) %>
+  <section class="st-stat-grid">
+    <article class="st-stat">
+      <span class="st-stat-label">Lớp đang mở</span>
+      <strong class="st-stat-value"><%= scheduleItems.length %></strong>
+      <span class="st-session-note">Chỉ các lớp đã được xác nhận thanh toán mới hiển thị ở đây.</span>
+    </article>
+    <article class="st-stat">
+      <span class="st-stat-label">Buổi gần nhất</span>
+      <strong class="st-stat-value"><%= nextSession ? nextSession.weekdayLabel : "Chưa có" %></strong>
+      <span class="st-session-note"><%= nextSession ? `${nextSession.dateLabel} • ${nextSession.timeRangeLabel}` : "Chưa có dữ liệu buổi học kế tiếp." %></span>
+    </article>
+    <article class="st-stat">
+      <span class="st-stat-label">Trạng thái đăng ký</span>
+      <strong class="st-stat-value"><%= hasSchedules ? "Đang học" : (pending ? "Chờ duyệt" : "Chưa có lớp") %></strong>
+      <span class="st-session-note"><%= hasSchedules ? "Bạn đã được thêm vào lớp và có thể theo dõi lịch học đầy đủ." : (pending ? "Thanh toán đã gửi, đang chờ admin xác nhận." : "Bạn chưa có lớp học nào trong hệ thống.") %></span>
+    </article>
   </section>
+
+  <% if (!hasSchedules && pending) { %>
+    <section class="st-pending">
+      <span class="st-pending-badge">Chờ admin xác nhận thanh toán</span>
+      <h2><%= pending.course_name || "Khóa học đã đăng ký" %> • <%= pending.class_code || "Lớp đang cập nhật" %></h2>
+      <p>
+        Trung tâm đã nhận được yêu cầu thanh toán của bạn. Sau khi admin xác nhận, hệ thống sẽ tự động mở lớp, cập nhật thời khóa biểu
+        và gửi thông báo vào chuông cạnh tài khoản học viên.
+      </p>
+      <ul class="st-pending-list">
+        <li><strong>Lịch lớp dự kiến:</strong> <%= pending.schedule_text || pending.scheduleMeta?.scheduleText || "Theo lịch trung tâm" %></li>
+        <li><strong>Ngày bắt đầu:</strong> <%= pending.startLabel || "Đang cập nhật" %></li>
+        <li><strong>Phòng / hình thức học:</strong> <%= pending.room || "Đang cập nhật" %></li>
+      </ul>
+      <div class="st-actions">
+        <% if (pending.paymentHref) { %>
+          <a href="<%= safeBaseUrl %><%= pending.paymentHref %>" class="st-btn primary">Mở lại trang thanh toán</a>
+        <% } %>
+        <a href="<%= safeBaseUrl %>/student/contact" class="st-btn soft">Liên hệ trung tâm</a>
+      </div>
+    </section>
+  <% } %>
+
+  <% if (!hasSchedules && !pending) { %>
+    <section class="st-empty">
+      <p class="st-kicker">No active class</p>
+      <h2>Bạn chưa có lớp học nào</h2>
+      <p>
+        Hiện tại tài khoản của bạn chưa được thêm vào lớp chính thức nào. Khi đăng ký khóa học và được trung tâm xác nhận thanh toán,
+        thời khóa biểu sẽ tự động xuất hiện tại đây cùng thông báo chi tiết.
+      </p>
+      <div class="st-actions">
+        <a href="<%= safeBaseUrl %>/student/courses" class="st-btn primary">Xem khóa học đang mở</a>
+        <a href="<%= safeBaseUrl %>/register-course" class="st-btn soft">Đăng ký khóa học</a>
+      </div>
+    </section>
+  <% } %>
+
+  <% if (hasSchedules) { %>
+    <section class="st-schedule-list">
+      <% scheduleItems.forEach((item) => { %>
+        <article class="st-card">
+          <div class="st-card-head">
+            <div class="st-card-title-group">
+              <span class="st-card-eyebrow"><%= item.class_code || "Lớp đang học" %></span>
+              <h2 class="st-schedule-title"><%= item.course_name || "Khóa học đang cập nhật" %></h2>
+              <div class="st-meta">
+                <span>Giáo viên: <%= item.teacher_name || "Đang cập nhật" %></span>
+                <span>Lịch tổng quát: <%= item.scheduleMeta?.scheduleText || item.schedule_text || "Theo lịch lớp" %></span>
+                <span>Bắt đầu: <%= item.startLabel || "Đang cập nhật" %></span>
+                <span>Kết thúc: <%= item.endLabel || "Đang cập nhật" %></span>
+              </div>
+            </div>
+
+            <% if (item.classroomHref) { %>
+              <a href="<%= safeBaseUrl %><%= item.classroomHref %>" class="st-link">Vào lớp học</a>
+            <% } %>
+          </div>
+
+          <div class="st-week">
+            <% (Array.isArray(item.weekCards) ? item.weekCards : []).forEach((day) => { %>
+              <article class="st-day <%= day.isStudyDay ? 'is-study' : '' %>">
+                <strong class="st-day-label"><%= day.label %></strong>
+                <span class="st-day-status"><%= day.isStudyDay ? "Có lịch học" : "Nghỉ" %></span>
+                <div class="st-day-note">
+                  <% if (day.isStudyDay) { %>
+                    <strong><%= day.timeRangeLabel || item.scheduleMeta?.timeRangeLabel || "Theo lịch lớp" %></strong>
+                    <span>Buổi học cố định trong tuần.</span>
+                  <% } else { %>
+                    <strong>Không có lớp</strong>
+                    <span>Ngày này hệ thống đang ghi nhận là ngày nghỉ của bạn.</span>
+                  <% } %>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+
+          <div class="st-session-list">
+            <% if (Array.isArray(item.upcomingSessions) && item.upcomingSessions.length) { %>
+              <% item.upcomingSessions.forEach((session) => { %>
+                <article class="st-session-item">
+                  <div>
+                    <div class="st-session-title">
+                      <span><%= session.dateLabel %></span>
+                      <% if (session.isToday) { %>
+                        <span class="st-session-badge">Hôm nay</span>
+                      <% } %>
+                    </div>
+                    <p class="st-session-note"><%= item.class_code || "Lớp học" %> • <%= session.weekdayLabel %></p>
+                  </div>
+                  <strong class="st-session-time"><%= session.timeRangeLabel || item.scheduleMeta?.timeRangeLabel || "Theo lịch lớp" %></strong>
+                </article>
+              <% }) %>
+            <% } else { %>
+              <article class="st-session-item">
+                <div>
+                  <div class="st-session-title">Chưa có buổi học sắp tới</div>
+                  <p class="st-session-note">Lịch sẽ tiếp tục được cập nhật khi lớp có ngày học tiếp theo trong hệ thống.</p>
+                </div>
+              </article>
+            <% } %>
+          </div>
+        </article>
+      <% }) %>
+    </section>
+  <% } %>
 </div>

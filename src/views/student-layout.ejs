@@ -290,6 +290,222 @@
             font-weight: 700
         }
 
+        .s-bell-wrap {
+            position: relative;
+            flex: 0 0 auto
+        }
+
+        .s-bell {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            border: 1px solid rgba(17, 24, 39, .08);
+            background: rgba(255, 255, 255, .94);
+            color: #0f172a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, .08);
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease
+        }
+
+        .s-bell:hover,
+        .s-bell[aria-expanded="true"] {
+            transform: translateY(-1px);
+            border-color: rgba(59, 130, 246, .18);
+            background: rgba(239, 246, 255, .98);
+            box-shadow: 0 18px 34px rgba(37, 99, 235, .14)
+        }
+
+        .s-bell-count {
+            position: absolute;
+            top: -5px;
+            right: -4px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .72rem;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(239, 68, 68, .28)
+        }
+
+        .s-notify-panel {
+            position: absolute;
+            top: calc(100% + 14px);
+            right: 0;
+            width: min(420px, calc(100vw - 24px));
+            padding: 18px;
+            border-radius: 28px;
+            border: 1px solid rgba(17, 24, 39, .08);
+            background: rgba(255, 255, 255, .98);
+            box-shadow: 0 28px 60px rgba(15, 23, 42, .18);
+            display: grid;
+            gap: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(12px);
+            transition: opacity .18s ease, transform .18s ease;
+            z-index: 60
+        }
+
+        .s-bell-wrap.is-open .s-notify-panel {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0)
+        }
+
+        .s-notify-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px
+        }
+
+        .s-notify-copy {
+            display: grid;
+            gap: 5px
+        }
+
+        .s-notify-copy strong {
+            color: #0f172a;
+            font-size: 1rem
+        }
+
+        .s-notify-copy span {
+            color: #64748b;
+            font-size: .84rem;
+            line-height: 1.6
+        }
+
+        .s-notify-list {
+            display: grid;
+            gap: 10px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 2px
+        }
+
+        .s-notify-item {
+            display: grid;
+            gap: 10px;
+            padding: 15px 16px;
+            border-radius: 22px;
+            border: 1px solid rgba(148, 163, 184, .16);
+            background: #fff
+        }
+
+        .s-notify-item.is-new {
+            border-color: rgba(37, 99, 235, .18);
+            background: linear-gradient(180deg, rgba(239, 246, 255, .92) 0%, rgba(255, 255, 255, .98) 100%)
+        }
+
+        .s-notify-item-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .s-notify-item-head strong {
+            color: #0f172a;
+            font-size: .95rem;
+            line-height: 1.45
+        }
+
+        .s-notify-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: .78rem;
+            font-weight: 700
+        }
+
+        .s-notify-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 24px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: rgba(37, 99, 235, .12);
+            color: #1d4ed8;
+            font-size: .7rem;
+            font-weight: 800
+        }
+
+        .s-notify-item p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.72;
+            font-size: .88rem
+        }
+
+        .s-notify-item a,
+        .s-notify-mark,
+        .s-notify-empty-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            min-height: 40px;
+            padding: 0 15px;
+            border-radius: 999px;
+            font-size: .84rem;
+            font-weight: 800
+        }
+
+        .s-notify-item a {
+            background: rgba(37, 99, 235, .08);
+            color: #1d4ed8
+        }
+
+        .s-notify-mark {
+            border: 0;
+            background: rgba(15, 23, 42, .08);
+            color: #0f172a;
+            cursor: pointer
+        }
+
+        .s-notify-empty {
+            padding: 18px;
+            border-radius: 22px;
+            background: #f8fafc;
+            border: 1px dashed rgba(148, 163, 184, .32);
+            display: grid;
+            gap: 12px;
+            justify-items: start
+        }
+
+        .s-notify-empty strong {
+            color: #0f172a;
+            font-size: .98rem
+        }
+
+        .s-notify-empty span {
+            color: #64748b;
+            line-height: 1.7;
+            font-size: .88rem
+        }
+
+        .s-notify-empty-link {
+            background: rgba(37, 99, 235, .08);
+            color: #1d4ed8
+        }
+
+        .s-notifications {
+            display: none !important
+        }
+
         .s-profile {
             display: inline-flex;
             align-items: center;
@@ -542,6 +758,7 @@
 
         .s-brand,
         .s-link,
+        .s-bell,
         .s-profile,
         .s-logout,
         .s-logout-quick,
@@ -592,6 +809,145 @@
         .s-flash-card.info {
             color: #1d4ed8;
             border-color: rgba(29, 78, 216, .12)
+        }
+
+        .s-notifications {
+            width: min(1380px, calc(100% - 32px));
+            margin: 18px auto 0;
+            padding: 20px 22px;
+            display: grid;
+            gap: 16px;
+            border-radius: 28px;
+            border: 1px solid rgba(59, 130, 246, .14);
+            background: linear-gradient(135deg, rgba(239, 246, 255, .96) 0%, rgba(255, 255, 255, .96) 100%);
+            box-shadow: 0 16px 34px rgba(37, 99, 235, .08)
+        }
+
+        .s-notifications-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .s-notifications-headline {
+            display: grid;
+            gap: 5px
+        }
+
+        .s-notifications-headline strong {
+            font-size: 1rem;
+            color: #0f172a
+        }
+
+        .s-notifications-headline span {
+            color: #475569;
+            font-size: .9rem;
+            line-height: 1.6
+        }
+
+        .s-notifications-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(37, 99, 235, .1);
+            color: #1d4ed8;
+            font-size: .84rem;
+            font-weight: 800
+        }
+
+        .s-notifications-list {
+            display: grid;
+            gap: 12px
+        }
+
+        .s-notification-card {
+            display: grid;
+            gap: 10px;
+            padding: 16px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(148, 163, 184, .16);
+            background: rgba(255, 255, 255, .96)
+        }
+
+        .s-notification-card.is-new {
+            border-color: rgba(37, 99, 235, .22);
+            box-shadow: 0 10px 24px rgba(37, 99, 235, .08)
+        }
+
+        .s-notification-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .s-notification-top strong {
+            color: #0f172a;
+            font-size: .96rem
+        }
+
+        .s-notification-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: .82rem;
+            font-weight: 700
+        }
+
+        .s-notification-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, .12);
+            color: #047857;
+            font-size: .74rem;
+            font-weight: 800
+        }
+
+        .s-notification-body {
+            margin: 0;
+            color: #475569;
+            line-height: 1.75
+        }
+
+        .s-notification-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .s-notification-link,
+        .s-notification-read {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 999px;
+            font-size: .88rem;
+            font-weight: 800
+        }
+
+        .s-notification-link {
+            background: #111827;
+            color: #fff
+        }
+
+        .s-notification-read {
+            border: 0;
+            background: rgba(15, 23, 42, .06);
+            color: #334155;
+            cursor: pointer
         }
 
         .s-footer {
@@ -747,6 +1103,7 @@
 
             .s-wrap,
             .s-flash,
+            .s-notifications,
             .s-footer-inner,
             .s-mobile-inner {
                 width: min(100% - 20px, 1380px)
@@ -779,11 +1136,18 @@
 
         const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
         const buildHref = (path) => `${safeBaseUrl}${path}`;
-        const currentRoute = normalizePath(typeof currentPath !== 'undefined' ? currentPath : '/');
+        const currentRequestPath = typeof currentPath !== 'undefined' ? currentPath : '/';
+        const currentRoute = normalizePath(currentRequestPath);
+        const notificationReturnPath =
+        safeBaseUrl && currentRequestPath.startsWith(safeBaseUrl)
+        ? (currentRequestPath.slice(safeBaseUrl.length) || '/')
+        : currentRequestPath;
 
         const safeSuccessMessages = typeof success_msg !== 'undefined' ? success_msg : [];
         const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
-        const safeInfoMessages = typeof error !== 'undefined' ? error : [];
+        const safeInfoMessages = typeof info !== 'undefined' ? info : [];
+        const safeStudentNotifications = Array.isArray(studentNotifications) ? studentNotifications : [];
+        const unreadNotificationCount = Number(unreadStudentNotificationCount || 0);
 
         const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
 
@@ -792,7 +1156,64 @@
         ? studentName
         : 'Học viên';
 
+        const formatNotificationTime = (value) => {
+        if (!value) return 'Vừa cập nhật';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Vừa cập nhật';
+        return new Intl.DateTimeFormat('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit'
+        }).format(date);
+        };
+
         const studentInitial = safeStudentName.trim().charAt(0).toUpperCase() || 'H';
+
+        const courseMenuItems = [
+        {
+        label: 'Tổng hợp khóa học',
+        href: buildHref('/student/courses'),
+        matches: ['/student/courses'],
+        exact: true,
+        note: 'Xem lộ trình, học phí ưu đãi và đăng ký nhanh cho từng khóa.'
+        },
+        {
+        label: 'TOEIC 2 kỹ năng',
+        href: buildHref('/courses-blog/toeic-2-ky-nang'),
+        matches: ['/courses-blog/toeic-2-ky-nang'],
+        note: 'Lộ trình nền tảng nghe đọc và tăng band theo từng chặng.'
+        },
+        {
+        label: 'TOEIC 4 kỹ năng',
+        href: buildHref('/courses-blog/toeic-4-ky-nang'),
+        matches: ['/courses-blog/toeic-4-ky-nang'],
+        note: 'Bổ sung speaking, writing và lộ trình học đồng bộ hơn.'
+        },
+        {
+        label: 'Khóa học cấp tốc',
+        href: buildHref('/courses-blog/khoa-hoc-cap-toc'),
+        matches: ['/courses-blog/khoa-hoc-cap-toc'],
+        note: 'Phù hợp khi cần rút ngắn thời gian ôn và bứt tốc điểm số.'
+        },
+        {
+        label: 'Tiếng Anh doanh nghiệp',
+        href: buildHref('/courses-blog/tieng-anh-doanh-nghiep'),
+        matches: ['/courses-blog/tieng-anh-doanh-nghiep'],
+        note: 'Tập trung email, meeting và tiếng Anh công sở.'
+        },
+        {
+        label: 'Video bài giảng',
+        href: buildHref('/student/courses/video-bai-giang'),
+        matches: [
+        '/student/courses/video-bai-giang',
+        '/student/courses/toeic-part-5',
+        '/student/courses/toeic-grammar-core',
+        '/student/courses/tap-su-vocabulary'
+        ],
+        note: 'Mở thư viện video bài giảng và xem lại ngay trong tài khoản.'
+        }
+        ];
 
         let navItems = [
         { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
@@ -805,7 +1226,7 @@
         ['/student/practice/reading'] },
         { label: 'Nghe - Chép chính tả', shortLabel: 'Nghe - Chép', href: buildHref('/student/dictation'), matches:
         ['/student/dictation'] },
-        { label: 'Khóa học', href: buildHref('/student/courses'), matches: ['/student/courses'] },
+        { label: 'Khóa học', children: courseMenuItems },
         { label: 'Lịch Khai Giảng', href: buildHref('/student/schedule'), matches: ['/student/schedule'] },
         { label: 'Liên Hệ', href: buildHref('/student/contact'), matches: ['/student/contact'] },
         { label: 'Góp Ý', href: buildHref('/student/feedback'), matches: ['/student/feedback'] },
@@ -844,6 +1265,7 @@
         const isActive = (item) => (item.matches || []).some((target) => {
         const normalized = normalizePath(safeBaseUrl + target);
         if (normalized === '/') return currentRoute === '/';
+        if (item.exact) return currentRoute === normalized;
         return currentRoute === normalized || currentRoute.startsWith(normalized + '/');
         });
 
@@ -906,6 +1328,67 @@
                 </nav>
 
                 <div class="s-actions">
+                    <div class="s-bell-wrap" id="studentNotificationRoot">
+                        <button
+                            type="button"
+                            class="s-bell"
+                            id="studentNotificationToggle"
+                            aria-label="Mở thông báo học viên"
+                            aria-controls="studentNotificationPanel"
+                            aria-expanded="false"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path>
+                                <path d="M9 17a3 3 0 0 0 6 0"></path>
+                            </svg>
+                            <% if (unreadNotificationCount > 0) { %>
+                                <span class="s-bell-count"><%= unreadNotificationCount > 9 ? '9+' : unreadNotificationCount %></span>
+                            <% } %>
+                        </button>
+
+                        <section class="s-notify-panel" id="studentNotificationPanel" aria-label="Thông báo học viên">
+                            <div class="s-notify-head">
+                                <div class="s-notify-copy">
+                                    <strong>Thông báo học viên</strong>
+                                    <span>Thanh toán, lớp học và phản hồi tư vấn mới sẽ được cập nhật tại đây.</span>
+                                </div>
+                                <% if (safeStudentNotifications.length) { %>
+                                    <form method="POST" action="<%= buildHref('/student/notifications/read-all') %>">
+                                        <input type="hidden" name="redirect" value="<%= notificationReturnPath %>">
+                                        <button type="submit" class="s-notify-mark">Đánh dấu đã xem</button>
+                                    </form>
+                                <% } %>
+                            </div>
+
+                            <% if (safeStudentNotifications.length) { %>
+                                <div class="s-notify-list">
+                                    <% safeStudentNotifications.forEach((notification) => { %>
+                                        <article class="s-notify-item <%= notification.is_read ? '' : 'is-new' %>">
+                                            <div class="s-notify-item-head">
+                                                <strong><%= notification.title %></strong>
+                                                <span class="s-notify-meta">
+                                                    <% if (!notification.is_read) { %>
+                                                        <span class="s-notify-tag">Mới</span>
+                                                    <% } %>
+                                                    <span><%= formatNotificationTime(notification.created_at) %></span>
+                                                </span>
+                                            </div>
+                                            <p><%= notification.message || 'Trung tâm vừa cập nhật thông tin mới cho tài khoản học viên của bạn.' %></p>
+                                            <% if (notification.href) { %>
+                                                <a href="<%= buildHref(notification.href) %>">Mở chi tiết</a>
+                                            <% } %>
+                                        </article>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <div class="s-notify-empty">
+                                    <strong>Chưa có thông báo mới</strong>
+                                    <span>Khi trung tâm xác nhận thanh toán, thêm bạn vào lớp hoặc phản hồi tư vấn, thông báo sẽ hiện tại đây.</span>
+                                    <a href="<%= buildHref('/student/contact') %>" class="s-notify-empty-link">Liên hệ trung tâm</a>
+                                </div>
+                            <% } %>
+                        </section>
+                    </div>
                     <span class="s-badge">Tài khoản học viên</span>
 
                     <a href="<%= buildHref('/student/profile') %>" class="s-profile" aria-label="Mở hồ sơ học viên">
@@ -1009,6 +1492,50 @@
             </section>
             <% } %>
 
+                <% if (safeStudentNotifications.length) { %>
+                    <section class="s-notifications" id="studentNotifications">
+                        <div class="s-notifications-head">
+                            <div class="s-notifications-headline">
+                                <strong>Thông báo học viên</strong>
+                                <span>Trung tâm sẽ cập nhật tại đây khi thanh toán được xác nhận hoặc lớp học của bạn sẵn sàng.</span>
+                            </div>
+                            <div class="s-notifications-head">
+                                <% if (unreadNotificationCount > 0) { %>
+                                    <span class="s-notifications-pill"><%= unreadNotificationCount %> thông báo mới</span>
+                                <% } %>
+                                <form method="POST" action="<%= buildHref('/student/notifications/read-all') %>">
+                                    <input type="hidden" name="redirect" value="<%= currentRoute %>">
+                                    <button type="submit" class="s-notification-read">Đánh dấu đã xem</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="s-notifications-list">
+                            <% safeStudentNotifications.forEach((notification) => { %>
+                                <article class="s-notification-card <%= notification.is_read ? '' : 'is-new' %>">
+                                    <div class="s-notification-top">
+                                        <strong><%= notification.title %></strong>
+                                        <div class="s-notification-meta">
+                                            <% if (!notification.is_read) { %>
+                                                <span class="s-notification-status">Mới</span>
+                                            <% } %>
+                                            <span><%= formatNotificationTime(notification.created_at) %></span>
+                                        </div>
+                                    </div>
+                                    <p class="s-notification-body"><%= notification.message || 'Trung tâm vừa cập nhật trạng thái học tập cho bạn.' %></p>
+                                    <div class="s-notification-actions">
+                                        <% if (notification.href) { %>
+                                            <a href="<%= buildHref(notification.href) %>" class="s-notification-link">Mở ngay</a>
+                                        <% } else { %>
+                                            <span class="s-notification-meta">Đã lưu vào tài khoản học viên</span>
+                                        <% } %>
+                                    </div>
+                                </article>
+                            <% }) %>
+                        </div>
+                    </section>
+                <% } %>
+
                 <main class="s-stage"><%- content %></main>
 
                 <footer class="s-footer">
@@ -1058,6 +1585,8 @@
                         const toggle = document.getElementById('studentMenuToggle');
                         if (!toggle) return;
                         const desktopGroups = Array.from(document.querySelectorAll('.s-nav-group'));
+                        const notificationRoot = document.getElementById('studentNotificationRoot');
+                        const notificationToggle = document.getElementById('studentNotificationToggle');
 
                         const closeMenu = () => document.body.classList.remove('menu-open');
                         const closeDesktopGroups = (except = null) => {
@@ -1068,10 +1597,30 @@
                                 if (button) button.setAttribute('aria-expanded', 'false');
                             });
                         };
+                        const closeNotifications = () => {
+                            if (!notificationRoot || !notificationToggle) return;
+                            notificationRoot.classList.remove('is-open');
+                            notificationToggle.setAttribute('aria-expanded', 'false');
+                        };
 
                         toggle.addEventListener('click', () => {
                             document.body.classList.toggle('menu-open');
                         });
+
+                        if (notificationRoot && notificationToggle) {
+                            notificationToggle.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                const shouldOpen = !notificationRoot.classList.contains('is-open');
+                                closeDesktopGroups();
+                                notificationRoot.classList.toggle('is-open', shouldOpen);
+                                notificationToggle.setAttribute('aria-expanded', String(shouldOpen));
+                            });
+
+                            notificationRoot.addEventListener('click', (event) => {
+                                event.stopPropagation();
+                            });
+                        }
 
                         document.querySelectorAll('[data-subnav-toggle]').forEach((button) => {
                             const group = button.closest('.s-nav-group');
@@ -1082,6 +1631,7 @@
                                 event.stopPropagation();
 
                                 const shouldOpen = !group.classList.contains('is-open');
+                                closeNotifications();
                                 closeDesktopGroups(group);
                                 group.classList.toggle('is-open', shouldOpen);
                                 button.setAttribute('aria-expanded', String(shouldOpen));
@@ -1105,6 +1655,7 @@
 
                         document.addEventListener('click', () => {
                             closeDesktopGroups();
+                            closeNotifications();
                         });
 
                         window.addEventListener('resize', () => {
@@ -1112,11 +1663,13 @@
                                 closeMenu();
                             }
                             closeDesktopGroups();
+                            closeNotifications();
                         });
 
                         window.addEventListener('keydown', (event) => {
                             if (event.key === 'Escape') {
                                 closeDesktopGroups();
+                                closeNotifications();
                                 closeMenu();
                             }
                         });

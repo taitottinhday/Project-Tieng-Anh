@@ -101,6 +101,38 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(async (req, res, next) => {
+  const role = req.session?.user?.role;
+  const isStudentRole = role && role !== 'admin' && role !== 'teacher';
+  const isStaticAssetRequest = Boolean(path.extname(req.path || ''));
+
+  if (isStaticAssetRequest) {
+    return next();
+  }
+
+  if (!isStudentRole) {
+    res.locals.studentNotifications = [];
+    res.locals.unreadStudentNotificationCount = 0;
+    return next();
+  }
+
+  try {
+    const userId = Number(req.session?.user?.id || 0);
+    const [notifications, unreadCount] = await Promise.all([
+      listStudentNotifications(userId, { limit: 6 }),
+      countUnreadStudentNotifications(userId),
+    ]);
+    res.locals.studentNotifications = notifications;
+    res.locals.unreadStudentNotificationCount = unreadCount;
+  } catch (error) {
+    console.error('student notification middleware error:', error);
+    res.locals.studentNotifications = [];
+    res.locals.unreadStudentNotificationCount = 0;
+  }
+
+  return next();
+});
+
 // EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -119,17 +151,37 @@ app.use(baseUrl + "/payments", paymentsRoute);
 const renderWithLayout = require('./utils/renderHelper');
 const paymentRoute = require("./routes/payment");
 app.use(baseUrl + "/payment", paymentRoute);
+const ensureSchemaReady = require("./middleware/ensureSchemaReady");
+const {
+  countUnreadStudentNotifications,
+  listStudentNotifications,
+} = require("./services/studentNotificationService");
 // ========================
 // MAIN ROUTES
 // ========================
 const authRoutes = require("./routes/auth");
 app.use(baseUrl, authRoutes);
 
-app.get(baseUrl || '/', (req, res) => {
+app.get(baseUrl || '/', ensureSchemaReady, async (req, res) => {
   const role = req.session?.user?.role;
   const isStudent = role && role !== 'admin' && role !== 'teacher';
 
   if (isStudent) {
+    return renderWithLayout(res, 'student-home', { title: 'Trang chá»§ há»c viÃªn' });
+    try {
+      const userId = Number(req.session?.user?.id || 0);
+      const [notifications, unreadCount] = await Promise.all([
+        listStudentNotifications(userId, { limit: 4 }),
+        countUnreadStudentNotifications(userId),
+      ]);
+      res.locals.studentNotifications = notifications;
+      res.locals.unreadStudentNotificationCount = unreadCount;
+    } catch (error) {
+      console.error("student home notifications error:", error);
+      res.locals.studentNotifications = [];
+      res.locals.unreadStudentNotificationCount = 0;
+    }
+
     return renderWithLayout(res, 'student-home', { title: 'Trang chủ học viên' });
   }
 

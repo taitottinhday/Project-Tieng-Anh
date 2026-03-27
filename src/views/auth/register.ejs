@@ -419,6 +419,58 @@
       color: #0e5f43;
     }
 
+    .register-captcha-panel {
+      display: none;
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(96, 122, 190, 0.16);
+      background: linear-gradient(180deg, rgba(248, 251, 255, 0.98), rgba(241, 246, 255, 0.98));
+      gap: 14px;
+    }
+
+    .register-captcha-panel.is-open {
+      display: grid;
+    }
+
+    .register-captcha-code {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70px;
+      padding: 0 20px;
+      border-radius: 18px;
+      border: 1px dashed rgba(93, 109, 161, 0.35);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(229, 236, 252, 0.92) 100%),
+        repeating-linear-gradient(120deg, rgba(99, 102, 241, 0.08) 0 8px, rgba(255, 255, 255, 0.04) 8px 16px);
+      color: #17324d;
+      font-family: "Sora", "Be Vietnam Pro", sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    .register-captcha-hint {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .register-captcha-label {
+      margin: 0;
+      color: #17324d;
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    .register-captcha-input {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
     .register-actions {
       display: flex;
       flex-wrap: wrap;
@@ -495,6 +547,12 @@
         grid-column: 1 / -1;
         justify-items: start;
       }
+
+      .register-captcha-code {
+        min-height: 62px;
+        font-size: 1.18rem;
+        letter-spacing: 0.22em;
+      }
     }
   </style>
 </head>
@@ -505,6 +563,13 @@
     const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
     const safeInfoMessages = typeof info !== 'undefined' ? info : [];
     const initialData = typeof formData !== 'undefined' ? formData : {};
+    const intendedRedirect = typeof redirectTarget !== 'undefined' ? redirectTarget : '';
+    const captchaData = typeof captcha !== 'undefined' && captcha ? captcha : {};
+    const captchaCode = captchaData.code || '';
+    const captchaOpen = Boolean(captchaData.open);
+    const loginHref = intendedRedirect
+      ? `${safeBaseUrl}/login?redirect=${encodeURIComponent(intendedRedirect)}`
+      : `${safeBaseUrl}/login`;
     const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
   %>
 
@@ -533,7 +598,7 @@
             </div>
             <div class="register-list-item">
               <strong>Bước 2. Xác nhận thủ công</strong>
-              <span>Tick vào ô “Tôi không phải robot” để xác nhận trực tiếp ngay trên form đăng ký.</span>
+              <span>Tick vào ô “Tôi không phải robot” để mở mã captcha, sau đó nhập đúng dãy ký tự được hiển thị.</span>
             </div>
             <div class="register-list-item">
               <strong>Bước 3. Chuyển sang đăng nhập</strong>
@@ -545,7 +610,7 @@
         <article class="register-card">
           <h2>Đăng ký tài khoản</h2>
           <p>
-            Điền thông tin bên dưới, xác nhận bạn không phải robot và hoàn tất đăng ký ngay trên trang này.
+            Điền thông tin bên dưới, tick xác nhận để hiện captcha và nhập đúng mã trước khi tạo tài khoản.
           </p>
 
           <% if (safeSuccessMessages.length || safeErrorMessages.length || safeInfoMessages.length) { %>
@@ -563,6 +628,7 @@
           <% } %>
 
           <form action="<%= safeBaseUrl %>/register" method="POST" class="register-form">
+            <input type="hidden" name="redirect" value="<%= intendedRedirect %>">
             <div class="register-grid">
               <div class="register-field full">
                 <label for="registerUsername">Tên hiển thị</label>
@@ -579,12 +645,12 @@
               <div class="register-field full">
                 <label>Xác nhận</label>
                 <label class="register-human" for="notRobot">
-                  <input id="notRobot" type="checkbox" name="not_robot" required>
+                  <input id="notRobot" type="checkbox" name="not_robot" required <%= captchaOpen ? 'checked' : '' %>>
                   <span class="register-human-ui">
                     <span class="register-human-box" aria-hidden="true"></span>
                     <span class="register-human-copy">
                       <strong>Tôi không phải robot</strong>
-                      <span>Tick vào đây để hoàn tất bước xác nhận thủ công trước khi tạo tài khoản.</span>
+                      <span>Tick vào đây để hiện mã captcha và hoàn tất bước xác nhận thủ công trước khi tạo tài khoản.</span>
                     </span>
                     <span class="register-human-badge" aria-hidden="true">
                       <span class="register-human-logo"></span>
@@ -593,6 +659,22 @@
                     </span>
                   </span>
                 </label>
+                <div class="register-captcha-panel <%= captchaOpen ? 'is-open' : '' %>" data-captcha-panel>
+                  <div class="register-captcha-code" aria-live="polite"><%= captchaCode %></div>
+                  <div class="register-captcha-hint">Nhập đúng dãy ký tự ở trên rồi mới có thể tạo tài khoản.</div>
+                  <label class="register-captcha-label" for="registerCaptcha">Mã captcha</label>
+                  <input
+                    class="register-input register-captcha-input"
+                    id="registerCaptcha"
+                    type="text"
+                    name="captcha_answer"
+                    placeholder="Nhập lại mã captcha"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    spellcheck="false"
+                    <%= captchaOpen ? 'required' : 'disabled' %>
+                  >
+                </div>
               </div>
             </div>
 
@@ -601,16 +683,47 @@
             </div>
 
             <div class="register-inline">
-              Sau khi đăng ký thành công, bạn sẽ được chuyển ngay sang trang đăng nhập.
+              <%= intendedRedirect ? 'Sau khi đăng ký thành công, hệ thống sẽ đưa bạn vào thẳng khu học viên để xem khóa học.' : 'Sau khi đăng ký thành công, bạn sẽ được chuyển ngay sang trang đăng nhập.' %>
             </div>
           </form>
 
           <div class="register-footer">
-            Đã có tài khoản? <a href="<%= safeBaseUrl %>/login">Đăng nhập ngay</a>
+            Đã có tài khoản? <a href="<%= loginHref %>">Đăng nhập ngay</a>
           </div>
         </article>
       </section>
     </div>
   </main>
+  <script>
+    (function () {
+      const checkbox = document.getElementById('notRobot');
+      const panel = document.querySelector('[data-captcha-panel]');
+      const input = document.getElementById('registerCaptcha');
+
+      if (!checkbox || !panel || !input) {
+        return;
+      }
+
+      function syncCaptchaState(shouldFocus) {
+        const isOpen = checkbox.checked;
+
+        panel.classList.toggle('is-open', isOpen);
+        input.disabled = !isOpen;
+        input.required = isOpen;
+
+        if (!isOpen) {
+          input.value = '';
+          return;
+        }
+
+        if (shouldFocus) {
+          window.requestAnimationFrame(() => input.focus());
+        }
+      }
+
+      checkbox.addEventListener('change', () => syncCaptchaState(true));
+      syncCaptchaState(false);
+    })();
+  </script>
 </body>
 </html>

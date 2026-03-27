@@ -12,7 +12,7 @@ function renderMedia(url, alt, placeholder, className) {
 
   return `
     <div class="${className}">
-      <div class="cc-media-placeholder">
+      <div class="sch-media-placeholder">
         <span>${placeholder}</span>
       </div>
     </div>
@@ -21,13 +21,15 @@ function renderMedia(url, alt, placeholder, className) {
 %>
 
 <style>
-  .cc-page {
+  .sch-page {
     display: grid;
-    gap: 18px;
-    padding: 8px 0 24px;
+    width: min(1320px, calc(100% - 56px));
+    margin: 0 auto;
+    gap: 20px;
+    padding: 16px 0 28px;
   }
 
-  .cc-banner {
+  .sch-banner {
     display: inline-flex;
     align-items: center;
     justify-self: start;
@@ -40,54 +42,53 @@ function renderMedia(url, alt, placeholder, className) {
     border: 1px solid rgba(251, 146, 60, 0.2);
   }
 
-  .cc-grid,
-  .cc-promo-grid {
+  .sch-grid,
+  .sch-promo-grid {
     display: grid;
-    gap: 18px;
+    gap: 20px;
   }
 
-  .cc-grid {
+  .sch-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .cc-promo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .sch-promo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .cc-card,
-  .cc-combo,
-  .cc-promo-card {
+  .sch-card,
+  .sch-combo,
+  .sch-promo-card {
     position: relative;
     overflow: hidden;
     color: inherit;
-    text-decoration: none;
   }
 
-  .cc-card {
+  .sch-card {
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(200px, 0.78fr);
     gap: 18px;
-    min-height: 342px;
-    padding: 28px 26px 0;
+    min-height: 324px;
+    padding: 24px 24px 0;
   }
 
-  .cc-card.starter {
+  .sch-card.starter {
     background: #f5e8fb;
   }
 
-  .cc-card.a {
+  .sch-card.a {
     background: #dee0ff;
   }
 
-  .cc-card.b {
+  .sch-card.b {
     background: #f8dfd5;
   }
 
-  .cc-card.sw {
+  .sch-card.sw {
     background: #dbf7ec;
   }
 
-  .cc-copy {
+  .sch-copy {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -96,38 +97,38 @@ function renderMedia(url, alt, placeholder, className) {
     padding-top: 4px;
   }
 
-  .cc-title,
-  .cc-combo-copy h2,
-  .cc-promo-title {
+  .sch-title,
+  .sch-combo-copy h2,
+  .sch-promo-title {
     margin: 0;
     font-family: "Sora", "Be Vietnam Pro", sans-serif;
     letter-spacing: -0.06em;
   }
 
-  .cc-title {
+  .sch-title {
     font-size: clamp(2.6rem, 4vw, 4rem);
     line-height: 0.92;
     overflow-wrap: anywhere;
     word-break: break-word;
   }
 
-  .cc-card.starter .cc-title {
+  .sch-card.starter .sch-title {
     color: #d76bcb;
   }
 
-  .cc-card.a .cc-title {
+  .sch-card.a .sch-title {
     color: #7c3aed;
   }
 
-  .cc-card.b .cc-title {
+  .sch-card.b .sch-title {
     color: #ff5d7a;
   }
 
-  .cc-card.sw .cc-title {
+  .sch-card.sw .sch-title {
     color: #14b8c5;
   }
 
-  .cc-bullets {
+  .sch-bullets {
     margin: 0;
     padding-left: 22px;
     color: #2f3640;
@@ -135,39 +136,39 @@ function renderMedia(url, alt, placeholder, className) {
     line-height: 1.7;
   }
 
-  .cc-price {
+  .sch-price {
     display: grid;
     gap: 6px;
     margin-top: 8px;
     justify-self: start;
   }
 
-  .cc-price-original {
+  .sch-price-original {
     color: #7c8598;
     font-size: 1rem;
     text-decoration: line-through;
     text-decoration-thickness: 2px;
   }
 
-  .cc-price strong {
+  .sch-price strong {
     font-size: 2rem;
     line-height: 1;
     letter-spacing: -0.05em;
     color: #111827;
   }
 
-  .cc-price span {
+  .sch-price span {
     color: #44403c;
     font-size: 0.98rem;
   }
 
-  .cc-price-note {
+  .sch-price-note {
     color: #c2410c;
     font-size: 0.9rem;
     font-weight: 700;
   }
 
-  .cc-note {
+  .sch-note {
     margin: 0;
     max-width: 320px;
     color: #4b5563;
@@ -175,7 +176,7 @@ function renderMedia(url, alt, placeholder, className) {
     line-height: 1.55;
   }
 
-  .cc-actions {
+  .sch-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -183,38 +184,38 @@ function renderMedia(url, alt, placeholder, className) {
     padding-bottom: 24px;
   }
 
-  .cc-btn {
+  .sch-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 56px;
-    padding: 0 30px;
+    min-height: 52px;
+    padding: 0 24px;
     border-radius: 999px;
     background: #000000;
     color: #ffffff;
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 800;
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
 
-  .cc-btn:hover,
-  .cc-card:hover,
-  .cc-combo:hover,
-  .cc-promo-card:hover {
+  .sch-btn:hover,
+  .sch-card:hover,
+  .sch-combo:hover,
+  .sch-promo-card:hover {
     transform: translateY(-1px);
   }
 
-  .cc-combo {
+  .sch-combo {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
     gap: 18px;
     align-items: center;
-    min-height: 420px;
-    padding: 28px 26px 0;
+    min-height: 392px;
+    padding: 24px 24px 0;
     background: linear-gradient(180deg, #e84b31 0%, #ef7158 100%);
   }
 
-  .cc-combo-copy {
+  .sch-combo-copy {
     display: grid;
     justify-items: center;
     gap: 16px;
@@ -222,94 +223,98 @@ function renderMedia(url, alt, placeholder, className) {
     color: #ffffff;
   }
 
-  .cc-combo-copy h2 {
+  .sch-combo-copy h2 {
     font-size: clamp(2rem, 4vw, 3.4rem);
     line-height: 1.02;
   }
 
-  .cc-combo-copy strong {
+  .sch-combo-copy strong {
     font-family: "Sora", "Be Vietnam Pro", sans-serif;
     font-size: clamp(3rem, 6vw, 5rem);
     line-height: 0.96;
     letter-spacing: -0.06em;
   }
 
-  .cc-promo-card {
+  .sch-promo-card {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(180px, 0.76fr);
     gap: 16px;
     align-items: end;
-    min-height: 344px;
-    padding: 26px 0 0 26px;
+    min-height: 324px;
+    padding: 22px 0 0 22px;
   }
 
-  .cc-promo-card.placement {
+  .sch-promo-card.placement {
     background: linear-gradient(180deg, #e49a00 0%, #efb31a 100%);
   }
 
-  .cc-promo-card.schedule {
+  .sch-promo-card.schedule {
     background: linear-gradient(180deg, #77adc2 0%, #8ec5d6 100%);
   }
 
-  .cc-promo-copy {
+  .sch-promo-card.video {
+    background: linear-gradient(180deg, #8f67ff 0%, #5b4ee6 100%);
+  }
+
+  .sch-promo-copy {
     display: grid;
     align-content: start;
     gap: 12px;
     padding-bottom: 24px;
   }
 
-  .cc-promo-title {
+  .sch-promo-title {
     color: #ffffff;
-    font-size: clamp(2.4rem, 4vw, 4.5rem);
+    font-size: clamp(2.1rem, 3.6vw, 3.8rem);
     line-height: 0.94;
     white-space: pre-line;
   }
 
-  .cc-media,
-  .cc-media-placeholder {
+  .sch-media,
+  .sch-media-placeholder {
     width: 100%;
     height: 100%;
     display: block;
   }
 
-  .cc-media img {
+  .sch-media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  .cc-media.course {
-    min-height: 314px;
+  .sch-media.course {
+    min-height: 296px;
   }
 
-  .cc-media.combo {
-    min-height: 392px;
+  .sch-media.combo {
+    min-height: 360px;
   }
 
-  .cc-media.promo {
-    min-height: 318px;
+  .sch-media.promo {
+    min-height: 298px;
   }
 
-  .cc-media-placeholder {
+  .sch-media-placeholder {
     position: relative;
     display: grid;
     place-items: center;
     gap: 10px;
     padding: 24px;
     text-align: center;
+    color: rgba(17, 24, 39, 0.9);
     background:
       radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 28%),
       linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
-    color: rgba(17, 24, 39, 0.9);
   }
 
-  .cc-combo .cc-media-placeholder,
-  .cc-promo-card .cc-media-placeholder {
+  .sch-combo .sch-media-placeholder,
+  .sch-promo-card .sch-media-placeholder {
     color: rgba(255, 255, 255, 0.96);
   }
 
-  .cc-media-placeholder::before {
+  .sch-media-placeholder::before {
     content: "";
     position: absolute;
     inset: 14px;
@@ -318,7 +323,7 @@ function renderMedia(url, alt, placeholder, className) {
     opacity: 0.35;
   }
 
-  .cc-media-placeholder span {
+  .sch-media-placeholder span {
     position: relative;
     z-index: 1;
     font-family: "Sora", "Be Vietnam Pro", sans-serif;
@@ -327,125 +332,120 @@ function renderMedia(url, alt, placeholder, className) {
     letter-spacing: -0.04em;
   }
 
-  @media (max-width: 1024px) {
-    .cc-grid,
-    .cc-promo-grid {
+  @media (max-width: 1180px) {
+    .sch-grid,
+    .sch-promo-grid {
       grid-template-columns: 1fr;
     }
 
-    .cc-card,
-    .cc-combo,
-    .cc-promo-card {
+    .sch-card,
+    .sch-combo,
+    .sch-promo-card {
       grid-template-columns: 1fr;
       padding-right: 26px;
     }
 
-    .cc-copy,
-    .cc-promo-copy {
+    .sch-copy {
       align-items: center;
       text-align: center;
     }
 
-    .cc-bullets {
+    .sch-promo-copy,
+    .sch-combo-copy {
+      justify-items: center;
+      text-align: center;
+    }
+
+    .sch-bullets {
       text-align: left;
     }
 
-    .cc-price,
-    .cc-actions {
+    .sch-price,
+    .sch-actions {
       justify-self: center;
       justify-content: center;
     }
   }
 
   @media (max-width: 640px) {
-    .cc-page {
+    .sch-page {
+      width: min(100% - 20px, 1320px);
       gap: 14px;
       padding-bottom: 12px;
     }
 
-    .cc-card,
-    .cc-combo,
-    .cc-promo-card {
+    .sch-card,
+    .sch-combo,
+    .sch-promo-card {
       min-height: auto;
       padding: 18px 18px 0;
     }
 
-    .cc-title {
+    .sch-title {
       font-size: clamp(2.1rem, 12vw, 3rem);
     }
 
-    .cc-promo-title {
+    .sch-promo-title {
       font-size: clamp(2rem, 12vw, 3.2rem);
-    }
-
-    .cc-combo-copy strong {
-      font-size: clamp(2.5rem, 13vw, 4rem);
-    }
-
-    .cc-btn {
-      min-height: 50px;
-      padding: 0 24px;
-      font-size: 1rem;
     }
   }
 </style>
 
-<div class="cc-page">
-  <div class="cc-banner">Ưu đãi khách truy cập: giảm 25% học phí khi đăng ký online</div>
+<div class="sch-page">
+  <div class="sch-banner">Ưu đãi học viên: giảm 25% học phí khi đăng ký online</div>
 
-  <section class="cc-grid">
+  <section class="sch-grid">
     <% cards.forEach((item) => { %>
-      <article class="cc-card <%= item.tone %>">
-        <div class="cc-copy">
-          <h2 class="cc-title"><%= item.title %></h2>
-
-          <ul class="cc-bullets">
+      <article class="sch-card <%= item.tone %>">
+        <div class="sch-copy">
+          <h2 class="sch-title"><%= item.title %></h2>
+          <ul class="sch-bullets">
             <% (item.bullets || []).forEach((bullet) => { %>
               <li><%= bullet %></li>
             <% }) %>
           </ul>
 
-          <div class="cc-price">
-            <span class="cc-price-original"><%= Number(item.originalFee || 0).toLocaleString("vi-VN") %>đ</span>
+          <div class="sch-price">
+            <span class="sch-price-original"><%= Number(item.originalFee || 0).toLocaleString("vi-VN") %>đ</span>
             <strong><%= Number(item.discountedFee || 0).toLocaleString("vi-VN") %>đ</strong>
             <span><%= item.sessions %></span>
-            <span class="cc-price-note">Số tiền thực đóng sau ưu đãi 25%</span>
+            <span class="sch-price-note">Số tiền thực đóng sau ưu đãi 25%</span>
           </div>
 
           <% if (item.note) { %>
-            <p class="cc-note"><%= item.note %></p>
+            <p class="sch-note"><%= item.note %></p>
           <% } %>
 
-          <div class="cc-actions">
-            <a href="<%= item.registerHref %>" class="cc-btn">Đăng ký</a>
+          <div class="sch-actions">
+            <a href="<%= item.registerHref %>" class="sch-btn">Đăng ký</a>
           </div>
         </div>
 
-        <%- renderMedia(item.image, item.title, item.placeholder, "cc-media course") %>
+        <%- renderMedia(item.image, item.title, item.placeholder, "sch-media course") %>
       </article>
     <% }) %>
   </section>
 
   <% if (comboBanner) { %>
-    <a href="<%= comboBanner.href %>" class="cc-combo">
-      <div class="cc-combo-copy">
+    <a href="<%= comboBanner.href %>" class="sch-combo">
+      <div class="sch-combo-copy">
         <h2><%= comboBanner.title %></h2>
         <strong><%= comboBanner.price %></strong>
-        <span class="cc-btn"><%= comboBanner.ctaLabel || "Tìm hiểu ngay" %></span>
+        <span class="sch-btn"><%= comboBanner.ctaLabel || "Tìm hiểu ngay" %></span>
       </div>
 
-      <%- renderMedia(comboBanner.image, comboBanner.title, comboBanner.placeholder, "cc-media combo") %>
+      <%- renderMedia(comboBanner.image, comboBanner.title, comboBanner.placeholder, "sch-media combo") %>
     </a>
   <% } %>
 
-  <section class="cc-promo-grid">
+  <section class="sch-promo-grid">
     <% promoCards.forEach((item) => { %>
-      <a href="<%= item.href %>" class="cc-promo-card <%= item.tone %>">
-        <div class="cc-promo-copy">
-          <h2 class="cc-promo-title"><%= item.title %></h2>
+      <a href="<%= item.href %>" class="sch-promo-card <%= item.tone %>">
+        <div class="sch-promo-copy">
+          <h2 class="sch-promo-title"><%= item.title %></h2>
         </div>
 
-        <%- renderMedia(item.image, item.title, item.placeholder, "cc-media promo") %>
+        <%- renderMedia(item.image, item.title, item.placeholder, "sch-media promo") %>
       </a>
     <% }) %>
   </section>

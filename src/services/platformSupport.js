@@ -260,6 +260,32 @@ async function getStudentByEmail(email) {
   return rows[0] || null;
 }
 
+async function getStudentByUserId(userId) {
+  await ensurePlatformSupport();
+
+  const numericUserId = Number(userId || 0);
+  if (!numericUserId) {
+    return null;
+  }
+
+  const [rows] = await db.query(
+    `
+      SELECT
+        s.*,
+        COUNT(DISTINCT e.id) AS enrollment_count
+      FROM students s
+      LEFT JOIN enrollments e ON e.student_id = s.id
+      WHERE s.user_id = ?
+      GROUP BY s.id
+      ORDER BY enrollment_count DESC, s.id ASC
+      LIMIT 1
+    `,
+    [numericUserId]
+  );
+
+  return rows[0] || null;
+}
+
 async function syncStudentProfileFromUser(user) {
   await ensurePlatformSupport();
 
@@ -267,14 +293,41 @@ async function syncStudentProfileFromUser(user) {
     return null;
   }
 
-  const existing = await getStudentByEmail(user.email);
+  const userId = Number(user.id || 0);
+  const normalizedEmail = String(user.email || "").trim().toLowerCase();
+  const fallbackName = user.username || normalizedEmail.split("@")[0];
+  const existing = (userId ? await getStudentByUserId(userId) : null) || await getStudentByEmail(normalizedEmail);
   if (existing) {
+    const nextFullName = String(existing.full_name || "").trim() || fallbackName;
+    const shouldUpdate =
+      Number(existing.user_id || 0) !== userId ||
+      String(existing.email || "").trim().toLowerCase() !== normalizedEmail ||
+      String(existing.full_name || "").trim() !== nextFullName;
+
+    if (shouldUpdate) {
+      await db.query(
+        `
+          UPDATE students
+          SET user_id = ?, full_name = ?, email = ?
+          WHERE id = ?
+        `,
+        [userId || null, nextFullName, normalizedEmail, existing.id]
+      );
+
+      const [rows] = await db.query(
+        "SELECT * FROM students WHERE id = ? LIMIT 1",
+        [existing.id]
+      );
+
+      return rows[0] || existing;
+    }
+
     return existing;
   }
 
   const [result] = await db.query(
-    "INSERT INTO students (full_name, email) VALUES (?, ?)",
-    [user.username || user.email.split("@")[0], user.email]
+    "INSERT INTO students (user_id, full_name, email) VALUES (?, ?, ?)",
+    [userId || null, fallbackName, normalizedEmail]
   );
 
   const [rows] = await db.query(
