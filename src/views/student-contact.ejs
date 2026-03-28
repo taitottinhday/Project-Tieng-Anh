@@ -4,37 +4,11 @@ const studentName = user && user.username ? user.username : "";
 const studentEmail = user && user.email ? user.email : "";
 const safeSuccessMessages = typeof success_msg !== "undefined" ? success_msg : [];
 const safeErrorMessages = typeof error_msg !== "undefined" ? error_msg : [];
-const consultationList = Array.isArray(consultations) ? consultations : [];
 const channels = [
   { label: "Hotline tư vấn", value: "0344772436", note: "Phản hồi nhanh trong giờ hành chính" },
   { label: "Email", value: "realtoeiccentral@gmail.com", note: "Phù hợp khi cần gửi thông tin chi tiết" },
   { label: "Cơ sở hỗ trợ", value: "Hồ Tùng Mậu • Lê Đức Thọ", note: "Có thể hẹn tư vấn trực tiếp theo lịch" },
 ];
-
-function formatDateTime(value) {
-  if (!value) {
-    return "Chưa có thời gian";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Chưa có thời gian";
-  }
-
-  return date.toLocaleString("vi-VN");
-}
-
-function getStatusMeta(status) {
-  if (status === "contacted") {
-    return { label: "Đã phản hồi", className: "is-contacted" };
-  }
-
-  if (status === "viewed") {
-    return { label: "Đang xử lý", className: "is-viewed" };
-  }
-
-  return { label: "Mới gửi", className: "is-new" };
-}
 %>
 
 <style>
@@ -65,27 +39,11 @@ function getStatusMeta(status) {
   .sc-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}
   .sc-btn.secondary{background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12)}
   .sc-hint{color:#64748b;font-size:.95rem;line-height:1.7}
-  .sc-request-list{display:grid;gap:18px}
-  .sc-request-card{display:grid;gap:18px}
-  .sc-request-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px}
-  .sc-request-title{font-size:1.35rem}
-  .sc-request-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  .sc-badge{display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;font-weight:800}
-  .sc-badge.is-new{background:rgba(59,130,246,.12);color:#1d4ed8}
-  .sc-badge.is-viewed{background:rgba(245,158,11,.14);color:#b45309}
-  .sc-badge.is-contacted{background:rgba(34,197,94,.14);color:#15803d}
-  .sc-time{color:#64748b;font-weight:600}
-  .sc-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-  .sc-detail{padding:16px;border-radius:20px;background:#f8fafc;border:1px solid rgba(148,163,184,.18)}
-  .sc-detail label{display:block;margin-bottom:6px;color:#64748b;font-size:.88rem;font-weight:700}
-  .sc-detail strong{color:#0f172a;font-size:1rem}
-  .sc-request-body{padding:18px;border-radius:22px;background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);border:1px solid rgba(15,23,42,.08)}
-  .sc-request-body strong{display:block;margin-bottom:8px;color:#0f172a}
-  .sc-alert{padding:14px 16px;border-radius:18px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.16);color:#1e3a8a;font-weight:700;line-height:1.7}
-  .sc-empty{padding:30px;border-radius:28px;background:#fff;border:1px dashed rgba(148,163,184,.4);text-align:center}
-  .sc-empty strong{display:block;margin-bottom:8px;font-size:1.15rem;color:#0f172a}
-  @media (max-width:1100px){.sc-channel-grid,.sc-detail-grid,.sc-form-grid{grid-template-columns:1fr 1fr}}
-  @media (max-width:760px){.sc-page{width:min(100% - 20px,1380px);padding:22px 0 30px}.sc-channel-grid,.sc-detail-grid,.sc-form-grid{grid-template-columns:1fr}.sc-hero,.sc-panel,.sc-channel-grid article,.sc-request-card{padding:20px;border-radius:24px}}
+  .sc-mailbox-note{display:grid;gap:14px;padding:24px;border-radius:24px;background:linear-gradient(135deg,#f8fbff 0%,#eef4ff 52%,#fff 100%);border:1px solid rgba(59,130,246,.14)}
+  .sc-mailbox-note strong{font-size:1.15rem;color:#0f172a}
+  .sc-mailbox-note p{margin:0;color:#475569;line-height:1.8}
+  @media (max-width:1100px){.sc-channel-grid,.sc-form-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:760px){.sc-page{width:min(100% - 20px,1380px);padding:22px 0 30px}.sc-channel-grid,.sc-form-grid{grid-template-columns:1fr}.sc-hero,.sc-panel,.sc-channel-grid article{padding:20px;border-radius:24px}.sc-mailbox-note{padding:20px;border-radius:20px}}
 </style>
 
 <div class="sc-page">
@@ -188,69 +146,18 @@ function getStatusMeta(status) {
   <section class="sc-panel">
     <div class="sc-panel-head">
       <div>
-        <h2>Theo dõi trạng thái yêu cầu</h2>
-        <p>Bạn vẫn có thể xem mỗi yêu cầu đang ở trạng thái nào tại đây. Các lời nhắn phản hồi chi tiết từ admin sẽ nằm trong hộp thư học viên.</p>
+        <h2>Phản hồi của admin nằm trong Hòm thư</h2>
+        <p>Trang Liên hệ chỉ dùng để học viên tạo yêu cầu mới. Khi trung tâm trả lời, toàn bộ lịch hẹn, kênh liên hệ và lời nhắn sẽ được gom vào Hòm thư học viên để bạn xem tập trung hơn.</p>
       </div>
-      <span class="sc-panel-kicker"><%= consultationList.length %> yêu cầu</span>
+      <span class="sc-panel-kicker">Hòm thư riêng</span>
     </div>
 
-    <% if (!consultationList.length) { %>
-      <div class="sc-empty">
-        <strong>Bạn chưa có yêu cầu tư vấn nào.</strong>
-        <p>Hãy gửi biểu mẫu ở trên, trung tâm sẽ tiếp nhận và cập nhật tiến độ xử lý trực tiếp vào tài khoản này.</p>
+    <div class="sc-mailbox-note">
+      <strong>Mọi phản hồi từ admin sẽ không hiển thị lại ở mục Liên hệ.</strong>
+      <p>Bạn chỉ cần gửi yêu cầu tại đây, sau đó mở icon hộp thư cạnh chuông thông báo để xem các phản hồi mới nhất từ admin.</p>
+      <div class="sc-actions" style="margin-top:0">
+        <a href="<%= safeBaseUrl %>/student/mailbox" class="sc-btn">Mở hộp thư học viên</a>
       </div>
-    <% } else { %>
-      <div class="sc-request-list">
-        <% consultationList.forEach((item) => { const statusMeta = getStatusMeta(item.status); const hasMailboxResponse = Number(item.response_count || 0) > 0 || (item.responses && item.responses.length); %>
-          <article class="sc-request-card">
-            <div class="sc-request-head">
-              <div>
-                <h3 class="sc-request-title"><%= item.goal || "Yêu cầu tư vấn khóa học" %></h3>
-                <div class="sc-time">Gửi lúc <%= formatDateTime(item.created_at) %></div>
-              </div>
-              <div class="sc-request-meta">
-                <span class="sc-badge <%= statusMeta.className %>"><%= statusMeta.label %></span>
-                <% if (item.contacted_at) { %>
-                  <span class="sc-time">Cập nhật gần nhất <%= formatDateTime(item.contacted_at) %></span>
-                <% } %>
-              </div>
-            </div>
-
-            <div class="sc-detail-grid">
-              <div class="sc-detail">
-                <label>Email</label>
-                <strong><%= item.email || "Chưa cung cấp" %></strong>
-              </div>
-              <div class="sc-detail">
-                <label>Điện thoại / Zalo</label>
-                <strong><%= item.phone || "Chưa cung cấp" %></strong>
-              </div>
-              <div class="sc-detail">
-                <label>Khóa học quan tâm</label>
-                <strong><%= item.course_interest || "Chưa chọn" %></strong>
-              </div>
-              <div class="sc-detail">
-                <label>Khung giờ mong muốn</label>
-                <strong><%= item.schedule_preference || "Chưa chọn" %></strong>
-              </div>
-            </div>
-
-            <div class="sc-request-body">
-              <strong>Nội dung bạn đã gửi</strong>
-              <p><%= item.message_body || item.message || "Không có nội dung." %></p>
-            </div>
-
-            <% if (hasMailboxResponse) { %>
-              <div class="sc-alert">Yêu cầu này đã có phản hồi từ admin. Mở hộp thư học viên để xem chi tiết lịch hẹn, kênh liên hệ và lời nhắn mới nhất.</div>
-              <div class="sc-actions" style="margin-top:0">
-                <a href="<%= safeBaseUrl %>/student/mailbox" class="sc-btn">Mở hộp thư học viên</a>
-              </div>
-            <% } else { %>
-              <div class="sc-alert">Yêu cầu của bạn đã được ghi nhận. Khi đội ngũ tư vấn cập nhật, nội dung chi tiết sẽ xuất hiện trong hộp thư học viên.</div>
-            <% } %>
-          </article>
-        <% }) %>
-      </div>
-    <% } %>
+    </div>
   </section>
 </div>

@@ -310,15 +310,9 @@ router.get("/schedule", isLoggedIn, isStudent, (req, res) => {
 
 router.get("/contact", isLoggedIn, isStudent, async (req, res) => {
   try {
-    const consultations = await listStudentConsultations({
-      userId: req.session?.user?.id || null,
-      email: req.session?.user?.email || "",
-    });
-
     return renderWithLayout(res, "student-contact", {
       title: "Liên hệ học viên",
       success: req.query.success || null,
-      consultations,
     });
   } catch (err) {
     console.error("student contact page error:", err);
