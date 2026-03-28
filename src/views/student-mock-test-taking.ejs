@@ -69,12 +69,6 @@
                 <div class="content-shell">
                   <div class="question-stage">
                     <div class="stage-top"><div><span class="stage-kicker">Part <%= question.partNumber %></span><h2><%= question.partTitle %></h2></div><span class="question-badge">Câu <%= question.number %></span></div>
-                    <% if (question.isListening) { %>
-                      <div class="audio-block"><strong>Âm thanh</strong><span class="mock-audio-chip" data-audio-status-for="<%= question.number %>">Audio đang chờ bắt đầu</span></div>
-                      <div class="mock-phase-block"><strong>Chế độ thi thử Listening</strong><div class="mock-phase-copy">Không hiển thị thanh tua lại. Các ô số câu từ 1-100 chỉ dùng để theo dõi tiến trình và không thể bấm quay lại.<% if (question.listeningQuestionTotal > 1) { %><br><strong>Cụm hiện tại:</strong> Câu <%= question.groupFirstNumber %>-<%= question.groupLastNumber %><% } %></div></div>
-                    <% } else { %>
-                      <div class="mock-phase-block"><strong>Phần Reading đã được mở</strong><div class="mock-phase-copy">Bạn có thể bấm trực tiếp các ô số câu từ 101-200 để di chuyển và rà soát đáp án trước khi nộp bài.</div></div>
-                    <% } %>
                     <% if (question.sharedContent) { %><div class="passage-block"><strong>Đoạn văn</strong><div class="passage-body"><%= question.sharedContent %></div></div><% } %>
                     <% if (question.sharedImages && question.sharedImages.length) { %><div class="image-stage"><% question.sharedImages.forEach((imageUrl) => { %><img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>"><% }) %></div><% } %>
                     <div class="prompt-block"><strong>Hướng dẫn</strong><p class="instruction-line"><%= question.partInstructions %></p><div class="prompt-text<%= question.sharedImages && question.sharedImages.length ? " compact" : "" %>"><%= question.prompt %></div></div>
