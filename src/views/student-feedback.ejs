@@ -2,62 +2,96 @@
 const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
 const studentName = user && user.username ? user.username : '';
 const studentEmail = user && user.email ? user.email : '';
+const teacherTargets = Array.isArray(typeof feedbackTargets !== 'undefined' ? feedbackTargets : null) ? feedbackTargets : [];
+const hasTeacherTargets = teacherTargets.length > 0;
 const feedbackTopics = [
-  'Góp ý giao diện và trải nghiệm tài khoản học viên',
-  'Góp ý về lịch học hoặc lịch khai giảng',
-  'Đề xuất thêm nội dung luyện tập',
-  'Báo lỗi trong quá trình sử dụng'
+  {
+    title: 'Góp ý về giáo viên',
+    description: 'Nội dung này sẽ được chuyển tới cả admin và giáo viên phụ trách để theo dõi chất lượng giảng dạy.'
+  },
+  {
+    title: 'Góp ý trải nghiệm học tập',
+    description: 'Các phản hồi chung về hành trình học của học viên sẽ được tiếp nhận bởi admin.'
+  },
+  {
+    title: 'Đề xuất thêm nội dung luyện tập',
+    description: 'Admin sẽ tổng hợp các đề xuất mở rộng học liệu, bài luyện và tài liệu mới.'
+  },
+  {
+    title: 'Phản hồi lịch học hoặc lịch khai giảng',
+    description: 'Những nội dung vận hành lớp, lịch học và khai giảng sẽ chỉ về luồng admin.'
+  },
+  {
+    title: 'Báo lỗi trong quá trình sử dụng',
+    description: 'Các lỗi phát sinh khi dùng hệ thống vẫn được gửi về admin để xử lý.'
+  }
+];
+const teacherRatingOptions = [
+  'Rất hài lòng',
+  'Hài lòng',
+  'Cần cải thiện thêm'
 ];
 %>
 
 <style>
   .sf-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px;display:grid;gap:24px}
   .sf-hero,.sf-form-shell,.sf-topic-shell{padding:30px;border-radius:34px;background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.06);box-shadow:0 24px 44px rgba(17,24,39,.08)}
-  .sf-hero{display:grid;gap:14px;background:linear-gradient(135deg,#fff 0%,#fff1f3 50%,#fdf2f8 100%)}
+  .sf-hero{display:grid;gap:14px;background:linear-gradient(135deg,#fff 0%,#fff1f3 48%,#eef4ff 100%)}
   .sf-hero h1,.sf-form-shell h2,.sf-topic-shell h2{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.05em;color:#111827}
   .sf-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1.02}
   .sf-hero p,.sf-form-shell p,.sf-topic-shell p{margin:0;color:#667085;line-height:1.8}
   .sf-success{padding:14px 16px;border-radius:18px;background:rgba(34,197,94,.10);color:#166534;border:1px solid rgba(34,197,94,.16)}
+  .sf-routing-note{display:inline-flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.12);color:#1d4ed8;font-weight:700}
   .sf-topic-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
-  .sf-topic-item{padding:18px;border-radius:22px;background:#f8fafc;border:1px solid rgba(17,24,39,.06);font-weight:600;color:#344054}
+  .sf-topic-item{padding:18px;border-radius:22px;background:#f8fafc;border:1px solid rgba(17,24,39,.06);display:grid;gap:8px}
+  .sf-topic-item strong{color:#1f2937}
+  .sf-topic-item span{color:#667085;line-height:1.7}
   .sf-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
   .sf-field{display:grid;gap:8px}
   .sf-field.full{grid-column:1 / -1}
   .sf-field label{font-weight:700;color:#344054}
   .sf-field input,.sf-field select,.sf-field textarea{width:100%;min-height:52px;padding:0 16px;border-radius:18px;border:1px solid rgba(17,24,39,.10);background:#fff;font:inherit;color:#111827}
   .sf-field textarea{min-height:170px;padding:14px 16px;resize:vertical}
+  .sf-helper{font-size:.92rem;color:#667085;line-height:1.6}
+  .sf-conditional{grid-column:1 / -1;padding:18px;border-radius:24px;border:1px solid rgba(245,158,11,.18);background:linear-gradient(180deg,rgba(255,247,237,.92) 0%,rgba(255,255,255,.98) 100%);display:grid;gap:14px}
+  .sf-conditional.is-hidden{display:none}
+  .sf-conditional-head{display:grid;gap:6px}
+  .sf-conditional-head strong{color:#111827}
+  .sf-conditional-head span{color:#667085;line-height:1.7}
+  .sf-empty-note{padding:12px 14px;border-radius:16px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);color:#b42318;font-weight:600}
   .sf-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;cursor:pointer}
   @media (max-width:980px){.sf-topic-list,.sf-form-grid{grid-template-columns:1fr}}
   @media (max-width:720px){.sf-page{width:min(100% - 20px,1380px);padding:22px 0 28px}.sf-hero,.sf-form-shell,.sf-topic-shell{padding:20px;border-radius:24px}}
 </style>
 
-<div class="sf-page">
+<div class="sf-page" data-student-feedback-root>
   <section class="sf-hero">
     <h1>Góp ý từ học viên</h1>
-    <p>Mọi góp ý đều giúp đội ngũ cải thiện trải nghiệm học tập, nội dung luyện đề và cách hỗ trợ trong tài khoản học viên.</p>
+    <p>Mọi góp ý đều giúp đội ngũ cải thiện trải nghiệm học tập, nội dung luyện đề và chất lượng giảng dạy trong từng lớp học.</p>
+    <div class="sf-routing-note">Chỉ riêng mục góp ý về giáo viên sẽ được gửi tới cả admin và giáo viên phụ trách. Các mục còn lại chỉ chuyển về admin.</div>
     <% if (success) { %>
-      <div class="sf-success">Góp ý của bạn đã được gửi thành công. Cảm ơn bạn đã giúp chúng mình cải thiện nền tảng.</div>
+      <div class="sf-success">Góp ý của bạn đã được gửi thành công. Cảm ơn bạn đã giúp chúng mình cải thiện hệ thống học tập.</div>
     <% } %>
   </section>
 
   <section class="sf-topic-shell">
     <h2>Những nhóm góp ý thường gặp</h2>
-    <p>Bạn có thể phản hồi nhanh theo một trong các nhóm dưới đây hoặc viết chi tiết hơn trong form.</p>
+    <p>Bạn có thể chọn đúng nhóm cần phản hồi để hệ thống chuyển tới đúng luồng xử lý ngay từ đầu.</p>
     <div class="sf-topic-list">
       <% feedbackTopics.forEach((item) => { %>
-        <div class="sf-topic-item"><%= item %></div>
+        <div class="sf-topic-item">
+          <strong><%= item.title %></strong>
+          <span><%= item.description %></span>
+        </div>
       <% }) %>
     </div>
   </section>
 
   <section class="sf-form-shell">
     <h2>Gửi góp ý ngay</h2>
-    <p>Thông tin sẽ được chuyển đến hệ thống tiếp nhận tin nhắn để đội ngũ hỗ trợ phản hồi và cải thiện sớm nhất.</p>
+    <p>Thông tin sẽ được chuyển tới đúng người phụ trách: admin cho các góp ý vận hành, và admin cùng giáo viên nếu bạn đang phản hồi về chất lượng giảng dạy.</p>
 
-    <form action="<%= safeBaseUrl %>/contact" method="POST" class="sf-form-grid">
-      <input type="hidden" name="return_to" value="/student/feedback">
-      <input type="hidden" name="course_interest" value="Góp ý từ tài khoản học viên">
-      <input type="hidden" name="schedule_preference" value="Student feedback portal">
+    <form action="<%= safeBaseUrl %>/student/feedback" method="POST" class="sf-form-grid">
       <div class="sf-field">
         <label>Họ tên</label>
         <input type="text" name="name" value="<%= studentName %>" required>
@@ -72,16 +106,58 @@ const feedbackTopics = [
       </div>
       <div class="sf-field">
         <label>Loại góp ý</label>
-        <select name="goal">
-          <option value="Góp ý trải nghiệm học viên">Góp ý trải nghiệm học viên</option>
-          <option value="Báo lỗi giao diện">Báo lỗi giao diện</option>
+        <select name="goal" data-feedback-goal-select>
+          <option value="Góp ý về giáo viên">Góp ý về giáo viên</option>
+          <option value="Góp ý trải nghiệm học tập">Góp ý trải nghiệm học tập</option>
           <option value="Đề xuất nội dung mới">Đề xuất nội dung mới</option>
           <option value="Phản hồi lịch học">Phản hồi lịch học</option>
+          <option value="Báo lỗi trong quá trình sử dụng">Báo lỗi trong quá trình sử dụng</option>
         </select>
       </div>
+
+      <div class="sf-conditional<%= hasTeacherTargets ? '' : ' is-hidden' %>" data-teacher-feedback-panel>
+        <div class="sf-conditional-head">
+          <strong>Thông tin bổ sung cho góp ý giáo viên</strong>
+          <span>Phần này giúp hệ thống gắn góp ý đúng giáo viên và đúng lớp đang học trước khi chuyển tới luồng admin và giáo viên.</span>
+        </div>
+
+        <% if (!hasTeacherTargets) { %>
+          <div class="sf-empty-note">Hiện tài khoản của bạn chưa có lớp đang học gắn với giáo viên để chọn. Bạn vẫn có thể gửi các nhóm góp ý khác cho admin.</div>
+        <% } else { %>
+          <div class="sf-form-grid" style="margin-top:0">
+            <div class="sf-field">
+              <label>Lớp và giáo viên cần góp ý</label>
+              <select name="teacher_target" data-teacher-target-select>
+                <option value="">Chọn lớp đang học</option>
+                <% teacherTargets.forEach((item) => { %>
+                  <option value="<%= item.key %>">
+                    <%= item.teacherName %> · <%= item.classCode || 'Chưa có mã lớp' %><%= item.courseName ? ` · ${item.courseName}` : '' %>
+                  </option>
+                <% }) %>
+              </select>
+              <div class="sf-helper">Mỗi góp ý giáo viên cần gắn với một lớp đang học để cả admin và giáo viên theo dõi đúng ngữ cảnh.</div>
+            </div>
+            <div class="sf-field">
+              <label>Mức độ hài lòng</label>
+              <select name="teacher_feedback_rating" data-teacher-rating-select>
+                <option value="">Chọn mức đánh giá</option>
+                <% teacherRatingOptions.forEach((item) => { %>
+                  <option value="<%= item %>"><%= item %></option>
+                <% }) %>
+              </select>
+              <div class="sf-helper">Bạn có thể nêu thêm điểm mạnh hoặc điều cần cải thiện trong phần nội dung góp ý bên dưới.</div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
       <div class="sf-field full">
         <label>Nội dung góp ý</label>
-        <textarea name="message" placeholder="Viết chi tiết điều bạn muốn góp ý hoặc cải thiện..." required></textarea>
+        <textarea
+          name="message"
+          data-feedback-message
+          placeholder="Ví dụ: Thầy/cô giảng dễ hiểu, chữa bài kỹ, nhưng em muốn tốc độ chữa đề chậm hơn một chút ở phần listening..."
+          required></textarea>
       </div>
       <div>
         <button type="submit" class="sf-btn">Gửi góp ý</button>
@@ -89,3 +165,51 @@ const feedbackTopics = [
     </form>
   </section>
 </div>
+
+<script>
+  (() => {
+    const root = document.querySelector('[data-student-feedback-root]');
+    if (!root) return;
+
+    const goalSelect = root.querySelector('[data-feedback-goal-select]');
+    const teacherPanel = root.querySelector('[data-teacher-feedback-panel]');
+    const teacherTargetSelect = root.querySelector('[data-teacher-target-select]');
+    const teacherRatingSelect = root.querySelector('[data-teacher-rating-select]');
+    const messageField = root.querySelector('[data-feedback-message]');
+    const teacherModeValue = 'Góp ý về giáo viên';
+
+    const placeholders = {
+      [teacherModeValue]: 'Ví dụ: Thầy/cô giảng dễ hiểu, chữa bài kỹ, nhưng em muốn tốc độ chữa đề chậm hơn một chút ở phần listening...',
+      'Góp ý trải nghiệm học tập': 'Ví dụ: Em muốn phần classroom hiển thị tiến độ bài học rõ hơn để dễ theo dõi...',
+      'Đề xuất nội dung mới': 'Ví dụ: Trung tâm có thể thêm bộ mini test theo chủ đề Part 5 hoặc tài liệu từ vựng theo từng tuần...',
+      'Phản hồi lịch học': 'Ví dụ: Em mong lớp có thêm ca tối hoặc sắp xếp lại lịch khai giảng để tiện đi học...',
+      'Báo lỗi trong quá trình sử dụng': 'Ví dụ: Khi em mở bài test trên điện thoại, phần chọn đáp án bị lệch hoặc không bấm được...'
+    };
+
+    function syncTeacherFeedbackState() {
+      if (!goalSelect || !teacherPanel) return;
+
+      const isTeacherFeedback = goalSelect.value === teacherModeValue;
+      teacherPanel.classList.toggle('is-hidden', !isTeacherFeedback);
+
+      if (teacherTargetSelect) {
+        teacherTargetSelect.disabled = !isTeacherFeedback;
+        teacherTargetSelect.required = isTeacherFeedback;
+      }
+
+      if (teacherRatingSelect) {
+        teacherRatingSelect.disabled = !isTeacherFeedback;
+        teacherRatingSelect.required = isTeacherFeedback;
+      }
+
+      if (messageField) {
+        messageField.placeholder = placeholders[goalSelect.value] || placeholders[teacherModeValue];
+      }
+    }
+
+    if (goalSelect) {
+      goalSelect.addEventListener('change', syncTeacherFeedbackState);
+      syncTeacherFeedbackState();
+    }
+  })();
+</script>

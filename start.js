@@ -7,7 +7,7 @@ const { ensureApplicationSchema } = require('./src/services/bootstrapService');
 const PORT = resolvePort();
 const databaseConfig = resolveDatabaseConfig();
 
-function formatBootstrapError(error) {
+function formatStartupError(error) {
   const code = String(error?.code || '').trim().toUpperCase();
 
   if (code === 'ECONNREFUSED') {
@@ -38,7 +38,21 @@ function formatBootstrapError(error) {
     );
   }
 
+  if (code === 'EADDRINUSE') {
+    return (
+      `Port ${PORT} is already in use. ` +
+      'Stop the other process using this port, or change PORT in .env.'
+    );
+  }
+
   return '';
+}
+
+function listen(appInstance, port) {
+  return new Promise((resolve, reject) => {
+    const server = appInstance.listen(port, () => resolve(server));
+    server.on('error', reject);
+  });
 }
 
 async function startServer() {
@@ -46,23 +60,18 @@ async function startServer() {
     `Starting app on port ${PORT} with database ${databaseConfig.database}@${databaseConfig.host}:${databaseConfig.port}`
   );
 
-  app.listen(PORT, () => {
-    console.log(`Server running on internal port ${PORT}`);
-  });
+  await ensureApplicationSchema();
+  await importDataIfEmpty();
+  await listen(app, PORT);
 
-  try {
-    await ensureApplicationSchema();
-    await importDataIfEmpty();
-  } catch (err) {
-    console.error('Startup bootstrap failed. Server is still running, but database-backed features may be degraded:', err);
-    const formattedError = formatBootstrapError(err);
-    if (formattedError) {
-      console.error(`[startup] ${formattedError}`);
-    }
-  }
+  console.log(`Server running on internal port ${PORT}`);
 }
 
 startServer().catch(err => {
   console.error('Application startup failed:', err);
+  const formattedError = formatStartupError(err);
+  if (formattedError) {
+    console.error(`[startup] ${formattedError}`);
+  }
   process.exit(1);
 });

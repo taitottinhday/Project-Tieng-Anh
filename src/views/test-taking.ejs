@@ -117,6 +117,7 @@
     }
 
     .nav-btn {
+      position: relative;
       width: 50px;
       min-width: 50px;
       height: 54px;
@@ -129,6 +130,25 @@
       cursor: pointer;
       box-shadow: 0 10px 20px rgba(30, 56, 95, 0.08);
       transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    }
+
+    .nav-btn.flagged::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 10px;
+      height: 15px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #ffb938 0%, var(--accent) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 74%, 52% 58%, 0 74%);
+      box-shadow: 0 6px 12px rgba(255, 163, 19, 0.25);
+      pointer-events: none;
+    }
+
+    .nav-btn.current.flagged::after {
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 6px 12px rgba(17, 38, 67, 0.22);
     }
 
     .nav-btn:hover {
@@ -169,14 +189,30 @@
     .count-box {
       display: grid;
       place-items: center;
+      gap: 2px;
       min-height: 48px;
       border-radius: 12px;
       border: 1px solid #f2bb56;
       background: #ffffff;
       color: var(--navy);
+      text-align: center;
+    }
+
+    .count-box strong,
+    .count-box small {
+      display: block;
       font-family: "Plus Jakarta Sans", sans-serif;
+    }
+
+    .count-box strong {
       font-weight: 800;
       font-size: 1rem;
+    }
+
+    .count-box small {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
     }
 
     .submit-btn,
@@ -423,8 +459,7 @@
     }
 
     .answer-head {
-      display: flex;
-      align-items: center;
+      display: grid;
       gap: 8px;
       color: #23466f;
       font-family: "Plus Jakarta Sans", sans-serif;
@@ -432,11 +467,62 @@
       font-weight: 800;
     }
 
+    .answer-head-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .answer-number {
+      color: #173862;
+    }
+
+    .answer-head-status {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .flag-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid #f2d39f;
+      background: #fff8ea;
+      color: var(--accent-deep);
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .flag-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(255, 163, 19, 0.16);
+    }
+
+    .flag-toggle:focus-visible {
+      outline: 3px solid rgba(255, 163, 19, 0.2);
+      outline-offset: 2px;
+    }
+
+    .flag-toggle.active {
+      border-color: #f1b24b;
+      background: linear-gradient(180deg, #ffb938 0%, var(--accent) 100%);
+      color: #ffffff;
+      box-shadow: 0 14px 22px rgba(255, 163, 19, 0.24);
+    }
+
     .answer-flag {
       width: 10px;
       height: 16px;
       border-radius: 2px;
-      background: linear-gradient(180deg, #ffb938 0%, var(--accent) 100%);
+      background: currentColor;
       clip-path: polygon(0 0, 100% 0, 100% 70%, 55% 55%, 0 70%);
     }
 
@@ -758,7 +844,10 @@
           <% }) %>
         </div>
         <div class="sidebar-footer">
-          <div class="count-box"><span id="answeredCount">0</span>/<%= totalQuestions %></div>
+          <div class="count-box">
+            <strong><span id="answeredCount">0</span>/<%= totalQuestions %></strong>
+            <small><span id="flaggedCount">0</span> câu gắn cờ</small>
+          </div>
           <button type="submit" class="submit-btn" <%= hasQuestions ? '' : 'disabled' %>>Nộp bài</button>
         </div>
       </aside>
@@ -825,8 +914,19 @@
 
                   <aside class="answer-stage">
                     <div class="answer-head">
-                      <span class="answer-flag"></span>
-                      <span><%= question.number %>.</span>
+                      <div class="answer-head-main">
+                        <button
+                          type="button"
+                          class="flag-toggle"
+                          data-flag-question="<%= question.number %>"
+                          aria-pressed="false"
+                          aria-label="Gắn cờ câu <%= question.number %>">
+                          <span class="answer-flag" aria-hidden="true"></span>
+                          <span data-flag-label>Gắn cờ</span>
+                        </button>
+                        <span class="answer-number"><%= question.number %>.</span>
+                      </div>
+                      <span class="answer-head-status" data-flag-status></span>
                     </div>
 
                     <div class="answer-options">
@@ -856,6 +956,7 @@
                       </div>
 
                       <button type="button" class="secondary-btn" data-jump-pending>Đến câu chưa làm</button>
+                      <button type="button" class="secondary-btn" data-jump-flagged>Đến câu gắn cờ</button>
                     </div>
                   </aside>
                 </div>
@@ -891,11 +992,14 @@
       const screens = Array.from(form.querySelectorAll('[data-question-screen]'));
       const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
       const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
+      const flagButtons = Array.from(form.querySelectorAll('[data-flag-question]'));
       const timerEl = document.getElementById('timer');
       const answeredEl = document.getElementById('answeredCount');
+      const flaggedEl = document.getElementById('flaggedCount');
       const headlineEl = document.getElementById('currentHeadline');
       const sublineEl = document.getElementById('currentSubline');
-      const jumpButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+      const jumpPendingButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+      const jumpFlaggedButtons = Array.from(form.querySelectorAll('[data-jump-flagged]'));
       const furthestQuestionInput = form.querySelector('[data-furthest-question]');
       const submitConfirm = form.querySelector('[data-submit-confirm]');
       const submitAcceptButton = form.querySelector('[data-submit-accept]');
@@ -904,6 +1008,8 @@
       let currentQuestionId = orderedIds[0] || null;
       let furthestQuestionId = currentQuestionId;
       let lastPendingJumpId = null;
+      let lastFlaggedJumpId = null;
+      let flaggedQuestionIds = new Set();
       let isSubmitConfirmed = false;
 
       const readState = () => {
@@ -930,6 +1036,8 @@
             currentQuestionId,
             furthestQuestionId,
             lastPendingJumpId,
+            lastFlaggedJumpId,
+            flaggedQuestionIds: Array.from(flaggedQuestionIds),
             answers
           }));
         } catch (error) {
@@ -959,6 +1067,18 @@
         if (stored.lastPendingJumpId) {
           lastPendingJumpId = String(stored.lastPendingJumpId);
         }
+
+        if (stored.lastFlaggedJumpId) {
+          lastFlaggedJumpId = String(stored.lastFlaggedJumpId);
+        }
+
+        if (Array.isArray(stored.flaggedQuestionIds)) {
+          flaggedQuestionIds = new Set(
+            stored.flaggedQuestionIds
+              .map((questionId) => String(questionId))
+              .filter((questionId) => orderedIds.includes(questionId))
+          );
+        }
       };
 
       const getAnsweredSet = () => new Set(
@@ -966,6 +1086,8 @@
           .filter((input) => input.checked)
           .map((input) => String(input.dataset.questionInput))
       );
+
+      const getFlaggedSet = () => new Set(Array.from(flaggedQuestionIds));
 
       const getScreen = (questionId) => screens.find((screen) => screen.dataset.questionId === String(questionId));
 
@@ -1030,8 +1152,22 @@
         });
       };
 
+      const updateShortcutButtons = (answeredSet, flaggedSet) => {
+        const hasPending = orderedIds.some((questionId) => !answeredSet.has(questionId));
+        const hasFlagged = flaggedSet.size > 0;
+
+        jumpPendingButtons.forEach((button) => {
+          button.disabled = !hasPending;
+        });
+
+        jumpFlaggedButtons.forEach((button) => {
+          button.disabled = !hasFlagged;
+        });
+      };
+
       const syncUi = () => {
         const answeredSet = getAnsweredSet();
+        const flaggedSet = getFlaggedSet();
         const activeScreen = getScreen(currentQuestionId) || screens[0];
 
         screens.forEach((screen) => {
@@ -1042,6 +1178,28 @@
           const questionId = button.dataset.goQuestion;
           button.classList.toggle('current', questionId === String(currentQuestionId));
           button.classList.toggle('answered', answeredSet.has(questionId));
+          button.classList.toggle('flagged', flaggedSet.has(questionId));
+        });
+
+        flagButtons.forEach((button) => {
+          const questionId = String(button.dataset.flagQuestion);
+          const isFlagged = flaggedSet.has(questionId);
+          const label = button.querySelector('[data-flag-label]');
+          const status = getScreen(questionId)?.querySelector('[data-flag-status]');
+
+          button.classList.toggle('active', isFlagged);
+          button.setAttribute('aria-pressed', isFlagged ? 'true' : 'false');
+          button.setAttribute('aria-label', `${isFlagged ? 'Bỏ gắn cờ' : 'Gắn cờ'} câu ${questionId}`);
+
+          if (label) {
+            label.textContent = isFlagged ? 'Bỏ cờ' : 'Gắn cờ';
+          }
+
+          if (status) {
+            status.textContent = isFlagged
+              ? 'Đã gắn cờ, nhớ xem lại trước khi nộp.'
+              : '';
+          }
         });
 
         const currentButton = navButtons.find((button) => button.dataset.goQuestion === String(currentQuestionId));
@@ -1053,6 +1211,10 @@
           answeredEl.textContent = String(answeredSet.size);
         }
 
+        if (flaggedEl) {
+          flaggedEl.textContent = String(flaggedSet.size);
+        }
+
         if (activeScreen) {
           currentQuestionId = String(activeScreen.dataset.questionId);
           updateFurthestQuestion(currentQuestionId);
@@ -1061,11 +1223,13 @@
           }
           if (sublineEl) {
             const answeredLabel = answeredSet.has(currentQuestionId) ? 'Đã chọn đáp án' : 'Chưa trả lời';
-            sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel;
+            const flaggedLabel = flaggedSet.has(currentQuestionId) ? 'Đã gắn cờ xem lại' : 'Không gắn cờ';
+            sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel + ' | ' + flaggedLabel;
           }
         }
 
         updateFooterControls();
+        updateShortcutButtons(answeredSet, flaggedSet);
         writeState();
       };
 
@@ -1091,6 +1255,39 @@
         setCurrentQuestion(nextPending);
       };
 
+      const jumpToNextFlagged = () => {
+        const flaggedIds = orderedIds.filter((questionId) => flaggedQuestionIds.has(questionId));
+
+        if (!flaggedIds.length) {
+          return;
+        }
+
+        const nextFlagged = lastFlaggedJumpId
+          ? (flaggedIds.find((questionId) => Number(questionId) > Number(lastFlaggedJumpId)) || flaggedIds[0])
+          : flaggedIds[0];
+
+        lastFlaggedJumpId = nextFlagged;
+        setCurrentQuestion(nextFlagged);
+      };
+
+      const toggleFlag = (questionId) => {
+        const normalizedQuestionId = String(questionId);
+        if (!orderedIds.includes(normalizedQuestionId)) {
+          return;
+        }
+
+        if (flaggedQuestionIds.has(normalizedQuestionId)) {
+          flaggedQuestionIds.delete(normalizedQuestionId);
+          if (lastFlaggedJumpId === normalizedQuestionId) {
+            lastFlaggedJumpId = null;
+          }
+        } else {
+          flaggedQuestionIds.add(normalizedQuestionId);
+        }
+
+        syncUi();
+      };
+
       restoreState();
       syncUi();
 
@@ -1104,6 +1301,13 @@
         input.addEventListener('change', () => {
           currentQuestionId = String(input.dataset.questionInput);
           syncUi();
+        });
+      });
+
+      flagButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          currentQuestionId = String(button.dataset.flagQuestion);
+          toggleFlag(button.dataset.flagQuestion);
         });
       });
 
@@ -1131,8 +1335,12 @@
         }
       });
 
-      jumpButtons.forEach((button) => {
+      jumpPendingButtons.forEach((button) => {
         button.addEventListener('click', jumpToNextPending);
+      });
+
+      jumpFlaggedButtons.forEach((button) => {
+        button.addEventListener('click', jumpToNextFlagged);
       });
 
       submitCancelButtons.forEach((button) => {

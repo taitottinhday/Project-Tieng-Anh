@@ -45,6 +45,22 @@ async function hasColumn(tableName, columnName) {
   return rows.length > 0;
 }
 
+async function hasIndex(tableName, indexName) {
+  const [rows] = await db.query(
+    `
+      SELECT 1
+      FROM INFORMATION_SCHEMA.STATISTICS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = ?
+        AND INDEX_NAME = ?
+      LIMIT 1
+    `,
+    [tableName, indexName]
+  );
+
+  return rows.length > 0;
+}
+
 async function addColumnIfMissing(tableName, columnName, definition) {
   if (await hasColumn(tableName, columnName)) {
     return false;
@@ -54,6 +70,24 @@ async function addColumnIfMissing(tableName, columnName, definition) {
     await db.query(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
   } catch (error) {
     if (error && error.code === "ER_DUP_FIELDNAME") {
+      return false;
+    }
+
+    throw error;
+  }
+
+  return true;
+}
+
+async function addIndexIfMissing(tableName, indexName, definition) {
+  if (await hasIndex(tableName, indexName)) {
+    return false;
+  }
+
+  try {
+    await db.query(`ALTER TABLE ${tableName} ADD INDEX ${indexName} ${definition}`);
+  } catch (error) {
+    if (error && error.code === "ER_DUP_KEYNAME") {
       return false;
     }
 
@@ -83,20 +117,20 @@ function getDefaultAccessConfig() {
   };
 }
 
-async function ensureTeacherProfile({ fullName, phone, email }) {
+async function ensureTeacherProfile({ fullName, phone, email, userId = null }) {
   if (!email) {
     return null;
   }
 
   const [rows] = await db.query(
-    "SELECT id, full_name, phone FROM teachers WHERE email = ? LIMIT 1",
+    "SELECT id, user_id, full_name, phone FROM teachers WHERE email = ? LIMIT 1",
     [email]
   );
 
   if (!rows.length) {
     const [result] = await db.query(
-      "INSERT INTO teachers (full_name, phone, email) VALUES (?, ?, ?)",
-      [fullName, phone || null, email]
+      "INSERT INTO teachers (user_id, full_name, phone, email) VALUES (?, ?, ?, ?)",
+      [userId || null, fullName, phone || null, email]
     );
     return result.insertId;
   }
@@ -104,11 +138,16 @@ async function ensureTeacherProfile({ fullName, phone, email }) {
   const teacher = rows[0];
   const nextFullName = firstNonEmpty(teacher.full_name, fullName);
   const nextPhone = firstNonEmpty(teacher.phone, phone);
+  const nextUserId = Number(teacher.user_id || 0) || Number(userId || 0) || null;
 
-  if (nextFullName !== teacher.full_name || nextPhone !== (teacher.phone || "")) {
+  if (
+    nextFullName !== teacher.full_name ||
+    nextPhone !== (teacher.phone || "") ||
+    nextUserId !== (Number(teacher.user_id || 0) || null)
+  ) {
     await db.query(
-      "UPDATE teachers SET full_name = ?, phone = ? WHERE id = ?",
-      [nextFullName, nextPhone || null, teacher.id]
+      "UPDATE teachers SET user_id = ?, full_name = ?, phone = ? WHERE id = ?",
+      [nextUserId, nextFullName, nextPhone || null, teacher.id]
     );
   }
 
@@ -159,12 +198,15 @@ async function ensureDefaultAccessUsers() {
   }
 
   if (defaults.teacher) {
-    await ensureTeacherProfile(defaults.teacher);
-    await ensurePrivilegedUser({
+    const teacherUserId = await ensurePrivilegedUser({
       username: defaults.teacher.fullName,
       email: defaults.teacher.email,
       password: defaults.teacher.password,
       role: defaults.teacher.role,
+    });
+    await ensureTeacherProfile({
+      ...defaults.teacher,
+      userId: teacherUserId,
     });
   }
 }
@@ -197,10 +239,12 @@ async function ensureCoreTables() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS teachers (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NULL,
       full_name VARCHAR(150) NOT NULL,
       phone VARCHAR(30),
       email VARCHAR(150),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_teachers_user_id (user_id)
     )
   `);
 
@@ -309,6 +353,10 @@ async function ensureCoreTables() {
       course_interest VARCHAR(150) NULL,
       schedule_preference VARCHAR(150) NULL,
       preferred_contact_method VARCHAR(50) NULL,
+      message_channel VARCHAR(50) NOT NULL DEFAULT 'admin_only',
+      target_teacher_id INT NULL,
+      target_class_id INT NULL,
+      teacher_feedback_rating VARCHAR(80) NULL,
       message TEXT,
       status ENUM('new','viewed','contacted') NOT NULL DEFAULT 'new',
       admin_note TEXT NULL,
@@ -317,6 +365,8 @@ async function ensureCoreTables() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_messages_status_created (status, created_at),
+      INDEX idx_messages_channel (message_channel),
+      INDEX idx_messages_target_teacher (target_teacher_id),
       INDEX idx_messages_email (email),
       INDEX idx_messages_user (user_id)
     )
@@ -368,6 +418,16 @@ async function ensureLegacySchemaCompatibility() {
     "INT NULL AFTER id"
   );
   await addColumnIfMissing(
+    "teachers",
+    "user_id",
+    "INT NULL AFTER id"
+  );
+  await addIndexIfMissing(
+    "teachers",
+    "idx_teachers_user_id",
+    "(user_id)"
+  );
+  await addColumnIfMissing(
     "payments",
     "status",
     "ENUM('pending','confirmed','rejected') NOT NULL DEFAULT 'pending' AFTER method"
@@ -409,6 +469,26 @@ async function ensureLegacySchemaCompatibility() {
   );
   await addColumnIfMissing(
     "messages",
+    "message_channel",
+    "VARCHAR(50) NOT NULL DEFAULT 'admin_only' AFTER preferred_contact_method"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "target_teacher_id",
+    "INT NULL AFTER message_channel"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "target_class_id",
+    "INT NULL AFTER target_teacher_id"
+  );
+  await addColumnIfMissing(
+    "messages",
+    "teacher_feedback_rating",
+    "VARCHAR(80) NULL AFTER target_class_id"
+  );
+  await addColumnIfMissing(
+    "messages",
     "status",
     "ENUM('new','viewed','contacted') NOT NULL DEFAULT 'new' AFTER created_at"
   );
@@ -431,6 +511,16 @@ async function ensureLegacySchemaCompatibility() {
     "messages",
     "updated_at",
     "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at"
+  );
+  await addIndexIfMissing(
+    "messages",
+    "idx_messages_channel",
+    "(message_channel)"
+  );
+  await addIndexIfMissing(
+    "messages",
+    "idx_messages_target_teacher",
+    "(target_teacher_id)"
   );
 
   await db.query(`

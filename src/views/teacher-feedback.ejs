@@ -1,0 +1,118 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const safeMessages = Array.isArray(typeof feedbackMessages !== 'undefined' ? feedbackMessages : null) ? feedbackMessages : [];
+  const safeStats = (typeof feedbackStats !== 'undefined' && feedbackStats) ? feedbackStats : {
+    total: safeMessages.length,
+    new: safeMessages.filter((item) => item.status === 'new').length,
+    contacted: safeMessages.filter((item) => item.status === 'contacted').length,
+    needsAttention: safeMessages.filter((item) => item.teacher_feedback_rating === 'Cần cải thiện thêm').length
+  };
+  const formatDateTime = (value) => {
+    if (!value) return 'Chưa có thời gian';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa có thời gian' : parsed.toLocaleString('vi-VN');
+  };
+  const statusMeta = (status) => {
+    if (status === 'contacted') return { label: 'Admin đã phản hồi', tone: 'green' };
+    if (status === 'viewed') return { label: 'Admin đã xem', tone: 'gold' };
+    return { label: 'Mới gửi', tone: 'pink' };
+  };
+%>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Teacher Feedback Inbox</p>
+        <h1 class="teacher-hero-title">Góp ý của học viên dành cho bạn</h1>
+        <p class="teacher-hero-text">
+          Hộp thư này chỉ hiển thị các góp ý học viên gửi riêng về giáo viên. Đề xuất nội dung mới, lịch học hay lỗi hệ thống vẫn nằm ở luồng admin.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= safeStats.total %> góp ý đã nhận</span>
+          <span class="teacher-pill soft"><%= safeStats.new %> góp ý mới</span>
+          <span class="teacher-pill soft"><%= safeStats.contacted %> mục admin đã phản hồi</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color: white;">Nguyên tắc hiển thị</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.82);">
+          Mỗi góp ý ở đây đã được gắn với đúng lớp và đúng giáo viên. Admin vẫn là đầu mối quản trị, còn giáo viên theo dõi để nắm chất lượng giảng dạy và cải thiện cách đứng lớp.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Tổng góp ý</span>
+      <strong class="teacher-stat-value"><%= safeStats.total %></strong>
+      <p class="teacher-stat-note">Toàn bộ góp ý về giáo viên đang gắn với tài khoản của bạn.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Mới gửi</span>
+      <strong class="teacher-stat-value"><%= safeStats.new %></strong>
+      <p class="teacher-stat-note">Những góp ý admin chưa đánh dấu liên hệ xong.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Cần cải thiện</span>
+      <strong class="teacher-stat-value"><%= safeStats.needsAttention %></strong>
+      <p class="teacher-stat-note">Số góp ý có mức đánh giá cần cải thiện thêm.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Admin đã phản hồi</span>
+      <strong class="teacher-stat-value"><%= safeStats.contacted %></strong>
+      <p class="teacher-stat-note">Các mục đã có phản hồi hoặc cập nhật từ admin.</p>
+    </article>
+  </section>
+
+  <section class="teacher-panel">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Danh sách góp ý</h2>
+        <p class="teacher-panel-desc">Từng phản hồi đều hiển thị rõ lớp liên quan, trạng thái xử lý của admin và mức độ hài lòng mà học viên đã chọn.</p>
+      </div>
+    </div>
+
+    <% if (!safeMessages.length) { %>
+      <div class="teacher-empty" style="margin-top:18px;">Chưa có góp ý nào về giáo viên được gửi tới tài khoản này.</div>
+    <% } else { %>
+      <div class="teacher-stack" style="margin-top:20px;">
+        <% safeMessages.forEach((item) => { const status = statusMeta(item.status); %>
+          <article class="teacher-profile-card">
+            <div class="teacher-class-top">
+              <div>
+                <h3 class="teacher-card-title"><%= item.name || 'Học viên' %></h3>
+                <p class="teacher-card-text"><%= formatDateTime(item.created_at) %></p>
+              </div>
+              <div class="teacher-chip-group">
+                <span class="teacher-pill <%= status.tone %>"><%= status.label %></span>
+                <% if (item.teacher_feedback_rating) { %>
+                  <span class="teacher-pill navy"><%= item.teacher_feedback_rating %></span>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="teacher-kpi-strip" style="margin-top:16px;">
+              <div class="teacher-mini-kpi">
+                <strong><%= item.related_class_code || 'Không áp dụng' %></strong>
+                <span>Lớp liên quan</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.related_course_name || item.course_interest || 'Không áp dụng' %></strong>
+                <span>Khóa học / ngữ cảnh</span>
+              </div>
+              <div class="teacher-mini-kpi">
+                <strong><%= item.email || item.phone || 'Không có liên hệ' %></strong>
+                <span>Thông tin học viên</span>
+              </div>
+            </div>
+
+            <p class="teacher-card-text" style="margin-top:16px;"><%= item.message_body || item.message || 'Không có nội dung.' %></p>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</div>

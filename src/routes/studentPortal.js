@@ -23,7 +23,10 @@ const {
   markStudentSubmissionComplete,
   saveStudentSubmission,
 } = require("../services/classroomService");
-const { listStudentConsultations } = require("../services/consultationService");
+const {
+  createConsultationRequest,
+  listStudentConsultations,
+} = require("../services/consultationService");
 const {
   markAllStudentNotificationsRead,
 } = require("../services/studentNotificationService");
@@ -82,6 +85,20 @@ function getStudentCourseComments(req, slug) {
   const commentsBySlug = req.session?.studentCourseComments || {};
   const comments = commentsBySlug[slug];
   return Array.isArray(comments) ? comments : [];
+}
+
+function buildStudentFeedbackTargets(schedules = []) {
+  return schedules
+    .filter((item) => Number(item.class_id || 0) > 0 && Number(item.teacher_id || 0) > 0)
+    .map((item) => ({
+      key: `${Number(item.class_id)}:${Number(item.teacher_id)}`,
+      classId: Number(item.class_id),
+      classCode: item.class_code || "",
+      courseName: item.course_name || "",
+      teacherId: Number(item.teacher_id),
+      teacherName: item.teacher_name || "",
+      scheduleText: item.schedule_text || "",
+    }));
 }
 
 router.use("/schedule", isLoggedIn, isStudent, async (req, res, next) => {
@@ -235,6 +252,91 @@ router.get("/contact", isLoggedIn, isStudent, async (req, res) => {
   } catch (err) {
     console.error("student contact page error:", err);
     return sendPublicError(res, err, 500, "Không thể tải hộp thư tư vấn lúc này.");
+  }
+});
+
+router.get("/feedback", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const student = await getCurrentStudent(req);
+    const schedules = student?.id ? await listStudentActiveSchedules(student.id) : [];
+
+    return renderWithLayout(res, "student-feedback", {
+      title: "Góp ý học viên",
+      success: req.query.success || null,
+      feedbackTargets: buildStudentFeedbackTargets(schedules),
+    });
+  } catch (err) {
+    console.error("student feedback page error:", err);
+    return sendPublicError(res, err, 500, "Không thể tải trang góp ý lúc này.");
+  }
+});
+
+router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: true }), async (req, res) => {
+  try {
+    const student = await getCurrentStudent(req);
+    const schedules = student?.id ? await listStudentActiveSchedules(student.id) : [];
+    const feedbackTargets = buildStudentFeedbackTargets(schedules);
+    const trimmedName = String(req.body.name || "").trim();
+    const trimmedEmail = String(req.body.email || "").trim();
+    const trimmedPhone = String(req.body.phone || "").trim();
+    const selectedGoal = String(req.body.goal || "").trim();
+    const messageBody = String(req.body.message || "").trim();
+    const teacherTargetKey = String(req.body.teacher_target || "").trim();
+    const teacherFeedbackRating = String(req.body.teacher_feedback_rating || "").trim();
+    const isTeacherFeedback = selectedGoal === "Góp ý về giáo viên";
+
+    if (!trimmedName || !messageBody) {
+      req.flash("error_msg", "Vui lòng điền họ tên và nội dung góp ý.");
+      return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
+    }
+
+    if (!trimmedEmail && !trimmedPhone) {
+      req.flash("error_msg", "Vui lòng để lại email hoặc số điện thoại để trung tâm phản hồi khi cần.");
+      return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
+    }
+
+    let selectedTarget = null;
+    if (isTeacherFeedback) {
+      selectedTarget = feedbackTargets.find((item) => item.key === teacherTargetKey) || null;
+
+      if (!selectedTarget) {
+        req.flash("error_msg", "Vui lòng chọn đúng lớp và giáo viên bạn muốn góp ý.");
+        return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
+      }
+
+      if (!teacherFeedbackRating) {
+        req.flash("error_msg", "Vui lòng chọn mức độ hài lòng đối với giáo viên.");
+        return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
+      }
+    }
+
+    await createConsultationRequest({
+      user_id: req.session?.user?.id || null,
+      name: trimmedName,
+      email: trimmedEmail,
+      phone: trimmedPhone,
+      goal: selectedGoal,
+      course_interest: isTeacherFeedback
+        ? [selectedTarget?.courseName, selectedTarget?.classCode].filter(Boolean).join(" · ")
+        : "Góp ý từ tài khoản học viên",
+      schedule_preference: isTeacherFeedback
+        ? selectedTarget?.scheduleText || "Phản hồi giáo viên từ cổng học viên"
+        : "Student feedback portal",
+      preferred_contact_method: "Nhắn trong hệ thống",
+      message_channel: isTeacherFeedback ? "teacher_feedback" : "admin_only",
+      target_teacher_id: isTeacherFeedback ? selectedTarget?.teacherId : null,
+      target_teacher_name: isTeacherFeedback ? selectedTarget?.teacherName : "",
+      target_class_id: isTeacherFeedback ? selectedTarget?.classId : null,
+      related_class_code: isTeacherFeedback ? selectedTarget?.classCode : "",
+      related_course_name: isTeacherFeedback ? selectedTarget?.courseName : "",
+      teacher_feedback_rating: isTeacherFeedback ? teacherFeedbackRating : "",
+      message_body: messageBody,
+    });
+
+    return res.redirect((res.locals.baseUrl || "") + "/student/feedback?success=1");
+  } catch (err) {
+    console.error("student feedback submit error:", err);
+    return sendPublicError(res, err, 500, "Không thể gửi góp ý lúc này.");
   }
 });
 

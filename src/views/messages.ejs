@@ -5,7 +5,7 @@ const safeSuccessMessages = typeof success_msg !== "undefined" ? success_msg : [
 const safeErrorMessages = typeof error_msg !== "undefined" ? error_msg : [];
 const totalMessages = safeMessages.length;
 const totalNew = safeMessages.filter((item) => (item.status || "new") === "new").length;
-const totalViewed = safeMessages.filter((item) => item.status === "viewed").length;
+const totalTeacherFeedback = safeMessages.filter((item) => item.message_channel === "teacher_feedback").length;
 const totalContacted = safeMessages.filter((item) => item.status === "contacted").length;
 
 function formatDateTime(value) {
@@ -32,6 +32,22 @@ function statusMeta(status) {
 
   return { label: "Mới gửi", className: "is-new" };
 }
+
+function channelMeta(channel) {
+  if (channel === "teacher_feedback") {
+    return {
+      label: "Admin + giáo viên",
+      className: "is-teacher",
+      description: "Góp ý này được chia sẻ tới cả admin và giáo viên phụ trách."
+    };
+  }
+
+  return {
+    label: "Chỉ admin",
+    className: "is-admin",
+    description: "Góp ý này chỉ đi vào luồng admin."
+  };
+}
 %>
 
 <style>
@@ -55,24 +71,27 @@ function statusMeta(status) {
   .am-stat span{display:block;color:#94a3b8;font-size:.92rem}
   .am-stat strong{display:block;margin-top:12px;font-size:2.2rem;color:#f8fafc}
   .am-stat.is-new strong{color:#93c5fd}
-  .am-stat.is-viewed strong{color:#fcd34d}
+  .am-stat.is-teacher strong{color:#fbbf24}
   .am-stat.is-contacted strong{color:#86efac}
   .am-list{display:grid;gap:20px}
   .am-card{padding:22px;background:linear-gradient(180deg,#0f172a 0%,#111827 100%);color:#e5eefb}
   .am-card-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin-bottom:18px}
   .am-title{font-size:1.45rem;color:#fff}
-  .am-subtitle{margin-top:6px;color:#cbd5e1}
+  .am-subtitle{margin-top:6px;color:#cbd5e1;line-height:1.7}
   .am-chip-row{display:flex;flex-wrap:wrap;gap:10px}
   .am-badge,.am-chip{display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;font-weight:800}
   .am-badge.is-new{background:rgba(59,130,246,.16);color:#bfdbfe}
   .am-badge.is-viewed{background:rgba(245,158,11,.16);color:#fde68a}
   .am-badge.is-contacted{background:rgba(34,197,94,.16);color:#bbf7d0}
   .am-chip{background:rgba(148,163,184,.14);color:#dbeafe;font-size:.88rem}
+  .am-chip.is-teacher{background:rgba(251,191,36,.14);color:#fde68a}
+  .am-chip.is-admin{background:rgba(148,163,184,.14);color:#dbeafe}
   .am-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.82fr);gap:18px}
   .am-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .am-info{padding:16px;border-radius:20px;background:rgba(15,23,42,.56);border:1px solid rgba(148,163,184,.14)}
   .am-info label{display:block;margin-bottom:6px;color:#93a7c3;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
   .am-info strong{display:block;color:#fff;font-size:1rem;line-height:1.6}
+  .am-info small{display:block;margin-top:6px;color:#93a7c3;line-height:1.6}
   .am-request-body{padding:18px;background:rgba(15,23,42,.48)}
   .am-request-body strong,.am-response-card strong{color:#fff}
   .am-request-body p{margin:10px 0 0;color:#e2e8f0;line-height:1.85}
@@ -112,8 +131,8 @@ function statusMeta(status) {
   <section class="am-hero">
     <div class="am-hero-head">
       <div>
-        <h1>Danh sách yêu cầu tư vấn</h1>
-        <p>Mỗi yêu cầu tư vấn giờ được xử lý như một ca hỗ trợ hoàn chỉnh: admin có thể đánh dấu đã xem, lưu ghi chú nội bộ, lên lịch hẹn, chọn kênh liên hệ và gửi phản hồi trực tiếp về tài khoản học viên.</p>
+        <h1>Hộp thư góp ý và tư vấn</h1>
+        <p>Admin theo dõi toàn bộ góp ý của học viên tại đây. Những phản hồi về giáo viên sẽ được đánh dấu riêng để bạn kiểm soát đồng thời luồng admin và luồng giáo viên, còn các góp ý vận hành khác vẫn xử lý nội bộ trong admin.</p>
       </div>
       <div class="am-hero-badge">
         <span>Quản trị viên đang thao tác</span>
@@ -142,9 +161,9 @@ function statusMeta(status) {
       <span>Mới gửi</span>
       <strong><%= totalNew %></strong>
     </article>
-    <article class="am-stat is-viewed">
-      <span>Đã xem</span>
-      <strong><%= totalViewed %></strong>
+    <article class="am-stat is-teacher">
+      <span>Góp ý giáo viên</span>
+      <strong><%= totalTeacherFeedback %></strong>
     </article>
     <article class="am-stat is-contacted">
       <span>Đã liên hệ</span>
@@ -154,12 +173,12 @@ function statusMeta(status) {
 
   <% if (!safeMessages.length) { %>
     <section class="am-empty">
-      <strong>Chưa có yêu cầu tư vấn mới.</strong>
-      <p>Khi học viên hoặc khách truy cập gửi form tư vấn, từng yêu cầu sẽ xuất hiện tại đây để đội ngũ tiếp nhận và phản hồi theo đúng quy trình.</p>
+      <strong>Chưa có yêu cầu mới trong hộp thư.</strong>
+      <p>Khi học viên hoặc khách truy cập gửi form liên hệ, tư vấn hoặc góp ý, từng mục sẽ xuất hiện tại đây để đội ngũ tiếp nhận và xử lý đúng quy trình.</p>
     </section>
   <% } else { %>
     <section class="am-list">
-      <% safeMessages.forEach((item, index) => { const status = statusMeta(item.status); %>
+      <% safeMessages.forEach((item, index) => { const status = statusMeta(item.status); const channel = channelMeta(item.message_channel); %>
         <article class="am-card">
           <div class="am-card-head">
             <div>
@@ -169,6 +188,10 @@ function statusMeta(status) {
             <div class="am-chip-row">
               <span class="am-chip">#<%= index + 1 %></span>
               <span class="am-badge <%= status.className %>"><%= status.label %></span>
+              <span class="am-chip <%= channel.className %>"><%= channel.label %></span>
+              <% if (item.teacher_feedback_rating) { %>
+                <span class="am-chip is-teacher"><%= item.teacher_feedback_rating %></span>
+              <% } %>
               <% if (item.response_count) { %>
                 <span class="am-chip"><%= item.response_count %> phản hồi đã gửi</span>
               <% } %>
@@ -187,20 +210,34 @@ function statusMeta(status) {
                   <strong><%= item.phone || "Chưa cung cấp" %></strong>
                 </div>
                 <div class="am-info">
-                  <label>Mục tiêu hỗ trợ</label>
+                  <label>Loại góp ý</label>
                   <strong><%= item.goal || "Chưa chọn" %></strong>
                 </div>
                 <div class="am-info">
-                  <label>Khóa học quan tâm</label>
-                  <strong><%= item.course_interest || "Chưa chọn" %></strong>
+                  <label>Luồng tiếp nhận</label>
+                  <strong><%= channel.label %></strong>
+                  <small><%= channel.description %></small>
                 </div>
                 <div class="am-info">
-                  <label>Khung giờ mong muốn</label>
-                  <strong><%= item.schedule_preference || "Chưa chọn" %></strong>
+                  <label>Giáo viên liên quan</label>
+                  <strong><%= item.target_teacher_name || "Không áp dụng" %></strong>
                 </div>
                 <div class="am-info">
-                  <label>Kênh phản hồi mong muốn</label>
-                  <strong><%= item.preferred_contact_method || "Chưa chọn" %></strong>
+                  <label>Lớp liên quan</label>
+                  <strong>
+                    <%= item.related_class_code || "Không áp dụng" %>
+                    <% if (item.related_course_name) { %>
+                      • <%= item.related_course_name %>
+                    <% } %>
+                  </strong>
+                </div>
+                <div class="am-info">
+                  <label>Ngữ cảnh thêm</label>
+                  <strong><%= item.course_interest || "Chưa cung cấp" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Lịch / ghi chú luồng</label>
+                  <strong><%= item.schedule_preference || "Chưa cung cấp" %></strong>
                 </div>
                 <div class="am-info">
                   <label>Đã xem lúc</label>
@@ -266,7 +303,7 @@ function statusMeta(status) {
 
             <aside style="display:grid;gap:16px">
               <section class="am-side-panel">
-                <h3>Liên hệ tư vấn</h3>
+                <h3>Phản hồi cho học viên</h3>
                 <form method="POST" action="<%= safeBaseUrl %>/messages/<%= item.id %>/contacted" class="am-form">
                   <label>
                     Kênh liên hệ
@@ -296,11 +333,11 @@ function statusMeta(status) {
 
                   <label>
                     Tin nhắn gửi học viên
-                    <textarea name="message_to_student" placeholder="Ví dụ: Trung tâm đã giữ chỗ tư vấn trực tiếp cho bạn tại cơ sở Hồ Tùng Mậu vào tối thứ 5. Nếu thuận tiện, vui lòng xác nhận lại và bổ sung số Zalo để đội ngũ gửi hướng dẫn nhanh hơn."></textarea>
+                    <textarea name="message_to_student" placeholder="Ví dụ: Admin đã tiếp nhận góp ý của bạn và đang theo dõi cùng bộ phận phụ trách. Nếu thuận tiện, vui lòng xác nhận thêm khung giờ phù hợp để trung tâm liên hệ lại."></textarea>
                   </label>
 
                   <div class="am-actions">
-                    <button type="submit" class="am-btn am-btn-primary">Liên hệ tư vấn</button>
+                    <button type="submit" class="am-btn am-btn-primary">Gửi phản hồi</button>
                   </div>
                 </form>
               </section>
@@ -316,7 +353,7 @@ function statusMeta(status) {
                 <form method="POST" action="<%= safeBaseUrl %>/messages/<%= item.id %>/note" class="am-form">
                   <label>
                     Ghi chú nội bộ
-                    <textarea name="admin_note" placeholder="Ví dụ: Học viên hỏi lịch khai giảng TOEIC A, ưu tiên liên hệ sau 18h và có thể chốt qua Zalo."><%= item.admin_note || "" %></textarea>
+                    <textarea name="admin_note" placeholder="Ví dụ: Đây là góp ý về giáo viên của lớp TOEIC 650+, cần theo dõi thêm cùng quản lý chuyên môn."><%= item.admin_note || "" %></textarea>
                   </label>
                   <div class="am-actions">
                     <button type="submit" class="am-btn am-btn-success">Lưu ghi chú</button>
@@ -328,8 +365,8 @@ function statusMeta(status) {
                 <% } %>
 
                 <div class="am-help">
-                  Dùng <strong>Lưu ghi chú</strong> cho trao đổi nội bộ của đội ngũ.
-                  Dùng <strong>Liên hệ tư vấn</strong> khi muốn gửi lịch hẹn, địa điểm, kênh liên hệ hoặc lời nhắn thật sự về tài khoản học viên.
+                  Dùng <strong>Lưu ghi chú</strong> cho trao đổi nội bộ của admin.
+                  Dùng <strong>Gửi phản hồi</strong> khi cần trả lời lại học viên trong cùng luồng tin nhắn.
                 </div>
               </section>
             </aside>

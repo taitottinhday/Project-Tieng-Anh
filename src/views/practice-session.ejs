@@ -195,6 +195,7 @@
     }
 
     .ps-nav-btn {
+      position: relative;
       width: 52px;
       min-width: 52px;
       height: 56px;
@@ -207,6 +208,25 @@
       cursor: pointer;
       box-shadow: 0 10px 20px rgba(19, 34, 56, 0.08);
       transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    }
+
+    .ps-nav-btn.flagged::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 10px;
+      height: 15px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #f05b52 0%, var(--ps-accent) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 74%, 52% 58%, 0 74%);
+      box-shadow: 0 6px 12px rgba(198, 58, 49, 0.25);
+      pointer-events: none;
+    }
+
+    .ps-nav-btn.current.flagged::after {
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 6px 12px rgba(19, 34, 56, 0.24);
     }
 
     .ps-nav-btn:hover {
@@ -247,11 +267,32 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 14px;
       padding: 14px 16px;
       border-radius: 18px;
       background: var(--ps-soft);
       border: 1px solid var(--ps-line);
       font-weight: 800;
+    }
+
+    .ps-count-copy {
+      display: grid;
+      gap: 4px;
+    }
+
+    .ps-count-copy > span {
+      color: var(--ps-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .ps-count-copy small {
+      color: var(--ps-muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      line-height: 1.4;
     }
 
     .ps-submit,
@@ -481,7 +522,13 @@
 
     .ps-answer-head {
       display: grid;
-      gap: 6px;
+      gap: 8px;
+    }
+
+    .ps-answer-head-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .ps-answer-head strong {
@@ -489,9 +536,58 @@
       font-size: 1.2rem;
     }
 
-    .ps-answer-head span {
+    .ps-answer-head > span {
       color: var(--ps-muted);
       line-height: 1.6;
+    }
+
+    .ps-flag-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(198, 58, 49, 0.18);
+      background: rgba(198, 58, 49, 0.08);
+      color: var(--ps-accent);
+      font-family: "Sora", "Manrope", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .ps-flag-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(198, 58, 49, 0.14);
+    }
+
+    .ps-flag-toggle:focus-visible {
+      outline: 3px solid rgba(198, 58, 49, 0.18);
+      outline-offset: 2px;
+    }
+
+    .ps-flag-toggle.active {
+      background: linear-gradient(135deg, #c63a31 0%, #e05b52 100%);
+      border-color: #c63a31;
+      color: #ffffff;
+      box-shadow: 0 16px 26px rgba(198, 58, 49, 0.2);
+    }
+
+    .ps-flag-icon {
+      width: 10px;
+      height: 16px;
+      border-radius: 2px;
+      background: currentColor;
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 55% 55%, 0 70%);
+    }
+
+    .ps-flag-status {
+      color: var(--ps-muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.45;
     }
 
     .ps-choices {
@@ -811,7 +907,10 @@
 
         <div class="ps-side-footer">
           <div class="ps-count">
-            <span>Tiến độ</span>
+            <div class="ps-count-copy">
+              <span>Tiến độ</span>
+              <small><span id="flaggedCountFooter">0</span> câu đang gắn cờ</small>
+            </div>
             <strong><span id="answeredCountFooter">0</span>/<%= totalQuestions %></strong>
           </div>
           <button type="submit" class="ps-submit" <%= hasQuestions ? '' : 'disabled' %>>Nộp bài</button>
@@ -884,8 +983,20 @@
 
                   <aside class="ps-answer-stage">
                     <div class="ps-answer-head">
-                      <strong>Câu <%= question.number %></strong>
+                      <div class="ps-answer-head-main">
+                        <button
+                          type="button"
+                          class="ps-flag-toggle"
+                          data-flag-question="<%= question.number %>"
+                          aria-pressed="false"
+                          aria-label="Gắn cờ câu <%= question.number %>">
+                          <span class="ps-flag-icon" aria-hidden="true"></span>
+                          <span data-flag-label>Gắn cờ</span>
+                        </button>
+                        <strong>Câu <%= question.number %></strong>
+                      </div>
                       <span>Chọn một đáp án phù hợp nhất trước khi chuyển sang câu tiếp theo.</span>
+                      <div class="ps-flag-status" data-flag-status>Chưa gắn cờ cho câu này.</div>
                     </div>
 
                     <div class="ps-choices">
@@ -915,6 +1026,7 @@
                       </div>
 
                       <button type="button" class="ps-secondary" data-jump-pending>Đến câu chưa làm</button>
+                      <button type="button" class="ps-secondary" data-jump-flagged>Đến câu gắn cờ</button>
                     </div>
                   </aside>
                 </div>
@@ -950,12 +1062,15 @@
       const screens = Array.from(form.querySelectorAll('[data-question-screen]'));
       const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
       const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
+      const flagButtons = Array.from(form.querySelectorAll('[data-flag-question]'));
       const timerEl = document.getElementById('timer');
       const answeredEl = document.getElementById('answeredCount');
       const answeredFooterEl = document.getElementById('answeredCountFooter');
+      const flaggedFooterEl = document.getElementById('flaggedCountFooter');
       const headlineEl = document.getElementById('currentHeadline');
       const sublineEl = document.getElementById('currentSubline');
-      const jumpButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+      const jumpPendingButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+      const jumpFlaggedButtons = Array.from(form.querySelectorAll('[data-jump-flagged]'));
       const furthestQuestionInput = form.querySelector('[data-furthest-question]');
       const submitConfirm = form.querySelector('[data-submit-confirm]');
       const submitAcceptButton = form.querySelector('[data-submit-accept]');
@@ -964,6 +1079,8 @@
       let currentQuestionId = orderedIds[0] || null;
       let furthestQuestionId = currentQuestionId;
       let lastPendingJumpId = null;
+      let lastFlaggedJumpId = null;
+      let flaggedQuestionIds = new Set();
       let isSubmitConfirmed = false;
 
       const readState = () => {
@@ -990,6 +1107,8 @@
             currentQuestionId,
             furthestQuestionId,
             lastPendingJumpId,
+            lastFlaggedJumpId,
+            flaggedQuestionIds: Array.from(flaggedQuestionIds),
             answers
           }));
         } catch (error) {
@@ -1019,6 +1138,18 @@
         if (stored.lastPendingJumpId) {
           lastPendingJumpId = String(stored.lastPendingJumpId);
         }
+
+        if (stored.lastFlaggedJumpId) {
+          lastFlaggedJumpId = String(stored.lastFlaggedJumpId);
+        }
+
+        if (Array.isArray(stored.flaggedQuestionIds)) {
+          flaggedQuestionIds = new Set(
+            stored.flaggedQuestionIds
+              .map((questionId) => String(questionId))
+              .filter((questionId) => orderedIds.includes(questionId))
+          );
+        }
       };
 
       const getAnsweredSet = () => new Set(
@@ -1026,6 +1157,8 @@
           .filter((input) => input.checked)
           .map((input) => String(input.dataset.questionInput))
       );
+
+      const getFlaggedSet = () => new Set(Array.from(flaggedQuestionIds));
 
       const getScreen = (questionId) => screens.find((screen) => screen.dataset.questionId === String(questionId));
 
@@ -1090,8 +1223,22 @@
         });
       };
 
+      const updateShortcutButtons = (answeredSet, flaggedSet) => {
+        const hasPending = orderedIds.some((questionId) => !answeredSet.has(questionId));
+        const hasFlagged = flaggedSet.size > 0;
+
+        jumpPendingButtons.forEach((button) => {
+          button.disabled = !hasPending;
+        });
+
+        jumpFlaggedButtons.forEach((button) => {
+          button.disabled = !hasFlagged;
+        });
+      };
+
       const syncUi = () => {
         const answeredSet = getAnsweredSet();
+        const flaggedSet = getFlaggedSet();
         const activeScreen = getScreen(currentQuestionId) || screens[0];
 
         screens.forEach((screen) => {
@@ -1102,6 +1249,28 @@
           const questionId = button.dataset.goQuestion;
           button.classList.toggle('current', questionId === String(currentQuestionId));
           button.classList.toggle('answered', answeredSet.has(questionId));
+          button.classList.toggle('flagged', flaggedSet.has(questionId));
+        });
+
+        flagButtons.forEach((button) => {
+          const questionId = String(button.dataset.flagQuestion);
+          const isFlagged = flaggedSet.has(questionId);
+          const label = button.querySelector('[data-flag-label]');
+          const status = getScreen(questionId)?.querySelector('[data-flag-status]');
+
+          button.classList.toggle('active', isFlagged);
+          button.setAttribute('aria-pressed', isFlagged ? 'true' : 'false');
+          button.setAttribute('aria-label', `${isFlagged ? 'Bỏ gắn cờ' : 'Gắn cờ'} câu ${questionId}`);
+
+          if (label) {
+            label.textContent = isFlagged ? 'Bỏ cờ' : 'Gắn cờ';
+          }
+
+          if (status) {
+            status.textContent = isFlagged
+              ? 'Đã gắn cờ, nhớ xem lại trước khi nộp.'
+              : 'Chưa gắn cờ cho câu này.';
+          }
         });
 
         if (answeredEl) {
@@ -1112,6 +1281,10 @@
           answeredFooterEl.textContent = String(answeredSet.size);
         }
 
+        if (flaggedFooterEl) {
+          flaggedFooterEl.textContent = String(flaggedSet.size);
+        }
+
         if (activeScreen) {
           currentQuestionId = String(activeScreen.dataset.questionId);
           updateFurthestQuestion(currentQuestionId);
@@ -1120,11 +1293,13 @@
           }
           if (sublineEl) {
             const answeredLabel = answeredSet.has(currentQuestionId) ? 'Đã chọn đáp án' : 'Chưa trả lời';
-            sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel;
+            const flaggedLabel = flaggedSet.has(currentQuestionId) ? 'Đã gắn cờ xem lại' : 'Không gắn cờ';
+            sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel + ' | ' + flaggedLabel;
           }
         }
 
         updateFooterControls();
+        updateShortcutButtons(answeredSet, flaggedSet);
         writeState();
       };
 
@@ -1150,6 +1325,39 @@
         setCurrentQuestion(nextPending);
       };
 
+      const jumpToNextFlagged = () => {
+        const flaggedIds = orderedIds.filter((questionId) => flaggedQuestionIds.has(questionId));
+
+        if (!flaggedIds.length) {
+          return;
+        }
+
+        const nextFlagged = lastFlaggedJumpId
+          ? (flaggedIds.find((questionId) => Number(questionId) > Number(lastFlaggedJumpId)) || flaggedIds[0])
+          : flaggedIds[0];
+
+        lastFlaggedJumpId = nextFlagged;
+        setCurrentQuestion(nextFlagged);
+      };
+
+      const toggleFlag = (questionId) => {
+        const normalizedQuestionId = String(questionId);
+        if (!orderedIds.includes(normalizedQuestionId)) {
+          return;
+        }
+
+        if (flaggedQuestionIds.has(normalizedQuestionId)) {
+          flaggedQuestionIds.delete(normalizedQuestionId);
+          if (lastFlaggedJumpId === normalizedQuestionId) {
+            lastFlaggedJumpId = null;
+          }
+        } else {
+          flaggedQuestionIds.add(normalizedQuestionId);
+        }
+
+        syncUi();
+      };
+
       restoreState();
       syncUi();
 
@@ -1163,6 +1371,13 @@
         input.addEventListener('change', () => {
           currentQuestionId = String(input.dataset.questionInput);
           syncUi();
+        });
+      });
+
+      flagButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          currentQuestionId = String(button.dataset.flagQuestion);
+          toggleFlag(button.dataset.flagQuestion);
         });
       });
 
@@ -1190,8 +1405,12 @@
         }
       });
 
-      jumpButtons.forEach((button) => {
+      jumpPendingButtons.forEach((button) => {
         button.addEventListener('click', jumpToNextPending);
+      });
+
+      jumpFlaggedButtons.forEach((button) => {
+        button.addEventListener('click', jumpToNextFlagged);
       });
 
       submitCancelButtons.forEach((button) => {

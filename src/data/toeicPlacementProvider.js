@@ -128,9 +128,20 @@ function parseOptions(rawOptions, questionNumber) {
     });
 }
 
+function normalizeClozeBlankMarkers(value, partNumber) {
+  const source = String(value || '');
+  if (!source || ![5, 6].includes(Number(partNumber))) {
+    return source;
+  }
+
+  return source
+    .replace(/_{2,}/g, '.......')
+    .replace(/(^|[^A-Za-z0-9])[-–—]{1,}([^A-Za-z0-9]|$)/g, (_, leading, trailing) => `${leading}.......${trailing}`);
+}
+
 function buildQuestionPrompt(question, partNumber, displayOrder) {
   if (question.content) {
-    return question.content;
+    return normalizeClozeBlankMarkers(question.content, partNumber);
   }
 
   const fallback = {
@@ -142,8 +153,7 @@ function buildQuestionPrompt(question, partNumber, displayOrder) {
     6: `Choose the best option to complete the text for question ${displayOrder}.`,
     7: `Read the material and answer question ${displayOrder}.`
   };
-
-  return fallback[partNumber] || `Question ${displayOrder}`;
+  return normalizeClozeBlankMarkers(fallback[partNumber] || `Question ${displayOrder}`, partNumber);
 }
 
 function normalizeImages(images) {
@@ -183,7 +193,7 @@ function normalizePayload(rawPayload, options = {}) {
         skill: partMeta.skill,
         title: partMeta.title,
         instructions: partMeta.instructions,
-        sharedContent: (parent && parent.content) || '',
+        sharedContent: normalizeClozeBlankMarkers((parent && parent.content) || '', partNumber),
         sharedAudioUrl,
         sharedImages: groupImages,
         questions: []

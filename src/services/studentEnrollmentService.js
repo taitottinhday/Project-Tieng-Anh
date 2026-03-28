@@ -274,6 +274,7 @@ async function listStudentActiveSchedules(studentId) {
         c.end_date,
         co.name AS course_name,
         co.category AS course_category,
+        t.id AS teacher_id,
         t.full_name AS teacher_name
       FROM enrollments e
       INNER JOIN classes c ON c.id = e.class_id

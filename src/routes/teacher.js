@@ -11,6 +11,7 @@ const {
     getTeacherClassroomList,
     saveTeacherReview,
 } = require("../services/classroomService");
+const { listTeacherConsultations } = require("../services/consultationService");
 const { resolvePublicErrorMessage, sendPublicError } = require("../utils/publicError");
 const ensureSchemaReady = require("../middleware/ensureSchemaReady");
 
@@ -406,17 +407,38 @@ function decorateStudentsForDetail(rows) {
 async function getTeacherByUser(req) {
     await ensureTeacherSupportTables();
 
-    const email = req.session.user?.email;
-    if (!email) {
+    const userId = Number(req.session?.user?.id || 0);
+    const email = String(req.session?.user?.email || "").trim().toLowerCase();
+
+    if (!userId && !email) {
         return null;
     }
 
     const [rows] = await db.query(
-        "SELECT * FROM teachers WHERE email = ? LIMIT 1",
-        [email]
+        `
+          SELECT *
+          FROM teachers
+          WHERE (? > 0 AND user_id = ?)
+             OR (? <> '' AND LOWER(TRIM(email)) = ?)
+          ORDER BY
+            CASE WHEN user_id = ? THEN 0 ELSE 1 END,
+            id ASC
+          LIMIT 1
+        `,
+        [userId, userId, email, email, userId]
     );
 
-    return rows.length ? rows[0] : null;
+    const teacher = rows.length ? rows[0] : null;
+
+    if (teacher && userId && Number(teacher.user_id || 0) !== userId) {
+        await db.query(
+            "UPDATE teachers SET user_id = ? WHERE id = ?",
+            [userId, teacher.id]
+        );
+        teacher.user_id = userId;
+    }
+
+    return teacher;
 }
 
 function handleTeacherUpload(middleware) {
@@ -1260,6 +1282,34 @@ router.post("/classroom/:classId/posts/:postId/review/:studentId", isTeacher, ex
     } catch (err) {
         req.flash("error_msg", resolvePublicErrorMessage(err, "Không thể lưu đánh giá lúc này."));
         return res.redirect(req.baseUrl + `/classroom/${req.params.classId}/posts/${req.params.postId}`);
+    }
+});
+
+router.get("/feedback", isTeacher, async (req, res) => {
+    try {
+        const teacher = await getTeacherByUser(req);
+
+        if (!teacher) {
+            return res.send("KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin giÃ¡o viÃªn.");
+        }
+
+        const feedbackMessages = await listTeacherConsultations({ teacherId: teacher.id });
+        const feedbackStats = {
+            total: feedbackMessages.length,
+            new: feedbackMessages.filter((item) => item.status === "new").length,
+            contacted: feedbackMessages.filter((item) => item.status === "contacted").length,
+            needsAttention: feedbackMessages.filter((item) => item.teacher_feedback_rating === "Cáº§n cáº£i thiá»‡n thÃªm").length
+        };
+
+        renderWithLayout(res, "teacher-feedback", {
+            title: "GÃ³p Ã½ vá» giÃ¡o viÃªn",
+            teacher,
+            feedbackMessages,
+            feedbackStats
+        });
+    } catch (err) {
+        console.error("teacher feedback inbox error:", err);
+        return sendPublicError(res, err, 500, "KhÃ´ng thá»ƒ táº£i há»™p thÆ° gÃ³p Ã½ lÃºc nÃ y.");
     }
 });
 
