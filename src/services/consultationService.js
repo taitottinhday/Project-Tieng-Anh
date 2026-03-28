@@ -809,7 +809,7 @@ async function createConsultationResponse(id, payload = {}) {
           ]
             .filter(Boolean)
             .join(" "),
-        href: "/student/contact",
+        href: "/student/mailbox",
       });
     }
 

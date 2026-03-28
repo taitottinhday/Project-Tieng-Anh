@@ -281,6 +281,15 @@ function buildSessionAction(session, baseUrl = "") {
   const payload = session.payloadData || {};
 
   if (session.activity_type === "full_test") {
+    if (payload.sessionMode === "student_mock_test") {
+      return {
+        href: session.activity_key
+          ? `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(session.activity_key)}`
+          : `${safeBaseUrl}/student/mock-tests`,
+        label: "Mở lại",
+      };
+    }
+
     return {
       href: session.activity_key
         ? `${safeBaseUrl}/placement-tests/${encodeURIComponent(session.activity_key)}`

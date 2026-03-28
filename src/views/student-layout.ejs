@@ -290,12 +290,14 @@
             font-weight: 700
         }
 
-        .s-bell-wrap {
+        .s-bell-wrap,
+        .s-mail-wrap {
             position: relative;
             flex: 0 0 auto
         }
 
-        .s-bell {
+        .s-bell,
+        .s-mail {
             position: relative;
             width: 46px;
             height: 46px;
@@ -312,7 +314,9 @@
         }
 
         .s-bell:hover,
-        .s-bell[aria-expanded="true"] {
+        .s-bell[aria-expanded="true"],
+        .s-mail:hover,
+        .s-mail[aria-expanded="true"] {
             transform: translateY(-1px);
             border-color: rgba(59, 130, 246, .18);
             background: rgba(239, 246, 255, .98);
@@ -337,7 +341,8 @@
             box-shadow: 0 10px 22px rgba(239, 68, 68, .28)
         }
 
-        .s-notify-panel {
+        .s-notify-panel,
+        .s-mail-panel {
             position: absolute;
             top: calc(100% + 14px);
             right: 0;
@@ -356,7 +361,8 @@
             z-index: 60
         }
 
-        .s-bell-wrap.is-open .s-notify-panel {
+        .s-bell-wrap.is-open .s-notify-panel,
+        .s-mail-wrap.is-open .s-mail-panel {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0)
@@ -759,6 +765,7 @@
         .s-brand,
         .s-link,
         .s-bell,
+        .s-mail,
         .s-profile,
         .s-logout,
         .s-logout-quick,
@@ -1147,7 +1154,9 @@
         const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
         const safeInfoMessages = typeof info !== 'undefined' ? info : [];
         const safeStudentNotifications = Array.isArray(studentNotifications) ? studentNotifications : [];
+        const safeStudentMailboxNotifications = Array.isArray(studentMailboxNotifications) ? studentMailboxNotifications : [];
         const unreadNotificationCount = Number(unreadStudentNotificationCount || 0);
+        const unreadMailboxCount = Number(unreadStudentMailboxCount || 0);
 
         const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
 
@@ -1218,8 +1227,9 @@
         let navItems = [
         { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
         { label: 'Classroom', shortLabel: 'Classroom', href: buildHref('/student/classroom'), matches: ['/student/classroom'] },
-        { label: 'Thi Thử Full Test', href: buildHref('/placement-tests'), matches: ['/placement-tests', '/test-start',
+        { label: 'Luyện Tập Full Test', href: buildHref('/placement-tests'), matches: ['/placement-tests', '/test-start',
         '/test-result'] },
+        { label: 'Thi Thử Full Test', href: buildHref('/student/mock-tests'), matches: ['/student/mock-tests'] },
         { label: 'Luyện Tập Theo Part', shortLabel: 'Theo Part', href: buildHref('/student/practice/parts'), matches:
         ['/student/practice/parts'] },
         { label: 'Luyện Tập Reading', shortLabel: 'Reading', href: buildHref('/student/practice/reading'), matches:
@@ -1242,7 +1252,7 @@
         ]);
 
         const studyHubNotes = new Map([
-        [buildHref('/placement-tests'), 'Làm bộ đề đầy đủ với trải nghiệm gần như bài thi thật.'],
+        [buildHref('/placement-tests'), 'Luyện trọn bộ full test với thanh audio hiển thị đầy đủ để bạn dùng linh hoạt khi ôn luyện.'],
         [buildHref('/student/practice/parts'), 'Tập trung đúng phần đang yếu và ôn theo từng dạng câu hỏi.'],
         [buildHref('/student/practice/reading'), 'Tăng tốc đọc hiểu, định vị ý chính và xử lý bài đọc dài.'],
         [buildHref('/student/dictation'), 'Rèn phản xạ nghe, độ chính xác và vốn từ qua dictation.']
@@ -1261,7 +1271,6 @@
         shortLabel: 'Học tập',
         children: studyHubItems
         });
-
         const isActive = (item) => (item.matches || []).some((target) => {
         const normalized = normalizePath(safeBaseUrl + target);
         if (normalized === '/') return currentRoute === '/';
@@ -1350,7 +1359,7 @@
                             <div class="s-notify-head">
                                 <div class="s-notify-copy">
                                     <strong>Thông báo học viên</strong>
-                                    <span>Thanh toán, lớp học và phản hồi tư vấn mới sẽ được cập nhật tại đây.</span>
+                                    <span>Thanh toán, lớp học và các cập nhật hệ thống sẽ được cập nhật tại đây.</span>
                                 </div>
                                 <% if (safeStudentNotifications.length) { %>
                                     <form method="POST" action="<%= buildHref('/student/notifications/read-all') %>">
@@ -1383,8 +1392,67 @@
                             <% } else { %>
                                 <div class="s-notify-empty">
                                     <strong>Chưa có thông báo mới</strong>
-                                    <span>Khi trung tâm xác nhận thanh toán, thêm bạn vào lớp hoặc phản hồi tư vấn, thông báo sẽ hiện tại đây.</span>
+                                    <span>Khi trung tâm xác nhận thanh toán, thêm bạn vào lớp hoặc cập nhật hệ thống, thông báo sẽ hiện tại đây.</span>
                                     <a href="<%= buildHref('/student/contact') %>" class="s-notify-empty-link">Liên hệ trung tâm</a>
+                                </div>
+                            <% } %>
+                        </section>
+                    </div>
+                    <div class="s-mail-wrap" id="studentMailboxRoot">
+                        <button
+                            type="button"
+                            class="s-mail"
+                            id="studentMailboxToggle"
+                            aria-label="Mở hộp thư học viên"
+                            aria-controls="studentMailboxPanel"
+                            aria-expanded="false"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 6h16a2 2 0 0 1 2 2v8a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8a2 2 0 0 1 2-2Z"></path>
+                                <path d="m4 9 8 5 8-5"></path>
+                            </svg>
+                            <% if (unreadMailboxCount > 0) { %>
+                                <span class="s-bell-count"><%= unreadMailboxCount > 9 ? '9+' : unreadMailboxCount %></span>
+                            <% } %>
+                        </button>
+
+                        <section class="s-mail-panel" id="studentMailboxPanel" aria-label="Hộp thư học viên">
+                            <div class="s-notify-head">
+                                <div class="s-notify-copy">
+                                    <strong>Hộp thư phản hồi từ admin</strong>
+                                    <span>Các phản hồi cho yêu cầu liên hệ của bạn sẽ được lưu riêng tại đây để dễ theo dõi hơn.</span>
+                                </div>
+                                <% if (safeStudentMailboxNotifications.length) { %>
+                                    <form method="POST" action="<%= buildHref('/student/mailbox/notifications/read-all') %>">
+                                        <input type="hidden" name="redirect" value="<%= notificationReturnPath %>">
+                                        <button type="submit" class="s-notify-mark">Đánh dấu đã xem</button>
+                                    </form>
+                                <% } %>
+                            </div>
+
+                            <% if (safeStudentMailboxNotifications.length) { %>
+                                <div class="s-notify-list">
+                                    <% safeStudentMailboxNotifications.forEach((notification) => { %>
+                                        <article class="s-notify-item <%= notification.is_read ? '' : 'is-new' %>">
+                                            <div class="s-notify-item-head">
+                                                <strong><%= notification.title %></strong>
+                                                <span class="s-notify-meta">
+                                                    <% if (!notification.is_read) { %>
+                                                        <span class="s-notify-tag">Mới</span>
+                                                    <% } %>
+                                                    <span><%= formatNotificationTime(notification.created_at) %></span>
+                                                </span>
+                                            </div>
+                                            <p><%= notification.message || 'Admin vừa gửi phản hồi mới cho yêu cầu hỗ trợ của bạn.' %></p>
+                                            <a href="<%= buildHref(notification.href || '/student/mailbox') %>">Mở hộp thư</a>
+                                        </article>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <div class="s-notify-empty">
+                                    <strong>Hộp thư đang trống</strong>
+                                    <span>Khi admin phản hồi các yêu cầu bạn đã gửi ở mục liên hệ, nội dung sẽ xuất hiện tại đây.</span>
+                                    <a href="<%= buildHref('/student/mailbox') %>" class="s-notify-empty-link">Mở hộp thư</a>
                                 </div>
                             <% } %>
                         </section>
@@ -1584,11 +1652,15 @@
                     (() => {
                         const toggle = document.getElementById('studentMenuToggle');
                         if (!toggle) return;
+
                         const desktopGroups = Array.from(document.querySelectorAll('.s-nav-group'));
                         const notificationRoot = document.getElementById('studentNotificationRoot');
                         const notificationToggle = document.getElementById('studentNotificationToggle');
+                        const mailboxRoot = document.getElementById('studentMailboxRoot');
+                        const mailboxToggle = document.getElementById('studentMailboxToggle');
 
                         const closeMenu = () => document.body.classList.remove('menu-open');
+
                         const closeDesktopGroups = (except = null) => {
                             desktopGroups.forEach((group) => {
                                 if (group === except) return;
@@ -1597,30 +1669,70 @@
                                 if (button) button.setAttribute('aria-expanded', 'false');
                             });
                         };
-                        const closeNotifications = () => {
-                            if (!notificationRoot || !notificationToggle) return;
-                            notificationRoot.classList.remove('is-open');
-                            notificationToggle.setAttribute('aria-expanded', 'false');
+
+                        const closePopover = (root, button) => {
+                            if (!root || !button) return;
+                            root.classList.remove('is-open');
+                            button.setAttribute('aria-expanded', 'false');
+                        };
+
+                        const openPopover = (root, button) => {
+                            if (!root || !button) return;
+                            root.classList.add('is-open');
+                            button.setAttribute('aria-expanded', 'true');
+                        };
+
+                        const closeNotifications = () => closePopover(notificationRoot, notificationToggle);
+                        const closeMailbox = () => closePopover(mailboxRoot, mailboxToggle);
+                        const closeFloatingPanels = () => {
+                            closeNotifications();
+                            closeMailbox();
+                        };
+
+                        const bindPopoverToggle = ({ root, button, onBeforeOpen }) => {
+                            if (!root || !button) return;
+
+                            button.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+
+                                const shouldOpen = !root.classList.contains('is-open');
+                                if (shouldOpen && typeof onBeforeOpen === 'function') {
+                                    onBeforeOpen();
+                                }
+
+                                closePopover(root, button);
+                                if (shouldOpen) {
+                                    openPopover(root, button);
+                                }
+                            });
+
+                            root.addEventListener('click', (event) => {
+                                event.stopPropagation();
+                            });
                         };
 
                         toggle.addEventListener('click', () => {
                             document.body.classList.toggle('menu-open');
                         });
 
-                        if (notificationRoot && notificationToggle) {
-                            notificationToggle.addEventListener('click', (event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                const shouldOpen = !notificationRoot.classList.contains('is-open');
+                        bindPopoverToggle({
+                            root: notificationRoot,
+                            button: notificationToggle,
+                            onBeforeOpen: () => {
                                 closeDesktopGroups();
-                                notificationRoot.classList.toggle('is-open', shouldOpen);
-                                notificationToggle.setAttribute('aria-expanded', String(shouldOpen));
-                            });
+                                closeMailbox();
+                            }
+                        });
 
-                            notificationRoot.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                            });
-                        }
+                        bindPopoverToggle({
+                            root: mailboxRoot,
+                            button: mailboxToggle,
+                            onBeforeOpen: () => {
+                                closeDesktopGroups();
+                                closeNotifications();
+                            }
+                        });
 
                         document.querySelectorAll('[data-subnav-toggle]').forEach((button) => {
                             const group = button.closest('.s-nav-group');
@@ -1631,7 +1743,7 @@
                                 event.stopPropagation();
 
                                 const shouldOpen = !group.classList.contains('is-open');
-                                closeNotifications();
+                                closeFloatingPanels();
                                 closeDesktopGroups(group);
                                 group.classList.toggle('is-open', shouldOpen);
                                 button.setAttribute('aria-expanded', String(shouldOpen));
@@ -1655,7 +1767,7 @@
 
                         document.addEventListener('click', () => {
                             closeDesktopGroups();
-                            closeNotifications();
+                            closeFloatingPanels();
                         });
 
                         window.addEventListener('resize', () => {
@@ -1663,13 +1775,13 @@
                                 closeMenu();
                             }
                             closeDesktopGroups();
-                            closeNotifications();
+                            closeFloatingPanels();
                         });
 
                         window.addEventListener('keydown', (event) => {
                             if (event.key === 'Escape') {
                                 closeDesktopGroups();
-                                closeNotifications();
+                                closeFloatingPanels();
                                 closeMenu();
                             }
                         });

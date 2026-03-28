@@ -13,6 +13,32 @@ function normalizeHref(value) {
   return raw;
 }
 
+function normalizeHrefList(values = []) {
+  return Array.isArray(values)
+    ? values.map((value) => normalizeHref(value)).filter(Boolean)
+    : [];
+}
+
+function buildHrefConditions(options = {}) {
+  const conditions = [];
+  const params = [];
+  const href = normalizeHref(options.href);
+  const excludeHrefs = normalizeHrefList(options.excludeHrefs);
+
+  if (href) {
+    conditions.push("href = ?");
+    params.push(href);
+  }
+
+  if (excludeHrefs.length) {
+    const placeholders = excludeHrefs.map(() => "?").join(", ");
+    conditions.push(`(href IS NULL OR href NOT IN (${placeholders}))`);
+    params.push(...excludeHrefs);
+  }
+
+  return { conditions, params };
+}
+
 function mapNotification(row) {
   return {
     id: Number(row.id || 0),
@@ -59,11 +85,14 @@ async function listStudentNotifications(userId, options = {}) {
 
   const conditions = ["user_id = ?"];
   const params = [numericUserId];
+  const hrefFilters = buildHrefConditions(options);
 
   if (unreadOnly) {
     conditions.push("is_read = 0");
   }
 
+  conditions.push(...hrefFilters.conditions);
+  params.push(...hrefFilters.params);
   params.push(limit);
 
   const [rows] = await db.query(
@@ -80,45 +109,63 @@ async function listStudentNotifications(userId, options = {}) {
   return rows.map(mapNotification);
 }
 
-async function countUnreadStudentNotifications(userId) {
+async function countUnreadStudentNotifications(userId, options = {}) {
   const numericUserId = Number(userId || 0);
   if (!numericUserId) {
     return 0;
   }
+  const conditions = ["user_id = ?", "is_read = 0"];
+  const params = [numericUserId];
+  const hrefFilters = buildHrefConditions(options);
+
+  conditions.push(...hrefFilters.conditions);
+  params.push(...hrefFilters.params);
 
   const [rows] = await db.query(
     `
       SELECT COUNT(*) AS total
       FROM student_notifications
-      WHERE user_id = ? AND is_read = 0
+      WHERE ${conditions.join(" AND ")}
     `,
-    [numericUserId]
+    params
   );
 
   return Number(rows[0]?.total || 0);
 }
 
-async function markAllStudentNotificationsRead(userId) {
+async function markStudentNotificationsRead(userId, options = {}) {
   const numericUserId = Number(userId || 0);
   if (!numericUserId) {
     return 0;
   }
 
+  const conditions = ["user_id = ?", "is_read = 0"];
+  const params = [numericUserId];
+  const hrefFilters = buildHrefConditions(options);
+
+  conditions.push(...hrefFilters.conditions);
+  params.push(...hrefFilters.params);
+
   const [result] = await db.query(
     `
       UPDATE student_notifications
       SET is_read = 1, read_at = COALESCE(read_at, NOW())
-      WHERE user_id = ? AND is_read = 0
+      WHERE ${conditions.join(" AND ")}
     `,
-    [numericUserId]
+    params
   );
 
   return Number(result.affectedRows || 0);
+}
+
+async function markAllStudentNotificationsRead(userId) {
+  return markStudentNotificationsRead(userId);
 }
 
 module.exports = {
   countUnreadStudentNotifications,
   createStudentNotification,
   listStudentNotifications,
+  markStudentNotificationsRead,
   markAllStudentNotificationsRead,
 };

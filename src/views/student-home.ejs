@@ -43,9 +43,14 @@ const portalCards = [
 
 const practiceCards = [
   {
-    title: 'Thi thử Full Test',
-    desc: 'Vào làm bộ đề hoàn chỉnh 200 câu với giao diện mô phỏng hiện đại và chấm điểm ngay.',
+    title: 'Luyện tập Full Test',
+    desc: 'Vào làm bộ đề hoàn chỉnh 200 câu với thanh audio đầy đủ để bạn chủ động tua lại, xem lại và ôn kỹ hơn.',
     href: `${safeBaseUrl}/placement-tests`
+  },
+  {
+    title: 'Thi thử Full Test',
+    desc: 'Dùng chính kho đề full test hiện có nhưng khóa phần nghe theo nhịp thi thật để luyện độ tập trung tốt hơn.',
+    href: `${safeBaseUrl}/student/mock-tests`
   },
   {
     title: 'Luyện tập theo Part',
@@ -579,12 +584,12 @@ const feedbackChannels = [
       <span class="h-badge">Tài khoản học viên TOEIC</span>
       <h1>Luyện đề TOEIC Online</h1>
       <p>
-        Từ đây bạn có thể vào full test, luyện tập theo Part, luyện Reading,
+        Từ đây bạn có thể vào thi thử full test, luyện tập full test, luyện tập theo Part, luyện Reading,
         xem khóa học, theo dõi lịch khai giảng mới và liên hệ trung tâm mà không cần rời khỏi tài khoản học viên.
       </p>
       <div class="h-actions">
-        <a href="<%= safeBaseUrl %>/placement-tests" class="h-btn">Làm full test</a>
-        <a href="<%= safeBaseUrl %>/student/practice/parts" class="h-btn-ghost">Luyện theo part</a>
+        <a href="<%= safeBaseUrl %>/student/mock-tests" class="h-btn">Thi thử full test</a>
+        <a href="<%= safeBaseUrl %>/placement-tests" class="h-btn-ghost">Luyện tập full test</a>
       </div>
     </div>
     <div class="h-visual" aria-hidden="true">

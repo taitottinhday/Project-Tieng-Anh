@@ -4,6 +4,15 @@ const studentName = user && user.username ? user.username : '';
 const studentEmail = user && user.email ? user.email : '';
 const teacherTargets = Array.isArray(typeof feedbackTargets !== 'undefined' ? feedbackTargets : null) ? feedbackTargets : [];
 const hasTeacherTargets = teacherTargets.length > 0;
+const feedbackGoalOptionItems = Array.isArray(typeof feedbackGoalOptions !== 'undefined' ? feedbackGoalOptions : null)
+  ? feedbackGoalOptions
+  : [
+      { key: 'teacher_feedback', label: 'Góp ý về giáo viên' },
+      { key: 'student_experience', label: 'Góp ý trải nghiệm học tập' },
+      { key: 'content_request', label: 'Đề xuất nội dung mới' },
+      { key: 'schedule_feedback', label: 'Phản hồi lịch học' },
+      { key: 'bug_report', label: 'Báo lỗi trong quá trình sử dụng' }
+    ];
 const feedbackTopics = [
   {
     title: 'Góp ý về giáo viên',
@@ -26,11 +35,13 @@ const feedbackTopics = [
     description: 'Các lỗi phát sinh khi dùng hệ thống vẫn được gửi về admin để xử lý.'
   }
 ];
-const teacherRatingOptions = [
-  'Rất hài lòng',
-  'Hài lòng',
-  'Cần cải thiện thêm'
-];
+const teacherRatingOptionItems = Array.isArray(typeof teacherRatingOptions !== 'undefined' ? teacherRatingOptions : null)
+  ? teacherRatingOptions
+  : [
+      { key: 'very_satisfied', label: 'Rất hài lòng' },
+      { key: 'satisfied', label: 'Hài lòng' },
+      { key: 'needs_improvement', label: 'Cần cải thiện thêm' }
+    ];
 %>
 
 <style>
@@ -107,11 +118,9 @@ const teacherRatingOptions = [
       <div class="sf-field">
         <label>Loại góp ý</label>
         <select name="goal" data-feedback-goal-select>
-          <option value="Góp ý về giáo viên">Góp ý về giáo viên</option>
-          <option value="Góp ý trải nghiệm học tập">Góp ý trải nghiệm học tập</option>
-          <option value="Đề xuất nội dung mới">Đề xuất nội dung mới</option>
-          <option value="Phản hồi lịch học">Phản hồi lịch học</option>
-          <option value="Báo lỗi trong quá trình sử dụng">Báo lỗi trong quá trình sử dụng</option>
+          <% feedbackGoalOptionItems.forEach((item) => { %>
+            <option value="<%= item.key %>"><%= item.label %></option>
+          <% }) %>
         </select>
       </div>
 
@@ -141,8 +150,8 @@ const teacherRatingOptions = [
               <label>Mức độ hài lòng</label>
               <select name="teacher_feedback_rating" data-teacher-rating-select>
                 <option value="">Chọn mức đánh giá</option>
-                <% teacherRatingOptions.forEach((item) => { %>
-                  <option value="<%= item %>"><%= item %></option>
+                <% teacherRatingOptionItems.forEach((item) => { %>
+                  <option value="<%= item.key %>"><%= item.label %></option>
                 <% }) %>
               </select>
               <div class="sf-helper">Bạn có thể nêu thêm điểm mạnh hoặc điều cần cải thiện trong phần nội dung góp ý bên dưới.</div>
@@ -176,14 +185,14 @@ const teacherRatingOptions = [
     const teacherTargetSelect = root.querySelector('[data-teacher-target-select]');
     const teacherRatingSelect = root.querySelector('[data-teacher-rating-select]');
     const messageField = root.querySelector('[data-feedback-message]');
-    const teacherModeValue = 'Góp ý về giáo viên';
+    const teacherModeValue = 'teacher_feedback';
 
     const placeholders = {
       [teacherModeValue]: 'Ví dụ: Thầy/cô giảng dễ hiểu, chữa bài kỹ, nhưng em muốn tốc độ chữa đề chậm hơn một chút ở phần listening...',
-      'Góp ý trải nghiệm học tập': 'Ví dụ: Em muốn phần classroom hiển thị tiến độ bài học rõ hơn để dễ theo dõi...',
-      'Đề xuất nội dung mới': 'Ví dụ: Trung tâm có thể thêm bộ mini test theo chủ đề Part 5 hoặc tài liệu từ vựng theo từng tuần...',
-      'Phản hồi lịch học': 'Ví dụ: Em mong lớp có thêm ca tối hoặc sắp xếp lại lịch khai giảng để tiện đi học...',
-      'Báo lỗi trong quá trình sử dụng': 'Ví dụ: Khi em mở bài test trên điện thoại, phần chọn đáp án bị lệch hoặc không bấm được...'
+      student_experience: 'Ví dụ: Em muốn phần classroom hiển thị tiến độ bài học rõ hơn để dễ theo dõi...',
+      content_request: 'Ví dụ: Trung tâm có thể thêm bộ mini test theo chủ đề Part 5 hoặc tài liệu từ vựng theo từng tuần...',
+      schedule_feedback: 'Ví dụ: Em mong lớp có thêm ca tối hoặc sắp xếp lại lịch khai giảng để tiện đi học...',
+      bug_report: 'Ví dụ: Khi em mở bài test trên điện thoại, phần chọn đáp án bị lệch hoặc không bấm được...'
     };
 
     function syncTeacherFeedbackState() {

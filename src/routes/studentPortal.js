@@ -28,6 +28,7 @@ const {
   listStudentConsultations,
 } = require("../services/consultationService");
 const {
+  markStudentNotificationsRead,
   markAllStudentNotificationsRead,
 } = require("../services/studentNotificationService");
 const {
@@ -101,6 +102,59 @@ function buildStudentFeedbackTargets(schedules = []) {
     }));
 }
 
+function getLatestConsultationActivity(item = {}) {
+  const responseTimes = Array.isArray(item.responses)
+    ? item.responses
+        .map((response) => new Date(response.created_at || 0).getTime())
+        .filter((value) => Number.isFinite(value))
+    : [];
+  const fallbackTimes = [
+    new Date(item.contacted_at || 0).getTime(),
+    new Date(item.updated_at || 0).getTime(),
+    new Date(item.created_at || 0).getTime(),
+  ].filter((value) => Number.isFinite(value));
+
+  return Math.max(0, ...responseTimes, ...fallbackTimes);
+}
+
+const FEEDBACK_GOAL_DEFINITIONS = Object.freeze([
+  { key: "teacher_feedback", label: "Góp ý về giáo viên" },
+  { key: "student_experience", label: "Góp ý trải nghiệm học tập" },
+  { key: "content_request", label: "Đề xuất nội dung mới" },
+  { key: "schedule_feedback", label: "Phản hồi lịch học" },
+  { key: "bug_report", label: "Báo lỗi trong quá trình sử dụng" },
+]);
+
+const FEEDBACK_GOAL_LABEL_BY_KEY = Object.freeze(
+  FEEDBACK_GOAL_DEFINITIONS.reduce((accumulator, item) => {
+    accumulator[item.key] = item.label;
+    return accumulator;
+  }, {})
+);
+
+const TEACHER_FEEDBACK_RATING_DEFINITIONS = Object.freeze([
+  { key: "very_satisfied", label: "Rất hài lòng" },
+  { key: "satisfied", label: "Hài lòng" },
+  { key: "needs_improvement", label: "Cần cải thiện thêm" },
+]);
+
+const TEACHER_FEEDBACK_RATING_LABEL_BY_KEY = Object.freeze(
+  TEACHER_FEEDBACK_RATING_DEFINITIONS.reduce((accumulator, item) => {
+    accumulator[item.key] = item.label;
+    return accumulator;
+  }, {})
+);
+
+function normalizeFeedbackGoalKey(value) {
+  const normalizedKey = String(value || "").trim();
+  return FEEDBACK_GOAL_LABEL_BY_KEY[normalizedKey] ? normalizedKey : "";
+}
+
+function normalizeTeacherFeedbackRatingKey(value) {
+  const normalizedKey = String(value || "").trim();
+  return TEACHER_FEEDBACK_RATING_LABEL_BY_KEY[normalizedKey] ? normalizedKey : "";
+}
+
 router.use("/schedule", isLoggedIn, isStudent, async (req, res, next) => {
   if (req.method !== "GET" || (req.path !== "/" && req.path !== "")) {
     return next();
@@ -144,6 +198,23 @@ router.post("/notifications/read-all", isLoggedIn, isStudent, express.urlencoded
     console.error("student notifications read-all error:", error);
     req.flash("error_msg", "Không thể cập nhật trạng thái thông báo lúc này.");
     return res.redirect((res.locals.baseUrl || "") + "/");
+  }
+});
+
+router.post("/mailbox/notifications/read-all", isLoggedIn, isStudent, express.urlencoded({ extended: true }), async (req, res) => {
+  try {
+    await markStudentNotificationsRead(req.session?.user?.id || 0, {
+      href: "/student/mailbox",
+    });
+    const redirectPath = String(req.body.redirect || "").trim();
+    const safeRedirect = redirectPath.startsWith("/") && !redirectPath.startsWith("//")
+      ? redirectPath
+      : "/student/mailbox";
+    return res.redirect((res.locals.baseUrl || "") + safeRedirect);
+  } catch (error) {
+    console.error("student mailbox notifications read-all error:", error);
+    req.flash("error_msg", "Không thể cập nhật trạng thái hộp thư lúc này.");
+    return res.redirect((res.locals.baseUrl || "") + "/student/mailbox");
   }
 });
 
@@ -255,6 +326,30 @@ router.get("/contact", isLoggedIn, isStudent, async (req, res) => {
   }
 });
 
+router.get("/mailbox", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const consultations = await listStudentConsultations({
+      userId: req.session?.user?.id || null,
+      email: req.session?.user?.email || "",
+    });
+    const mailboxThreads = consultations
+      .filter((item) => Array.isArray(item.responses) && item.responses.length > 0)
+      .sort((left, right) => getLatestConsultationActivity(right) - getLatestConsultationActivity(left));
+
+    await markStudentNotificationsRead(req.session?.user?.id || 0, {
+      href: "/student/mailbox",
+    });
+
+    return renderWithLayout(res, "student-mailbox", {
+      title: "Hộp thư học viên",
+      mailboxThreads,
+    });
+  } catch (err) {
+    console.error("student mailbox page error:", err);
+    return sendPublicError(res, err, 500, "Không thể tải hộp thư học viên lúc này.");
+  }
+});
+
 router.get("/feedback", isLoggedIn, isStudent, async (req, res) => {
   try {
     const student = await getCurrentStudent(req);
@@ -264,6 +359,8 @@ router.get("/feedback", isLoggedIn, isStudent, async (req, res) => {
       title: "Góp ý học viên",
       success: req.query.success || null,
       feedbackTargets: buildStudentFeedbackTargets(schedules),
+      feedbackGoalOptions: FEEDBACK_GOAL_DEFINITIONS,
+      teacherRatingOptions: TEACHER_FEEDBACK_RATING_DEFINITIONS,
     });
   } catch (err) {
     console.error("student feedback page error:", err);
@@ -279,11 +376,14 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
     const trimmedName = String(req.body.name || "").trim();
     const trimmedEmail = String(req.body.email || "").trim();
     const trimmedPhone = String(req.body.phone || "").trim();
-    const selectedGoal = String(req.body.goal || "").trim();
+    const selectedGoalKey = normalizeFeedbackGoalKey(req.body.goal);
+    const selectedGoalLabel = FEEDBACK_GOAL_LABEL_BY_KEY[selectedGoalKey] || "";
     const messageBody = String(req.body.message || "").trim();
     const teacherTargetKey = String(req.body.teacher_target || "").trim();
-    const teacherFeedbackRating = String(req.body.teacher_feedback_rating || "").trim();
-    const isTeacherFeedback = selectedGoal === "Góp ý về giáo viên";
+    const teacherFeedbackRatingKey = normalizeTeacherFeedbackRatingKey(req.body.teacher_feedback_rating);
+    const teacherFeedbackRatingLabel =
+      TEACHER_FEEDBACK_RATING_LABEL_BY_KEY[teacherFeedbackRatingKey] || "";
+    const isTeacherFeedback = selectedGoalKey === "teacher_feedback";
 
     if (!trimmedName || !messageBody) {
       req.flash("error_msg", "Vui lòng điền họ tên và nội dung góp ý.");
@@ -292,6 +392,11 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
 
     if (!trimmedEmail && !trimmedPhone) {
       req.flash("error_msg", "Vui lòng để lại email hoặc số điện thoại để trung tâm phản hồi khi cần.");
+      return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
+    }
+
+    if (!selectedGoalLabel) {
+      req.flash("error_msg", "Vui lòng chọn đúng nhóm góp ý trước khi gửi.");
       return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
     }
 
@@ -304,7 +409,7 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
         return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
       }
 
-      if (!teacherFeedbackRating) {
+      if (!teacherFeedbackRatingLabel) {
         req.flash("error_msg", "Vui lòng chọn mức độ hài lòng đối với giáo viên.");
         return res.redirect((res.locals.baseUrl || "") + "/student/feedback");
       }
@@ -315,7 +420,7 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
       name: trimmedName,
       email: trimmedEmail,
       phone: trimmedPhone,
-      goal: selectedGoal,
+      goal: selectedGoalLabel,
       course_interest: isTeacherFeedback
         ? [selectedTarget?.courseName, selectedTarget?.classCode].filter(Boolean).join(" · ")
         : "Góp ý từ tài khoản học viên",
@@ -329,7 +434,7 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
       target_class_id: isTeacherFeedback ? selectedTarget?.classId : null,
       related_class_code: isTeacherFeedback ? selectedTarget?.classCode : "",
       related_course_name: isTeacherFeedback ? selectedTarget?.courseName : "",
-      teacher_feedback_rating: isTeacherFeedback ? teacherFeedbackRating : "",
+      teacher_feedback_rating: isTeacherFeedback ? teacherFeedbackRatingLabel : "",
       message_body: messageBody,
     });
 
@@ -338,13 +443,6 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
     console.error("student feedback submit error:", err);
     return sendPublicError(res, err, 500, "Không thể gửi góp ý lúc này.");
   }
-});
-
-router.get("/feedback", isLoggedIn, isStudent, (req, res) => {
-  renderWithLayout(res, "student-feedback", {
-    title: "Góp ý học viên",
-    success: req.query.success || null,
-  });
 });
 
 router.get("/profile", isLoggedIn, isStudent, studentProfileController.showStudentProfile);
@@ -484,6 +582,7 @@ router.post("/classroom/:classId/posts/:postId/complete", isLoggedIn, isStudent,
 
 router.get("/practice/parts", isLoggedIn, isStudent, studentPracticeController.listPartPractice);
 router.get("/practice/reading", isLoggedIn, isStudent, studentPracticeController.listReadingPractice);
+router.get("/mock-tests", isLoggedIn, isStudent, studentPracticeController.listMockFullTest);
 router.get("/dictation", isLoggedIn, isStudent, studentDictationController.listDictationTopics);
 router.get("/dictation/:topicId", isLoggedIn, isStudent, studentDictationController.showDictationTopic);
 router.get("/dictation/:topicId/:lessonId", isLoggedIn, isStudent, studentDictationController.showDictationLesson);
@@ -494,6 +593,9 @@ router.post("/practice/parts/:practiceId/submit", isLoggedIn, isStudent, student
 router.get("/practice/reading/:practiceId", isLoggedIn, isStudent, studentPracticeController.showReadingPracticeStart);
 router.get("/practice/reading/:practiceId/take", isLoggedIn, isStudent, studentPracticeController.takeReadingPractice);
 router.post("/practice/reading/:practiceId/submit", isLoggedIn, isStudent, studentPracticeController.submitReadingPractice);
+router.get("/mock-tests/:practiceId", isLoggedIn, isStudent, studentPracticeController.showMockFullTestStart);
+router.get("/mock-tests/:practiceId/take", isLoggedIn, isStudent, studentPracticeController.takeMockFullTest);
+router.post("/mock-tests/:practiceId/submit", isLoggedIn, isStudent, studentPracticeController.submitMockFullTest);
 router.get("/practice/result/latest", isLoggedIn, isStudent, studentPracticeController.showLatestPracticeResult);
 
 router.get("/api/practice/parts", isLoggedIn, isStudent, studentPracticeController.listPartPracticeApi);

@@ -1,0 +1,171 @@
+<%
+const threads = Array.isArray(typeof mailboxThreads !== "undefined" ? mailboxThreads : null) ? mailboxThreads : [];
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+
+function formatDateTime(value) {
+  if (!value) {
+    return "Chưa cập nhật";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Chưa cập nhật";
+  }
+
+  return date.toLocaleString("vi-VN");
+}
+%>
+
+<style>
+  .sm-page{width:min(1380px,calc(100% - 32px));margin:0 auto;padding:34px 0 48px;display:grid;gap:24px}
+  .sm-hero,.sm-panel,.sm-thread,.sm-response{border-radius:32px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.96);box-shadow:0 18px 40px rgba(15,23,42,.06)}
+  .sm-hero,.sm-panel,.sm-thread,.sm-response{padding:28px}
+  .sm-hero{display:grid;gap:14px;background:linear-gradient(135deg,#f8fbff 0%,#eef4ff 52%,#fff7ed 100%)}
+  .sm-hero h1,.sm-panel h2,.sm-thread h3,.sm-response h4{margin:0;font-family:"Sora","Be Vietnam Pro",sans-serif;letter-spacing:-.04em;color:#0f172a}
+  .sm-hero h1{font-size:clamp(2.2rem,4.6vw,3.8rem);line-height:1.02}
+  .sm-hero p,.sm-panel p,.sm-request-body,.sm-empty p,.sm-response-body,.sm-grid strong,.sm-grid span{margin:0;color:#475569;line-height:1.75}
+  .sm-pill{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 16px;border-radius:999px;background:#e0ecff;color:#1d4ed8;font-weight:800}
+  .sm-actions{display:flex;flex-wrap:wrap;gap:12px}
+  .sm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:999px;font-weight:800;text-decoration:none}
+  .sm-btn.primary{background:#111827;color:#fff}
+  .sm-btn.secondary{background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12)}
+  .sm-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .sm-list{display:grid;gap:18px}
+  .sm-thread{display:grid;gap:18px}
+  .sm-thread-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px}
+  .sm-thread-meta{display:flex;flex-wrap:wrap;gap:10px}
+  .sm-chip{display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:999px;background:rgba(37,99,235,.10);color:#1d4ed8;font-weight:800}
+  .sm-time{color:#64748b;font-weight:600}
+  .sm-request-box{padding:18px;border-radius:24px;border:1px solid rgba(148,163,184,.18);background:#f8fafc;display:grid;gap:12px}
+  .sm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .sm-grid div{padding:14px;border-radius:18px;background:#fff;border:1px solid rgba(148,163,184,.18);display:grid;gap:6px}
+  .sm-grid span{font-size:.84rem;font-weight:700;color:#64748b}
+  .sm-grid strong{font-weight:700;color:#0f172a}
+  .sm-request-body{padding:18px;border-radius:20px;background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);border:1px solid rgba(15,23,42,.08)}
+  .sm-response-list{display:grid;gap:14px}
+  .sm-response{background:linear-gradient(180deg,#f8fbff 0%,#fff 100%);display:grid;gap:14px}
+  .sm-response-top{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}
+  .sm-response-tags{display:flex;flex-wrap:wrap;gap:8px}
+  .sm-response-body{padding:16px;border-radius:20px;background:#fff;border:1px solid rgba(148,163,184,.18)}
+  .sm-alert{padding:14px 16px;border-radius:18px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.16);color:#1e3a8a;font-weight:700;line-height:1.7}
+  .sm-empty{padding:34px;text-align:center;border-radius:28px;border:1px dashed rgba(148,163,184,.36);background:#fff}
+  .sm-empty strong{display:block;margin-bottom:10px;color:#0f172a;font-size:1.12rem}
+  @media (max-width:960px){.sm-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:720px){.sm-page{width:min(100% - 20px,1380px);padding:22px 0 30px}.sm-hero,.sm-panel,.sm-thread,.sm-response{padding:20px;border-radius:24px}.sm-grid{grid-template-columns:1fr}}
+</style>
+
+<div class="sm-page">
+  <section class="sm-hero">
+    <span class="sm-pill">Hộp thư học viên</span>
+    <h1>Phản hồi từ admin sẽ được lưu riêng tại đây.</h1>
+    <p>Mỗi khi trung tâm trả lời yêu cầu tư vấn hoặc phản hồi một góp ý từ tài khoản học viên, nội dung mới sẽ xuất hiện trong hộp thư này để bạn theo dõi tập trung hơn thay vì trộn ở cuối trang liên hệ.</p>
+    <div class="sm-actions">
+      <a href="<%= safeBaseUrl %>/student/contact" class="sm-btn primary">Tạo yêu cầu mới</a>
+      <a href="<%= safeBaseUrl %>/student/feedback" class="sm-btn secondary">Gửi góp ý</a>
+    </div>
+  </section>
+
+  <section class="sm-panel">
+    <div class="sm-panel-head">
+      <div>
+        <h2>Luồng phản hồi của admin</h2>
+        <p>Hệ thống gom phản hồi theo từng yêu cầu để bạn xem lại kênh liên hệ, lịch hẹn và lời nhắn một cách rõ ràng.</p>
+      </div>
+      <span class="sm-pill"><%= threads.length %> hội thoại</span>
+    </div>
+
+    <% if (!threads.length) { %>
+      <div class="sm-empty">
+        <strong>Hộp thư của bạn chưa có phản hồi nào.</strong>
+        <p>Khi admin cập nhật lịch hẹn, hướng dẫn liên hệ hoặc phản hồi góp ý, nội dung sẽ tự động hiển thị tại đây.</p>
+      </div>
+    <% } else { %>
+      <div class="sm-list">
+        <% threads.forEach((item) => { %>
+          <article class="sm-thread">
+            <div class="sm-thread-head">
+              <div>
+                <h3><%= item.goal || "Yêu cầu học viên" %></h3>
+                <div class="sm-time">Gửi lúc <%= formatDateTime(item.created_at) %></div>
+              </div>
+              <div class="sm-thread-meta">
+                <% if (item.message_channel === "teacher_feedback") { %>
+                  <span class="sm-chip">Góp ý giáo viên</span>
+                <% } %>
+                <% if (item.contacted_at) { %>
+                  <span class="sm-chip">Phản hồi gần nhất <%= formatDateTime(item.contacted_at) %></span>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="sm-request-box">
+              <div class="sm-grid">
+                <div>
+                  <span>Email</span>
+                  <strong><%= item.email || "Chưa cung cấp" %></strong>
+                </div>
+                <div>
+                  <span>Điện thoại / Zalo</span>
+                  <strong><%= item.phone || "Chưa cung cấp" %></strong>
+                </div>
+                <div>
+                  <span>Lớp / khóa học</span>
+                  <strong><%= item.related_course_name || item.course_interest || item.related_class_code || "Chưa cập nhật" %></strong>
+                </div>
+              </div>
+
+              <div class="sm-request-body">
+                <strong style="display:block;margin-bottom:8px;color:#0f172a">Nội dung bạn đã gửi</strong>
+                <%= item.message_body || item.message || "Không có nội dung." %>
+              </div>
+            </div>
+
+            <div class="sm-response-list">
+              <% item.responses.forEach((response) => { %>
+                <article class="sm-response">
+                  <div class="sm-response-top">
+                    <div>
+                      <h4><%= response.admin_name || "Admin" %></h4>
+                      <div class="sm-time"><%= formatDateTime(response.created_at) %></div>
+                    </div>
+                    <div class="sm-response-tags">
+                      <% if (response.contact_method) { %>
+                        <span class="sm-chip"><%= response.contact_method %></span>
+                      <% } %>
+                      <% if (response.request_phone) { %>
+                        <span class="sm-chip">Cần bổ sung số điện thoại</span>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <div class="sm-grid">
+                    <div>
+                      <span>Kênh liên hệ</span>
+                      <strong><%= response.contact_method || "Nhắn trong hệ thống" %></strong>
+                    </div>
+                    <div>
+                      <span>Khung giờ / lịch hẹn</span>
+                      <strong><%= response.contact_schedule || "Trung tâm sẽ cập nhật thêm khi cần" %></strong>
+                    </div>
+                    <div>
+                      <span>Địa điểm / cách thức</span>
+                      <strong><%= response.contact_location || "Theo dõi hộp thư hoặc hotline để chốt thêm" %></strong>
+                    </div>
+                  </div>
+
+                  <% if (response.message_to_student) { %>
+                    <div class="sm-response-body"><%= response.message_to_student %></div>
+                  <% } %>
+
+                  <% if (response.request_phone) { %>
+                    <div class="sm-alert">Admin đang cần thêm số điện thoại hoặc Zalo để hỗ trợ nhanh hơn. Bạn có thể quay lại mục liên hệ để cập nhật ngay.</div>
+                  <% } %>
+                </article>
+              <% }) %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</div>

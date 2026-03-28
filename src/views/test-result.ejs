@@ -683,21 +683,24 @@
           : null;
     const resolvedStudentEmail = data.viewerEmail || (currentUser && currentUser.email ? currentUser.email : (data.guestEmail || null));
     const displayName = resolvedStudentName || data.guestName || 'Học viên';
-    const displaySubline = resolvedStudentEmail || 'Đã hoàn thành bài kiểm tra đầu vào';
+    const isMockFullTestResult = data.sessionMode === 'student_mock_test';
+    const displaySubline = resolvedStudentEmail || (isMockFullTestResult ? 'Đã hoàn thành bài thi thử full test' : 'Đã hoàn thành bài kiểm tra đầu vào');
     const displayInitial = (displayName || 'H').trim().charAt(0).toUpperCase() || 'H';
-    const retakeHref = data.examId ? buildHref(`/placement-tests/${data.examId}`) : buildHref('/placement-tests');
+    const retakeHref = data.retryHref || (data.examId ? buildHref(`/placement-tests/${data.examId}`) : buildHref('/placement-tests'));
+    const libraryHref = data.libraryHref || buildHref('/placement-tests');
+    const libraryLabel = data.libraryLabel || 'Luyện Tập Full Test';
     const normalizePath = (value) => {
       const cleanValue = String(value || '').split('?')[0].split('#')[0];
       const trimmedValue = cleanValue.replace(/\/+$/, '');
       return trimmedValue || '/';
     };
-    const currentRoute = normalizePath(typeof currentPath !== 'undefined' ? currentPath : '');
+    const currentRoute = normalizePath(typeof currentPath !== 'undefined' && currentPath ? currentPath : libraryHref);
     const studyHubItems = [
       {
-        label: 'Thi Thử Full Test',
+        label: 'Luyện Tập Full Test',
         href: buildHref('/placement-tests'),
         matches: ['/placement-tests'],
-        note: 'Làm bộ đề đầy đủ với trải nghiệm gần như bài thi thật.'
+        note: 'Luyện trọn bộ full test với thanh audio hiển thị đầy đủ để bạn dùng linh hoạt khi ôn luyện.'
       },
       {
         label: 'Luyện Tập Theo Part',
@@ -721,6 +724,7 @@
     const quickLinks = [
       { label: 'Classroom', href: buildHref('/student/classroom'), matches: ['/student/classroom'] },
       { label: 'Góc học tập', children: studyHubItems },
+      { label: 'Thi Thử Full Test', href: buildHref('/student/mock-tests'), matches: ['/student/mock-tests'] },
       { label: 'Khóa học', href: buildHref('/courses-blog'), matches: ['/courses-blog', '/course-detail', '/register-course', '/payment'] },
       { label: 'Lịch khai giảng', href: buildHref('/lich-khai-giang'), matches: ['/lich-khai-giang'] },
       { label: 'Liên hệ', href: buildHref('/contact'), matches: ['/contact'] },
@@ -791,8 +795,8 @@
     <section class="tr-panel tr-hero">
       <div class="tr-hero-grid">
         <div class="tr-hero-copy">
-          <span class="tr-kicker">Kết quả placement test</span>
-          <h1><%= data.examTitle || 'Kết quả TOEIC Placement Test' %></h1>
+          <span class="tr-kicker"><%= isMockFullTestResult ? 'Kết quả thi thử full test' : 'Kết quả placement test' %></span>
+          <h1><%= data.examTitle || (isMockFullTestResult ? 'Kết quả thi thử TOEIC Full Test' : 'Kết quả TOEIC Placement Test') %></h1>
           <p>
             Kết quả được tính ngay sau khi nộp bài. Trang này hiển thị cả điểm TOEIC quy đổi theo 2 kỹ năng,
             điểm thô và phần review chi tiết để học viên xem lại câu sai, câu bỏ trống và transcript nếu có.
@@ -850,9 +854,9 @@
       </div>
 
       <div class="tr-action-row">
-        <a href="<%= retakeHref %>" class="tr-btn tr-btn--primary">Làm lại bài thi</a>
+        <a href="<%= retakeHref %>" class="tr-btn tr-btn--primary"><%= isMockFullTestResult ? 'Làm lại đề thi thử' : 'Làm lại bài thi' %></a>
         <button type="button" class="tr-btn tr-btn--secondary" data-review-toggle="placement-result-review" <%= reviewAvailable ? '' : 'disabled' %>>Hiện review từng phần</button>
-        <a href="<%= buildHref('/placement-tests') %>" class="tr-btn tr-btn--secondary">Đề khác</a>
+        <a href="<%= libraryHref %>" class="tr-btn tr-btn--secondary"><%= libraryLabel %></a>
         <a href="<%= buildHref('/') %>" class="tr-btn tr-btn--ghost">Quay về trang chủ</a>
         <a href="<%= buildHref('/register-course') %>" class="tr-btn tr-btn--register">Đăng ký khóa học</a>
       </div>

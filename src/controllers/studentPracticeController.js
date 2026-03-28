@@ -2,14 +2,17 @@ const renderWithLayout = require('../utils/renderHelper');
 const {
   getPartPracticeCatalog,
   getReadingPracticeCatalog,
+  getMockFullTestCatalog,
   buildPartPracticeExam,
   buildReadingPracticeExam,
+  buildMockFullTestExam,
   serializeExamQuestions,
   getAnswerPayload,
   gradePracticeExam
 } = require('../data/practiceCatalog');
 const { syncStudentProfileFromUser } = require("../services/platformSupport");
-const { recordPracticeSession } = require("../services/studentActivityService");
+const { recordFullTestSession, recordPracticeSession } = require("../services/studentActivityService");
+const { gradeToeicFullTest } = require("../services/fullTestGradingService");
 const { sendPublicError, sendPublicJsonError } = require("../utils/publicError");
 
 function getSafeBaseUrl(res) {
@@ -65,6 +68,23 @@ function listReadingPractice(req, res) {
   }
 }
 
+function listMockFullTest(req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const library = getMockFullTestCatalog(safeBaseUrl);
+
+    return renderWithLayout(res, 'student-practice-library', {
+      title: library.title,
+      library
+    });
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 500,
+      fallbackMessage: 'Không thể tải thư viện thi thử full test lúc này.'
+    });
+  }
+}
+
 function showPracticeStart(req, res, mode) {
   try {
     const safeBaseUrl = getSafeBaseUrl(res);
@@ -92,6 +112,23 @@ function showPartPracticeStart(req, res) {
 
 function showReadingPracticeStart(req, res) {
   return showPracticeStart(req, res, 'reading');
+}
+
+function showMockFullTestStart(req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const exam = buildMockFullTestExam(req.params.practiceId, safeBaseUrl);
+
+    return renderWithLayout(res, 'student-practice-start', {
+      title: exam.title,
+      exam
+    });
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 404,
+      fallbackMessage: 'Không tìm thấy trang giới thiệu cho đề thi thử này.'
+    });
+  }
 }
 
 function takePartPractice(req, res) {
@@ -128,6 +165,23 @@ function takeReadingPractice(req, res) {
   }
 }
 
+function takeMockFullTest(req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const exam = buildMockFullTestExam(req.params.practiceId, safeBaseUrl);
+
+    return res.render('student-mock-test-taking', {
+      pageTitle: exam.title,
+      exam
+    });
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 404,
+      fallbackMessage: 'Không tìm thấy đề thi thử full test.'
+    });
+  }
+}
+
 async function submitPractice(req, res, mode) {
   try {
     const safeBaseUrl = getSafeBaseUrl(res);
@@ -160,6 +214,39 @@ function submitPartPractice(req, res) {
 
 function submitReadingPractice(req, res) {
   return submitPractice(req, res, 'reading');
+}
+
+async function submitMockFullTest(req, res) {
+  try {
+    const safeBaseUrl = getSafeBaseUrl(res);
+    const exam = buildMockFullTestExam(req.params.practiceId, safeBaseUrl);
+    const result = await gradeToeicFullTest(exam, req.body || {});
+    const student = await syncStudentProfileFromUser(req.session?.user);
+    const viewerName = student?.full_name || req.session?.user?.username || null;
+    const viewerEmail = student?.email || req.session?.user?.email || null;
+    const finalResult = {
+      ...result,
+      viewerName,
+      viewerEmail,
+      libraryHref: `${safeBaseUrl}/student/mock-tests`,
+      libraryLabel: 'Thi thử Full Test',
+      retryHref: `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(req.params.practiceId)}`,
+      sessionMode: 'student_mock_test'
+    };
+
+    req.session.lastPlacementResult = finalResult;
+
+    if (student?.id) {
+      await recordFullTestSession(student.id, finalResult);
+    }
+
+    return res.redirect(`${safeBaseUrl}/placement-tests/result/latest`);
+  } catch (error) {
+    return respondWithError(res, error, {
+      statusCode: 400,
+      fallbackMessage: 'Không thể nộp bài thi thử full test.'
+    });
+  }
 }
 
 function showLatestPracticeResult(req, res) {
@@ -274,12 +361,16 @@ function getReadingAnswersApi(req, res) {
 module.exports = {
   listPartPractice,
   listReadingPractice,
+  listMockFullTest,
   showPartPracticeStart,
   showReadingPracticeStart,
+  showMockFullTestStart,
   takePartPractice,
   takeReadingPractice,
+  takeMockFullTest,
   submitPartPractice,
   submitReadingPractice,
+  submitMockFullTest,
   showLatestPracticeResult,
   listPartPracticeApi,
   listReadingPracticeApi,

@@ -105,6 +105,7 @@ app.use(async (req, res, next) => {
   const role = req.session?.user?.role;
   const isStudentRole = role && role !== 'admin' && role !== 'teacher';
   const isStaticAssetRequest = Boolean(path.extname(req.path || ''));
+  const mailboxHref = '/student/mailbox';
 
   if (isStaticAssetRequest) {
     return next();
@@ -113,21 +114,34 @@ app.use(async (req, res, next) => {
   if (!isStudentRole) {
     res.locals.studentNotifications = [];
     res.locals.unreadStudentNotificationCount = 0;
+    res.locals.studentMailboxNotifications = [];
+    res.locals.unreadStudentMailboxCount = 0;
     return next();
   }
 
   try {
     const userId = Number(req.session?.user?.id || 0);
-    const [notifications, unreadCount] = await Promise.all([
-      listStudentNotifications(userId, { limit: 6 }),
-      countUnreadStudentNotifications(userId),
+    const [
+      notifications,
+      unreadCount,
+      mailboxNotifications,
+      unreadMailboxCount,
+    ] = await Promise.all([
+      listStudentNotifications(userId, { limit: 6, excludeHrefs: [mailboxHref] }),
+      countUnreadStudentNotifications(userId, { excludeHrefs: [mailboxHref] }),
+      listStudentNotifications(userId, { limit: 6, href: mailboxHref }),
+      countUnreadStudentNotifications(userId, { href: mailboxHref }),
     ]);
     res.locals.studentNotifications = notifications;
     res.locals.unreadStudentNotificationCount = unreadCount;
+    res.locals.studentMailboxNotifications = mailboxNotifications;
+    res.locals.unreadStudentMailboxCount = unreadMailboxCount;
   } catch (error) {
     console.error('student notification middleware error:', error);
     res.locals.studentNotifications = [];
     res.locals.unreadStudentNotificationCount = 0;
+    res.locals.studentMailboxNotifications = [];
+    res.locals.unreadStudentMailboxCount = 0;
   }
 
   return next();

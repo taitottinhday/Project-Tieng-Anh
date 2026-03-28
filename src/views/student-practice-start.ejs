@@ -1,6 +1,12 @@
 <%
 const practice = exam || {};
-const noteItems = practice.mode === 'reading'
+const noteItems = practice.mode === 'mock_full_test'
+  ? [
+      'Hãy dùng tai nghe ổn định và ngồi trong môi trường yên tĩnh trước khi bắt đầu thi thử.',
+      'Listening từ câu 1-100 sẽ chạy theo audio gốc, không hiện thanh phát lại, không tua lại và không cho quay về câu cũ.',
+      'Sau khi kết thúc phần nghe, hệ thống sẽ mở nút chuyển sang Reading để bạn tiếp tục làm câu 101-200.'
+    ]
+  : practice.mode === 'reading'
   ? [
       'Hãy dùng Google Chrome để bài nghe, ảnh và thao tác chuyển câu ổn định hơn.',
       'Đồng hồ sẽ bắt đầu chạy ngay khi bạn nhấn nút vào làm bài ở bên dưới.',

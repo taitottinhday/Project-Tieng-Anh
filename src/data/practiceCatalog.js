@@ -299,6 +299,36 @@ function buildReadingPracticeCard(card, baseUrl = '') {
   };
 }
 
+function buildMockFullTestCard(card, baseUrl = '') {
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const sourceLabel = formatManagedTitle(card);
+
+  return {
+    id: card.id,
+    sourceId: card.id,
+    title: sourceLabel,
+    summary: 'Thi thử full test 200 câu với phần nghe khóa theo audio gốc, không tua lại và chuyển sang reading sau câu 100.',
+    ribbon: card.accessLabel || 'Free',
+    badge: card.collectionLabel || `Đề ${sanitizeLabel(card.collectionKey) || 'ETS'}`,
+    levelBadge: sanitizeLabel(card.badgeLabel) || '',
+    durationMinutes: Number(card.durationMinutes || 120),
+    totalQuestions: Number(card.totalQuestions || 200),
+    maxScore: Number(card.maxScore || 990),
+    partsCount: Number(card.partsCount || 7),
+    primaryKey: sanitizeLabel(card.collectionKey) || 'other',
+    secondaryKey: 'mock-fulltest',
+    searchText: `${sourceLabel} thi thu full test mock test ${card.badgeLabel || ''} ${card.collectionLabel || ''}`.toLowerCase(),
+    actionHref: `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(card.id)}`,
+    actionLabel: 'Vào thi thử',
+    metaItems: [
+      `Thời gian: ${Number(card.durationMinutes || 120)} phút`,
+      `Câu hỏi: ${Number(card.totalQuestions || 200)} câu`,
+      `Phần thi: ${Number(card.partsCount || 7)} phần`,
+      `Điểm tối đa: ${Number(card.maxScore || 990)} điểm`
+    ]
+  };
+}
+
 function buildPart56PracticeCard(card, index, baseUrl = '', pathPrefix = '/goc-hoc-tap/part-5-6') {
   const safeBaseUrl = normalizeBaseUrl(baseUrl);
   const sourceLabel = formatManagedTitle(card);
@@ -460,6 +490,26 @@ function getReadingPracticeCatalog(baseUrl = '') {
     primaryFilters: READING_BANDS,
     secondaryFilters: [],
     searchPlaceholder: 'Nhập tên đề reading muốn tìm...',
+    cards,
+    totalCards: cards.length
+  };
+}
+
+function getMockFullTestCatalog(baseUrl = '') {
+  const sourceCards = sortSourceCards(
+    getFullTestCards(baseUrl).filter((card) => Boolean(card && card.isAvailable))
+  );
+  const cards = sourceCards.map((card) => buildMockFullTestCard(card, baseUrl));
+
+  return {
+    pageKey: 'mock-fulltest',
+    title: 'Thi thử Full Test',
+    eyebrow: 'Toeic Mock Exam',
+    heroTitle: 'Chọn đề thi thử full test',
+    heroDescription: 'Dùng đúng kho đề full test hiện có trong hệ thống, nhưng khóa phần Listening theo nhịp thi thử thật để học viên làm bài tập trung hơn.',
+    primaryFilters: getYearFilters(sourceCards),
+    secondaryFilters: [],
+    searchPlaceholder: 'Nhập tên đề thi thử muốn tìm...',
     cards,
     totalCards: cards.length
   };
@@ -714,6 +764,39 @@ function buildReadingPracticeExam(practiceId, baseUrl = '') {
     submitHref: `${safeBaseUrl}/student/practice/reading/${encodeURIComponent(practiceId)}/submit`,
     retryHref: `${safeBaseUrl}/student/practice/reading/${encodeURIComponent(practiceId)}`
   });
+}
+
+function buildMockFullTestExam(testId, baseUrl = '') {
+  const safeBaseUrl = normalizeBaseUrl(baseUrl);
+  const sourceExam = loadManagedFullTest(testId);
+
+  if (!sourceExam) {
+    throw new Error(`Cannot find mock full test: ${testId}`);
+  }
+
+  const sourceLabel = formatManagedTitle({
+    id: testId,
+    title: sourceExam.title,
+    collectionKey: sourceExam.collectionKey
+  });
+
+  return {
+    ...sourceExam,
+    id: testId,
+    mode: 'mock_full_test',
+    modeLabel: 'Thi thử Full Test',
+    description: 'Listening chạy khóa theo audio gốc, không tua lại, không quay lại câu cũ và chỉ mở Reading sau khi kết thúc câu 100.',
+    sourceLabel,
+    badgeLabel: sourceExam.collectionLabel || sourceExam.bookName || '',
+    accessLabel: 'Free',
+    ctaLabel: 'Bắt đầu thi thử',
+    libraryHref: `${safeBaseUrl}/student/mock-tests`,
+    libraryLabel: 'Về thư viện thi thử',
+    previewHref: `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(testId)}`,
+    takeHref: `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(testId)}/take`,
+    submitHref: `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(testId)}/submit`,
+    retryHref: `${safeBaseUrl}/student/mock-tests/${encodeURIComponent(testId)}`
+  };
 }
 
 function buildPart56PracticeExam(practiceId, baseUrl = '', options = {}) {
@@ -1089,11 +1172,13 @@ module.exports = {
   READING_META,
   getPartPracticeCatalog,
   getReadingPracticeCatalog,
+  getMockFullTestCatalog,
   getPart56PracticeCatalog,
   getWordformPracticeCatalog,
   getPart7GuidePracticeCatalog,
   buildPartPracticeExam,
   buildReadingPracticeExam,
+  buildMockFullTestExam,
   buildPart56PracticeExam,
   buildWordformPracticeExam,
   buildPart7GuidePracticeExam,
