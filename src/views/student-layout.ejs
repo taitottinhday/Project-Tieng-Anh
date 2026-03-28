@@ -1153,10 +1153,10 @@
         const safeSuccessMessages = typeof success_msg !== 'undefined' ? success_msg : [];
         const safeErrorMessages = typeof error_msg !== 'undefined' ? error_msg : [];
         const safeInfoMessages = typeof info !== 'undefined' ? info : [];
-        const safeStudentNotifications = Array.isArray(studentNotifications) ? studentNotifications : [];
-        const safeStudentMailboxNotifications = Array.isArray(studentMailboxNotifications) ? studentMailboxNotifications : [];
-        const unreadNotificationCount = Number(unreadStudentNotificationCount || 0);
-        const unreadMailboxCount = Number(unreadStudentMailboxCount || 0);
+        const safeStudentNotifications = Array.isArray(typeof studentNotifications !== 'undefined' ? studentNotifications : null) ? studentNotifications : [];
+        const safeStudentMailboxNotifications = Array.isArray(typeof studentMailboxNotifications !== 'undefined' ? studentMailboxNotifications : null) ? studentMailboxNotifications : [];
+        const unreadNotificationCount = Number(typeof unreadStudentNotificationCount !== 'undefined' ? unreadStudentNotificationCount : 0);
+        const unreadMailboxCount = Number(typeof unreadStudentMailboxCount !== 'undefined' ? unreadStudentMailboxCount : 0);
 
         const brandLogo = 'https://i.postimg.cc/P5r5F9Mt/logo.jpg';
 

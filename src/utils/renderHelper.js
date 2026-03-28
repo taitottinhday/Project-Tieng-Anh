@@ -46,7 +46,9 @@ function renderWithLayout(res, viewName, data = {}) {
       error: res.locals.error || [],
       info: res.locals.info || [],
       studentNotifications: res.locals.studentNotifications || [],
-      unreadStudentNotificationCount: res.locals.unreadStudentNotificationCount || 0
+      unreadStudentNotificationCount: res.locals.unreadStudentNotificationCount || 0,
+      studentMailboxNotifications: res.locals.studentMailboxNotifications || [],
+      unreadStudentMailboxCount: res.locals.unreadStudentMailboxCount || 0
     };
 
     ejs.renderFile(layoutPath, layoutData, (layoutErr, html) => {
