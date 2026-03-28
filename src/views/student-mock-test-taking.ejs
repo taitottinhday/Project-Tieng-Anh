@@ -6,230 +6,171 @@
   <title><%= pageTitle %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#f4efe7;--surface:rgba(255,255,255,.96);--soft:#f8fafc;--line:rgba(15,23,42,.1);--text:#172033;--muted:#637083;--accent:#c63a31;--accent-soft:rgba(198,58,49,.12);--brand:#184e77;--brand-soft:rgba(24,78,119,.1);--shadow:0 22px 48px rgba(15,23,42,.08)}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Manrope","Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at top left,rgba(198,58,49,.08),transparent 28%),radial-gradient(circle at top right,rgba(24,78,119,.08),transparent 24%),linear-gradient(180deg,#fcfaf6 0%,var(--bg) 100%)}body{padding:14px;overflow:hidden}button,input{font:inherit}
-    .mt-form{height:calc(100dvh - 28px);min-height:720px}.mt-shell{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;height:100%;min-height:0;align-items:start}.mt-sidebar,.mt-main{border-radius:26px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow)}
-    .mt-sidebar{display:flex;flex-direction:column;overflow:hidden;position:sticky;top:0;height:100%;max-height:100%}.mt-timer{padding:18px;background:linear-gradient(180deg,#132238 0%,#1d3554 100%);color:#fff;text-align:center;font-family:"Sora","Manrope",sans-serif;font-size:1.55rem}.mt-side-copy{padding:18px;display:grid;gap:14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.98) 0%,rgba(248,250,252,.96) 100%)}
-    .mt-pill{display:inline-flex;width:fit-content;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:999px;background:var(--brand-soft);color:var(--brand);font-weight:800}.mt-side-copy strong,.mt-bridge-card h2,.mt-head strong,.mt-stage h2,.mt-card h3,.mt-launch-card h2{margin:0;font-family:"Sora","Manrope",sans-serif;letter-spacing:-.04em}.mt-side-copy p,.mt-head span,.mt-note,.mt-block p,.mt-launch-card p,.mt-bridge-card p,.mt-empty{margin:0;color:var(--muted);line-height:1.7}
-    .mt-count-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mt-count{padding:14px;border-radius:18px;background:var(--soft);border:1px solid var(--line);display:grid;gap:6px}.mt-count span{color:var(--muted);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}.mt-count strong{font-size:1.08rem;color:var(--text)}
-    .mt-btn,.mt-control{min-height:48px;border-radius:16px;border:1px solid transparent;cursor:pointer;font-weight:800;transition:.18s ease}.mt-btn{background:linear-gradient(135deg,#c63a31 0%,#e05b52 100%);color:#fff;box-shadow:0 18px 34px rgba(198,58,49,.2)}.mt-btn.secondary,.mt-control{background:#fff;color:var(--brand);border-color:var(--line);box-shadow:none}.mt-btn:hover,.mt-control:hover{transform:translateY(-1px)}.mt-btn:disabled,.mt-control:disabled{opacity:.55;cursor:not-allowed;transform:none}
-    .mt-scroll{flex:1;min-height:0;overflow:auto;padding:18px 14px;display:grid;gap:16px}.mt-reading-nav{display:none;gap:10px}.mt-reading-nav.is-visible{display:grid}.mt-reading-nav h3{margin:0;font-family:"Sora","Manrope",sans-serif;color:var(--brand);font-size:1rem}.mt-nav-grid{display:flex;flex-wrap:wrap;gap:8px}.mt-nav-btn{width:50px;min-width:50px;height:52px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,#f7fafe 100%);color:var(--muted);font-weight:800;cursor:pointer}.mt-nav-btn.current{background:linear-gradient(180deg,#132238 0%,#1d3554 100%);border-color:#132238;color:#fff}.mt-nav-btn.answered{background:linear-gradient(180deg,#fff4ec 0%,#ffe7d7 100%);border-color:rgba(198,58,49,.18);color:var(--accent)}
-    .mt-main{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;overflow:hidden;position:relative}.mt-head{padding:20px 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.98) 0%,rgba(248,250,252,.96) 100%);display:grid;gap:10px}.mt-head strong{font-size:clamp(1.5rem,2.4vw,2.2rem);line-height:1.04;color:var(--brand)}.mt-stack{flex:1;min-height:0;overflow:hidden;padding:14px;position:relative}.mt-screen{display:none;height:100%;min-height:0}.mt-screen.active{display:block}
-    .mt-stage{display:grid;gap:14px;height:100%;min-height:0;overflow:auto;padding:18px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,.98)}.mt-stage-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}.mt-kicker{display:inline-flex;width:fit-content;padding:8px 12px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.mt-code{padding:10px 14px;border-radius:999px;background:rgba(19,34,56,.06);color:var(--brand);font-weight:800;white-space:nowrap}
-    .mt-block,.mt-card{padding:16px;border-radius:20px;border:1px solid var(--line);background:var(--soft)}.mt-block strong{display:block;margin-bottom:8px;color:var(--brand);font-family:"Sora","Manrope",sans-serif}.mt-images{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.mt-images img{width:100%;border-radius:18px;border:1px solid var(--line);display:block;background:#fff;object-fit:contain;max-height:560px}
-    .mt-listening,.mt-choices{display:grid;gap:14px}.mt-card h3{font-size:1.22rem;color:var(--brand);margin-bottom:10px}.mt-prompt{margin:0 0 12px;color:var(--text);line-height:1.82;white-space:pre-wrap}.mt-choice{display:block;cursor:pointer}.mt-choice input{position:absolute;opacity:0;pointer-events:none}.mt-choice-ui{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:center;padding:12px;border-radius:18px;border:1px solid transparent;transition:.18s ease}.mt-choice:hover .mt-choice-ui{background:rgba(19,34,56,.04);border-color:var(--line)}.mt-choice input:checked + .mt-choice-ui{background:rgba(198,58,49,.08);border-color:rgba(198,58,49,.22)}.mt-dot{width:24px;height:24px;border-radius:50%;border:1.6px solid rgba(19,34,56,.2);background:#fff;position:relative}.mt-choice input:checked + .mt-choice-ui .mt-dot::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--accent)}.mt-copy{color:var(--text);line-height:1.75;font-weight:700}.mt-copy strong{margin-right:6px;font-family:"Sora","Manrope",sans-serif}.mt-copy.only-letter{letter-spacing:.04em}.mt-note-box{padding:14px 16px;border-radius:18px;background:rgba(24,78,119,.08);border:1px solid rgba(24,78,119,.14);color:#14425f;font-weight:700;line-height:1.7}
-    .mt-reading-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.mt-bridge{display:none;align-items:center;justify-content:center;height:100%;padding:18px}.mt-bridge.is-visible{display:flex}.mt-bridge-card{width:min(100%,620px);padding:28px;border-radius:28px;border:1px solid var(--line);background:linear-gradient(135deg,#f8fbff 0%,#fff8f5 100%);box-shadow:var(--shadow);display:grid;gap:14px;text-align:center}.mt-empty{display:grid;place-items:center;height:100%;text-align:center}
-    .mt-launch,.confirm-backdrop{position:fixed;inset:0;display:grid;place-items:center;padding:18px;background:rgba(8,16,28,.6);backdrop-filter:blur(3px)}.mt-launch[hidden],.confirm-backdrop[hidden]{display:none}.mt-launch-card,.confirm-dialog{width:min(100%,460px);padding:24px;border-radius:24px;background:#fff;border:1px solid var(--line);box-shadow:0 28px 58px rgba(8,16,28,.24);display:grid;gap:14px}.confirm-dialog{width:min(100%,420px)}.confirm-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.confirm-head h2{margin:0;font-family:"Sora","Manrope",sans-serif;font-size:1.35rem;color:var(--brand)}.confirm-close{width:42px;height:42px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--brand);cursor:pointer;font-size:1.3rem}.confirm-copy{margin:0;color:var(--text);font-size:1.1rem;font-weight:700;line-height:1.6}.confirm-note{margin:10px 0 0;color:var(--muted);line-height:1.6}.confirm-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
-    @media (max-width:1180px){body{overflow:auto}.mt-form{height:auto;min-height:0}.mt-shell{grid-template-columns:1fr;height:auto}.mt-sidebar,.mt-main{position:static;height:auto;max-height:none}.mt-scroll{max-height:320px}.mt-stage{height:auto;overflow:visible}}
-    @media (max-width:720px){body{padding:10px;overflow:auto}.mt-form,.mt-shell{height:auto;min-height:auto}.mt-head,.mt-stack,.mt-stage{padding:16px}.mt-reading-actions,.confirm-actions,.mt-count-grid{grid-template-columns:1fr}.mt-nav-btn{width:46px;min-width:46px;height:50px}}
+    :root{--bg:#f4f7fb;--panel:#fff;--panel-soft:#f8fafc;--border:#d8e2ef;--border-strong:#c5d3e6;--text:#19314f;--muted:#6d83a0;--accent:#ffa313;--accent-deep:#ef8c00;--navy:#163c69;--navy-soft:#eef4fb;--shadow:0 18px 45px rgba(30,56,95,.08)}*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Manrope","Segoe UI",sans-serif;background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%);color:var(--text)}body{padding:12px;overflow:hidden}button,input,audio{font:inherit}.exam-form{height:calc(100dvh - 24px);min-height:720px}.page-shell{display:grid;grid-template-columns:264px minmax(0,1fr);gap:14px;height:100%;min-height:0;align-items:start}.sidebar-card,.exam-panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}.sidebar-card{display:flex;flex-direction:column;overflow:hidden;position:sticky;top:0;height:100%;max-height:100%}.timer-panel{padding:14px 18px;background:linear-gradient(180deg,#ffb11f 0%,var(--accent) 100%);color:#fff;text-align:center;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:.03em}.sidebar-scroll{flex:1;min-height:0;overflow:auto;padding:18px 14px 14px}.sidebar-part+.sidebar-part{margin-top:18px}.sidebar-part h3{margin:0 0 10px;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.05rem;color:#122c4e}.nav-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}.nav-btn{position:relative;width:50px;min-width:50px;height:54px;padding:0;border-radius:16px;border:1px solid var(--border-strong);background:linear-gradient(180deg,#fff 0%,#f7fafe 100%);color:#587190;font-weight:700;cursor:pointer;box-shadow:0 10px 20px rgba(30,56,95,.08);transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease,color .18s ease,opacity .18s ease}.nav-btn.flagged::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:15px;border-radius:2px;background:linear-gradient(180deg,#ffb938 0%,var(--accent) 100%);clip-path:polygon(0 0,100% 0,100% 74%,52% 58%,0 74%);box-shadow:0 6px 12px rgba(255,163,19,.25);pointer-events:none}.nav-btn.current.flagged::after{background:rgba(255,255,255,.96);box-shadow:0 6px 12px rgba(17,38,67,.22)}.nav-btn:hover{border-color:#91a8c5;color:var(--navy);transform:translateY(-1px);box-shadow:0 14px 24px rgba(30,56,95,.12)}.nav-btn.current{border-color:var(--navy);background:linear-gradient(180deg,#163c69 0%,#244d7d 100%);color:#fff;box-shadow:0 16px 28px rgba(22,60,105,.22)}.nav-btn.answered{background:linear-gradient(180deg,#fff7eb 0%,#ffe8c2 100%);border-color:#f6c46e;color:var(--accent-deep)}.nav-btn.current.answered{background:linear-gradient(180deg,#163c69 0%,#245282 72%,#ef8c00 180%);border-color:var(--navy);color:#fff}.nav-btn.locked,.nav-btn:disabled{cursor:not-allowed;opacity:.76;box-shadow:0 8px 16px rgba(30,56,95,.05)}.nav-btn.locked:hover,.nav-btn:disabled:hover{transform:none;border-color:var(--border-strong);color:inherit;box-shadow:0 8px 16px rgba(30,56,95,.05)}.nav-btn.locked.current:hover,.nav-btn:disabled.current:hover{border-color:var(--navy);color:#fff}.sidebar-footer{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;padding:14px;border-top:1px solid var(--border);background:#fbfdff}.count-box{display:grid;place-items:center;gap:2px;min-height:48px;border-radius:12px;border:1px solid #f2bb56;background:#fff;color:var(--navy);text-align:center}.count-box strong,.count-box small{display:block;font-family:"Plus Jakarta Sans",sans-serif}.count-box strong{font-weight:800;font-size:1rem}.count-box small{color:var(--muted);font-size:.72rem;font-weight:700}.submit-btn,.secondary-btn,.control-btn{min-height:48px;border-radius:12px;border:1px solid transparent;font-weight:800;cursor:pointer;transition:.18s ease}.submit-btn{background:linear-gradient(180deg,#ffaf1f 0%,var(--accent) 100%);color:#fff}.submit-btn:hover,.secondary-btn:hover,.control-btn:hover{transform:translateY(-1px)}.secondary-btn,.control-btn{background:#fff;color:var(--navy);border-color:var(--border-strong)}.submit-btn:disabled,.secondary-btn:disabled,.control-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}.exam-panel{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;overflow:hidden}.exam-header{padding:14px 22px;border-bottom:1px solid var(--border);text-align:center;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%)}.exam-meta{margin-bottom:6px;color:var(--muted);font-size:.88rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.exam-header h1{margin:0;font-family:"Plus Jakarta Sans",sans-serif;font-size:clamp(1.5rem,2vw,2rem);color:#203b60}.exam-subline{margin-top:6px;color:var(--muted);font-size:.96rem;min-height:24px}.screen-stack{flex:1;min-height:0;padding:14px;overflow:hidden}.question-screen,.bridge-screen{display:none;height:100%;min-height:0}.question-screen.active,.bridge-screen.active{display:block;height:100%}.content-shell{display:grid;grid-template-columns:minmax(0,1fr) 248px;gap:14px;height:100%;min-height:0;align-items:start}.question-stage,.answer-stage,.bridge-card{border:1px solid var(--border-strong);border-radius:14px;background:#fff}.question-stage{display:flex;flex-direction:column;gap:14px;height:100%;min-height:0;padding:18px 18px 28px;overflow:auto;scroll-padding-top:16px}.answer-stage{display:flex;flex-direction:column;gap:12px;padding:16px;background:#fcfdff;position:sticky;top:0;align-self:start}.stage-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}.stage-kicker{display:inline-block;margin-bottom:6px;color:var(--accent-deep);font-size:.82rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.stage-top h2{margin:0;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.35rem;color:#19375f}.question-badge{white-space:nowrap;padding:9px 12px;border-radius:999px;background:var(--navy-soft);color:var(--navy);font-weight:800;font-size:.92rem}.audio-block,.passage-block,.prompt-block,.mock-phase-block{border:1px solid var(--border);border-radius:12px;background:var(--panel-soft);padding:14px}.audio-block strong,.passage-block strong,.prompt-block strong,.mock-phase-block strong{display:block;margin-bottom:8px;color:#1f3b63;font-family:"Plus Jakarta Sans",sans-serif}.mock-audio-chip{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:999px;background:#eef4fb;color:var(--navy);font-weight:800;font-size:.9rem}.mock-audio-chip::before{content:"";width:10px;height:10px;border-radius:999px;background:#f59e0b;box-shadow:0 0 0 5px rgba(245,158,11,.12)}.mock-phase-copy{color:#35506f;line-height:1.75}.mock-phase-copy strong{display:inline;margin:0 6px 0 0;font-family:"Plus Jakarta Sans",sans-serif}.passage-body{color:#35506f;line-height:1.8;white-space:pre-wrap}.image-stage{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.image-stage img{width:100%;border-radius:12px;border:1px solid var(--border);background:#fff;display:block;object-fit:contain;max-height:620px}.instruction-line{margin:0 0 8px;color:var(--muted);font-size:.94rem;line-height:1.7}.prompt-text{font-size:1.06rem;line-height:1.8;color:#1d3659;white-space:pre-wrap}.prompt-text.compact{font-family:"Plus Jakarta Sans",sans-serif;font-size:1.02rem;font-weight:700}.answer-head{display:grid;gap:8px;color:#23466f;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.05rem;font-weight:800}.answer-head-main{display:flex;align-items:center;gap:10px}.answer-number{color:#173862}.answer-head-status{color:var(--muted);font-size:.85rem;font-weight:700;line-height:1.45}.flag-toggle{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid #f2d39f;background:#fff8ea;color:var(--accent-deep);font-family:"Plus Jakarta Sans",sans-serif;font-size:.8rem;font-weight:800;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease,border-color .18s ease}.flag-toggle:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(255,163,19,.16)}.flag-toggle.active{border-color:#f1b24b;background:linear-gradient(180deg,#ffb938 0%,var(--accent) 100%);color:#fff;box-shadow:0 14px 22px rgba(255,163,19,.24)}.answer-flag{width:10px;height:16px;border-radius:2px;background:currentColor;clip-path:polygon(0 0,100% 0,100% 70%,55% 55%,0 70%)}.answer-options{display:grid;gap:12px;align-content:start}.choice{display:block;cursor:pointer}.choice input{position:absolute;opacity:0;pointer-events:none}.choice-ui{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:12px;border:1px solid transparent;transition:.18s ease}.choice:hover .choice-ui{background:#f7faff;border-color:#d5dfec}.choice input:checked+.choice-ui{background:#fff5e8;border-color:#f6c46e}.choice-dot{width:20px;height:20px;border-radius:999px;border:1.6px solid #c5d3e6;position:relative;background:#fff}.choice input:checked+.choice-ui .choice-dot{border-color:var(--accent-deep)}.choice input:checked+.choice-ui .choice-dot::after{content:"";position:absolute;inset:4px;border-radius:999px;background:var(--accent-deep)}.choice-copy{color:#274669;line-height:1.7;font-weight:700}.choice-copy strong{margin-right:6px;color:#173862;font-family:"Plus Jakarta Sans",sans-serif}.choice-copy.only-letter{font-family:"Plus Jakarta Sans",sans-serif;letter-spacing:.04em}.answer-actions{display:grid;gap:10px;margin-top:8px;padding-top:12px;border-top:1px solid var(--border)}.answer-footer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bridge-shell{height:100%;display:grid;place-items:center;padding:14px}.bridge-card{width:min(100%,660px);padding:28px;text-align:center;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);box-shadow:var(--shadow)}.bridge-pill,.launch-pill{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 16px;border-radius:999px;background:#fff2d8;color:var(--accent-deep);font-family:"Plus Jakarta Sans",sans-serif;font-weight:800}.bridge-card h2{margin:16px 0 10px;font-family:"Plus Jakarta Sans",sans-serif;font-size:clamp(1.5rem,2vw,2rem);color:#173862}.bridge-card p{margin:0;color:#4f6580;line-height:1.8}.bridge-card .submit-btn{min-width:240px;margin-top:20px}.launch-backdrop,.confirm-backdrop{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:18px;background:rgba(8,16,28,.56);backdrop-filter:blur(3px)}.launch-backdrop[hidden],.confirm-backdrop[hidden]{display:none}.launch-card,.confirm-dialog{width:min(100%,460px);padding:24px;border-radius:22px;background:#fff;border:1px solid var(--border);box-shadow:0 28px 58px rgba(8,16,28,.24)}.launch-pill{background:#eef4fb;color:var(--navy)}.launch-card h2,.confirm-head h2{margin:16px 0 10px;font-family:"Plus Jakarta Sans",sans-serif;color:var(--navy)}.launch-card p,.confirm-copy,.confirm-note{color:#4f6580;line-height:1.75}.launch-card .submit-btn{width:100%;margin-top:18px}.confirm-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.confirm-close{width:42px;height:42px;border-radius:999px;border:1px solid var(--border-strong);background:#fff;color:var(--navy);cursor:pointer;font-size:1.3rem}.confirm-copy{margin:0;font-size:1.05rem;font-weight:700}.confirm-note{margin:10px 0 0}.confirm-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}@media (max-width:1200px){.page-shell{grid-template-columns:220px minmax(0,1fr)}.content-shell{grid-template-columns:minmax(0,1fr) 220px}}@media (max-width:960px){body{padding:10px;overflow:auto}.exam-form{height:auto;min-height:0}.page-shell{grid-template-columns:1fr;height:auto}.sidebar-card{order:2;position:static;height:auto;max-height:none}.exam-panel{order:1;height:auto}.sidebar-scroll{max-height:320px}.content-shell{grid-template-columns:1fr;min-height:auto}.question-stage{height:auto;overflow:visible}.answer-stage{order:-1;position:static}.screen-stack{padding:14px}}@media (max-width:640px){.exam-header{padding:14px}.sidebar-footer,.answer-footer,.confirm-actions{grid-template-columns:1fr}.stage-top{flex-direction:column}.nav-grid{gap:8px}.nav-btn{width:46px;min-width:46px;height:50px;border-radius:14px}}
   </style>
 </head>
 <body>
-  <% const examData = exam || {}; const groups = Array.isArray(examData.groups) ? examData.groups : []; const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : []; const flatQuestions = Array.isArray(examData.flatQuestions) ? examData.flatQuestions : []; const durationMinutes = Number(examData.durationMinutes || 120); const listeningGroups = groups.filter((group) => Number(group.partNumber || 0) >= 1 && Number(group.partNumber || 0) <= 4).map((group, index) => { const part = partSummary.find((item) => Number(item.partNumber) === Number(group.partNumber)) || {}; const questions = (Array.isArray(group.questions) ? group.questions : []).map((question) => ({ ...question, partTitle: part.title || `Part ${group.partNumber}`, partInstructions: part.instructions || "" })); return { id: `listen-${index + 1}`, partNumber: Number(group.partNumber || 0), partTitle: part.title || `Part ${group.partNumber || ""}`, partInstructions: part.instructions || "", sharedContent: group.sharedContent || "", sharedAudioUrl: group.sharedAudioUrl || (questions[0] ? questions[0].audioUrl : null) || null, sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : [], questions, firstNumber: questions[0] ? Number(questions[0].number || 0) : 0, lastNumber: questions.length ? Number(questions[questions.length - 1].number || 0) : 0 }; }).filter((group) => group.questions.length > 0).sort((left, right) => left.firstNumber - right.firstNumber); const readingQuestions = flatQuestions.filter((question) => Number(question.number || 0) >= 101).map((question) => { const group = groups.find((item) => Array.isArray(item.questions) && item.questions.some((candidate) => Number(candidate.number) === Number(question.number))) || {}; const part = partSummary.find((item) => Number(item.partNumber) === Number(question.partNumber)) || {}; return { ...question, partTitle: part.title || `Part ${question.partNumber}`, partInstructions: part.instructions || "", sharedContent: group.sharedContent || "", sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : [] }; }); const listeningQuestionTotal = listeningGroups.reduce((sum, group) => sum + group.questions.length, 0); const readingQuestionTotal = readingQuestions.length; const firstListeningGroup = listeningGroups[0] || null; const firstReadingQuestion = readingQuestions[0] || null; const hasContent = listeningGroups.length || readingQuestions.length; %>
-
-  <form action="<%= examData.submitHref || '#' %>" method="POST" class="mt-form" data-mock-form data-session-key="student-mock-<%= examData.id || 'session' %>">
-    <input type="hidden" name="furthest_question_number" value="<%= firstListeningGroup ? firstListeningGroup.firstNumber : (firstReadingQuestion ? firstReadingQuestion.number : '') %>" data-furthest-question>
-    <div class="mt-shell">
-      <aside class="mt-sidebar">
-        <div class="mt-timer" id="mockTimer" data-duration="<%= durationMinutes %>">00:00:00</div>
-        <div class="mt-side-copy">
-          <span class="mt-pill" id="phaseBadge">Listening 1-100</span>
-          <strong id="phaseTitle">Phần nghe đang khóa theo audio gốc</strong>
-          <p id="phaseDescription">Không hiện thanh phát lại, không tua lại và không thể quay về câu đã qua.</p>
-          <div class="mt-count-grid">
-            <div class="mt-count"><span>Listening</span><strong><span id="answeredListeningCount">0</span>/<%= listeningQuestionTotal %></strong></div>
-            <div class="mt-count"><span>Reading</span><strong><span id="answeredReadingCount">0</span>/<%= readingQuestionTotal %></strong></div>
-          </div>
-          <div class="mt-count-grid">
-            <div class="mt-count"><span>Cụm nghe</span><strong id="listeningProgressLabel"><%= listeningGroups.length ? `1/${listeningGroups.length}` : '0/0' %></strong></div>
-            <div class="mt-count"><span>Tổng câu</span><strong><%= Number(examData.totalQuestions || flatQuestions.length || 0) %></strong></div>
-          </div>
-          <button type="button" class="mt-btn" id="toReadingButton" hidden>Chuyển sang phần Reading</button>
-          <button type="submit" class="mt-btn secondary" id="submitExamButton" disabled>Nộp bài thi</button>
-        </div>
-        <div class="mt-scroll">
-          <section class="mt-reading-nav" id="readingNavPanel">
-            <h3>Điều hướng Reading</h3>
-            <div class="mt-nav-grid">
-              <% readingQuestions.forEach((question) => { %>
-                <button type="button" class="mt-nav-btn" data-go-reading="<%= question.number %>"><%= question.number %></button>
-              <% }) %>
-            </div>
-          </section>
-        </div>
-      </aside>
-      <main class="mt-main">
-        <div class="mt-head">
-          <strong id="currentHeadline"><%= firstListeningGroup ? `Part ${firstListeningGroup.partNumber} | Cụm câu ${firstListeningGroup.firstNumber}-${firstListeningGroup.lastNumber}` : (firstReadingQuestion ? `Part ${firstReadingQuestion.partNumber} | Câu ${firstReadingQuestion.number}` : (examData.title || 'Thi thử Full Test')) %></strong>
-          <span id="currentSubline"><%= firstListeningGroup ? 'Hệ thống sẽ tự phát audio và tự chuyển sang cụm nghe tiếp theo.' : 'Chưa có dữ liệu đề thi.' %></span>
-        </div>
-        <div class="mt-stack">
-          <% if (!hasContent) { %>
-            <div class="mt-empty">Không có dữ liệu cho đề thi thử này.</div>
-          <% } else { %>
-            <% listeningGroups.forEach((group, index) => { %>
-              <section class="mt-screen" data-listening-screen="<%= index %>" data-first-number="<%= group.firstNumber %>" data-last-number="<%= group.lastNumber %>" data-audio-url="<%= group.sharedAudioUrl || '' %>" data-headline="Part <%= group.partNumber %> | Cụm câu <%= group.firstNumber %>-<%= group.lastNumber %>" data-subline="Listening đang chạy tự động, không thể tua hoặc quay lại.">
-                <div class="mt-stage">
-                  <div class="mt-stage-head">
-                    <div>
-                      <span class="mt-kicker">Part <%= group.partNumber %></span>
-                      <h2><%= group.partTitle %></h2>
-                    </div>
-                    <span class="mt-code">Câu <%= group.firstNumber %>-<%= group.lastNumber %></span>
-                  </div>
-                  <div class="mt-note-box">Audio đang phát ngầm theo file gốc. Hệ thống sẽ tự chuyển sang cụm nghe tiếp theo sau khi audio hiện tại kết thúc.</div>
-                  <% if (group.sharedContent) { %>
-                    <div class="mt-block"><strong>Đoạn văn / ngữ cảnh</strong><p><%= group.sharedContent %></p></div>
-                  <% } %>
-                  <% if (group.sharedImages && group.sharedImages.length) { %>
-                    <div class="mt-images">
-                      <% group.sharedImages.forEach((imageUrl) => { %><img src="<%= imageUrl %>" alt="Tư liệu câu <%= group.firstNumber %>"><% }) %>
-                    </div>
-                  <% } %>
-                  <div class="mt-listening">
-                    <% group.questions.forEach((question) => { %>
-                      <article class="mt-card">
-                        <h3>Câu <%= question.number %></h3>
-                        <p class="mt-prompt"><%= question.prompt %></p>
-                        <div class="mt-choices">
-                          <% question.options.forEach((option) => { %>
-                            <label class="mt-choice">
-                              <input type="radio" name="<%= question.inputName %>" value="<%= option.label %>" data-question-input="<%= question.number %>">
-                              <span class="mt-choice-ui">
-                                <span class="mt-dot"></span>
-                                <% if (option.isLetterOnly) { %>
-                                  <span class="mt-copy only-letter"><strong><%= option.label %></strong></span>
-                                <% } else { %>
-                                  <span class="mt-copy"><strong><%= option.label %></strong><%= option.text %></span>
-                                <% } %>
-                              </span>
-                            </label>
-                          <% }) %>
-                        </div>
-                      </article>
-                    <% }) %>
-                  </div>
-                </div>
-              </section>
-            <% }) %>
-
-            <% readingQuestions.forEach((question) => { %>
-              <section class="mt-screen" data-reading-screen="<%= question.number %>" data-headline="Part <%= question.partNumber %> | Câu <%= question.number %>" data-subline="<%= question.partTitle %> | Reading đã được mở để tiếp tục câu 101-200.">
-                <div class="mt-stage">
-                  <div class="mt-stage-head">
-                    <div>
-                      <span class="mt-kicker">Part <%= question.partNumber %></span>
-                      <h2><%= question.partTitle %></h2>
-                    </div>
-                    <span class="mt-code">Câu <%= question.number %></span>
-                  </div>
-                  <% if (question.sharedContent) { %>
-                    <div class="mt-block"><strong>Đoạn văn / ngữ cảnh</strong><p><%= question.sharedContent %></p></div>
-                  <% } %>
-                  <% if (question.sharedImages && question.sharedImages.length) { %>
-                    <div class="mt-images">
-                      <% question.sharedImages.forEach((imageUrl) => { %><img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>"><% }) %>
-                    </div>
-                  <% } %>
-                  <article class="mt-card">
-                    <h3>Câu <%= question.number %></h3>
-                    <div class="mt-note"><%= question.partInstructions %></div>
-                    <p class="mt-prompt"><%= question.prompt %></p>
-                    <div class="mt-choices">
-                      <% question.options.forEach((option) => { %>
-                        <label class="mt-choice">
-                          <input type="radio" name="<%= question.inputName %>" value="<%= option.label %>" data-question-input="<%= question.number %>">
-                          <span class="mt-choice-ui">
-                            <span class="mt-dot"></span>
-                            <% if (option.isLetterOnly) { %>
-                              <span class="mt-copy only-letter"><strong><%= option.label %></strong></span>
-                            <% } else { %>
-                              <span class="mt-copy"><strong><%= option.label %></strong><%= option.text %></span>
-                            <% } %>
-                          </span>
-                        </label>
-                      <% }) %>
-                    </div>
-                    <div class="mt-reading-actions">
-                      <button type="button" class="mt-control" data-reading-direction="-1" data-reading-question="<%= question.number %>">Câu trước</button>
-                      <button type="button" class="mt-control" data-reading-direction="1" data-reading-question="<%= question.number %>">Câu tiếp</button>
-                    </div>
-                  </article>
-                </div>
-              </section>
-            <% }) %>
-
-            <section class="mt-bridge" data-reading-bridge>
-              <div class="mt-bridge-card">
-                <span class="mt-pill">Listening hoàn tất</span>
-                <h2>Đã xong câu 1-100. Sẵn sàng chuyển sang phần Reading.</h2>
-                <p>Phần nghe đã được khóa theo audio gốc đến hết câu 100. Nhấn nút bên dưới để bắt đầu làm phần Reading từ câu 101.</p>
-                <button type="button" class="mt-btn" data-reading-bridge-button>Chuyển sang phần Reading</button>
+  <%
+    const examData = typeof exam !== "undefined" && exam ? exam : {};
+    const groups = Array.isArray(examData.groups) ? examData.groups : [];
+    const flatQuestions = Array.isArray(examData.flatQuestions) ? examData.flatQuestions : [];
+    const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
+    const durationMinutes = Number(examData.durationMinutes || 120);
+    const groupByQuestionNumber = new Map();
+    groups.forEach((group) => { (Array.isArray(group.questions) ? group.questions : []).forEach((question) => { groupByQuestionNumber.set(Number(question.number), group); }); });
+    const listeningGroups = groups.map((group, groupIndex) => { const questionIds = (Array.isArray(group.questions) ? group.questions : []).map((question) => Number(question.number || 0)).filter((number) => number >= 1 && number <= 100); if (!questionIds.length) return null; return { id: `listening-group-${groupIndex + 1}-${questionIds[0]}`, groupIndex, firstNumber: questionIds[0], lastNumber: questionIds[questionIds.length - 1], questionIds, sharedAudioUrl: group.sharedAudioUrl || "" }; }).filter(Boolean).sort((left, right) => left.firstNumber - right.firstNumber);
+    const listeningGroupByQuestionNumber = new Map();
+    listeningGroups.forEach((group, groupIndex) => { group.questionIds.forEach((questionNumber, questionIndex) => { listeningGroupByQuestionNumber.set(questionNumber, { group, groupIndex, questionIndex }); }); });
+    const questionViews = flatQuestions.map((question, index) => { const questionNumber = Number(question.number || 0); const contentGroup = groupByQuestionNumber.get(questionNumber) || {}; const part = partSummary.find((item) => Number(item.partNumber) === Number(question.partNumber)) || {}; const listeningRelation = listeningGroupByQuestionNumber.get(questionNumber) || null; const listeningGroup = listeningRelation ? listeningRelation.group : null; const isListening = questionNumber >= 1 && questionNumber <= 100; return Object.assign({}, question, { index, partTitle: part.title || `Part ${question.partNumber}`, partInstructions: part.instructions || "", sharedContent: contentGroup.sharedContent || "", sharedAudioUrl: contentGroup.sharedAudioUrl || question.audioUrl || "", sharedImages: Array.isArray(contentGroup.sharedImages) ? contentGroup.sharedImages : [], isListening, isReading: questionNumber >= 101, listeningGroupId: listeningGroup ? listeningGroup.id : "", listeningGroupIndex: listeningRelation ? listeningRelation.groupIndex : -1, listeningQuestionIndex: listeningRelation ? listeningRelation.questionIndex : -1, listeningQuestionTotal: listeningGroup ? listeningGroup.questionIds.length : 0, groupFirstNumber: listeningGroup ? listeningGroup.firstNumber : questionNumber, groupLastNumber: listeningGroup ? listeningGroup.lastNumber : questionNumber }); });
+    const listeningQuestions = questionViews.filter((question) => question.isListening);
+    const readingQuestions = questionViews.filter((question) => question.isReading);
+    const totalQuestions = Number(examData.totalQuestions || questionViews.length || 0);
+    const hasQuestions = questionViews.length > 0;
+    const firstListeningQuestion = listeningQuestions[0] || null;
+    const firstReadingQuestion = readingQuestions[0] || null;
+    const partSections = partSummary.map((part) => Object.assign({}, part, { questions: questionViews.filter((question) => Number(question.partNumber) === Number(part.partNumber)) })).filter((part) => part.questions.length > 0);
+  %>
+  <form action="<%= examData.submitHref || "#" %>" method="POST" class="exam-form" data-mock-form data-session-key="student-mock-<%= examData.id || "session" %>">
+    <input type="hidden" name="furthest_question_number" value="<%= firstListeningQuestion ? firstListeningQuestion.number : (firstReadingQuestion ? firstReadingQuestion.number : "") %>" data-furthest-question>
+    <div class="page-shell">
+      <aside class="sidebar-card">
+        <div class="timer-panel"><div id="mockTimer" data-duration="<%= durationMinutes %>">00:00:00</div></div>
+        <div class="sidebar-scroll">
+          <% partSections.forEach((part) => { %>
+            <section class="sidebar-part">
+              <h3>Part <%= part.partNumber %></h3>
+              <div class="nav-grid">
+                <% part.questions.forEach((question) => { %>
+                  <button type="button" class="nav-btn" data-go-question="<%= question.number %>" data-question-mode="<%= question.isListening ? "listening" : "reading" %>"><%= question.number %></button>
+                <% }) %>
               </div>
             </section>
+          <% }) %>
+        </div>
+        <div class="sidebar-footer">
+          <div class="count-box"><strong><span id="answeredCount">0</span>/<%= totalQuestions %></strong><small><span id="flaggedCount">0</span> câu gắn cờ</small></div>
+          <button type="submit" class="submit-btn" id="submitExamButton" <%= hasQuestions ? "disabled" : "" %>>Nộp bài</button>
+        </div>
+      </aside>
+      <main class="exam-panel">
+        <header class="exam-header">
+          <div class="exam-meta"><%= examData.title || "Thi thử Full Test" %> | <%= examData.bookName || examData.sourceLabel || "ETS" %></div>
+          <h1 id="currentHeadline"><%= firstListeningQuestion ? `Part ${firstListeningQuestion.partNumber} | Câu ${firstListeningQuestion.number}` : (firstReadingQuestion ? `Part ${firstReadingQuestion.partNumber} | Câu ${firstReadingQuestion.number}` : (examData.title || "Thi thử Full Test")) %></h1>
+          <div class="exam-subline" id="currentSubline"><%= firstListeningQuestion ? "Listening đang khóa theo nhịp audio gốc, chưa thể bấm tự do vào số câu 1-100." : "Chưa có dữ liệu đề thi." %></div>
+        </header>
+        <div class="screen-stack">
+          <% if (!hasQuestions) { %>
+            <div class="bridge-shell"><div class="bridge-card"><span class="bridge-pill">Không có dữ liệu</span><h2>Đề thi thử hiện chưa có nội dung</h2><p>Kiểm tra lại dữ liệu đề hoặc route đang truyền vào trang thi thử full test.</p></div></div>
+          <% } else { %>
+            <% questionViews.forEach((question, index) => { %>
+              <section class="question-screen<%= index === 0 ? " active" : "" %>" data-question-screen data-question-id="<%= question.number %>" data-question-mode="<%= question.isListening ? "listening" : "reading" %>" data-part-title="<%= question.partTitle %>" data-headline="Part <%= question.partNumber %> | Câu <%= question.number %>" data-listening-group-id="<%= question.listeningGroupId || "" %>" data-listening-group-index="<%= question.listeningGroupIndex %>" data-listening-question-index="<%= question.listeningQuestionIndex %>" data-group-first-number="<%= question.groupFirstNumber %>" data-group-last-number="<%= question.groupLastNumber %>" data-audio-url="<%= question.sharedAudioUrl || "" %>">
+                <div class="content-shell">
+                  <div class="question-stage">
+                    <div class="stage-top"><div><span class="stage-kicker">Part <%= question.partNumber %></span><h2><%= question.partTitle %></h2></div><span class="question-badge">Câu <%= question.number %></span></div>
+                    <% if (question.isListening) { %>
+                      <div class="audio-block"><strong>Âm thanh</strong><span class="mock-audio-chip" data-audio-status-for="<%= question.number %>">Audio đang chờ bắt đầu</span></div>
+                      <div class="mock-phase-block"><strong>Chế độ thi thử Listening</strong><div class="mock-phase-copy">Không hiển thị thanh tua lại. Các ô số câu từ 1-100 chỉ dùng để theo dõi tiến trình và không thể bấm quay lại.<% if (question.listeningQuestionTotal > 1) { %><br><strong>Cụm hiện tại:</strong> Câu <%= question.groupFirstNumber %>-<%= question.groupLastNumber %><% } %></div></div>
+                    <% } else { %>
+                      <div class="mock-phase-block"><strong>Phần Reading đã được mở</strong><div class="mock-phase-copy">Bạn có thể bấm trực tiếp các ô số câu từ 101-200 để di chuyển và rà soát đáp án trước khi nộp bài.</div></div>
+                    <% } %>
+                    <% if (question.sharedContent) { %><div class="passage-block"><strong>Đoạn văn</strong><div class="passage-body"><%= question.sharedContent %></div></div><% } %>
+                    <% if (question.sharedImages && question.sharedImages.length) { %><div class="image-stage"><% question.sharedImages.forEach((imageUrl) => { %><img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>"><% }) %></div><% } %>
+                    <div class="prompt-block"><strong>Hướng dẫn</strong><p class="instruction-line"><%= question.partInstructions %></p><div class="prompt-text<%= question.sharedImages && question.sharedImages.length ? " compact" : "" %>"><%= question.prompt %></div></div>
+                  </div>
+                  <aside class="answer-stage">
+                    <div class="answer-head"><div class="answer-head-main"><button type="button" class="flag-toggle" data-flag-question="<%= question.number %>" aria-pressed="false" aria-label="Gắn cờ câu <%= question.number %>"><span class="answer-flag" aria-hidden="true"></span><span data-flag-label>Gắn cờ</span></button><span class="answer-number"><%= question.number %>.</span></div><span class="answer-head-status" data-flag-status></span></div>
+                    <div class="answer-options">
+                      <% question.options.forEach((option) => { %>
+                        <label class="choice"><input type="radio" name="<%= question.inputName %>" value="<%= option.label %>" data-question-input="<%= question.number %>"><span class="choice-ui"><span class="choice-dot"></span><% if (option.isLetterOnly) { %><span class="choice-copy only-letter"><strong><%= option.label %></strong></span><% } else { %><span class="choice-copy"><strong><%= option.label %></strong><%= option.text %></span><% } %></span></label>
+                      <% }) %>
+                    </div>
+                    <div class="answer-actions"><div class="answer-footer"><button type="button" class="control-btn" data-direction="-1" data-question-mode="<%= question.isListening ? "listening" : "reading" %>">Câu trước</button><button type="button" class="control-btn" data-direction="1" data-question-mode="<%= question.isListening ? "listening" : "reading" %>">Câu tiếp</button></div><button type="button" class="secondary-btn" data-jump-pending>Đến câu chưa làm</button><button type="button" class="secondary-btn" data-jump-flagged>Đến câu gắn cờ</button></div>
+                  </aside>
+                </div>
+              </section>
+            <% }) %>
+            <section class="bridge-screen" data-reading-bridge-screen><div class="bridge-shell"><div class="bridge-card"><span class="bridge-pill">Listening hoàn tất</span><h2>Đã xong câu 1-100</h2><p>Phần nghe thi thử đã chạy hết theo audio gốc. Nhấn nút bên dưới để mở phần Reading và sử dụng tự do dải câu 101-200.</p><button type="button" class="submit-btn" id="toReadingButton">Chuyển sang phần Reading</button></div></div></section>
           <% } %>
         </div>
       </main>
     </div>
-    <div class="mt-launch" data-launch-overlay>
-      <div class="mt-launch-card">
-        <span class="mt-pill">Thi thử Full Test</span>
-        <h2 id="launchTitle">Sẵn sàng bắt đầu phần Listening?</h2>
-        <p id="launchCopy">Ngay khi bạn tiếp tục, timer sẽ chạy và audio phần nghe sẽ bắt đầu phát ngầm theo file gốc.</p>
-        <button type="button" class="mt-btn" data-launch-button>Bắt đầu phần Listening</button>
-      </div>
-    </div>
-    <div class="confirm-backdrop" hidden data-submit-confirm>
-      <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="mock-submit-confirm-title">
-        <div class="confirm-head"><h2 id="mock-submit-confirm-title">Xác nhận</h2><button type="button" class="confirm-close" data-submit-close aria-label="Đóng">&times;</button></div>
-        <p class="confirm-copy">Bạn có muốn nộp bài thi thử?</p>
-        <div class="confirm-actions">
-          <button type="button" class="mt-btn secondary" data-submit-cancel>Quay lại</button>
-          <button type="button" class="mt-btn" data-submit-accept>Nộp bài</button>
-        </div>
-        <p class="confirm-note">Hãy kiểm tra lại phần Reading trước khi nộp.</p>
-      </div>
-    </div>
+    <div class="launch-backdrop" data-launch-overlay><div class="launch-card"><span class="launch-pill">Thi thử Full Test</span><h2 id="launchTitle">Sẵn sàng bắt đầu phần Listening?</h2><p id="launchCopy">Ngay khi bạn tiếp tục, timer sẽ chạy và audio phần nghe sẽ phát ngầm theo file gốc. Các ô số câu từ 1-100 sẽ không thể bấm.</p><button type="button" class="submit-btn" data-launch-button>Bắt đầu phần Listening</button></div></div>
+    <div class="confirm-backdrop" hidden data-submit-confirm><div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="mock-submit-confirm-title"><div class="confirm-head"><h2 id="mock-submit-confirm-title">Xác nhận</h2><button type="button" class="confirm-close" data-submit-close aria-label="Đóng">&times;</button></div><p class="confirm-copy">Bạn có muốn nộp bài thi thử?</p><div class="confirm-actions"><button type="button" class="secondary-btn" data-submit-cancel>Quay lại</button><button type="button" class="submit-btn" data-submit-accept>Nộp bài</button></div><p class="confirm-note">Hãy kiểm tra lại phần Reading trước khi nộp.</p></div></div>
   </form>
   <audio id="mockListeningPlayer" preload="auto" hidden></audio>
   <script>
     (() => {
-      const form = document.querySelector('[data-mock-form]');
+      const form = document.querySelector("[data-mock-form]");
       if (!form) return;
 
-      const sessionKey = form.dataset.sessionKey || '';
-      const listeningScreens = Array.from(form.querySelectorAll('[data-listening-screen]'));
-      const readingScreens = Array.from(form.querySelectorAll('[data-reading-screen]'));
-      const readingIds = readingScreens.map((screen) => String(screen.dataset.readingScreen));
-      const questionInputs = Array.from(form.querySelectorAll('[data-question-input]'));
-      const readingNavButtons = Array.from(form.querySelectorAll('[data-go-reading]'));
-      const timerEl = document.getElementById('mockTimer');
-      const phaseBadge = document.getElementById('phaseBadge');
-      const phaseTitle = document.getElementById('phaseTitle');
-      const phaseDescription = document.getElementById('phaseDescription');
-      const answeredListeningCount = document.getElementById('answeredListeningCount');
-      const answeredReadingCount = document.getElementById('answeredReadingCount');
-      const listeningProgressLabel = document.getElementById('listeningProgressLabel');
-      const currentHeadline = document.getElementById('currentHeadline');
-      const currentSubline = document.getElementById('currentSubline');
-      const toReadingButton = document.getElementById('toReadingButton');
-      const submitExamButton = document.getElementById('submitExamButton');
-      const readingNavPanel = document.getElementById('readingNavPanel');
-      const readingBridge = form.querySelector('[data-reading-bridge]');
-      const readingBridgeButton = form.querySelector('[data-reading-bridge-button]');
-      const furthestQuestionInput = form.querySelector('[data-furthest-question]');
-      const launchOverlay = form.querySelector('[data-launch-overlay]');
-      const launchButton = form.querySelector('[data-launch-button]');
-      const launchTitle = document.getElementById('launchTitle');
-      const launchCopy = document.getElementById('launchCopy');
-      const submitConfirm = form.querySelector('[data-submit-confirm]');
-      const submitAcceptButton = form.querySelector('[data-submit-accept]');
-      const submitCancelButtons = Array.from(form.querySelectorAll('[data-submit-cancel], [data-submit-close]'));
-      const audioPlayer = document.getElementById('mockListeningPlayer');
+      const screens = Array.from(form.querySelectorAll("[data-question-screen]"));
+      const navButtons = Array.from(form.querySelectorAll("[data-go-question]"));
+      const radioInputs = Array.from(form.querySelectorAll("[data-question-input]"));
+      const flagButtons = Array.from(form.querySelectorAll("[data-flag-question]"));
+      const jumpPendingButtons = Array.from(form.querySelectorAll("[data-jump-pending]"));
+      const jumpFlaggedButtons = Array.from(form.querySelectorAll("[data-jump-flagged]"));
+      const launchOverlay = form.querySelector("[data-launch-overlay]");
+      const launchButton = form.querySelector("[data-launch-button]");
+      const launchTitle = document.getElementById("launchTitle");
+      const launchCopy = document.getElementById("launchCopy");
+      const bridgeScreen = form.querySelector("[data-reading-bridge-screen]");
+      const toReadingButton = document.getElementById("toReadingButton");
+      const submitButton = document.getElementById("submitExamButton");
+      const submitConfirm = form.querySelector("[data-submit-confirm]");
+      const submitAcceptButton = form.querySelector("[data-submit-accept]");
+      const submitCancelButtons = Array.from(form.querySelectorAll("[data-submit-cancel], [data-submit-close]"));
+      const furthestQuestionInput = form.querySelector("[data-furthest-question]");
+      const timerEl = document.getElementById("mockTimer");
+      const answeredEl = document.getElementById("answeredCount");
+      const flaggedEl = document.getElementById("flaggedCount");
+      const headlineEl = document.getElementById("currentHeadline");
+      const sublineEl = document.getElementById("currentSubline");
+      const audioStatusEls = Array.from(form.querySelectorAll("[data-audio-status-for]"));
+      const audioPlayer = document.getElementById("mockListeningPlayer");
+      const sessionKey = form.dataset.sessionKey || "";
       const durationSeconds = Math.max(Number(timerEl?.dataset.duration || 120) * 60, 0);
-      const hasContent = listeningScreens.length > 0 || readingScreens.length > 0;
+
+      const questionIds = screens.map((screen) => String(screen.dataset.questionId));
+      const listeningIds = screens.filter((screen) => screen.dataset.questionMode === "listening").map((screen) => String(screen.dataset.questionId));
+      const readingIds = screens.filter((screen) => screen.dataset.questionMode === "reading").map((screen) => String(screen.dataset.questionId));
+      const questionMetaMap = new Map(screens.map((screen) => {
+        const questionId = String(screen.dataset.questionId);
+        return [questionId, {
+          id: questionId,
+          screen,
+          mode: screen.dataset.questionMode,
+          listeningGroupId: screen.dataset.listeningGroupId || "",
+          listeningGroupIndex: Number(screen.dataset.listeningGroupIndex || -1),
+          listeningQuestionIndex: Number(screen.dataset.listeningQuestionIndex || -1),
+          groupFirstNumber: Number(screen.dataset.groupFirstNumber || screen.dataset.questionId || 0),
+          groupLastNumber: Number(screen.dataset.groupLastNumber || screen.dataset.questionId || 0),
+          audioUrl: screen.dataset.audioUrl || "",
+          headline: screen.dataset.headline || `Cau ${questionId}`,
+          partTitle: screen.dataset.partTitle || ""
+        }];
+      }));
+
+      const listeningGroups = [];
+      listeningIds.forEach((questionId) => {
+        const meta = questionMetaMap.get(questionId);
+        if (!meta || !meta.listeningGroupId) return;
+        const existing = listeningGroups.find((group) => group.id === meta.listeningGroupId);
+        if (existing) {
+          existing.questionIds.push(questionId);
+          return;
+        }
+        listeningGroups.push({
+          id: meta.listeningGroupId,
+          index: meta.listeningGroupIndex,
+          firstNumber: meta.groupFirstNumber,
+          lastNumber: meta.groupLastNumber,
+          audioUrl: meta.audioUrl,
+          questionIds: [questionId]
+        });
+      });
+      listeningGroups.sort((left, right) => left.firstNumber - right.firstNumber);
 
       if (audioPlayer) {
         audioPlayer.controls = false;
@@ -237,15 +178,25 @@
         audioPlayer.playsInline = true;
       }
 
-      let examEndAt = null;
-      let phase = listeningScreens.length ? 'launch' : (readingScreens.length ? 'reading' : 'empty');
-      let currentListeningIndex = listeningScreens.length ? 0 : -1;
+      let currentQuestionId = listeningIds[0] || readingIds[0] || null;
       let currentReadingId = readingIds[0] || null;
+      let currentListeningGroupIndex = listeningGroups.length ? 0 : -1;
+      let currentGroupQuestionCursor = 0;
+      let phase = listeningIds.length ? "launch" : (readingIds.length ? "reading" : "empty");
+      let listeningStage = "audio";
       let furthestQuestionNumber = Number(furthestQuestionInput?.value || 0) || 0;
-      let isSubmitConfirmed = false;
+      let examEndAt = null;
       let timerIntervalId = null;
       let listeningAdvanceTimerId = null;
       let pendingAudioResumeAt = 0;
+      let lastPendingJumpId = null;
+      let lastFlaggedJumpId = null;
+      let flaggedQuestionIds = new Set();
+      let isSubmitConfirmed = false;
+
+      const getScreen = (questionId) => questionMetaMap.get(String(questionId))?.screen || null;
+      const getMeta = (questionId) => questionMetaMap.get(String(questionId)) || null;
+      const getCurrentListeningGroup = () => listeningGroups[currentListeningGroupIndex] || null;
 
       const readState = () => {
         if (!sessionKey) return null;
@@ -257,19 +208,10 @@
         }
       };
 
-      const getQuestionNumber = (value) => Number(value || 0);
-
-      const getAnsweredSet = () => new Set(
-        questionInputs
-          .filter((input) => input.checked)
-          .map((input) => String(input.dataset.questionInput))
-      );
-
       const writeState = () => {
         if (!sessionKey) return;
-
         const answers = {};
-        questionInputs.forEach((input) => {
+        radioInputs.forEach((input) => {
           if (input.checked) {
             answers[input.name] = input.value;
           }
@@ -277,16 +219,22 @@
 
         try {
           sessionStorage.setItem(sessionKey, JSON.stringify({
-            examEndAt,
-            phase,
-            currentListeningIndex,
+            currentQuestionId,
             currentReadingId,
+            currentListeningGroupIndex,
+            currentGroupQuestionCursor,
+            phase,
+            listeningStage,
             furthestQuestionNumber,
+            lastPendingJumpId,
+            lastFlaggedJumpId,
+            flaggedQuestionIds: Array.from(flaggedQuestionIds),
+            examEndAt,
             answers,
             audioCurrentTime: audioPlayer ? Number(audioPlayer.currentTime || 0) : 0
           }));
         } catch (error) {
-          console.warn('Cannot save mock test state:', error);
+          console.warn("Cannot save mock full test state:", error);
         }
       };
 
@@ -295,59 +243,44 @@
         try {
           sessionStorage.removeItem(sessionKey);
         } catch (error) {
-          console.warn('Cannot clear mock test state:', error);
+          console.warn("Cannot clear mock full test state:", error);
         }
       };
 
       const restoreState = () => {
         const stored = readState();
         if (!stored) return;
-
         Object.entries(stored.answers || {}).forEach(([name, value]) => {
           const matched = form.querySelector(`input[name="${name}"][value="${value}"]`);
           if (matched) {
             matched.checked = true;
           }
         });
-
-        if (typeof stored.examEndAt === 'number' && Number.isFinite(stored.examEndAt)) {
-          examEndAt = stored.examEndAt;
+        if (stored.currentQuestionId && questionIds.includes(String(stored.currentQuestionId))) currentQuestionId = String(stored.currentQuestionId);
+        if (stored.currentReadingId && readingIds.includes(String(stored.currentReadingId))) currentReadingId = String(stored.currentReadingId);
+        if (Number.isInteger(stored.currentListeningGroupIndex) && stored.currentListeningGroupIndex >= 0 && stored.currentListeningGroupIndex < listeningGroups.length) currentListeningGroupIndex = stored.currentListeningGroupIndex;
+        if (Number.isInteger(stored.currentGroupQuestionCursor) && stored.currentGroupQuestionCursor >= 0) currentGroupQuestionCursor = stored.currentGroupQuestionCursor;
+        if (["launch", "listening", "listening_complete", "reading", "empty"].includes(stored.phase)) phase = stored.phase;
+        if (["audio", "post_audio"].includes(stored.listeningStage)) listeningStage = stored.listeningStage;
+        if (Array.isArray(stored.flaggedQuestionIds)) {
+          flaggedQuestionIds = new Set(stored.flaggedQuestionIds.map((questionId) => String(questionId)).filter((questionId) => questionIds.includes(questionId)));
         }
-
-        if (['listening', 'listening_complete', 'reading'].includes(stored.phase)) {
-          phase = stored.phase;
-        }
-
-        if (Number.isInteger(stored.currentListeningIndex) && stored.currentListeningIndex >= 0 && stored.currentListeningIndex < listeningScreens.length) {
-          currentListeningIndex = stored.currentListeningIndex;
-        }
-
-        if (stored.currentReadingId && readingIds.includes(String(stored.currentReadingId))) {
-          currentReadingId = String(stored.currentReadingId);
-        }
-
-        if (Number(stored.furthestQuestionNumber || 0) > 0) {
-          furthestQuestionNumber = Number(stored.furthestQuestionNumber);
-        }
-
-        if (Number(stored.audioCurrentTime || 0) > 0) {
-          pendingAudioResumeAt = Number(stored.audioCurrentTime);
-        }
+        if (stored.lastPendingJumpId) lastPendingJumpId = String(stored.lastPendingJumpId);
+        if (stored.lastFlaggedJumpId) lastFlaggedJumpId = String(stored.lastFlaggedJumpId);
+        if (typeof stored.examEndAt === "number" && Number.isFinite(stored.examEndAt)) examEndAt = stored.examEndAt;
+        if (Number(stored.furthestQuestionNumber || 0) > 0) furthestQuestionNumber = Number(stored.furthestQuestionNumber);
+        if (Number(stored.audioCurrentTime || 0) > 0) pendingAudioResumeAt = Number(stored.audioCurrentTime);
       };
 
-      const clearListeningAdvance = () => {
-        if (listeningAdvanceTimerId) {
-          window.clearTimeout(listeningAdvanceTimerId);
-          listeningAdvanceTimerId = null;
+      const getAnsweredSet = () => new Set(radioInputs.filter((input) => input.checked).map((input) => String(input.dataset.questionInput)));
+      const getFlaggedSet = () => new Set(Array.from(flaggedQuestionIds));
+      const setFurthestQuestion = (questionId) => {
+        const numericQuestion = Number(questionId || 0);
+        if (!numericQuestion) return;
+        furthestQuestionNumber = Math.max(furthestQuestionNumber, numericQuestion);
+        if (furthestQuestionInput) {
+          furthestQuestionInput.value = String(furthestQuestionNumber);
         }
-      };
-
-      const stopListeningAudio = () => {
-        clearListeningAdvance();
-        if (!audioPlayer) return;
-        audioPlayer.pause();
-        audioPlayer.removeAttribute('src');
-        audioPlayer.load();
       };
 
       const formatTime = (seconds) => {
@@ -355,21 +288,17 @@
         const hours = Math.floor(safeSeconds / 3600);
         const minutes = Math.floor((safeSeconds % 3600) / 60);
         const remainingSeconds = safeSeconds % 60;
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
       };
 
       const renderTimer = () => {
         if (!timerEl) return;
-        const secondsLeft = examEndAt
-          ? Math.max(0, Math.ceil((examEndAt - Date.now()) / 1000))
-          : durationSeconds;
-
+        const secondsLeft = examEndAt ? Math.max(0, Math.ceil((examEndAt - Date.now()) / 1000)) : durationSeconds;
         timerEl.textContent = formatTime(secondsLeft);
-
-        if (examEndAt && secondsLeft <= 0) {
+        if (!isSubmitConfirmed && examEndAt && secondsLeft <= 0) {
           window.clearInterval(timerIntervalId);
           timerIntervalId = null;
-          alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài thi thử.');
+          alert("Het thoi gian lam bai. He thong se tu dong nop bai thi thu.");
           forceSubmitExam();
         }
       };
@@ -391,10 +320,10 @@
         renderTimer();
       };
 
-      const showLaunchOverlay = ({ title, copy, buttonLabel }) => {
-        if (launchTitle && title) launchTitle.textContent = title;
-        if (launchCopy && copy) launchCopy.textContent = copy;
-        if (launchButton && buttonLabel) launchButton.textContent = buttonLabel;
+      const showLaunchOverlay = (options = {}) => {
+        if (launchTitle && options.title) launchTitle.textContent = options.title;
+        if (launchCopy && options.copy) launchCopy.textContent = options.copy;
+        if (launchButton && options.buttonLabel) launchButton.textContent = options.buttonLabel;
         if (launchOverlay) launchOverlay.hidden = false;
       };
 
@@ -402,206 +331,268 @@
         if (launchOverlay) launchOverlay.hidden = true;
       };
 
-      const setFurthestQuestion = (value) => {
-        const numericValue = Number(value || 0);
-        if (!numericValue) return;
-        furthestQuestionNumber = Math.max(furthestQuestionNumber, numericValue);
-        if (furthestQuestionInput) {
-          furthestQuestionInput.value = String(furthestQuestionNumber);
+      const clearListeningAdvance = () => {
+        if (listeningAdvanceTimerId) {
+          window.clearTimeout(listeningAdvanceTimerId);
+          listeningAdvanceTimerId = null;
         }
       };
 
-      const updateAnsweredCounters = () => {
-        const answeredSet = getAnsweredSet();
-        const listeningCount = Array.from(answeredSet).filter((questionId) => getQuestionNumber(questionId) <= 100).length;
-        const readingCount = Array.from(answeredSet).filter((questionId) => getQuestionNumber(questionId) >= 101).length;
-
-        if (answeredListeningCount) answeredListeningCount.textContent = String(listeningCount);
-        if (answeredReadingCount) answeredReadingCount.textContent = String(readingCount);
+      const stopListeningAudio = () => {
+        clearListeningAdvance();
+        if (!audioPlayer) return;
+        audioPlayer.pause();
+        audioPlayer.removeAttribute("src");
+        audioPlayer.load();
       };
 
-      const updateReadingNav = () => {
-        const answeredSet = getAnsweredSet();
-
-        readingNavButtons.forEach((button) => {
-          const questionId = String(button.dataset.goReading || '');
-          button.classList.toggle('current', questionId === String(currentReadingId || ''));
-          button.classList.toggle('answered', answeredSet.has(questionId));
-        });
-
-        readingScreens.forEach((screen) => {
-          const questionId = String(screen.dataset.readingScreen || '');
-          const prevButton = screen.querySelector('[data-reading-direction="-1"]');
-          const nextButton = screen.querySelector('[data-reading-direction="1"]');
-          const index = readingIds.indexOf(questionId);
-
-          if (prevButton) prevButton.disabled = index <= 0;
-          if (nextButton) nextButton.disabled = index === -1 || index >= readingIds.length - 1;
-        });
+      const getReadingNeighborId = (questionId, direction) => {
+        const currentIndex = readingIds.indexOf(String(questionId));
+        if (currentIndex === -1) return null;
+        return readingIds[currentIndex + direction] || null;
       };
 
-      const hideAllScreens = () => {
-        listeningScreens.forEach((screen) => screen.classList.remove('active'));
-        readingScreens.forEach((screen) => screen.classList.remove('active'));
-        if (readingBridge) {
-          readingBridge.classList.remove('is-visible');
-        }
+      const closeSubmitConfirm = () => {
+        if (submitConfirm) submitConfirm.hidden = true;
       };
 
-      const syncPhaseUi = () => {
-        const listeningTotal = listeningScreens.length;
-        const readingUnlocked = phase === 'reading';
-
-        if (phaseBadge && phaseTitle && phaseDescription) {
-          if (phase === 'reading') {
-            phaseBadge.textContent = 'Reading 101-200';
-            phaseTitle.textContent = 'Phần Reading đã được mở để tiếp tục bài thi';
-            phaseDescription.textContent = 'Bạn có thể di chuyển tự do trong câu 101-200 và nộp bài khi đã kiểm tra xong.';
-          } else if (phase === 'listening_complete') {
-            phaseBadge.textContent = 'Listening hoàn tất';
-            phaseTitle.textContent = 'Đã xong câu 1-100, sẵn sàng chuyển sang Reading';
-            phaseDescription.textContent = 'Phần nghe đã khóa xong theo audio gốc. Nhấn nút bên dưới để mở phần Reading.';
-          } else if (phase === 'empty') {
-            phaseBadge.textContent = 'Không có dữ liệu';
-            phaseTitle.textContent = 'Đề thi thử hiện chưa có nội dung hiển thị';
-            phaseDescription.textContent = 'Kiểm tra lại cấu hình đề hoặc dữ liệu được truyền vào view này.';
-          } else {
-            phaseBadge.textContent = 'Listening 1-100';
-            phaseTitle.textContent = 'Phần nghe đang khóa theo audio gốc';
-            phaseDescription.textContent = 'Không hiện thanh phát lại, không tua lại và không thể quay về câu đã qua.';
-          }
-        }
-
-        if (listeningProgressLabel) {
-          if (!listeningTotal) {
-            listeningProgressLabel.textContent = '0/0';
-          } else if (phase === 'listening') {
-            listeningProgressLabel.textContent = `${Math.min(currentListeningIndex + 1, listeningTotal)}/${listeningTotal}`;
-          } else {
-            listeningProgressLabel.textContent = `${listeningTotal}/${listeningTotal}`;
-          }
-        }
-
-        if (readingNavPanel) {
-          readingNavPanel.classList.toggle('is-visible', readingUnlocked);
-        }
-
-        if (toReadingButton) {
-          toReadingButton.hidden = phase !== 'listening_complete';
-        }
-
-        if (submitExamButton) {
-          submitExamButton.disabled = phase !== 'reading';
-        }
-
-        updateAnsweredCounters();
-        updateReadingNav();
-        writeState();
+      const openSubmitConfirm = () => {
+        if (submitConfirm) submitConfirm.hidden = false;
       };
 
-      const setHeadlineFromScreen = (screen, fallbackSubline = '') => {
-        if (currentHeadline) {
-          currentHeadline.textContent = screen?.dataset.headline || 'Thi thử Full Test';
-        }
-        if (currentSubline) {
-          currentSubline.textContent = screen?.dataset.subline || fallbackSubline;
-        }
-      };
-
-      const showListeningScreen = (index) => {
-        const screen = listeningScreens[index];
-        if (!screen) {
-          showReadingBridge();
+      function forceSubmitExam() {
+        isSubmitConfirmed = true;
+        closeSubmitConfirm();
+        stopListeningAudio();
+        clearSavedState();
+        if (typeof form.requestSubmit === "function") {
+          form.requestSubmit();
           return;
         }
+        form.submit();
+      }
 
-        phase = 'listening';
-        currentListeningIndex = index;
-        hideAllScreens();
-        screen.classList.add('active');
-        setHeadlineFromScreen(screen, 'Listening đang chạy tự động theo file gốc.');
-        setFurthestQuestion(screen.dataset.lastNumber || screen.dataset.firstNumber);
-        const stage = screen.querySelector('.mt-stage');
-        if (stage) stage.scrollTop = 0;
-        syncPhaseUi();
-      };
+      const updateAudioStatus = () => {
+        const currentGroup = getCurrentListeningGroup();
+        const currentGroupId = currentGroup ? currentGroup.id : "";
 
-      const showReadingBridge = () => {
-        stopListeningAudio();
-        phase = 'listening_complete';
-        hideAllScreens();
-        if (readingBridge) {
-          readingBridge.classList.add('is-visible');
-        }
-        if (currentHeadline) {
-          currentHeadline.textContent = 'Hoàn tất Listening 1-100';
-        }
-        if (currentSubline) {
-          currentSubline.textContent = 'Nhấn chuyển sang phần Reading để tiếp tục làm câu 101-200.';
-        }
-        setFurthestQuestion(100);
-        hideLaunchOverlay();
-        syncPhaseUi();
-      };
+        audioStatusEls.forEach((element) => {
+          const questionId = String(element.dataset.audioStatusFor || "");
+          const meta = getMeta(questionId);
+          if (!meta || !meta.listeningGroupId) return;
 
-      const showReadingScreen = (questionId) => {
-        const targetId = readingIds.includes(String(questionId)) ? String(questionId) : (readingIds[0] || null);
-        if (!targetId) return;
-
-        const screen = readingScreens.find((item) => String(item.dataset.readingScreen) === targetId);
-        if (!screen) return;
-
-        phase = 'reading';
-        currentReadingId = targetId;
-        if (audioPlayer) {
-          audioPlayer.pause();
-        }
-        clearListeningAdvance();
-        hideAllScreens();
-        screen.classList.add('active');
-        setHeadlineFromScreen(screen, 'Reading đã được mở để tiếp tục phần câu 101-200.');
-        setFurthestQuestion(targetId);
-        const stage = screen.querySelector('.mt-stage');
-        if (stage) stage.scrollTop = 0;
-        hideLaunchOverlay();
-        syncPhaseUi();
-      };
-
-      const scheduleListeningAdvance = (message) => {
-        clearListeningAdvance();
-        if (currentSubline && message) {
-          currentSubline.textContent = message;
-        }
-
-        listeningAdvanceTimerId = window.setTimeout(() => {
-          const nextIndex = currentListeningIndex + 1;
-          if (nextIndex < listeningScreens.length) {
-            pendingAudioResumeAt = 0;
-            showListeningScreen(nextIndex);
-            startListeningPlayback(0);
+          if (phase === "reading") {
+            element.textContent = "Listening da hoan tat";
             return;
           }
 
-          showReadingBridge();
-        }, 4000);
+          if (meta.listeningGroupId !== currentGroupId) {
+            element.textContent = `Cho den cum cau ${meta.groupFirstNumber}-${meta.groupLastNumber}`;
+            return;
+          }
 
+          if (listeningStage === "audio") {
+            element.textContent = `Audio dang phat ngam cho cum ${meta.groupFirstNumber}-${meta.groupLastNumber}`;
+            return;
+          }
+
+          element.textContent = meta.id === String(currentQuestionId)
+            ? "Khoang 4 giay de chon dap an truoc khi tu chuyen cau"
+            : "Sap tu chuyen den cau nay";
+        });
+      };
+
+      const updateFooterControls = () => {
+        screens.forEach((screen) => {
+          const questionId = String(screen.dataset.questionId);
+          const mode = screen.dataset.questionMode;
+          const prevButton = screen.querySelector("[data-direction='-1']");
+          const nextButton = screen.querySelector("[data-direction='1']");
+          if (!prevButton || !nextButton) return;
+
+          if (mode !== "reading" || phase !== "reading") {
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+            return;
+          }
+
+          prevButton.disabled = !getReadingNeighborId(questionId, -1);
+          nextButton.disabled = !getReadingNeighborId(questionId, 1);
+        });
+      };
+
+      const updateShortcutButtons = (answeredSet) => {
+        const hasPendingReading = readingIds.some((questionId) => !answeredSet.has(questionId));
+        const hasFlaggedReading = readingIds.some((questionId) => flaggedQuestionIds.has(questionId));
+        const enabled = phase === "reading";
+
+        jumpPendingButtons.forEach((button) => {
+          button.disabled = !enabled || !hasPendingReading;
+        });
+
+        jumpFlaggedButtons.forEach((button) => {
+          button.disabled = !enabled || !hasFlaggedReading;
+        });
+      };
+
+      const syncUi = () => {
+        const answeredSet = getAnsweredSet();
+        const flaggedSet = getFlaggedSet();
+        const currentScreen = currentQuestionId ? getScreen(currentQuestionId) : null;
+
+        screens.forEach((screen) => {
+          screen.classList.toggle("active", phase !== "listening_complete" && currentScreen === screen);
+        });
+
+        if (bridgeScreen) {
+          bridgeScreen.classList.toggle("active", phase === "listening_complete");
+        }
+
+        navButtons.forEach((button) => {
+          const questionId = String(button.dataset.goQuestion || "");
+          const isListeningButton = button.dataset.questionMode === "listening";
+          const canUseReadingNav = phase === "reading" && !isListeningButton;
+          button.classList.toggle("current", questionId === String(currentQuestionId || ""));
+          button.classList.toggle("answered", answeredSet.has(questionId));
+          button.classList.toggle("flagged", flaggedSet.has(questionId));
+          button.classList.toggle("locked", !canUseReadingNav);
+          button.disabled = !canUseReadingNav;
+        });
+
+        flagButtons.forEach((button) => {
+          const questionId = String(button.dataset.flagQuestion || "");
+          const isFlagged = flaggedSet.has(questionId);
+          const label = button.querySelector("[data-flag-label]");
+          const status = getScreen(questionId)?.querySelector("[data-flag-status]");
+          button.classList.toggle("active", isFlagged);
+          button.setAttribute("aria-pressed", isFlagged ? "true" : "false");
+          button.setAttribute("aria-label", `${isFlagged ? "Bo gan co" : "Gan co"} cau ${questionId}`);
+          if (label) {
+            label.textContent = isFlagged ? "Bo co" : "Gan co";
+          }
+          if (!status) return;
+          if (phase === "reading" && isFlagged) {
+            status.textContent = "Da gan co, ban co the quay lai cau nay trong phan Reading.";
+          } else if (phase === "listening" && isFlagged) {
+            status.textContent = "Da gan co de ghi nho, nhung phan nghe khong cho quay lai cau cu.";
+          } else {
+            status.textContent = "";
+          }
+        });
+
+        if (answeredEl) answeredEl.textContent = String(answeredSet.size);
+        if (flaggedEl) flaggedEl.textContent = String(flaggedSet.size);
+        if (submitButton) submitButton.disabled = phase !== "reading";
+
+        if (currentScreen) {
+          const meta = getMeta(currentQuestionId);
+          const answeredLabel = answeredSet.has(String(currentQuestionId)) ? "Da chon dap an" : "Chua tra loi";
+          const flaggedLabel = flaggedSet.has(String(currentQuestionId)) ? "Da gan co" : "Khong gan co";
+          if (headlineEl) headlineEl.textContent = currentScreen.dataset.headline || `Cau ${currentQuestionId}`;
+          if (sublineEl) {
+            if (phase === "reading") {
+              sublineEl.textContent = `${currentScreen.dataset.partTitle || ""} | ${answeredLabel} | ${flaggedLabel}`;
+            } else {
+              const listeningMessage = listeningStage === "audio"
+                ? `Listening dang phat ngam theo cum ${meta?.groupFirstNumber || currentQuestionId}-${meta?.groupLastNumber || currentQuestionId}`
+                : "Con khoang 4 giay de chon dap an truoc khi tu chuyen cau tiep theo";
+              sublineEl.textContent = `${currentScreen.dataset.partTitle || ""} | ${answeredLabel} | ${listeningMessage}`;
+            }
+          }
+          setFurthestQuestion(currentQuestionId);
+          const currentButton = navButtons.find((button) => String(button.dataset.goQuestion || "") === String(currentQuestionId));
+          if (currentButton) currentButton.scrollIntoView({ block: "nearest", inline: "nearest" });
+        } else if (phase === "listening_complete") {
+          if (headlineEl) headlineEl.textContent = "Hoan tat Listening | Chuyen sang Reading";
+          if (sublineEl) sublineEl.textContent = "Phan nghe da ket thuc. Bam nut chuyen sang Reading de mo cac cau 101-200.";
+        }
+
+        updateFooterControls();
+        updateShortcutButtons(answeredSet);
+        updateAudioStatus();
         writeState();
       };
 
-      const startListeningPlayback = (resumeAt = 0) => {
-        const screen = listeningScreens[currentListeningIndex];
-        const audioUrl = screen?.dataset.audioUrl || '';
+      const showQuestion = (questionId) => {
+        const normalizedId = String(questionId || "");
+        if (!questionIds.includes(normalizedId)) return;
+        currentQuestionId = normalizedId;
+        if (readingIds.includes(normalizedId)) {
+          currentReadingId = normalizedId;
+        }
+        syncUi();
+      };
 
-        hideLaunchOverlay();
+      const showReadingQuestion = (questionId) => {
+        const normalizedId = readingIds.includes(String(questionId)) ? String(questionId) : (readingIds[0] || null);
+        if (!normalizedId) return;
+        phase = "reading";
+        stopListeningAudio();
         clearListeningAdvance();
+        currentReadingId = normalizedId;
+        currentQuestionId = normalizedId;
+        hideLaunchOverlay();
+        syncUi();
+      };
 
-        if (!screen) {
+      const showReadingBridge = () => {
+        phase = "listening_complete";
+        stopListeningAudio();
+        hideLaunchOverlay();
+        setFurthestQuestion(100);
+        syncUi();
+      };
+
+      const scheduleListeningAdvance = () => {
+        clearListeningAdvance();
+        listeningAdvanceTimerId = window.setTimeout(() => {
+          const group = getCurrentListeningGroup();
+          if (!group) {
+            showReadingBridge();
+            return;
+          }
+
+          if (currentGroupQuestionCursor < group.questionIds.length - 1) {
+            currentGroupQuestionCursor += 1;
+            currentQuestionId = group.questionIds[currentGroupQuestionCursor];
+            listeningStage = "post_audio";
+            syncUi();
+            scheduleListeningAdvance();
+            return;
+          }
+
+          const nextGroupIndex = currentListeningGroupIndex + 1;
+          if (nextGroupIndex >= listeningGroups.length) {
+            showReadingBridge();
+            return;
+          }
+
+          currentListeningGroupIndex = nextGroupIndex;
+          currentGroupQuestionCursor = 0;
+          currentQuestionId = listeningGroups[nextGroupIndex].questionIds[0];
+          listeningStage = "audio";
+          syncUi();
+          startCurrentListeningAudio(0);
+        }, 4000);
+      };
+
+      const startCurrentListeningAudio = (resumeAt = 0) => {
+        const group = getCurrentListeningGroup();
+        if (!group) {
           showReadingBridge();
           return;
         }
 
-        if (!audioPlayer || !audioUrl) {
-          scheduleListeningAdvance('Cụm hiện tại không có file nghe. Hệ thống sẽ tự chuyển tiếp sau 4 giây.');
+        listeningStage = "audio";
+        currentGroupQuestionCursor = 0;
+        currentQuestionId = group.questionIds[0];
+        syncUi();
+        hideLaunchOverlay();
+
+        if (!audioPlayer || !group.audioUrl) {
+          listeningStage = "post_audio";
+          syncUi();
+          scheduleListeningAdvance();
           return;
         }
 
@@ -611,248 +602,256 @@
           attempted = true;
 
           if (resumeAt > 0) {
-            const maxSeek = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0
-              ? Math.max(audioPlayer.duration - 0.25, 0)
-              : resumeAt;
+            const maxSeek = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0 ? Math.max(audioPlayer.duration - 0.25, 0) : resumeAt;
             try {
               audioPlayer.currentTime = Math.min(resumeAt, maxSeek);
             } catch (error) {
-              console.warn('Cannot seek mock listening audio:', error);
+              console.warn("Cannot resume mock listening audio:", error);
             }
           }
 
           const playPromise = audioPlayer.play();
-          if (playPromise && typeof playPromise.catch === 'function') {
+          if (playPromise && typeof playPromise.catch === "function") {
             playPromise.catch(() => {
               showLaunchOverlay({
-                title: 'Tiếp tục phần Listening',
-                copy: 'Timer vẫn đang chạy. Nhấn để tiếp tục phát audio của cụm hiện tại.',
-                buttonLabel: 'Tiếp tục phần Listening'
+                title: "Tiep tuc phan Listening",
+                copy: "Timer van dang chay. Nhan de tiep tuc audio cua cum hien tai.",
+                buttonLabel: "Tiep tuc phan Listening"
               });
             });
           }
         };
 
         audioPlayer.pause();
-        audioPlayer.src = audioUrl;
+        audioPlayer.src = group.audioUrl;
         audioPlayer.load();
-
         if (audioPlayer.readyState >= 1) {
           tryPlay();
           return;
         }
-
-        audioPlayer.addEventListener('loadedmetadata', tryPlay, { once: true });
-        audioPlayer.addEventListener('canplay', tryPlay, { once: true });
+        audioPlayer.addEventListener("loadedmetadata", tryPlay, { once: true });
+        audioPlayer.addEventListener("canplay", tryPlay, { once: true });
       };
 
-      const openSubmitConfirm = () => {
-        if (submitConfirm) {
-          submitConfirm.hidden = false;
-        }
-      };
-
-      const closeSubmitConfirm = () => {
-        if (submitConfirm) {
-          submitConfirm.hidden = true;
-        }
-      };
-
-      function forceSubmitExam() {
-        isSubmitConfirmed = true;
-        closeSubmitConfirm();
-        stopListeningAudio();
-        clearSavedState();
-
-        if (typeof form.requestSubmit === 'function') {
-          form.requestSubmit();
+      const resumeListeningFlow = () => {
+        const group = getCurrentListeningGroup();
+        if (!group) {
+          showReadingBridge();
           return;
         }
 
-        form.submit();
-      }
+        phase = "listening";
+        hideLaunchOverlay();
+        if (listeningStage === "post_audio") {
+          const questionId = group.questionIds[Math.max(0, Math.min(currentGroupQuestionCursor, group.questionIds.length - 1))] || group.questionIds[0];
+          currentQuestionId = questionId;
+          syncUi();
+          scheduleListeningAdvance();
+          return;
+        }
+
+        startCurrentListeningAudio(pendingAudioResumeAt);
+        pendingAudioResumeAt = 0;
+      };
+
+      const jumpToNextPending = () => {
+        if (phase !== "reading") return;
+        const answeredSet = getAnsweredSet();
+        const pendingIds = readingIds.filter((questionId) => !answeredSet.has(questionId));
+        if (!pendingIds.length) return;
+        const nextPending = lastPendingJumpId
+          ? (pendingIds.find((questionId) => Number(questionId) > Number(lastPendingJumpId)) || pendingIds[0])
+          : (pendingIds.find((questionId) => Number(questionId) >= Number(currentReadingId || 0)) || pendingIds[0]);
+        lastPendingJumpId = nextPending;
+        showReadingQuestion(nextPending);
+      };
+
+      const jumpToNextFlagged = () => {
+        if (phase !== "reading") return;
+        const flaggedReadingIds = readingIds.filter((questionId) => flaggedQuestionIds.has(questionId));
+        if (!flaggedReadingIds.length) return;
+        const nextFlagged = lastFlaggedJumpId
+          ? (flaggedReadingIds.find((questionId) => Number(questionId) > Number(lastFlaggedJumpId)) || flaggedReadingIds[0])
+          : (flaggedReadingIds.find((questionId) => Number(questionId) >= Number(currentReadingId || 0)) || flaggedReadingIds[0]);
+        lastFlaggedJumpId = nextFlagged;
+        showReadingQuestion(nextFlagged);
+      };
+
+      const toggleFlag = (questionId) => {
+        const normalizedId = String(questionId);
+        if (!questionIds.includes(normalizedId)) return;
+        if (flaggedQuestionIds.has(normalizedId)) {
+          flaggedQuestionIds.delete(normalizedId);
+          if (lastFlaggedJumpId === normalizedId) lastFlaggedJumpId = null;
+        } else {
+          flaggedQuestionIds.add(normalizedId);
+        }
+        syncUi();
+      };
 
       restoreState();
       renderTimer();
 
-      if (!hasContent) {
-        phase = 'empty';
-        hideLaunchOverlay();
-        hideAllScreens();
-        syncPhaseUi();
-      } else if (phase === 'reading' && readingIds.length) {
-        if (examEndAt) {
-          startTimer();
-        }
-        showReadingScreen(currentReadingId || readingIds[0]);
-      } else if (phase === 'listening_complete') {
-        if (examEndAt) {
-          startTimer();
-        }
+      if (!questionIds.length) {
+        phase = "empty";
+        if (launchOverlay) launchOverlay.hidden = true;
+        syncUi();
+      } else if (phase === "reading" && readingIds.length) {
+        if (examEndAt) startTimer();
+        showReadingQuestion(currentReadingId || readingIds[0]);
+      } else if (phase === "listening_complete") {
+        if (examEndAt) startTimer();
         showReadingBridge();
-      } else if (phase === 'listening' && listeningScreens.length) {
-        if (examEndAt) {
-          startTimer();
-        }
-        showListeningScreen(currentListeningIndex);
+      } else if (phase === "listening") {
+        if (examEndAt) startTimer();
+        syncUi();
         showLaunchOverlay({
-          title: 'Tiếp tục phần Listening',
-          copy: 'Timer vẫn đang chạy. Nhấn để tiếp tục audio của cụm bạn đang làm.',
-          buttonLabel: 'Tiếp tục phần Listening'
+          title: "Tiep tuc phan Listening",
+          copy: listeningStage === "post_audio" ? "Timer van dang chay. Nhan de tiep tuc chuoi auto chuyen cau cua cum hien tai." : "Timer van dang chay. Nhan de tiep tuc audio cua cum hien tai.",
+          buttonLabel: "Tiep tuc phan Listening"
         });
-      } else if (listeningScreens.length) {
-        showListeningScreen(0);
-        phase = 'launch';
-        syncPhaseUi();
+      } else {
+        phase = "launch";
+        currentQuestionId = listeningIds[0] || readingIds[0] || null;
+        syncUi();
         showLaunchOverlay({
-          title: 'Sẵn sàng bắt đầu phần Listening?',
-          copy: 'Ngay khi bạn tiếp tục, timer sẽ chạy và audio phần nghe sẽ bắt đầu phát ngầm theo file gốc.',
-          buttonLabel: 'Bắt đầu phần Listening'
-        });
-      } else if (readingIds.length) {
-        showReadingScreen(currentReadingId || readingIds[0]);
-        showLaunchOverlay({
-          title: 'Sẵn sàng bắt đầu phần Reading?',
-          copy: 'Ngay khi bạn tiếp tục, timer sẽ chạy và bạn sẽ bắt đầu phần Reading.',
-          buttonLabel: 'Bắt đầu phần Reading'
+          title: listeningIds.length ? "San sang bat dau phan Listening?" : "San sang bat dau phan Reading?",
+          copy: listeningIds.length ? "Ngay khi ban tiep tuc, timer se chay va audio phan nghe se phat ngam theo file goc. Cac o so cau 1-100 se khong the bam." : "Ngay khi ban tiep tuc, timer se chay va ban co the lam phan Reading 101-200.",
+          buttonLabel: listeningIds.length ? "Bat dau phan Listening" : "Bat dau phan Reading"
         });
       }
 
       if (!isSubmitConfirmed && examEndAt && examEndAt <= Date.now()) {
-        alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài thi thử.');
+        alert("Het thoi gian lam bai. He thong se tu dong nop bai thi thu.");
         forceSubmitExam();
         return;
       }
 
-      questionInputs.forEach((input) => {
-        input.addEventListener('change', () => {
-          const questionNumber = getQuestionNumber(input.dataset.questionInput);
-          if (questionNumber >= 101) {
-            currentReadingId = String(questionNumber);
-          }
-          setFurthestQuestion(questionNumber);
-          syncPhaseUi();
+      navButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const questionId = String(button.dataset.goQuestion || "");
+          const mode = button.dataset.questionMode || "";
+          if (mode !== "reading" || phase !== "reading") return;
+          showReadingQuestion(questionId);
         });
       });
 
-      readingNavButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          if (phase !== 'reading') return;
-          showReadingScreen(button.dataset.goReading);
+      radioInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          const questionId = String(input.dataset.questionInput || "");
+          if (readingIds.includes(questionId)) currentReadingId = questionId;
+          currentQuestionId = questionId;
+          setFurthestQuestion(questionId);
+          syncUi();
         });
       });
 
-      readingScreens.forEach((screen) => {
-        const questionId = String(screen.dataset.readingScreen || '');
-        const prevButton = screen.querySelector('[data-reading-direction="-1"]');
-        const nextButton = screen.querySelector('[data-reading-direction="1"]');
+      flagButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          toggleFlag(button.dataset.flagQuestion);
+        });
+      });
+
+      screens.forEach((screen) => {
+        const questionId = String(screen.dataset.questionId || "");
+        const mode = screen.dataset.questionMode;
+        const prevButton = screen.querySelector("[data-direction='-1']");
+        const nextButton = screen.querySelector("[data-direction='1']");
 
         if (prevButton) {
-          prevButton.addEventListener('click', () => {
-            const currentIndex = readingIds.indexOf(questionId);
-            const prevId = currentIndex > 0 ? readingIds[currentIndex - 1] : null;
-            if (prevId) {
-              showReadingScreen(prevId);
-            }
+          prevButton.addEventListener("click", () => {
+            if (mode !== "reading" || phase !== "reading") return;
+            const prevId = getReadingNeighborId(questionId, -1);
+            if (prevId) showReadingQuestion(prevId);
           });
         }
 
         if (nextButton) {
-          nextButton.addEventListener('click', () => {
-            const currentIndex = readingIds.indexOf(questionId);
-            const nextId = currentIndex >= 0 && currentIndex < readingIds.length - 1 ? readingIds[currentIndex + 1] : null;
-            if (nextId) {
-              showReadingScreen(nextId);
-            }
+          nextButton.addEventListener("click", () => {
+            if (mode !== "reading" || phase !== "reading") return;
+            const nextId = getReadingNeighborId(questionId, 1);
+            if (nextId) showReadingQuestion(nextId);
           });
         }
       });
 
+      jumpPendingButtons.forEach((button) => {
+        button.addEventListener("click", jumpToNextPending);
+      });
+
+      jumpFlaggedButtons.forEach((button) => {
+        button.addEventListener("click", jumpToNextFlagged);
+      });
+
       if (launchButton) {
-        launchButton.addEventListener('click', () => {
+        launchButton.addEventListener("click", () => {
           ensureTimerStarted();
-
-          if (phase === 'reading') {
-            showReadingScreen(currentReadingId || readingIds[0]);
+          if (phase === "reading") {
+            showReadingQuestion(currentReadingId || readingIds[0]);
             return;
           }
-
-          if (phase === 'listening_complete') {
-            showReadingBridge();
+          if (!listeningGroups.length) {
+            showReadingQuestion(currentReadingId || readingIds[0]);
             return;
           }
-
-          if (listeningScreens.length) {
-            showListeningScreen(currentListeningIndex >= 0 ? currentListeningIndex : 0);
-            startListeningPlayback(pendingAudioResumeAt);
-            pendingAudioResumeAt = 0;
-            return;
-          }
-
-          showReadingScreen(currentReadingId || readingIds[0]);
-        });
-      }
-
-      if (readingBridgeButton) {
-        readingBridgeButton.addEventListener('click', () => {
-          if (!readingIds.length) return;
-          showReadingScreen(currentReadingId || readingIds[0]);
+          resumeListeningFlow();
         });
       }
 
       if (toReadingButton) {
-        toReadingButton.addEventListener('click', () => {
+        toReadingButton.addEventListener("click", () => {
           if (!readingIds.length) return;
-          showReadingScreen(currentReadingId || readingIds[0]);
+          showReadingQuestion(currentReadingId || readingIds[0]);
         });
       }
 
       if (audioPlayer) {
-        audioPlayer.addEventListener('ended', () => {
-          if (phase !== 'listening') return;
-          scheduleListeningAdvance('Audio của cụm hiện tại đã kết thúc. Hệ thống sẽ tự chuyển tiếp sau 4 giây.');
+        audioPlayer.addEventListener("ended", () => {
+          if (phase !== "listening") return;
+          listeningStage = "post_audio";
+          syncUi();
+          scheduleListeningAdvance();
         });
 
-        audioPlayer.addEventListener('error', () => {
-          if (phase !== 'listening') return;
-          scheduleListeningAdvance('Không thể phát audio của cụm hiện tại. Hệ thống sẽ tự chuyển tiếp sau 4 giây.');
+        audioPlayer.addEventListener("error", () => {
+          if (phase !== "listening") return;
+          listeningStage = "post_audio";
+          syncUi();
+          scheduleListeningAdvance();
         });
       }
 
       submitCancelButtons.forEach((button) => {
-        button.addEventListener('click', closeSubmitConfirm);
+        button.addEventListener("click", closeSubmitConfirm);
       });
 
       if (submitConfirm) {
-        submitConfirm.addEventListener('click', (event) => {
-          if (event.target === submitConfirm) {
-            closeSubmitConfirm();
-          }
+        submitConfirm.addEventListener("click", (event) => {
+          if (event.target === submitConfirm) closeSubmitConfirm();
         });
       }
 
       if (submitAcceptButton) {
-        submitAcceptButton.addEventListener('click', forceSubmitExam);
+        submitAcceptButton.addEventListener("click", forceSubmitExam);
       }
 
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && submitConfirm && !submitConfirm.hidden) {
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && submitConfirm && !submitConfirm.hidden) {
           closeSubmitConfirm();
         }
       });
 
-      form.addEventListener('submit', (event) => {
+      form.addEventListener("submit", (event) => {
         if (!isSubmitConfirmed) {
           event.preventDefault();
-          if (phase !== 'reading') return;
+          if (phase !== "reading") return;
           openSubmitConfirm();
           return;
         }
-
         clearSavedState();
       });
 
-      window.addEventListener('beforeunload', () => {
+      window.addEventListener("beforeunload", () => {
         if (isSubmitConfirmed) {
           clearSavedState();
           return;
