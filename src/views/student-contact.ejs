@@ -9,6 +9,48 @@ const channels = [
   { label: "Email", value: "realtoeiccentral@gmail.com", note: "Phù hợp khi cần gửi thông tin chi tiết" },
   { label: "Cơ sở hỗ trợ", value: "Hồ Tùng Mậu • Lê Đức Thọ", note: "Có thể hẹn tư vấn trực tiếp theo lịch" },
 ];
+const preferredContactConfigs = {
+  "Nhắn trong hệ thống": {
+    label: "Nội dung bạn muốn được phản hồi trong hệ thống",
+    placeholder: "Ví dụ: Em muốn nhận phản hồi trực tiếp trong hộp thư học viên.",
+    note: "Trung tâm sẽ ưu tiên trả lời trong tài khoản học viên của bạn.",
+    inputType: "text",
+    inputMode: "text",
+    targetField: "",
+  },
+  "Gọi điện": {
+    label: "Số điện thoại để trung tâm gọi lại",
+    placeholder: "Nhập số điện thoại bạn muốn nhận cuộc gọi",
+    note: "Nội dung này sẽ tự điền vào mục số điện thoại/Zalo bên trên.",
+    inputType: "tel",
+    inputMode: "tel",
+    targetField: "phone",
+  },
+  Zalo: {
+    label: "Số điện thoại/Zalo để trung tâm nhắn bạn",
+    placeholder: "Nhập số điện thoại dùng cho Zalo",
+    note: "Nội dung này sẽ tự điền vào mục số điện thoại/Zalo bên trên.",
+    inputType: "text",
+    inputMode: "tel",
+    targetField: "phone",
+  },
+  Email: {
+    label: "Email bạn muốn nhận phản hồi",
+    placeholder: "Nhập email để trung tâm phản hồi",
+    note: "Nội dung này sẽ tự điền vào mục email bên trên.",
+    inputType: "email",
+    inputMode: "email",
+    targetField: "email",
+  },
+  "Tư vấn trực tiếp": {
+    label: "Cơ sở hoặc hình thức bạn muốn hẹn",
+    placeholder: "Ví dụ: Cơ sở Hồ Tùng Mậu hoặc gặp trực tiếp cuối tuần",
+    note: "Thông tin này giúp trung tâm hẹn đúng địa điểm hoặc hình thức tư vấn.",
+    inputType: "text",
+    inputMode: "text",
+    targetField: "",
+  },
+};
 %>
 
 <style>
@@ -35,6 +77,9 @@ const channels = [
   .sc-field input,.sc-field select,.sc-field textarea{width:100%;min-height:54px;padding:0 16px;border-radius:18px;border:1px solid rgba(15,23,42,.10);background:#fff;color:#0f172a;font:inherit}
   .sc-field textarea{min-height:150px;padding:14px 16px;resize:vertical}
   .sc-field input:focus,.sc-field select:focus,.sc-field textarea:focus{outline:none;border-color:rgba(37,99,235,.34);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+  .sc-field-note{color:#64748b;font-size:.92rem;line-height:1.7}
+  .sc-contact-detail{padding:18px;border-radius:24px;border:1px solid rgba(59,130,246,.12);background:linear-gradient(180deg,#f8fbff 0%,#fff 100%)}
+  .sc-contact-detail[hidden]{display:none}
   .sc-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
   .sc-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:999px;border:0;background:#111827;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}
   .sc-btn.secondary{background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12)}
@@ -83,11 +128,11 @@ const channels = [
         <h2>Tạo yêu cầu tư vấn mới</h2>
         <p>Điền thông tin càng rõ, trung tâm càng dễ hẹn đúng khung giờ, đúng cơ sở và đúng người hỗ trợ cho bạn.</p>
       </div>
-      <span class="sc-panel-kicker">Biểu mẫu an toàn</span>
     </div>
 
-    <form action="<%= safeBaseUrl %>/contact" method="POST">
+    <form action="<%= safeBaseUrl %>/contact" method="POST" data-contact-form>
       <input type="hidden" name="return_to" value="/student/contact">
+      <input type="hidden" name="preferred_contact_detail" value="" data-preferred-contact-detail>
 
       <div class="sc-form-grid">
         <div class="sc-field">
@@ -96,21 +141,26 @@ const channels = [
         </div>
         <div class="sc-field">
           <label>Email</label>
-          <input type="email" name="email" value="<%= studentEmail %>" required>
+          <input type="email" name="email" value="<%= studentEmail %>" data-contact-email>
         </div>
         <div class="sc-field">
           <label>Số điện thoại hoặc Zalo</label>
-          <input type="text" name="phone" placeholder="Ví dụ: 0344xxxxxx">
+          <input type="text" name="phone" placeholder="Ví dụ: 0344xxxxxx" data-contact-phone>
         </div>
         <div class="sc-field">
           <label>Kênh phản hồi mong muốn</label>
-          <select name="preferred_contact_method">
+          <select name="preferred_contact_method" data-contact-method-select>
             <option value="Nhắn trong hệ thống">Nhắn trong hệ thống</option>
             <option value="Gọi điện">Gọi điện</option>
             <option value="Zalo">Zalo</option>
             <option value="Email">Email</option>
             <option value="Tư vấn trực tiếp">Tư vấn trực tiếp</option>
           </select>
+        </div>
+        <div class="sc-field full sc-contact-detail" data-contact-detail-block>
+          <label data-contact-detail-label>Nội dung bạn muốn được phản hồi trong hệ thống</label>
+          <input type="text" data-contact-detail-input placeholder="Ví dụ: Em muốn nhận phản hồi trực tiếp trong hộp thư học viên.">
+          <span class="sc-field-note" data-contact-detail-note>Trung tâm sẽ ưu tiên trả lời trong tài khoản học viên của bạn.</span>
         </div>
         <div class="sc-field">
           <label>Mục tiêu hỗ trợ</label>
@@ -149,7 +199,6 @@ const channels = [
         <h2>Phản hồi của admin nằm trong Hòm thư</h2>
         <p>Trang Liên hệ chỉ dùng để học viên tạo yêu cầu mới. Khi trung tâm trả lời, toàn bộ lịch hẹn, kênh liên hệ và lời nhắn sẽ được gom vào Hòm thư học viên để bạn xem tập trung hơn.</p>
       </div>
-      <span class="sc-panel-kicker">Hòm thư riêng</span>
     </div>
 
     <div class="sc-mailbox-note">
@@ -161,3 +210,77 @@ const channels = [
     </div>
   </section>
 </div>
+
+<script>
+  (() => {
+    const form = document.querySelector('[data-contact-form]');
+    if (!form) return;
+
+    const configs = <%- JSON.stringify(preferredContactConfigs) %>;
+    const methodSelect = form.querySelector('[data-contact-method-select]');
+    const detailBlock = form.querySelector('[data-contact-detail-block]');
+    const detailLabel = form.querySelector('[data-contact-detail-label]');
+    const detailInput = form.querySelector('[data-contact-detail-input]');
+    const detailNote = form.querySelector('[data-contact-detail-note]');
+    const detailHidden = form.querySelector('[data-preferred-contact-detail]');
+    const emailInput = form.querySelector('[data-contact-email]');
+    const phoneInput = form.querySelector('[data-contact-phone]');
+
+    if (!methodSelect || !detailBlock || !detailLabel || !detailInput || !detailNote || !detailHidden) {
+      return;
+    }
+
+    const syncDetailValue = () => {
+      detailHidden.value = detailInput.value.trim();
+
+      const config = configs[methodSelect.value] || {};
+      if (config.targetField === 'email' && emailInput) {
+        emailInput.value = detailInput.value;
+      }
+      if (config.targetField === 'phone' && phoneInput) {
+        phoneInput.value = detailInput.value;
+      }
+    };
+
+    const renderPreferredContact = () => {
+      const config = configs[methodSelect.value] || configs['Nhắn trong hệ thống'];
+      const seedValue = config.targetField === 'email'
+        ? (emailInput ? emailInput.value.trim() : '')
+        : config.targetField === 'phone'
+          ? (phoneInput ? phoneInput.value.trim() : '')
+          : detailHidden.value.trim();
+
+      detailBlock.hidden = false;
+      detailLabel.textContent = config.label || 'Chi tiết kênh phản hồi';
+      detailInput.type = config.inputType || 'text';
+      detailInput.inputMode = config.inputMode || 'text';
+      detailInput.placeholder = config.placeholder || '';
+      detailInput.value = seedValue;
+      detailNote.textContent = config.note || '';
+      syncDetailValue();
+    };
+
+    methodSelect.addEventListener('change', renderPreferredContact);
+    detailInput.addEventListener('input', syncDetailValue);
+
+    if (emailInput) {
+      emailInput.addEventListener('input', () => {
+        if ((configs[methodSelect.value] || {}).targetField === 'email') {
+          detailInput.value = emailInput.value;
+          syncDetailValue();
+        }
+      });
+    }
+
+    if (phoneInput) {
+      phoneInput.addEventListener('input', () => {
+        if ((configs[methodSelect.value] || {}).targetField === 'phone') {
+          detailInput.value = phoneInput.value;
+          syncDetailValue();
+        }
+      });
+    }
+
+    renderPreferredContact();
+  })();
+</script>

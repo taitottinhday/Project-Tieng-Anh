@@ -210,6 +210,14 @@ function channelMeta(channel) {
                   <strong><%= item.phone || "Chưa cung cấp" %></strong>
                 </div>
                 <div class="am-info">
+                  <label>Kênh phản hồi mong muốn</label>
+                  <strong><%= item.preferred_contact_method || "Chưa chọn" %></strong>
+                </div>
+                <div class="am-info">
+                  <label>Chi tiết kênh phản hồi</label>
+                  <strong><%= item.preferred_contact_detail || "Chưa cung cấp" %></strong>
+                </div>
+                <div class="am-info">
                   <label>Loại góp ý</label>
                   <strong><%= item.goal || "Chưa chọn" %></strong>
                 </div>

@@ -58,15 +58,30 @@ router.post("/contact", async (req, res) => {
     course_interest,
     schedule_preference,
     preferred_contact_method,
+    preferred_contact_detail,
     message,
     return_to,
   } = req.body;
 
   try {
     const trimmedName = String(name || "").trim();
-    const trimmedEmail = String(email || "").trim();
-    const trimmedPhone = String(phone || "").trim();
+    const preferredContactMethodLabel = normalizePreferredContactMethod(preferred_contact_method);
+    const preferredContactDetailValue = String(preferred_contact_detail || "").trim();
+    let trimmedEmail = String(email || "").trim();
+    let trimmedPhone = String(phone || "").trim();
     const messageBody = String(message || "").trim();
+
+    if (!trimmedEmail && preferredContactMethodLabel === "Email" && preferredContactDetailValue) {
+      trimmedEmail = preferredContactDetailValue;
+    }
+
+    if (
+      !trimmedPhone &&
+      ["Gọi điện", "Zalo"].includes(preferredContactMethodLabel) &&
+      preferredContactDetailValue
+    ) {
+      trimmedPhone = preferredContactDetailValue;
+    }
 
     if (!trimmedName || !messageBody) {
       req.flash("error_msg", "Vui lòng điền họ tên và nội dung cần tư vấn.");
@@ -88,7 +103,8 @@ router.post("/contact", async (req, res) => {
       goal,
       course_interest,
       schedule_preference,
-      preferred_contact_method: normalizePreferredContactMethod(preferred_contact_method),
+      preferred_contact_method: preferredContactMethodLabel,
+      preferred_contact_detail: preferredContactDetailValue,
       message_body: messageBody,
     });
 

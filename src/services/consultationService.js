@@ -101,6 +101,7 @@ function composeLegacyMessage(payload = {}) {
     `Khóa học quan tâm: ${trimText(payload.course_interest)}`,
     `Khung giờ mong muốn: ${trimText(payload.schedule_preference)}`,
     `Kênh phản hồi mong muốn: ${trimText(payload.preferred_contact_method)}`,
+    `Chi tiết kênh phản hồi: ${trimText(payload.preferred_contact_detail)}`,
     `Luồng tiếp nhận: ${normalizeMessageChannel(payload.message_channel)}`,
     `Giáo viên được góp ý: ${trimText(payload.target_teacher_name)}`,
     `Lớp liên quan: ${trimText(payload.related_class_code)}`,
@@ -129,6 +130,10 @@ function parseLegacyMessage(message = "") {
     preferred_contact_method: readLegacyFieldFromLabels(source, [
       "Kênh phản hồi mong muốn",
       "KÃªnh pháº£n há»“i mong muá»‘n",
+    ]),
+    preferred_contact_detail: readLegacyFieldFromLabels(source, [
+      "Chi tiết kênh phản hồi",
+      "Chi tiáº¿t kÃªnh pháº£n há»“i",
     ]),
     message_channel: readLegacyFieldFromLabels(source, [
       "Luồng tiếp nhận",
@@ -179,6 +184,8 @@ function hydrateMessage(raw = {}) {
     schedule_preference: trimText(raw.schedule_preference) || parsed.schedule_preference,
     preferred_contact_method:
       trimText(raw.preferred_contact_method) || parsed.preferred_contact_method,
+    preferred_contact_detail:
+      trimText(raw.preferred_contact_detail) || parsed.preferred_contact_detail,
     message_channel: normalizeMessageChannel(raw.message_channel || parsed.message_channel),
     target_teacher_id: normalizeOptionalId(raw.target_teacher_id),
     target_teacher_name: trimText(raw.target_teacher_name) || parsed.target_teacher_name,
@@ -273,6 +280,7 @@ function buildFilePayload(payload = {}) {
     course_interest: trimText(payload.course_interest),
     schedule_preference: trimText(payload.schedule_preference),
     preferred_contact_method: trimText(payload.preferred_contact_method),
+    preferred_contact_detail: trimText(payload.preferred_contact_detail),
     message_channel: normalizedChannel,
     target_teacher_id: normalizeOptionalId(payload.target_teacher_id),
     target_teacher_name: trimText(payload.target_teacher_name),
@@ -309,6 +317,7 @@ async function createConsultationRequest(payload = {}) {
     course_interest: trimText(payload.course_interest),
     schedule_preference: trimText(payload.schedule_preference),
     preferred_contact_method: trimText(payload.preferred_contact_method),
+    preferred_contact_detail: trimText(payload.preferred_contact_detail),
     message_channel: normalizeMessageChannel(payload.message_channel),
     target_teacher_id: normalizeOptionalId(payload.target_teacher_id),
     target_teacher_name: trimText(payload.target_teacher_name),

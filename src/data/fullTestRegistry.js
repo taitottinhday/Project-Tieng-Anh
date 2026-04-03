@@ -21,13 +21,13 @@ const DEFAULT_TEST_META = Object.freeze({
   totalQuestions: 200,
   partsCount: 7,
   maxScore: 990,
-  accessLabel: "Free",
+  accessLabel: "Miễn phí",
 });
 
 const SPECIAL_SLOT_CONFIGS = Object.freeze({
   "2024-1": {
     type: "default",
-    sourceLabel: "bo du lieu mac dinh cua project",
+    sourceLabel: "bộ dữ liệu mặc định của dự án",
   },
   "2024-2": {
     type: "file",
@@ -45,7 +45,7 @@ function extractTestLabel(rawTitle) {
 function buildProviderDisplayTitle(card) {
   const bookLabel = card.bookName || "ETS 2024";
   const testLabel = extractTestLabel(card.title);
-  return testLabel ? `De ${bookLabel} ${testLabel}` : `De ${bookLabel}`;
+  return testLabel ? `Đề ${bookLabel} ${testLabel}` : `Đề ${bookLabel}`;
 }
 
 function buildManagedExamDefinition(config) {
@@ -63,11 +63,11 @@ function buildManagedExamDefinition(config) {
     description: config.description,
     isAvailable: true,
     isDemo: Boolean(exam.isDemo),
-    actionLabel: "Lam bai",
+    actionLabel: "Làm bài",
     statusTone: exam.isDemo ? "demo" : "ready",
     statusText: exam.isDemo
-      ? "De thi da san sang de trai nghiem giao dien va cau truc bai lam."
-      : "De da san sang de lam bai ngay.",
+      ? "Đề thi đã sẵn sàng để trải nghiệm giao diện và cấu trúc bài làm."
+      : "Đề đã sẵn sàng để làm bài ngay.",
     durationMinutes: card.durationMinutes || DEFAULT_TEST_META.durationMinutes,
     totalQuestions: card.expectedTotalQuestions || card.totalQuestions || DEFAULT_TEST_META.totalQuestions,
     maxScore: DEFAULT_TEST_META.maxScore,
@@ -98,7 +98,7 @@ function buildManagedExamOrPlaceholder(config) {
       collectionKey: config.collectionKey,
       collectionLabel: config.collectionLabel,
       badgeLabel: config.badgeLabel,
-      statusText: `File de chua hop le: ${error.message}`,
+      statusText: `File đề chưa hợp lệ: ${error.message}`,
     });
   }
 }
@@ -108,10 +108,10 @@ function createPlaceholderExam(config) {
     ...DEFAULT_TEST_META,
     kind: "placeholder",
     isAvailable: false,
-    actionLabel: "Sap cap nhat",
+    actionLabel: "Sắp cập nhật",
     statusTone: "coming-soon",
-    statusText: "Khung de da san sang, chi can noi them file JS/API 200 cau la dung duoc.",
-    description: "Ban co the gan file de 200 cau vao card nay ma khong can lam lai giao dien.",
+    statusText: "Khung đề đã sẵn sàng, chỉ cần nối thêm file JS/API 200 câu là dùng được.",
+    description: "Bạn có thể gắn file đề 200 câu vào card này mà không cần làm lại giao diện.",
     ...config,
   };
 }
@@ -119,9 +119,9 @@ function createPlaceholderExam(config) {
 function buildYearTestIdentity(year, testNumber) {
   return {
     id: `ets-${year}-test-${testNumber}`,
-    title: `De ETS ${year} Test ${testNumber}`,
+    title: `Đề ETS ${year} Test ${testNumber}`,
     collectionKey: String(year),
-    collectionLabel: `De ${year}`,
+    collectionLabel: `Đề ${year}`,
     badgeLabel: `ETS ${year}`,
   };
 }
@@ -131,8 +131,8 @@ function createYearPlaceholderExam(year, testNumber, override = {}) {
 
   return createPlaceholderExam({
     ...identity,
-    description: `Khung nay da san cho ${identity.badgeLabel} Test ${testNumber}. Khi ban them file de 200 cau va answer key, card se dung lai ngay.`,
-    statusText: `Chua gan du lieu cho ${identity.badgeLabel} Test ${testNumber}. Ban co the them file de sau ma khong can lam lai giao dien.`,
+    description: `Khung này đã sẵn cho ${identity.badgeLabel} Test ${testNumber}. Khi bạn thêm file đề 200 câu và answer key, card sẽ dùng lại ngay.`,
+    statusText: `Chưa gắn dữ liệu cho ${identity.badgeLabel} Test ${testNumber}. Bạn có thể thêm file đề sau mà không cần làm lại giao diện.`,
     ...override,
   });
 }
@@ -181,22 +181,22 @@ function resolveSpecialSlotDefinition(year, testNumber) {
 
   if (!fs.existsSync(dataFilePath)) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `Slot nay dang cho file ${slotConfig.dataFileName} de bat de that.`,
-      statusText: `Chua tim thay file ${slotConfig.dataFileName} cho ${identity.badgeLabel} Test ${testNumber}.`,
+      description: `Slot này đang chờ file ${slotConfig.dataFileName} để bật đề thật.`,
+      statusText: `Chưa tìm thấy file ${slotConfig.dataFileName} cho ${identity.badgeLabel} Test ${testNumber}.`,
     });
   }
 
   if (fs.statSync(dataFilePath).size === 0) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `File ${slotConfig.dataFileName} da duoc tao nhung chua co noi dung JSON 200 cau.`,
-      statusText: `File ${slotConfig.dataFileName} dang trong nen chua the render de nay.`,
+      description: `File ${slotConfig.dataFileName} đã được tạo nhưng chưa có nội dung JSON 200 câu.`,
+      statusText: `File ${slotConfig.dataFileName} đang trống nên chưa thể render đề này.`,
     });
   }
 
   if (!fs.existsSync(answerKeyFilePath)) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `Da co file ${slotConfig.dataFileName}, chi con thieu answer key de bat nut lam bai.`,
-      statusText: `Chua tim thay ${slotConfig.answerKeyFileName} cho ${identity.badgeLabel} Test ${testNumber}.`,
+      description: `Đã có file ${slotConfig.dataFileName}, chỉ còn thiếu answer key để bật nút làm bài.`,
+      statusText: `Chưa tìm thấy ${slotConfig.answerKeyFileName} cho ${identity.badgeLabel} Test ${testNumber}.`,
     });
   }
 
@@ -216,15 +216,15 @@ function resolveStandardSlotDefinition(year, testNumber) {
 
   if (fs.statSync(dataFilePath).size === 0) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `File ${dataFileName} da duoc tao nhung hien van chua co noi dung JSON 200 cau.`,
-      statusText: `File ${dataFileName} dang trong nen he thong giu slot nay o trang thai cho.`,
+      description: `File ${dataFileName} đã được tạo nhưng hiện vẫn chưa có nội dung JSON 200 câu.`,
+      statusText: `File ${dataFileName} đang trống nên hệ thống giữ slot này ở trạng thái chờ.`,
     });
   }
 
   if (!fs.existsSync(answerKeyFilePath)) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `Da co file ${dataFileName}, chi con thieu answer key de bat de that.`,
-      statusText: `Chua co ${answerKeyFileName} nen ${identity.badgeLabel} Test ${testNumber} chua the cham diem.`,
+      description: `Đã có file ${dataFileName}, chỉ còn thiếu answer key để bật đề thật.`,
+      statusText: `Chưa có ${answerKeyFileName} nên ${identity.badgeLabel} Test ${testNumber} chưa thể chấm điểm.`,
     });
   }
 
@@ -240,7 +240,7 @@ function buildUploadedExamDefinition(entry = {}) {
   const year = Number(entry.year || 0);
   const testNumber = Number(entry.testNumber || 0);
   const collectionKey = String(year || "");
-  const collectionLabel = collectionKey ? `De ${collectionKey}` : "De upload";
+  const collectionLabel = collectionKey ? `Đề ${collectionKey}` : "Đề upload";
   const badgeLabel = String(entry.bookName || `ETS ${collectionKey}`).trim() || `ETS ${collectionKey}`;
   const dataFilePath = path.join(process.cwd(), String(entry.dataFilePath || ""));
   const answerKeyFilePath = path.join(process.cwd(), String(entry.answerKeyFilePath || ""));
@@ -252,23 +252,23 @@ function buildUploadedExamDefinition(entry = {}) {
   if (!fs.existsSync(dataFilePath) || !fs.existsSync(answerKeyFilePath)) {
     return createPlaceholderExam({
       id: entry.id,
-      title: entry.title || `De ETS ${year} Test ${testNumber}`,
+      title: entry.title || `Đề ETS ${year} Test ${testNumber}`,
       collectionKey,
       collectionLabel,
       badgeLabel,
-      statusText: "Bo file upload cua de thi nay dang thieu hoac da bi di chuyen.",
-      description: "Admin can tai lai file de va answer key de kich hoat de thi nay.",
+      statusText: "Bộ file upload của đề thi này đang thiếu hoặc đã bị di chuyển.",
+      description: "Admin cần tải lại file đề và answer key để kích hoạt đề thi này.",
     });
   }
 
   return buildManagedExamOrPlaceholder({
     id: entry.id,
-    fallbackTitle: entry.title || `De ETS ${year} Test ${testNumber}`,
-    title: entry.title || `De ETS ${year} Test ${testNumber}`,
+    fallbackTitle: entry.title || `Đề ETS ${year} Test ${testNumber}`,
+    title: entry.title || `Đề ETS ${year} Test ${testNumber}`,
     collectionKey,
     collectionLabel,
     badgeLabel,
-    description: "De thi duoc quan tri vien tai len truc tiep tu khu admin.",
+    description: "Đề thi được quản trị viên tải lên trực tiếp từ khu admin.",
     loadExam: () =>
       loadExamFromFiles({
         fileCandidates: [dataFilePath],
@@ -357,10 +357,10 @@ function getCollectionDefinitions(cards = getFullTestCards()) {
   );
 
   return [
-    { key: "all", label: "Tat ca" },
+    { key: "all", label: "Tất cả" },
     ...keys.map((key) => ({
       key,
-      label: `De ${key}`,
+      label: `Đề ${key}`,
     })),
   ];
 }

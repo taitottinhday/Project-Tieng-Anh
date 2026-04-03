@@ -109,6 +109,14 @@ function formatDateTime(value) {
                   <strong><%= item.phone || "Chưa cung cấp" %></strong>
                 </div>
                 <div>
+                  <span>Kênh phản hồi mong muốn</span>
+                  <strong><%= item.preferred_contact_method || "Chưa chọn" %></strong>
+                </div>
+                <div>
+                  <span>Chi tiết kênh phản hồi</span>
+                  <strong><%= item.preferred_contact_detail || "Chưa cung cấp" %></strong>
+                </div>
+                <div>
                   <span>Lớp / khóa học</span>
                   <strong><%= item.related_course_name || item.course_interest || item.related_class_code || "Chưa cập nhật" %></strong>
                 </div>

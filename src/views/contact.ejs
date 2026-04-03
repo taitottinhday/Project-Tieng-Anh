@@ -1,5 +1,39 @@
 <%
 const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
+const preferredContactConfigs = {
+  "Gọi điện": {
+    label: "Số điện thoại để trung tâm gọi lại",
+    placeholder: "Nhập số điện thoại bạn muốn nhận cuộc gọi",
+    note: "Nội dung này sẽ tự điền vào mục số điện thoại bên trên.",
+    inputType: "tel",
+    inputMode: "tel",
+    targetField: "phone"
+  },
+  "Zalo": {
+    label: "Số điện thoại/Zalo để trung tâm nhắn bạn",
+    placeholder: "Nhập số điện thoại dùng cho Zalo",
+    note: "Nội dung này sẽ tự điền vào mục số điện thoại bên trên.",
+    inputType: "text",
+    inputMode: "tel",
+    targetField: "phone"
+  },
+  "Email": {
+    label: "Email bạn muốn nhận phản hồi",
+    placeholder: "Nhập email để trung tâm phản hồi",
+    note: "Nội dung này sẽ tự điền vào mục email bên trên.",
+    inputType: "email",
+    inputMode: "email",
+    targetField: "email"
+  },
+  "Tư vấn trực tiếp": {
+    label: "Cơ sở hoặc hình thức bạn muốn hẹn",
+    placeholder: "Ví dụ: Cơ sở Lê Đức Thọ hoặc tư vấn trực tiếp cuối tuần",
+    note: "Thông tin này giúp trung tâm sắp xếp đúng nơi hoặc hình thức tư vấn.",
+    inputType: "text",
+    inputMode: "text",
+    targetField: ""
+  }
+};
 %>
 
 <style>
@@ -27,6 +61,8 @@ const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
   .gf-field input,.gf-field select,.gf-field textarea{width:100%;min-height:52px;padding:0 16px;border-radius:18px;border:1px solid rgba(37,99,235,.12);background:#fff;color:#102a43;outline:none;transition:border-color .2s ease,box-shadow .2s ease}
   .gf-field textarea{min-height:140px;padding:14px 16px;resize:vertical}
   .gf-field input:focus,.gf-field select:focus,.gf-field textarea:focus{border-color:rgba(37,99,235,.34);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+  .gf-field-note{color:#58708f;font-size:.92rem;line-height:1.7}
+  .gf-contact-detail{padding:18px;border-radius:22px;border:1px solid rgba(37,99,235,.12);background:linear-gradient(180deg,#f7fbff 0%,#fff 100%)}
   .gf-banner{padding:16px 18px;border-radius:20px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.12);color:#1d4ed8;font-weight:700}
   @media (max-width:980px){.gf-grid,.gf-row{grid-template-columns:1fr}}
 </style>
@@ -60,11 +96,12 @@ const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
     <article class="gf-form">
       <h2>Form tư vấn</h2>
       <p>Điền thông tin để trung tâm gọi lại và gợi ý lộ trình TOEIC phù hợp với mục tiêu của bạn.</p>
-      <form action="<%= safeBaseUrl %>/contact" method="POST" class="gf-form-grid">
+      <form action="<%= safeBaseUrl %>/contact" method="POST" class="gf-form-grid" data-contact-form>
+        <input type="hidden" name="preferred_contact_detail" value="" data-preferred-contact-detail>
         <div class="gf-field"><label>Họ và tên</label><input type="text" name="name" placeholder="Nhập họ và tên" required></div>
         <div class="gf-row">
-          <div class="gf-field"><label>Số điện thoại</label><input type="text" name="phone" placeholder="Nhập số điện thoại" required></div>
-          <div class="gf-field"><label>Email</label><input type="email" name="email" placeholder="Nhập email"></div>
+          <div class="gf-field"><label>Số điện thoại</label><input type="text" name="phone" placeholder="Nhập số điện thoại" data-contact-phone></div>
+          <div class="gf-field"><label>Email</label><input type="email" name="email" placeholder="Nhập email" data-contact-email></div>
         </div>
         <div class="gf-row">
           <div class="gf-field">
@@ -100,12 +137,17 @@ const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
         </div>
         <div class="gf-field">
           <label>Kênh phản hồi mong muốn</label>
-          <select name="preferred_contact_method">
+          <select name="preferred_contact_method" data-contact-method-select>
             <option value="Gọi điện">Gọi điện</option>
             <option value="Zalo">Zalo</option>
             <option value="Email">Email</option>
             <option value="Tư vấn trực tiếp">Tư vấn trực tiếp</option>
           </select>
+        </div>
+        <div class="gf-field gf-contact-detail">
+          <label data-contact-detail-label>Số điện thoại để trung tâm gọi lại</label>
+          <input type="tel" data-contact-detail-input placeholder="Nhập số điện thoại bạn muốn nhận cuộc gọi">
+          <span class="gf-field-note" data-contact-detail-note>Nội dung này sẽ tự điền vào mục số điện thoại bên trên.</span>
         </div>
         <div class="gf-field"><label>Nội dung cần tư vấn</label><textarea name="message" placeholder="Ví dụ: mình muốn học lại nền tảng và tìm lớp phù hợp với lịch đi làm..." required></textarea></div>
         <button type="submit" class="gf-btn gf-btn-primary">Gửi yêu cầu</button>
@@ -113,3 +155,75 @@ const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
     </article>
   </section>
 </div>
+
+<script>
+  (() => {
+    const form = document.querySelector('[data-contact-form]');
+    if (!form) return;
+
+    const configs = <%- JSON.stringify(preferredContactConfigs) %>;
+    const methodSelect = form.querySelector('[data-contact-method-select]');
+    const detailLabel = form.querySelector('[data-contact-detail-label]');
+    const detailInput = form.querySelector('[data-contact-detail-input]');
+    const detailNote = form.querySelector('[data-contact-detail-note]');
+    const detailHidden = form.querySelector('[data-preferred-contact-detail]');
+    const emailInput = form.querySelector('[data-contact-email]');
+    const phoneInput = form.querySelector('[data-contact-phone]');
+
+    if (!methodSelect || !detailLabel || !detailInput || !detailNote || !detailHidden) {
+      return;
+    }
+
+    const syncDetailValue = () => {
+      detailHidden.value = detailInput.value.trim();
+
+      const config = configs[methodSelect.value] || {};
+      if (config.targetField === 'email' && emailInput) {
+        emailInput.value = detailInput.value;
+      }
+      if (config.targetField === 'phone' && phoneInput) {
+        phoneInput.value = detailInput.value;
+      }
+    };
+
+    const renderPreferredContact = () => {
+      const config = configs[methodSelect.value] || configs['Gọi điện'];
+      const seedValue = config.targetField === 'email'
+        ? (emailInput ? emailInput.value.trim() : '')
+        : config.targetField === 'phone'
+          ? (phoneInput ? phoneInput.value.trim() : '')
+          : detailHidden.value.trim();
+
+      detailLabel.textContent = config.label || 'Chi tiết kênh phản hồi';
+      detailInput.type = config.inputType || 'text';
+      detailInput.inputMode = config.inputMode || 'text';
+      detailInput.placeholder = config.placeholder || '';
+      detailInput.value = seedValue;
+      detailNote.textContent = config.note || '';
+      syncDetailValue();
+    };
+
+    methodSelect.addEventListener('change', renderPreferredContact);
+    detailInput.addEventListener('input', syncDetailValue);
+
+    if (emailInput) {
+      emailInput.addEventListener('input', () => {
+        if ((configs[methodSelect.value] || {}).targetField === 'email') {
+          detailInput.value = emailInput.value;
+          syncDetailValue();
+        }
+      });
+    }
+
+    if (phoneInput) {
+      phoneInput.addEventListener('input', () => {
+        if ((configs[methodSelect.value] || {}).targetField === 'phone') {
+          detailInput.value = phoneInput.value;
+          syncDetailValue();
+        }
+      });
+    }
+
+    renderPreferredContact();
+  })();
+</script>

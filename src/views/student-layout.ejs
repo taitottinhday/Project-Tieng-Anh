@@ -687,38 +687,110 @@
             gap: 10px
         }
 
+        .s-mobile-nav {
+            display: grid;
+            gap: 12px
+        }
+
         .s-mobile-group {
             display: grid;
             gap: 10px
         }
 
+        .s-mobile-link,
         .s-mobile-group-toggle {
             width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            min-height: 48px;
-            padding: 0 18px;
             border: 1px solid rgba(17, 24, 39, .08);
             border-radius: 16px;
             background: rgba(255, 255, 255, .98);
+            box-shadow: 0 12px 28px rgba(17, 24, 39, .05);
+            transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease, color .2s ease
+        }
+
+        .s-mobile-link {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            color: inherit
+        }
+
+        .s-mobile-group-toggle {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 14px;
+            min-height: 0;
+            padding: 16px 18px;
             color: #4b5563;
             font: inherit;
             font-size: .92rem;
             font-weight: 700;
-            box-shadow: 0 12px 28px rgba(17, 24, 39, .05)
+            text-align: left;
+            cursor: pointer
         }
 
+        .s-mobile-link:hover,
+        .s-mobile-group-toggle:hover {
+            transform: translateY(-1px);
+            border-color: rgba(59, 130, 246, .14);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, .08)
+        }
+
+        .s-mobile-link-copy,
+        .s-mobile-group-copy {
+            display: grid;
+            gap: 4px;
+            min-width: 0
+        }
+
+        .s-mobile-link-title {
+            color: #111827;
+            font-size: .95rem;
+            font-weight: 800;
+            line-height: 1.3
+        }
+
+        .s-mobile-link-note,
+        .s-mobile-group-note,
+        .s-mobile-subnav-note {
+            color: #64748b;
+            font-size: .8rem;
+            line-height: 1.55
+        }
+
+        .s-mobile-link-icon,
+        .s-mobile-group-caret {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            padding: 8px;
+            border-radius: 50%;
+            background: rgba(17, 24, 39, .05);
+            color: #475467
+        }
+
+        .s-mobile-link.active,
         .s-mobile-group-toggle.active,
         .s-mobile-group.is-open .s-mobile-group-toggle {
             color: #111827;
-            background: rgba(37, 99, 235, .08);
-            border-color: rgba(59, 130, 246, .12)
+            background: linear-gradient(180deg, rgba(239, 246, 255, .98) 0%, rgba(255, 255, 255, .98) 100%);
+            border-color: rgba(59, 130, 246, .16);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, .1)
+        }
+
+        .s-mobile-link.active .s-mobile-link-icon,
+        .s-mobile-group-toggle.active .s-mobile-group-caret,
+        .s-mobile-group.is-open .s-mobile-group-caret {
+            background: rgba(37, 99, 235, .12);
+            color: #1d4ed8
         }
 
         .s-mobile-group-caret {
-            flex: 0 0 auto;
             transition: transform .2s ease
         }
 
@@ -728,8 +800,10 @@
 
         .s-mobile-subnav {
             display: none;
-            gap: 8px;
-            padding-left: 12px
+            gap: 10px;
+            padding: 4px 0 0 16px;
+            margin-left: 6px;
+            border-left: 1px solid rgba(59, 130, 246, .14)
         }
 
         .s-mobile-group.is-open .s-mobile-subnav {
@@ -737,25 +811,32 @@
         }
 
         .s-mobile-subnav-link {
-            display: block;
-            padding: 12px 14px;
+            display: grid;
+            gap: 4px;
+            padding: 14px 16px;
             border-radius: 14px;
             background: rgba(248, 250, 252, .96);
+            border: 1px solid rgba(17, 24, 39, .06);
             color: #334155;
             font-size: .9rem;
             font-weight: 600;
-            transition: background .2s ease, color .2s ease
+            transition: transform .2s ease, background .2s ease, border-color .2s ease, color .2s ease
+        }
+
+        .s-mobile-subnav-link:hover {
+            transform: translateY(-1px);
+            border-color: rgba(59, 130, 246, .12)
         }
 
         .s-mobile-subnav-link.active {
-            background: rgba(37, 99, 235, .08);
+            background: rgba(239, 246, 255, .96);
+            border-color: rgba(59, 130, 246, .16);
             color: #111827
         }
 
-        .s-mobile .s-link,
+        .s-mobile-link,
         .s-mobile .s-logout {
             width: 100%;
-            justify-content: center;
             position: relative;
             z-index: 1;
             pointer-events: auto;
@@ -768,6 +849,7 @@
         .s-mail,
         .s-profile,
         .s-logout,
+        .s-mobile-link,
         .s-logout-quick,
         .s-menu,
         .s-mobile-profile {
@@ -1225,23 +1307,82 @@
         ];
 
         let navItems = [
-        { label: 'Trang chủ', href: buildHref('/'), matches: ['/'] },
-        { label: 'Classroom', shortLabel: 'Classroom', href: buildHref('/student/classroom'), matches: ['/student/classroom'] },
-        { label: 'Luyện Tập Full Test', href: buildHref('/placement-tests'), matches: ['/placement-tests', '/test-start',
-        '/test-result'] },
-        { label: 'Thi Thử Full Test', href: buildHref('/student/mock-tests'), matches: ['/student/mock-tests'] },
-        { label: 'Luyện Tập Theo Part', shortLabel: 'Theo Part', href: buildHref('/student/practice/parts'), matches:
-        ['/student/practice/parts'] },
-        { label: 'Luyện Tập Reading', shortLabel: 'Reading', href: buildHref('/student/practice/reading'), matches:
-        ['/student/practice/reading'] },
-        { label: 'Nghe - Chép chính tả', shortLabel: 'Nghe - Chép', href: buildHref('/student/dictation'), matches:
-        ['/student/dictation'] },
-        { label: 'Khóa học', children: courseMenuItems },
-        { label: 'Lịch học', href: buildHref('/student/schedule'), matches: ['/student/schedule'] },
-        { label: 'Liên Hệ', href: buildHref('/student/contact'), matches: ['/student/contact'] },
-        { label: 'Góp Ý', href: buildHref('/student/feedback'), matches: ['/student/feedback'] },
-        { label: 'Đăng ký khóa học', shortLabel: 'Đăng ký', href: buildHref('/register-course'), matches:
-        ['/register-course', '/payment'] }
+        {
+        label: 'Trang chủ',
+        href: buildHref('/'),
+        matches: ['/'],
+        note: 'Quay về tổng quan học tập và các lối tắt quan trọng nhất.'
+        },
+        {
+        label: 'Classroom',
+        shortLabel: 'Classroom',
+        href: buildHref('/student/classroom'),
+        matches: ['/student/classroom'],
+        note: 'Theo dõi lớp đang học, bài đăng, tài liệu và bài nộp.'
+        },
+        {
+        label: 'Luyện Tập Full Test',
+        href: buildHref('/placement-tests'),
+        matches: ['/placement-tests', '/test-start', '/test-result'],
+        note: 'Luyện trọn bộ đề TOEIC với giao diện làm bài đầy đủ.'
+        },
+        {
+        label: 'Thi Thử Full Test',
+        href: buildHref('/student/mock-tests'),
+        matches: ['/student/mock-tests'],
+        note: 'Làm đề theo nhịp thi thật để rèn độ tập trung và phản xạ.'
+        },
+        {
+        label: 'Luyện Tập Theo Part',
+        shortLabel: 'Theo Part',
+        href: buildHref('/student/practice/parts'),
+        matches: ['/student/practice/parts'],
+        note: 'Tập trung đúng Part bạn đang yếu để ôn nhanh hơn.'
+        },
+        {
+        label: 'Luyện Tập Reading',
+        shortLabel: 'Reading',
+        href: buildHref('/student/practice/reading'),
+        matches: ['/student/practice/reading'],
+        note: 'Luyện riêng phần Reading để tăng tốc độ và độ chính xác.'
+        },
+        {
+        label: 'Nghe - Chép chính tả',
+        shortLabel: 'Nghe - Chép',
+        href: buildHref('/student/dictation'),
+        matches: ['/student/dictation'],
+        note: 'Rèn phản xạ nghe và độ chắc từ vựng qua dictation.'
+        },
+        {
+        label: 'Khóa học',
+        children: courseMenuItems,
+        note: 'Mở thư viện khóa học và tìm lộ trình phù hợp với mục tiêu của bạn.'
+        },
+        {
+        label: 'Lịch học',
+        href: buildHref('/student/schedule'),
+        matches: ['/student/schedule'],
+        note: 'Xem lịch lớp đang học và các lịch khai giảng mới nhất.'
+        },
+        {
+        label: 'Liên Hệ',
+        href: buildHref('/student/contact'),
+        matches: ['/student/contact'],
+        note: 'Gửi câu hỏi tới trung tâm và nhận hỗ trợ ngay trong tài khoản.'
+        },
+        {
+        label: 'Góp Ý',
+        href: buildHref('/student/feedback'),
+        matches: ['/student/feedback'],
+        note: 'Phản hồi trải nghiệm học tập để đội ngũ cải thiện nhanh hơn.'
+        },
+        {
+        label: 'Đăng ký khóa học',
+        shortLabel: 'Đăng ký',
+        href: buildHref('/register-course'),
+        matches: ['/register-course', '/payment'],
+        note: 'Đăng ký khóa học mới hoặc giữ chỗ lịch học phù hợp.'
+        }
         ];
 
         const studyHubPaths = new Set([
@@ -1269,6 +1410,7 @@
         navItems.splice(2, 0, {
         label: 'Góc học tập',
         shortLabel: 'Học tập',
+        note: 'Mở nhanh full test, luyện theo Part, Reading và dictation.',
         children: studyHubItems
         });
         const isActive = (item) => (item.matches || []).some((target) => {
@@ -1483,7 +1625,7 @@
                         <span>Thoát</span>
                     </a>
 
-                    <button type="button" class="s-menu" id="studentMenuToggle" aria-label="Mở menu">
+                    <button type="button" class="s-menu" id="studentMenuToggle" aria-label="Mở menu" aria-expanded="false" aria-controls="studentMobilePanel">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 7H20"></path>
@@ -1511,29 +1653,49 @@
                         </div>
                     </div>
 
-                    <% navItems.forEach((item)=> { const itemActive = isItemActive(item); %>
-                        <% if (item.children && item.children.length) { %>
-                            <div class="s-mobile-group <%= itemActive ? 'is-open' : '' %>">
-                                <button type="button" class="s-mobile-group-toggle <%= itemActive ? 'active' : '' %>" data-mobile-subnav-toggle aria-expanded="<%= itemActive ? 'true' : 'false' %>">
-                                    <span><%= item.label %></span>
-                                    <svg class="s-mobile-group-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="m6 9 6 6 6-6"></path>
-                                    </svg>
-                                </button>
-                                <div class="s-mobile-subnav">
-                                    <% item.children.forEach((child) => { %>
-                                        <a href="<%= child.href %>" class="s-mobile-subnav-link <%= isActive(child) ? 'active' : '' %>">
-                                            <%= child.label %>
-                                        </a>
-                                    <% }) %>
+                    <div class="s-mobile-nav">
+                        <% navItems.forEach((item)=> { const itemActive = isItemActive(item); %>
+                            <% if (item.children && item.children.length) { %>
+                                <div class="s-mobile-group <%= itemActive ? 'is-open' : '' %>">
+                                    <button type="button" class="s-mobile-group-toggle <%= itemActive ? 'active' : '' %>" data-mobile-subnav-toggle aria-expanded="<%= itemActive ? 'true' : 'false' %>">
+                                        <span class="s-mobile-group-copy">
+                                            <span class="s-mobile-link-title"><%= item.label %></span>
+                                            <% if (item.note) { %>
+                                                <span class="s-mobile-group-note"><%= item.note %></span>
+                                            <% } %>
+                                        </span>
+                                        <svg class="s-mobile-group-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="m6 9 6 6 6-6"></path>
+                                        </svg>
+                                    </button>
+                                    <div class="s-mobile-subnav">
+                                        <% item.children.forEach((child) => { %>
+                                            <a href="<%= child.href %>" class="s-mobile-subnav-link <%= isActive(child) ? 'active' : '' %>">
+                                                <span class="s-mobile-link-title"><%= child.label %></span>
+                                                <% if (child.note) { %>
+                                                    <span class="s-mobile-subnav-note"><%= child.note %></span>
+                                                <% } %>
+                                            </a>
+                                        <% }) %>
+                                    </div>
                                 </div>
-                            </div>
-                        <% } else { %>
-                            <a href="<%= item.href %>" class="s-link <%= itemActive ? 'active' : '' %>">
-                                <%= item.label %>
-                            </a>
-                        <% } %>
-                    <% }) %>
+                            <% } else { %>
+                                <a href="<%= item.href %>" class="s-mobile-link <%= itemActive ? 'active' : '' %>">
+                                    <span class="s-mobile-link-copy">
+                                        <span class="s-mobile-link-title"><%= item.label %></span>
+                                        <% if (item.note) { %>
+                                            <span class="s-mobile-link-note"><%= item.note %></span>
+                                        <% } %>
+                                    </span>
+                                    <span class="s-mobile-link-icon" aria-hidden="true">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 6l6 6-6 6"></path>
+                                        </svg>
+                                    </span>
+                                </a>
+                            <% } %>
+                        <% }) %>
+                    </div>
                 </div>
             </div>
         </header>
@@ -1653,13 +1815,20 @@
                         const toggle = document.getElementById('studentMenuToggle');
                         if (!toggle) return;
 
+                        const header = document.querySelector('.s-header');
+                        const mobilePanel = document.getElementById('studentMobilePanel');
                         const desktopGroups = Array.from(document.querySelectorAll('.s-nav-group'));
                         const notificationRoot = document.getElementById('studentNotificationRoot');
                         const notificationToggle = document.getElementById('studentNotificationToggle');
                         const mailboxRoot = document.getElementById('studentMailboxRoot');
                         const mailboxToggle = document.getElementById('studentMailboxToggle');
 
-                        const closeMenu = () => document.body.classList.remove('menu-open');
+                        const setMenuState = (isOpen) => {
+                            document.body.classList.toggle('menu-open', isOpen);
+                            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                        };
+
+                        const closeMenu = () => setMenuState(false);
 
                         const closeDesktopGroups = (except = null) => {
                             desktopGroups.forEach((group) => {
@@ -1712,9 +1881,19 @@
                             });
                         };
 
-                        toggle.addEventListener('click', () => {
-                            document.body.classList.toggle('menu-open');
+                        toggle.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            closeDesktopGroups();
+                            closeFloatingPanels();
+                            setMenuState(!document.body.classList.contains('menu-open'));
                         });
+
+                        if (mobilePanel) {
+                            mobilePanel.addEventListener('click', (event) => {
+                                event.stopPropagation();
+                            });
+                        }
 
                         bindPopoverToggle({
                             root: notificationRoot,
@@ -1765,9 +1944,12 @@
                             link.addEventListener('click', closeMenu);
                         });
 
-                        document.addEventListener('click', () => {
+                        document.addEventListener('click', (event) => {
                             closeDesktopGroups();
                             closeFloatingPanels();
+                            if (header && !header.contains(event.target)) {
+                                closeMenu();
+                            }
                         });
 
                         window.addEventListener('resize', () => {
