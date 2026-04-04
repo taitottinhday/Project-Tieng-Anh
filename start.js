@@ -1,8 +1,8 @@
 require('dotenv').config();
-const app = require('./src/app');
 const { importDataIfEmpty } = require('./src/models/dataImport');
 const { resolveDatabaseConfig, resolvePort } = require('./src/config/runtime');
 const { ensureApplicationSchema } = require('./src/services/bootstrapService');
+const { waitForDatabaseReady } = require('./src/services/databaseStartupService');
 
 const PORT = resolvePort();
 const databaseConfig = resolveDatabaseConfig();
@@ -14,6 +14,14 @@ function formatStartupError(error) {
     return (
       `Could not connect to MySQL at ${databaseConfig.host}:${databaseConfig.port}. ` +
       'Start your MySQL/MariaDB server, or update DB_HOST/DB_PORT in .env to the correct host and port.'
+    );
+  }
+
+  if (code === 'ETIMEDOUT') {
+    return (
+      `Timed out waiting for a MySQL response from ${databaseConfig.host}:${databaseConfig.port} ` +
+      `after ${databaseConfig.connectTimeout}ms. ` +
+      'This usually means MySQL/MariaDB is hung, still starting, blocked by a firewall, or a non-MySQL process is listening on that port.'
     );
   }
 
@@ -57,11 +65,21 @@ function listen(appInstance, port) {
 
 async function startServer() {
   console.log(
-    `Starting app on port ${PORT} with database ${databaseConfig.database}@${databaseConfig.host}:${databaseConfig.port}`
+    `Starting app on port ${PORT} with database ${databaseConfig.database}@${databaseConfig.host}:${databaseConfig.port} ` +
+      `(connect timeout ${databaseConfig.connectTimeout}ms)`
   );
+
+  const readiness = await waitForDatabaseReady();
+  if (readiness.attempts > 1) {
+    console.log(
+      `[startup] MySQL became ready after ${readiness.attempts} attempts ` +
+        `(${readiness.waitedMs}ms).`
+    );
+  }
 
   await ensureApplicationSchema();
   await importDataIfEmpty();
+  const app = require('./src/app');
   await listen(app, PORT);
 
   console.log(`Server running on internal port ${PORT}`);

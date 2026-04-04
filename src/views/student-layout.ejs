@@ -15,14 +15,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --bg: #f6f2eb;
+            --bg: #e8eeff;
             --surface: rgba(255, 255, 255, .94);
-            --line: rgba(17, 24, 39, .08);
-            --text: #1f2937;
-            --muted: #667085;
-            --brand: #c91f30;
-            --brand-soft: rgba(201, 31, 48, .08);
-            --dark: #111
+            --surface-strong: rgba(255, 255, 255, .98);
+            --surface-soft: linear-gradient(145deg, rgba(219, 233, 255, .74) 0%, rgba(255, 221, 239, .74) 100%);
+            --surface-soft-alt: linear-gradient(180deg, rgba(248, 251, 255, .98) 0%, rgba(255, 247, 252, .98) 100%);
+            --line: rgba(89, 106, 191, .16);
+            --line-soft: rgba(89, 106, 191, .1);
+            --text: #0f1d32;
+            --muted: #5d6e84;
+            --brand: #2f78ed;
+            --brand-soft: rgba(47, 120, 237, .1);
+            --accent: #e89bbc;
+            --accent-soft: rgba(232, 155, 188, .14);
+            --dark: #163f73;
+            --dark-strong: #102845;
+            --shadow-lg: 0 28px 54px rgba(39, 62, 122, .14);
+            --shadow-sm: 0 16px 30px rgba(39, 62, 122, .1)
         }
 
         * {
@@ -38,7 +47,11 @@
             min-height: 100vh;
             font-family: "Be Vietnam Pro", "Segoe UI", sans-serif;
             color: var(--text);
-            background: radial-gradient(circle at top left, rgba(201, 31, 48, .08), transparent 24%), radial-gradient(circle at bottom right, rgba(183, 177, 241, .18), transparent 25%), linear-gradient(180deg, #fbf8f4 0%, #f6f2eb 100%)
+            background:
+                radial-gradient(circle at top left, rgba(47, 120, 237, .28), transparent 24%),
+                radial-gradient(circle at top right, rgba(242, 169, 210, .24), transparent 22%),
+                radial-gradient(circle at bottom left, rgba(177, 154, 255, .18), transparent 28%),
+                linear-gradient(180deg, #eaf0ff 0%, #f9deef 52%, var(--bg) 100%)
         }
 
         body.menu-open {
@@ -54,9 +67,9 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255, 255, 255, .92);
+            background: linear-gradient(135deg, rgba(222, 236, 255, .78) 0%, rgba(255, 233, 242, .72) 100%);
             backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(17, 24, 39, .06)
+            border-bottom: 1px solid var(--line-soft)
         }
 
         .s-wrap {
@@ -83,12 +96,12 @@
             width: 72px;
             height: 46px;
             border-radius: 16px;
-            border: 1px solid rgba(201, 31, 48, .12);
-            background: linear-gradient(135deg, rgba(255, 255, 255, .9) 0%, rgba(255, 241, 243, .92) 100%);
+            border: 1px solid var(--line);
+            background: linear-gradient(135deg, rgba(224, 238, 255, .88) 0%, rgba(255, 233, 242, .9) 100%);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 14px 28px rgba(201, 31, 48, .08);
+            box-shadow: 0 16px 32px rgba(47, 120, 237, .12);
             overflow: hidden
         }
 
@@ -110,7 +123,7 @@
             font-size: .82rem;
             line-height: 1.08;
             letter-spacing: -.02em;
-            color: #b01224;
+            color: #1d4f8f;
             text-transform: uppercase
         }
 
@@ -148,7 +161,7 @@
             flex: 0 0 auto;
             padding: 10px 8px;
             border-radius: 999px;
-            color: #4b5563;
+            color: #45576d;
             font-size: .83rem;
             font-weight: 500;
             white-space: nowrap;
@@ -175,13 +188,13 @@
 
         .s-link:hover {
             transform: translateY(-1px);
-            color: #111827;
-            background: rgba(17, 24, 39, .04)
+            color: #102845;
+            background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%)
         }
 
         .s-link.active {
-            color: #111827;
-            background: rgba(37, 99, 235, .08)
+            color: #102845;
+            background: linear-gradient(135deg, rgba(47, 120, 237, .1) 0%, rgba(232, 155, 188, .12) 100%)
         }
 
         .s-link.active::after {
@@ -192,7 +205,7 @@
             bottom: 2px;
             height: 3px;
             border-radius: 999px;
-            background: #3b82f6
+            background: linear-gradient(90deg, #2f78ed 0%, #e89bbc 100%)
         }
 
         .s-link-label-full {
@@ -210,9 +223,9 @@
             width: min(350px, 38vw);
             padding: 14px;
             border-radius: 28px;
-            border: 1px solid rgba(17, 24, 39, .08);
-            background: rgba(255, 255, 255, .98);
-            box-shadow: 0 28px 60px rgba(17, 24, 39, .14);
+            border: 1px solid var(--line);
+            background: var(--surface-strong);
+            box-shadow: var(--shadow-lg);
             display: grid;
             gap: 8px;
             opacity: 0;
@@ -249,13 +262,13 @@
 
         .s-subnav-link:hover {
             transform: translateY(-1px);
-            background: rgba(37, 99, 235, .08);
-            color: #0f172a
+            background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%);
+            color: #102845
         }
 
         .s-subnav-link.active {
-            background: linear-gradient(135deg, rgba(37, 99, 235, .10) 0%, rgba(201, 31, 48, .08) 100%);
-            color: #0f172a
+            background: linear-gradient(135deg, rgba(47, 120, 237, .12) 0%, rgba(232, 155, 188, .14) 100%);
+            color: #102845
         }
 
         .s-subnav-title {
@@ -284,8 +297,8 @@
             align-items: center;
             padding: 7px 12px;
             border-radius: 999px;
-            background: var(--brand-soft);
-            color: var(--brand);
+            background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%);
+            color: #1d4f8f;
             font-size: .82rem;
             font-weight: 700
         }
@@ -302,14 +315,14 @@
             width: 46px;
             height: 46px;
             border-radius: 16px;
-            border: 1px solid rgba(17, 24, 39, .08);
-            background: rgba(255, 255, 255, .94);
-            color: #0f172a;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, .9);
+            color: #102845;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 14px 30px rgba(15, 23, 42, .08);
+            box-shadow: var(--shadow-sm);
             transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease
         }
 
@@ -318,9 +331,9 @@
         .s-mail:hover,
         .s-mail[aria-expanded="true"] {
             transform: translateY(-1px);
-            border-color: rgba(59, 130, 246, .18);
-            background: rgba(239, 246, 255, .98);
-            box-shadow: 0 18px 34px rgba(37, 99, 235, .14)
+            border-color: rgba(89, 106, 191, .2);
+            background: linear-gradient(135deg, rgba(226, 239, 255, .96) 0%, rgba(255, 239, 247, .96) 100%);
+            box-shadow: 0 18px 34px rgba(47, 120, 237, .14)
         }
 
         .s-bell-count {
@@ -331,14 +344,14 @@
             height: 22px;
             padding: 0 6px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            background: linear-gradient(135deg, #2f78ed 0%, #e89bbc 100%);
             color: #fff;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-size: .72rem;
             font-weight: 800;
-            box-shadow: 0 10px 22px rgba(239, 68, 68, .28)
+            box-shadow: 0 10px 22px rgba(47, 120, 237, .24)
         }
 
         .s-notify-panel,
@@ -349,9 +362,9 @@
             width: min(420px, calc(100vw - 24px));
             padding: 18px;
             border-radius: 28px;
-            border: 1px solid rgba(17, 24, 39, .08);
-            background: rgba(255, 255, 255, .98);
-            box-shadow: 0 28px 60px rgba(15, 23, 42, .18);
+            border: 1px solid var(--line);
+            background: var(--surface-strong);
+            box-shadow: var(--shadow-lg);
             display: grid;
             gap: 14px;
             opacity: 0;
@@ -404,13 +417,13 @@
             gap: 10px;
             padding: 15px 16px;
             border-radius: 22px;
-            border: 1px solid rgba(148, 163, 184, .16);
-            background: #fff
+            border: 1px solid var(--line-soft);
+            background: rgba(255, 255, 255, .96)
         }
 
         .s-notify-item.is-new {
-            border-color: rgba(37, 99, 235, .18);
-            background: linear-gradient(180deg, rgba(239, 246, 255, .92) 0%, rgba(255, 255, 255, .98) 100%)
+            border-color: rgba(89, 106, 191, .18);
+            background: linear-gradient(180deg, rgba(240, 246, 255, .94) 0%, rgba(255, 244, 248, .98) 100%)
         }
 
         .s-notify-item-head {
@@ -443,8 +456,8 @@
             min-height: 24px;
             padding: 0 8px;
             border-radius: 999px;
-            background: rgba(37, 99, 235, .12);
-            color: #1d4ed8;
+            background: linear-gradient(135deg, rgba(47, 120, 237, .12) 0%, rgba(232, 155, 188, .14) 100%);
+            color: #1d4f8f;
             font-size: .7rem;
             font-weight: 800
         }
@@ -471,22 +484,22 @@
         }
 
         .s-notify-item a {
-            background: rgba(37, 99, 235, .08);
-            color: #1d4ed8
+            background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%);
+            color: #1d4f8f
         }
 
         .s-notify-mark {
             border: 0;
-            background: rgba(15, 23, 42, .08);
-            color: #0f172a;
+            background: rgba(16, 40, 69, .08);
+            color: #102845;
             cursor: pointer
         }
 
         .s-notify-empty {
             padding: 18px;
             border-radius: 22px;
-            background: #f8fafc;
-            border: 1px dashed rgba(148, 163, 184, .32);
+            background: linear-gradient(180deg, rgba(248, 251, 255, .98) 0%, rgba(255, 247, 252, .98) 100%);
+            border: 1px dashed rgba(89, 106, 191, .28);
             display: grid;
             gap: 12px;
             justify-items: start
@@ -504,8 +517,8 @@
         }
 
         .s-notify-empty-link {
-            background: rgba(37, 99, 235, .08);
-            color: #1d4ed8
+            background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%);
+            color: #1d4f8f
         }
 
         .s-notifications {
@@ -518,15 +531,15 @@
             gap: 8px;
             padding: 5px;
             border-radius: 999px;
-            background: rgba(17, 24, 39, .04);
-            border: 1px solid rgba(17, 24, 39, .06);
+            background: linear-gradient(135deg, rgba(222, 236, 255, .58) 0%, rgba(255, 255, 255, .92) 100%);
+            border: 1px solid var(--line-soft);
             transition: transform .2s ease, background .2s ease, box-shadow .2s ease
         }
 
         .s-profile:hover {
             transform: translateY(-1px);
-            background: rgba(37, 99, 235, .08);
-            box-shadow: 0 16px 28px rgba(17, 24, 39, .08)
+            background: linear-gradient(135deg, rgba(226, 239, 255, .96) 0%, rgba(255, 239, 247, .9) 100%);
+            box-shadow: var(--shadow-sm)
         }
 
         .s-profile-meta {
@@ -560,10 +573,10 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+            background: linear-gradient(135deg, #173f73 0%, #2f78ed 58%, #e89bbc 100%);
             color: #fff;
             font-weight: 800;
-            box-shadow: 0 10px 22px rgba(17, 24, 39, .22)
+            box-shadow: 0 12px 24px rgba(47, 120, 237, .22)
         }
 
         .s-logout {
@@ -572,11 +585,11 @@
             justify-content: center;
             padding: 10px 14px;
             border-radius: 999px;
-            background: var(--dark);
+            background: linear-gradient(135deg, var(--dark-strong) 0%, var(--dark) 100%);
             color: #fff;
             font-size: .94rem;
             font-weight: 700;
-            box-shadow: 0 16px 30px rgba(17, 17, 17, .16);
+            box-shadow: 0 16px 30px rgba(22, 63, 115, .18);
             transition: transform .2s ease
         }
 
@@ -592,13 +605,13 @@
             min-height: 46px;
             padding: 0 14px;
             border-radius: 14px;
-            border: 1px solid rgba(239, 68, 68, .14);
-            background: rgba(254, 242, 242, .98);
-            color: #dc2626;
+            border: 1px solid var(--line);
+            background: linear-gradient(135deg, rgba(224, 238, 255, .9) 0%, rgba(255, 236, 245, .94) 100%);
+            color: #1d4f8f;
             font-size: .88rem;
             font-weight: 800;
             white-space: nowrap;
-            box-shadow: 0 12px 26px rgba(220, 38, 38, .10)
+            box-shadow: 0 12px 26px rgba(47, 120, 237, .12)
         }
 
         .s-logout-quick svg {
@@ -610,8 +623,8 @@
             width: 46px;
             height: 46px;
             border-radius: 14px;
-            border: 1px solid rgba(17, 24, 39, .08);
-            background: #fff;
+            border: 1px solid var(--line);
+            background: linear-gradient(135deg, rgba(224, 238, 255, .88) 0%, rgba(255, 233, 242, .88) 100%);
             align-items: center;
             justify-content: center
         }
@@ -620,8 +633,8 @@
             display: none;
             position: relative;
             z-index: 120;
-            border-top: 1px solid rgba(17, 24, 39, .06);
-            background: rgba(255, 255, 255, .98);
+            border-top: 1px solid var(--line-soft);
+            background: linear-gradient(180deg, rgba(229, 240, 255, .94) 0%, rgba(255, 223, 239, .94) 100%);
             max-height: calc(100vh - 80px);
             overflow-y: auto;
             overscroll-behavior: contain
@@ -652,9 +665,9 @@
             gap: 12px;
             padding: 16px;
             border-radius: 22px;
-            border: 1px solid rgba(17, 24, 39, .08);
-            background: linear-gradient(180deg, rgba(248, 250, 252, .98) 0%, rgba(255, 255, 255, .98) 100%);
-            box-shadow: 0 16px 34px rgba(17, 24, 39, .08)
+            border: 1px solid var(--line);
+            background: var(--surface-soft-alt);
+            box-shadow: var(--shadow-sm)
         }
 
         .s-mobile-profile {
@@ -671,7 +684,7 @@
         }
 
         .s-mobile-profile-copy strong {
-            color: #111827;
+            color: var(--text);
             font-size: .96rem;
             line-height: 1.2
         }
@@ -700,10 +713,10 @@
         .s-mobile-link,
         .s-mobile-group-toggle {
             width: 100%;
-            border: 1px solid rgba(17, 24, 39, .08);
+            border: 1px solid var(--line-soft);
             border-radius: 16px;
             background: rgba(255, 255, 255, .98);
-            box-shadow: 0 12px 28px rgba(17, 24, 39, .05);
+            box-shadow: 0 12px 28px rgba(39, 62, 122, .08);
             transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease, color .2s ease
         }
 
@@ -734,8 +747,8 @@
         .s-mobile-link:hover,
         .s-mobile-group-toggle:hover {
             transform: translateY(-1px);
-            border-color: rgba(59, 130, 246, .14);
-            box-shadow: 0 16px 30px rgba(37, 99, 235, .08)
+            border-color: rgba(89, 106, 191, .16);
+            box-shadow: 0 16px 30px rgba(47, 120, 237, .1)
         }
 
         .s-mobile-link-copy,
@@ -746,7 +759,7 @@
         }
 
         .s-mobile-link-title {
-            color: #111827;
+            color: var(--text);
             font-size: .95rem;
             font-weight: 800;
             line-height: 1.3
@@ -770,24 +783,24 @@
             flex: 0 0 auto;
             padding: 8px;
             border-radius: 50%;
-            background: rgba(17, 24, 39, .05);
-            color: #475467
+            background: linear-gradient(135deg, rgba(224, 238, 255, .82) 0%, rgba(255, 233, 242, .84) 100%);
+            color: #51657f
         }
 
         .s-mobile-link.active,
         .s-mobile-group-toggle.active,
         .s-mobile-group.is-open .s-mobile-group-toggle {
-            color: #111827;
-            background: linear-gradient(180deg, rgba(239, 246, 255, .98) 0%, rgba(255, 255, 255, .98) 100%);
-            border-color: rgba(59, 130, 246, .16);
-            box-shadow: 0 16px 30px rgba(37, 99, 235, .1)
+            color: #102845;
+            background: linear-gradient(180deg, rgba(240, 246, 255, .98) 0%, rgba(255, 242, 248, .98) 100%);
+            border-color: rgba(89, 106, 191, .16);
+            box-shadow: 0 16px 30px rgba(47, 120, 237, .12)
         }
 
         .s-mobile-link.active .s-mobile-link-icon,
         .s-mobile-group-toggle.active .s-mobile-group-caret,
         .s-mobile-group.is-open .s-mobile-group-caret {
-            background: rgba(37, 99, 235, .12);
-            color: #1d4ed8
+            background: linear-gradient(135deg, rgba(47, 120, 237, .12) 0%, rgba(232, 155, 188, .14) 100%);
+            color: #1d4f8f
         }
 
         .s-mobile-group-caret {
@@ -803,7 +816,7 @@
             gap: 10px;
             padding: 4px 0 0 16px;
             margin-left: 6px;
-            border-left: 1px solid rgba(59, 130, 246, .14)
+            border-left: 1px solid rgba(89, 106, 191, .16)
         }
 
         .s-mobile-group.is-open .s-mobile-subnav {
@@ -815,8 +828,8 @@
             gap: 4px;
             padding: 14px 16px;
             border-radius: 14px;
-            background: rgba(248, 250, 252, .96);
-            border: 1px solid rgba(17, 24, 39, .06);
+            background: rgba(248, 251, 255, .96);
+            border: 1px solid var(--line-soft);
             color: #334155;
             font-size: .9rem;
             font-weight: 600;
@@ -825,13 +838,13 @@
 
         .s-mobile-subnav-link:hover {
             transform: translateY(-1px);
-            border-color: rgba(59, 130, 246, .12)
+            border-color: rgba(89, 106, 191, .14)
         }
 
         .s-mobile-subnav-link.active {
-            background: rgba(239, 246, 255, .96);
-            border-color: rgba(59, 130, 246, .16);
-            color: #111827
+            background: linear-gradient(135deg, rgba(240, 246, 255, .96) 0%, rgba(255, 242, 248, .96) 100%);
+            border-color: rgba(89, 106, 191, .16);
+            color: #102845
         }
 
         .s-mobile-link,
@@ -864,7 +877,7 @@
         .s-stage :is(h1, h2) {
             font-family: "Sora", "Be Vietnam Pro", sans-serif;
             letter-spacing: -0.05em;
-            background: linear-gradient(90deg, #ff7a59 0%, #ff5d8f 46%, #ffb14a 100%);
+            background: linear-gradient(90deg, #2f78ed 0%, #e89bbc 100%);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -881,8 +894,8 @@
             padding: 14px 18px;
             border-radius: 20px;
             border: 1px solid var(--line);
-            background: rgba(255, 255, 255, .9);
-            box-shadow: 0 12px 28px rgba(17, 24, 39, .06)
+            background: var(--surface-soft-alt);
+            box-shadow: 0 12px 28px rgba(39, 62, 122, .08)
         }
 
         .s-flash-card.success {
@@ -896,8 +909,8 @@
         }
 
         .s-flash-card.info {
-            color: #1d4ed8;
-            border-color: rgba(29, 78, 216, .12)
+            color: #1d4f8f;
+            border-color: rgba(89, 106, 191, .16)
         }
 
         .s-notifications {
@@ -907,9 +920,9 @@
             display: grid;
             gap: 16px;
             border-radius: 28px;
-            border: 1px solid rgba(59, 130, 246, .14);
-            background: linear-gradient(135deg, rgba(239, 246, 255, .96) 0%, rgba(255, 255, 255, .96) 100%);
-            box-shadow: 0 16px 34px rgba(37, 99, 235, .08)
+            border: 1px solid var(--line);
+            background: linear-gradient(135deg, rgba(240, 246, 255, .96) 0%, rgba(255, 242, 248, .96) 100%);
+            box-shadow: 0 16px 34px rgba(47, 120, 237, .1)
         }
 
         .s-notifications-head {
@@ -942,8 +955,8 @@
             gap: 8px;
             padding: 8px 12px;
             border-radius: 999px;
-            background: rgba(37, 99, 235, .1);
-            color: #1d4ed8;
+            background: linear-gradient(135deg, rgba(47, 120, 237, .12) 0%, rgba(232, 155, 188, .14) 100%);
+            color: #1d4f8f;
             font-size: .84rem;
             font-weight: 800
         }
@@ -958,13 +971,13 @@
             gap: 10px;
             padding: 16px 18px;
             border-radius: 20px;
-            border: 1px solid rgba(148, 163, 184, .16);
+            border: 1px solid var(--line-soft);
             background: rgba(255, 255, 255, .96)
         }
 
         .s-notification-card.is-new {
-            border-color: rgba(37, 99, 235, .22);
-            box-shadow: 0 10px 24px rgba(37, 99, 235, .08)
+            border-color: rgba(89, 106, 191, .2);
+            box-shadow: 0 10px 24px rgba(47, 120, 237, .1)
         }
 
         .s-notification-top {
@@ -1028,21 +1041,23 @@
         }
 
         .s-notification-link {
-            background: #111827;
+            background: linear-gradient(135deg, var(--dark-strong) 0%, var(--brand) 100%);
             color: #fff
         }
 
         .s-notification-read {
             border: 0;
-            background: rgba(15, 23, 42, .06);
-            color: #334155;
+            background: linear-gradient(135deg, rgba(224, 238, 255, .78) 0%, rgba(255, 233, 242, .78) 100%);
+            color: #41546c;
             cursor: pointer
         }
 
         .s-footer {
             margin-top: 48px;
-            background: rgba(255, 255, 255, .95);
-            border-top: 1px solid rgba(17, 24, 39, .06)
+            background:
+                radial-gradient(circle at top right, rgba(242, 183, 207, .12), transparent 24%),
+                linear-gradient(180deg, #102845 0%, #0c2038 100%);
+            border-top: 1px solid rgba(255, 255, 255, .08)
         }
 
         .s-footer-inner {
@@ -1068,23 +1083,23 @@
         .s-footer-col a {
             display: block;
             margin: 0 0 10px;
-            color: #2563eb;
+            color: #d7e6ff;
             line-height: 1.55
         }
 
         .s-footer-col .lead {
-            color: #4b5563
+            color: rgba(229, 239, 255, .76)
         }
 
         .s-footer-col strong {
-            color: #111827
+            color: #ffffff
         }
 
         .s-legal {
             margin-top: 24px;
             padding-top: 18px;
-            border-top: 1px solid rgba(17, 24, 39, .06);
-            color: #4b5563;
+            border-top: 1px solid rgba(255, 255, 255, .08);
+            color: rgba(229, 239, 255, .76);
             font-size: .95rem
         }
 

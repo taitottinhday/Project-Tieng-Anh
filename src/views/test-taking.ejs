@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= pageTitle %></title>
+  <title>
+    <%= pageTitle %>
+  </title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg: #f4f7fb;
@@ -98,7 +103,7 @@
       padding: 18px 14px 14px;
     }
 
-    .sidebar-part + .sidebar-part {
+    .sidebar-part+.sidebar-part {
       margin-top: 18px;
     }
 
@@ -559,7 +564,7 @@
       border-color: #d5dfec;
     }
 
-    .choice input:checked + .choice-ui {
+    .choice input:checked+.choice-ui {
       background: #fff5e8;
       border-color: #f6c46e;
     }
@@ -573,12 +578,12 @@
       background: #ffffff;
     }
 
-    .choice input:checked + .choice-ui .choice-dot {
+    .choice input:checked+.choice-ui .choice-dot {
       border-color: var(--accent-deep);
       background: #ffffff;
     }
 
-    .choice input:checked + .choice-ui .choice-dot::after {
+    .choice input:checked+.choice-ui .choice-dot::after {
       content: "";
       position: absolute;
       inset: 4px;
@@ -781,6 +786,7 @@
     }
   </style>
 </head>
+
 <body>
   <%
     const fallbackExam =
@@ -800,7 +806,12 @@
     const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
     const durationMinutes = Number(examData.durationMinutes || 120);
     const questionViews = questions.map((question) => {
-      const group = groups.find((item) => Array.isArray(item.questions) && item.questions.some((groupQuestion) => groupQuestion.number === question.number)) || {};
+      const group =
+        groups.find(
+          (item) =>
+            Array.isArray(item.questions) &&
+            item.questions.some((groupQuestion) => groupQuestion.number === question.number)
+        ) || {};
       const part = partSummary.find((item) => item.partNumber === question.partNumber) || {};
       return Object.assign({}, question, {
         partTitle: part.title || ('Part ' + question.partNumber),
@@ -811,590 +822,610 @@
       });
     });
     const partSections = partSummary
-      .map((part) => Object.assign({}, part, {
-        questions: questionViews.filter((question) => question.partNumber === part.partNumber)
-      }))
+      .map((part) =>
+        Object.assign({}, part, {
+          questions: questionViews.filter((question) => question.partNumber === part.partNumber)
+        })
+      )
       .filter((part) => part.questions.length > 0);
     const totalQuestions = Number(examData.totalQuestions || questionViews.length || 0);
     const hasQuestions = questionViews.length > 0;
     const firstQuestion = hasQuestions ? questionViews[0] : null;
   %>
-  <%
-    const resolvedBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '';
-  %>
-  <form action="<%= resolvedBaseUrl %>/placement-tests/<%= examData.id %>/submit" method="POST" class="exam-form" data-test-form data-session-key="toeic-placement-<%= examData.id %>">
-    <input type="hidden" name="guest_name" value="">
-    <input type="hidden" name="guest_email" value="">
-    <input type="hidden" name="furthest_question_number" value="<%= firstQuestion ? firstQuestion.number : '' %>" data-furthest-question>
-    <div class="page-shell">
-      <aside class="sidebar-card">
-        <div class="timer-panel">
-          <div id="timer" data-duration="<%= durationMinutes %>">00:00:00</div>
-        </div>
-        <div class="sidebar-scroll">
-          <% partSections.forEach((part) => { %>
-            <section class="sidebar-part">
-              <h3>Part <%= part.partNumber %></h3>
-              <div class="nav-grid">
-                <% part.questions.forEach((question) => { %>
-                  <button type="button" class="nav-btn" data-go-question="<%= question.number %>"><%= question.number %></button>
-                <% }) %>
-              </div>
-            </section>
-          <% }) %>
-        </div>
-        <div class="sidebar-footer">
-          <div class="count-box">
-            <strong><span id="answeredCount">0</span>/<%= totalQuestions %></strong>
-            <small><span id="flaggedCount">0</span> câu gắn cờ</small>
-          </div>
-          <button type="submit" class="submit-btn" <%= hasQuestions ? '' : 'disabled' %>>Nộp bài</button>
-        </div>
-      </aside>
-
-      <main class="exam-panel">
-        <header class="exam-header">
-          <div class="exam-meta"><%= examData.title || 'TOEIC Placement Test' %> | <%= examData.bookName || 'ETS 2024' %></div>
-          <h1 id="currentHeadline"><%= firstQuestion ? ('Part ' + firstQuestion.partNumber + ' | Câu ' + firstQuestion.number) : 'TOEIC Placement Test' %></h1>
-          <div class="exam-subline" id="currentSubline"><%= firstQuestion ? firstQuestion.partTitle : 'Chưa có dữ liệu đề thi' %></div>
-        </header>
-
-        <div class="screen-stack">
-          <% if (!hasQuestions) { %>
-            <div class="empty-state">Chưa có dữ liệu để hiển thị. Kiểm tra lại file đề thi hoặc route đang truyền vào view.</div>
-          <% } else { %>
-            <% questionViews.forEach((question, index) => { %>
-              <section
-                class="question-screen<%= index === 0 ? ' active' : '' %>"
-                data-question-screen
-                data-question-id="<%= question.number %>"
-                data-part-number="<%= question.partNumber %>"
-                data-part-title="<%= question.partTitle %>"
-                data-headline="Part <%= question.partNumber %> | Câu <%= question.number %>">
-                <div class="content-shell">
-                  <div class="question-stage">
-                    <div class="stage-top">
-                      <div>
-                        <span class="stage-kicker">Part <%= question.partNumber %></span>
-                        <h2><%= question.partTitle %></h2>
-                      </div>
-                      <span class="question-badge">Câu <%= question.number %></span>
-                    </div>
-
-                    <% if (question.sharedAudioUrl) { %>
-                      <div class="audio-block">
-                        <strong>Âm thanh</strong>
-                        <audio controls preload="metadata">
-                          <source src="<%= question.sharedAudioUrl %>" type="audio/mpeg">
-                        </audio>
-                      </div>
-                    <% } %>
-
-                    <% if (question.sharedContent) { %>
-                      <div class="passage-block">
-                        <strong>Đoạn văn</strong>
-                        <div class="passage-body"><%= question.sharedContent %></div>
-                      </div>
-                    <% } %>
-
-                    <% if (question.sharedImages && question.sharedImages.length) { %>
-                      <div class="image-stage">
-                        <% question.sharedImages.forEach((imageUrl) => { %>
-                          <img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>">
-                        <% }) %>
-                      </div>
-                    <% } %>
-
-                    <div class="prompt-block">
-                      <strong>Hướng dẫn</strong>
-                      <p class="instruction-line"><%= question.partInstructions %></p>
-                      <div class="prompt-text<%= question.sharedImages && question.sharedImages.length ? ' compact' : '' %>"><%= question.prompt %></div>
-                    </div>
-                  </div>
-
-                  <aside class="answer-stage">
-                    <div class="answer-head">
-                      <div class="answer-head-main">
-                        <button
-                          type="button"
-                          class="flag-toggle"
-                          data-flag-question="<%= question.number %>"
-                          aria-pressed="false"
-                          aria-label="Gắn cờ câu <%= question.number %>">
-                          <span class="answer-flag" aria-hidden="true"></span>
-                          <span data-flag-label>Gắn cờ</span>
-                        </button>
-                        <span class="answer-number"><%= question.number %>.</span>
-                      </div>
-                      <span class="answer-head-status" data-flag-status></span>
-                    </div>
-
-                    <div class="answer-options">
-                      <% question.options.forEach((option) => { %>
-                        <label class="choice">
-                          <input
-                            type="radio"
-                            name="<%= question.inputName %>"
-                            value="<%= option.label %>"
-                            data-question-input="<%= question.number %>">
-                          <span class="choice-ui">
-                            <span class="choice-dot"></span>
-                            <% if (option.isLetterOnly) { %>
-                              <span class="choice-copy only-letter"><strong><%= option.label %></strong></span>
-                            <% } else { %>
-                              <span class="choice-copy"><strong><%= option.label %></strong><%= option.text %></span>
-                            <% } %>
-                          </span>
-                        </label>
+  <% const resolvedBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : ''; %>
+      <form action="<%= resolvedBaseUrl %>/placement-tests/<%= examData.id %>/submit" method="POST" class="exam-form"
+        data-test-form data-session-key="toeic-placement-<%= examData.id %>">
+        <input type="hidden" name="guest_name" value="">
+        <input type="hidden" name="guest_email" value="">
+        <input type="hidden" name="furthest_question_number" value="<%= firstQuestion ? firstQuestion.number : '' %>"
+          data-furthest-question>
+        <div class="page-shell">
+          <aside class="sidebar-card">
+            <div class="timer-panel">
+              <div id="timer" data-duration="<%= durationMinutes %>">00:00:00</div>
+            </div>
+            <div class="sidebar-scroll">
+              <% partSections.forEach((part)=> { %>
+                <section class="sidebar-part">
+                  <h3>Part <%= part.partNumber %>
+                  </h3>
+                  <div class="nav-grid">
+                    <% part.questions.forEach((question)=> { %>
+                      <button type="button" class="nav-btn" data-go-question="<%= question.number %>">
+                        <%= question.number %>
+                      </button>
                       <% }) %>
-                    </div>
+                  </div>
+                </section>
+                <% }) %>
+            </div>
+            <div class="sidebar-footer">
+              <div class="count-box">
+                <strong><span id="answeredCount">0</span>/<%= totalQuestions %></strong>
+                <small><span id="flaggedCount">0</span> câu gắn cờ</small>
+              </div>
+              <button type="submit" class="submit-btn" <%=hasQuestions ? '' : 'disabled' %>>Nộp bài</button>
+            </div>
+          </aside>
 
-                    <div class="answer-actions">
-                      <div class="answer-footer">
-                        <button type="button" class="control-btn" data-direction="-1">Câu trước</button>
-                        <button type="button" class="control-btn" data-direction="1">Câu tiếp</button>
+          <main class="exam-panel">
+            <header class="exam-header">
+              <div class="exam-meta">
+                <%= examData.title || 'TOEIC Placement Test' %> | <%= examData.bookName || 'ETS 2024' %>
+              </div>
+              <h1 id="currentHeadline">
+                <%= firstQuestion ? ('Part ' + firstQuestion.partNumber + ' | Câu ' + firstQuestion.number) : 'TOEIC Placement Test' %>
+              </h1>
+              <div class="exam-subline" id="currentSubline">
+                <%= firstQuestion ? firstQuestion.partTitle : 'Chưa có dữ liệu đề thi' %>
+              </div>
+            </header>
+
+            <div class="screen-stack">
+              <% if (!hasQuestions) { %>
+                <div class="empty-state">Chưa có dữ liệu để hiển thị. Kiểm tra lại file đề thi hoặc route đang truyền
+                  vào view.</div>
+                <% } else { %>
+                  <% questionViews.forEach((question, index)=> { %>
+                    <section class="question-screen<%= index === 0 ? ' active' : '' %>" data-question-screen
+                      data-question-id="<%= question.number %>" data-part-number="<%= question.partNumber %>"
+                      data-part-title="<%= question.partTitle %>"
+                      data-headline="Part <%= question.partNumber %> | Câu <%= question.number %>">
+                      <div class="content-shell">
+                        <div class="question-stage">
+                          <div class="stage-top">
+                            <div>
+                              <span class="stage-kicker">Part <%= question.partNumber %></span>
+                              <h2>
+                                <%= question.partTitle %>
+                              </h2>
+                            </div>
+                            <span class="question-badge">Câu <%= question.number %></span>
+                          </div>
+
+                          <% if (question.sharedAudioUrl) { %>
+                            <div class="audio-block">
+                              <strong>Âm thanh</strong>
+                              <audio controls preload="metadata">
+                                <source src="<%= question.sharedAudioUrl %>" type="audio/mpeg">
+                              </audio>
+                            </div>
+                            <% } %>
+
+                              <% if (question.sharedContent) { %>
+                                <div class="passage-block">
+                                  <strong>Đoạn văn</strong>
+                                  <div class="passage-body">
+                                    <%= question.sharedContent %>
+                                  </div>
+                                </div>
+                                <% } %>
+
+                                  <% if (question.sharedImages && question.sharedImages.length) { %>
+                                    <div class="image-stage">
+                                      <% question.sharedImages.forEach((imageUrl)=> { %>
+                                        <img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>">
+                                        <% }) %>
+                                    </div>
+                                    <% } %>
+
+                                      <div class="prompt-block">
+                                        <strong>Hướng dẫn</strong>
+                                        <p class="instruction-line">
+                                          <%= question.partInstructions %>
+                                        </p>
+                                        <div
+                                          class="prompt-text<%= question.sharedImages && question.sharedImages.length ? ' compact' : '' %>">
+                                          <%= question.prompt %>
+                                        </div>
+                                      </div>
+                        </div>
+
+                        <aside class="answer-stage">
+                          <div class="answer-head">
+                            <div class="answer-head-main">
+                              <button type="button" class="flag-toggle" data-flag-question="<%= question.number %>"
+                                aria-pressed="false" aria-label="Gắn cờ câu <%= question.number %>">
+                                <span class="answer-flag" aria-hidden="true"></span>
+                                <span data-flag-label>Gắn cờ</span>
+                              </button>
+                              <span class="answer-number">
+                                <%= question.number %>.
+                              </span>
+                            </div>
+                            <span class="answer-head-status" data-flag-status></span>
+                          </div>
+
+                          <div class="answer-options">
+                            <% question.options.forEach((option)=> { %>
+                              <label class="choice">
+                                <input type="radio" name="<%= question.inputName %>" value="<%= option.label %>"
+                                  data-question-input="<%= question.number %>">
+                                <span class="choice-ui">
+                                  <span class="choice-dot"></span>
+                                  <% if (option.isLetterOnly) { %>
+                                    <span class="choice-copy only-letter"><strong>
+                                        <%= option.label %>
+                                      </strong></span>
+                                    <% } else { %>
+                                      <span class="choice-copy"><strong>
+                                          <%= option.label %>
+                                        </strong>
+                                        <%= option.text %>
+                                      </span>
+                                      <% } %>
+                                </span>
+                              </label>
+                              <% }) %>
+                          </div>
+
+                          <div class="answer-actions">
+                            <div class="answer-footer">
+                              <button type="button" class="control-btn" data-direction="-1">Câu trước</button>
+                              <button type="button" class="control-btn" data-direction="1">Câu tiếp</button>
+                            </div>
+
+                            <button type="button" class="secondary-btn" data-jump-pending>Đến câu chưa làm</button>
+                            <button type="button" class="secondary-btn" data-jump-flagged>Đến câu gắn cờ</button>
+                          </div>
+                        </aside>
                       </div>
-
-                      <button type="button" class="secondary-btn" data-jump-pending>Đến câu chưa làm</button>
-                      <button type="button" class="secondary-btn" data-jump-flagged>Đến câu gắn cờ</button>
-                    </div>
-                  </aside>
-                </div>
-              </section>
-            <% }) %>
-          <% } %>
+                    </section>
+                    <% }) %>
+                      <% } %>
+            </div>
+          </main>
         </div>
-      </main>
-    </div>
 
-    <div class="confirm-backdrop" hidden data-submit-confirm>
-      <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="placement-submit-confirm-title">
-        <div class="confirm-head">
-          <h2 id="placement-submit-confirm-title">Xác nhận</h2>
-          <button type="button" class="confirm-close" data-submit-close aria-label="Đóng">&times;</button>
+        <div class="confirm-backdrop" hidden data-submit-confirm>
+          <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="placement-submit-confirm-title">
+            <div class="confirm-head">
+              <h2 id="placement-submit-confirm-title">Xác nhận</h2>
+              <button type="button" class="confirm-close" data-submit-close aria-label="Đóng">&times;</button>
+            </div>
+            <p class="confirm-copy">Bạn có muốn nộp bài?</p>
+            <div class="confirm-actions">
+              <button type="button" class="secondary-btn" data-submit-cancel>Quay lại</button>
+              <button type="button" class="submit-btn" data-submit-accept>Nộp bài</button>
+            </div>
+            <p class="confirm-note">Hãy kiểm tra lại kỹ bài trước khi nộp.</p>
+          </div>
         </div>
-        <p class="confirm-copy">Bạn có muốn nộp bài?</p>
-        <div class="confirm-actions">
-          <button type="button" class="secondary-btn" data-submit-cancel>Quay lại</button>
-          <button type="button" class="submit-btn" data-submit-accept>Nộp bài</button>
-        </div>
-        <p class="confirm-note">Hãy kiểm tra lại kỹ bài trước khi nộp.</p>
-      </div>
-    </div>
-  </form>
+      </form>
 
-  <script>
-    (() => {
-      const form = document.querySelector('[data-test-form]');
-      if (!form) return;
+      <script>
+        (() => {
+          const form = document.querySelector('[data-test-form]');
+          if (!form) return;
 
-      const sessionKey = form.dataset.sessionKey || '';
-      const screens = Array.from(form.querySelectorAll('[data-question-screen]'));
-      const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
-      const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
-      const flagButtons = Array.from(form.querySelectorAll('[data-flag-question]'));
-      const timerEl = document.getElementById('timer');
-      const answeredEl = document.getElementById('answeredCount');
-      const flaggedEl = document.getElementById('flaggedCount');
-      const headlineEl = document.getElementById('currentHeadline');
-      const sublineEl = document.getElementById('currentSubline');
-      const jumpPendingButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
-      const jumpFlaggedButtons = Array.from(form.querySelectorAll('[data-jump-flagged]'));
-      const furthestQuestionInput = form.querySelector('[data-furthest-question]');
-      const submitConfirm = form.querySelector('[data-submit-confirm]');
-      const submitAcceptButton = form.querySelector('[data-submit-accept]');
-      const submitCancelButtons = Array.from(form.querySelectorAll('[data-submit-cancel], [data-submit-close]'));
-      const orderedIds = screens.map((screen) => String(screen.dataset.questionId));
-      let currentQuestionId = orderedIds[0] || null;
-      let furthestQuestionId = currentQuestionId;
-      let lastPendingJumpId = null;
-      let lastFlaggedJumpId = null;
-      let flaggedQuestionIds = new Set();
-      let isSubmitConfirmed = false;
+          const sessionKey = form.dataset.sessionKey || '';
+          const screens = Array.from(form.querySelectorAll('[data-question-screen]'));
+          const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
+          const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
+          const flagButtons = Array.from(form.querySelectorAll('[data-flag-question]'));
+          const timerEl = document.getElementById('timer');
+          const answeredEl = document.getElementById('answeredCount');
+          const flaggedEl = document.getElementById('flaggedCount');
+          const headlineEl = document.getElementById('currentHeadline');
+          const sublineEl = document.getElementById('currentSubline');
+          const jumpPendingButtons = Array.from(form.querySelectorAll('[data-jump-pending]'));
+          const jumpFlaggedButtons = Array.from(form.querySelectorAll('[data-jump-flagged]'));
+          const furthestQuestionInput = form.querySelector('[data-furthest-question]');
+          const submitConfirm = form.querySelector('[data-submit-confirm]');
+          const submitAcceptButton = form.querySelector('[data-submit-accept]');
+          const submitCancelButtons = Array.from(form.querySelectorAll('[data-submit-cancel], [data-submit-close]'));
+          const orderedIds = screens.map((screen) => String(screen.dataset.questionId));
+          let currentQuestionId = orderedIds[0] || null;
+          let furthestQuestionId = currentQuestionId;
+          let lastPendingJumpId = null;
+          let lastFlaggedJumpId = null;
+          let flaggedQuestionIds = new Set();
+          let isSubmitConfirmed = false;
 
-      const readState = () => {
-        if (!sessionKey) return null;
-        try {
-          const raw = sessionStorage.getItem(sessionKey);
-          return raw ? JSON.parse(raw) : null;
-        } catch (error) {
-          return null;
-        }
-      };
+          const readState = () => {
+            if (!sessionKey) return null;
+            try {
+              const raw = sessionStorage.getItem(sessionKey);
+              return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+              return null;
+            }
+          };
 
-      const writeState = () => {
-        if (!sessionKey) return;
-        const answers = {};
-        radioInputs.forEach((input) => {
-          if (input.checked) {
-            answers[input.name] = input.value;
-          }
-        });
+          const writeState = () => {
+            if (!sessionKey) return;
+            const answers = {};
+            radioInputs.forEach((input) => {
+              if (input.checked) {
+                answers[input.name] = input.value;
+              }
+            });
 
-        try {
-          sessionStorage.setItem(sessionKey, JSON.stringify({
-            currentQuestionId,
-            furthestQuestionId,
-            lastPendingJumpId,
-            lastFlaggedJumpId,
-            flaggedQuestionIds: Array.from(flaggedQuestionIds),
-            answers
-          }));
-        } catch (error) {
-          console.warn('Cannot save placement state:', error);
-        }
-      };
+            try {
+              sessionStorage.setItem(sessionKey, JSON.stringify({
+                currentQuestionId,
+                furthestQuestionId,
+                lastPendingJumpId,
+                lastFlaggedJumpId,
+                flaggedQuestionIds: Array.from(flaggedQuestionIds),
+                answers
+              }));
+            } catch (error) {
+              console.warn('Cannot save placement state:', error);
+            }
+          };
 
-      const restoreState = () => {
-        const stored = readState();
-        if (!stored) return;
+          const restoreState = () => {
+            const stored = readState();
+            if (!stored) return;
 
-        Object.entries(stored.answers || {}).forEach(([name, value]) => {
-          const matched = form.querySelector(`input[name="${name}"][value="${value}"]`);
-          if (matched) {
-            matched.checked = true;
-          }
-        });
+            Object.entries(stored.answers || {}).forEach(([name, value]) => {
+              const matched = form.querySelector(`input[name="${name}"][value="${value}"]`);
+              if (matched) {
+                matched.checked = true;
+              }
+            });
 
-        if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
-          currentQuestionId = String(stored.currentQuestionId);
-        }
+            if (stored.currentQuestionId && orderedIds.includes(String(stored.currentQuestionId))) {
+              currentQuestionId = String(stored.currentQuestionId);
+            }
 
-        if (stored.furthestQuestionId && orderedIds.includes(String(stored.furthestQuestionId))) {
-          furthestQuestionId = String(stored.furthestQuestionId);
-        }
+            if (stored.furthestQuestionId && orderedIds.includes(String(stored.furthestQuestionId))) {
+              furthestQuestionId = String(stored.furthestQuestionId);
+            }
 
-        if (stored.lastPendingJumpId) {
-          lastPendingJumpId = String(stored.lastPendingJumpId);
-        }
+            if (stored.lastPendingJumpId) {
+              lastPendingJumpId = String(stored.lastPendingJumpId);
+            }
 
-        if (stored.lastFlaggedJumpId) {
-          lastFlaggedJumpId = String(stored.lastFlaggedJumpId);
-        }
+            if (stored.lastFlaggedJumpId) {
+              lastFlaggedJumpId = String(stored.lastFlaggedJumpId);
+            }
 
-        if (Array.isArray(stored.flaggedQuestionIds)) {
-          flaggedQuestionIds = new Set(
-            stored.flaggedQuestionIds
-              .map((questionId) => String(questionId))
-              .filter((questionId) => orderedIds.includes(questionId))
+            if (Array.isArray(stored.flaggedQuestionIds)) {
+              flaggedQuestionIds = new Set(
+                stored.flaggedQuestionIds
+                  .map((questionId) => String(questionId))
+                  .filter((questionId) => orderedIds.includes(questionId))
+              );
+            }
+          };
+
+          const getAnsweredSet = () => new Set(
+            radioInputs
+              .filter((input) => input.checked)
+              .map((input) => String(input.dataset.questionInput))
           );
-        }
-      };
 
-      const getAnsweredSet = () => new Set(
-        radioInputs
-          .filter((input) => input.checked)
-          .map((input) => String(input.dataset.questionInput))
-      );
+          const getFlaggedSet = () => new Set(Array.from(flaggedQuestionIds));
 
-      const getFlaggedSet = () => new Set(Array.from(flaggedQuestionIds));
+          const getScreen = (questionId) => screens.find((screen) => screen.dataset.questionId === String(questionId));
 
-      const getScreen = (questionId) => screens.find((screen) => screen.dataset.questionId === String(questionId));
+          const getNeighborId = (questionId, direction) => {
+            const currentIndex = orderedIds.indexOf(String(questionId));
+            if (currentIndex === -1) return null;
+            return orderedIds[currentIndex + direction] || null;
+          };
 
-      const getNeighborId = (questionId, direction) => {
-        const currentIndex = orderedIds.indexOf(String(questionId));
-        if (currentIndex === -1) return null;
-        return orderedIds[currentIndex + direction] || null;
-      };
+          const updateFurthestQuestion = (questionId) => {
+            const nextIndex = orderedIds.indexOf(String(questionId));
+            const furthestIndex = orderedIds.indexOf(String(furthestQuestionId));
 
-      const updateFurthestQuestion = (questionId) => {
-        const nextIndex = orderedIds.indexOf(String(questionId));
-        const furthestIndex = orderedIds.indexOf(String(furthestQuestionId));
-
-        if (nextIndex !== -1 && (furthestIndex === -1 || nextIndex > furthestIndex)) {
-          furthestQuestionId = String(questionId);
-        }
-
-        if (!furthestQuestionId) {
-          furthestQuestionId = String(questionId);
-        }
-
-        if (furthestQuestionInput) {
-          furthestQuestionInput.value = furthestQuestionId || '';
-        }
-      };
-
-      const closeSubmitConfirm = () => {
-        if (submitConfirm) {
-          submitConfirm.hidden = true;
-        }
-      };
-
-      const openSubmitConfirm = () => {
-        if (submitConfirm) {
-          submitConfirm.hidden = false;
-        }
-      };
-
-      const submitExam = () => {
-        isSubmitConfirmed = true;
-        closeSubmitConfirm();
-
-        if (typeof form.requestSubmit === 'function') {
-          form.requestSubmit();
-          return;
-        }
-
-        if (sessionKey) {
-          sessionStorage.removeItem(sessionKey);
-        }
-
-        form.submit();
-      };
-
-      const updateFooterControls = () => {
-        screens.forEach((screen) => {
-          const questionId = screen.dataset.questionId;
-          const prevButton = screen.querySelector('[data-direction="-1"]');
-          const nextButton = screen.querySelector('[data-direction="1"]');
-          if (prevButton) prevButton.disabled = !getNeighborId(questionId, -1);
-          if (nextButton) nextButton.disabled = !getNeighborId(questionId, 1);
-        });
-      };
-
-      const updateShortcutButtons = (answeredSet, flaggedSet) => {
-        const hasPending = orderedIds.some((questionId) => !answeredSet.has(questionId));
-        const hasFlagged = flaggedSet.size > 0;
-
-        jumpPendingButtons.forEach((button) => {
-          button.disabled = !hasPending;
-        });
-
-        jumpFlaggedButtons.forEach((button) => {
-          button.disabled = !hasFlagged;
-        });
-      };
-
-      const syncUi = () => {
-        const answeredSet = getAnsweredSet();
-        const flaggedSet = getFlaggedSet();
-        const activeScreen = getScreen(currentQuestionId) || screens[0];
-
-        screens.forEach((screen) => {
-          screen.classList.toggle('active', screen === activeScreen);
-        });
-
-        navButtons.forEach((button) => {
-          const questionId = button.dataset.goQuestion;
-          button.classList.toggle('current', questionId === String(currentQuestionId));
-          button.classList.toggle('answered', answeredSet.has(questionId));
-          button.classList.toggle('flagged', flaggedSet.has(questionId));
-        });
-
-        flagButtons.forEach((button) => {
-          const questionId = String(button.dataset.flagQuestion);
-          const isFlagged = flaggedSet.has(questionId);
-          const label = button.querySelector('[data-flag-label]');
-          const status = getScreen(questionId)?.querySelector('[data-flag-status]');
-
-          button.classList.toggle('active', isFlagged);
-          button.setAttribute('aria-pressed', isFlagged ? 'true' : 'false');
-          button.setAttribute('aria-label', `${isFlagged ? 'Bỏ gắn cờ' : 'Gắn cờ'} câu ${questionId}`);
-
-          if (label) {
-            label.textContent = isFlagged ? 'Bỏ cờ' : 'Gắn cờ';
-          }
-
-          if (status) {
-            status.textContent = isFlagged
-              ? 'Đã gắn cờ, nhớ xem lại trước khi nộp.'
-              : '';
-          }
-        });
-
-        const currentButton = navButtons.find((button) => button.dataset.goQuestion === String(currentQuestionId));
-        if (currentButton) {
-          currentButton.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-        }
-
-        if (answeredEl) {
-          answeredEl.textContent = String(answeredSet.size);
-        }
-
-        if (flaggedEl) {
-          flaggedEl.textContent = String(flaggedSet.size);
-        }
-
-        if (activeScreen) {
-          currentQuestionId = String(activeScreen.dataset.questionId);
-          updateFurthestQuestion(currentQuestionId);
-          if (headlineEl) {
-            headlineEl.textContent = activeScreen.dataset.headline || ('Câu ' + currentQuestionId);
-          }
-          if (sublineEl) {
-            const answeredLabel = answeredSet.has(currentQuestionId) ? 'Đã chọn đáp án' : 'Chưa trả lời';
-            const flaggedLabel = flaggedSet.has(currentQuestionId) ? 'Đã gắn cờ xem lại' : 'Không gắn cờ';
-            sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel + ' | ' + flaggedLabel;
-          }
-        }
-
-        updateFooterControls();
-        updateShortcutButtons(answeredSet, flaggedSet);
-        writeState();
-      };
-
-      const setCurrentQuestion = (questionId) => {
-        if (!orderedIds.includes(String(questionId))) return;
-        currentQuestionId = String(questionId);
-        syncUi();
-      };
-
-      const jumpToNextPending = () => {
-        const answeredSet = getAnsweredSet();
-        const pendingIds = orderedIds.filter((questionId) => !answeredSet.has(questionId));
-
-        if (!pendingIds.length) {
-          return;
-        }
-
-        const nextPending = lastPendingJumpId
-          ? (pendingIds.find((questionId) => Number(questionId) > Number(lastPendingJumpId)) || pendingIds[0])
-          : pendingIds[0];
-
-        lastPendingJumpId = nextPending;
-        setCurrentQuestion(nextPending);
-      };
-
-      const jumpToNextFlagged = () => {
-        const flaggedIds = orderedIds.filter((questionId) => flaggedQuestionIds.has(questionId));
-
-        if (!flaggedIds.length) {
-          return;
-        }
-
-        const nextFlagged = lastFlaggedJumpId
-          ? (flaggedIds.find((questionId) => Number(questionId) > Number(lastFlaggedJumpId)) || flaggedIds[0])
-          : flaggedIds[0];
-
-        lastFlaggedJumpId = nextFlagged;
-        setCurrentQuestion(nextFlagged);
-      };
-
-      const toggleFlag = (questionId) => {
-        const normalizedQuestionId = String(questionId);
-        if (!orderedIds.includes(normalizedQuestionId)) {
-          return;
-        }
-
-        if (flaggedQuestionIds.has(normalizedQuestionId)) {
-          flaggedQuestionIds.delete(normalizedQuestionId);
-          if (lastFlaggedJumpId === normalizedQuestionId) {
-            lastFlaggedJumpId = null;
-          }
-        } else {
-          flaggedQuestionIds.add(normalizedQuestionId);
-        }
-
-        syncUi();
-      };
-
-      restoreState();
-      syncUi();
-
-      navButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          setCurrentQuestion(button.dataset.goQuestion);
-        });
-      });
-
-      radioInputs.forEach((input) => {
-        input.addEventListener('change', () => {
-          currentQuestionId = String(input.dataset.questionInput);
-          syncUi();
-        });
-      });
-
-      flagButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          currentQuestionId = String(button.dataset.flagQuestion);
-          toggleFlag(button.dataset.flagQuestion);
-        });
-      });
-
-      screens.forEach((screen) => {
-        const prevButton = screen.querySelector('[data-direction="-1"]');
-        const nextButton = screen.querySelector('[data-direction="1"]');
-        const questionId = screen.dataset.questionId;
-
-        if (prevButton) {
-          prevButton.addEventListener('click', () => {
-            const prevId = getNeighborId(questionId, -1);
-            if (prevId) {
-              setCurrentQuestion(prevId);
+            if (nextIndex !== -1 && (furthestIndex === -1 || nextIndex > furthestIndex)) {
+              furthestQuestionId = String(questionId);
             }
-          });
-        }
 
-        if (nextButton) {
-          nextButton.addEventListener('click', () => {
-            const nextId = getNeighborId(questionId, 1);
-            if (nextId) {
-              setCurrentQuestion(nextId);
+            if (!furthestQuestionId) {
+              furthestQuestionId = String(questionId);
             }
-          });
-        }
-      });
 
-      jumpPendingButtons.forEach((button) => {
-        button.addEventListener('click', jumpToNextPending);
-      });
+            if (furthestQuestionInput) {
+              furthestQuestionInput.value = furthestQuestionId || '';
+            }
+          };
 
-      jumpFlaggedButtons.forEach((button) => {
-        button.addEventListener('click', jumpToNextFlagged);
-      });
+          const closeSubmitConfirm = () => {
+            if (submitConfirm) {
+              submitConfirm.hidden = true;
+            }
+          };
 
-      submitCancelButtons.forEach((button) => {
-        button.addEventListener('click', closeSubmitConfirm);
-      });
+          const openSubmitConfirm = () => {
+            if (submitConfirm) {
+              submitConfirm.hidden = false;
+            }
+          };
 
-      if (submitConfirm) {
-        submitConfirm.addEventListener('click', (event) => {
-          if (event.target === submitConfirm) {
+          const submitExam = () => {
+            isSubmitConfirmed = true;
             closeSubmitConfirm();
+
+            if (typeof form.requestSubmit === 'function') {
+              form.requestSubmit();
+              return;
+            }
+
+            if (sessionKey) {
+              sessionStorage.removeItem(sessionKey);
+            }
+
+            form.submit();
+          };
+
+          const updateFooterControls = () => {
+            screens.forEach((screen) => {
+              const questionId = screen.dataset.questionId;
+              const prevButton = screen.querySelector('[data-direction="-1"]');
+              const nextButton = screen.querySelector('[data-direction="1"]');
+              if (prevButton) prevButton.disabled = !getNeighborId(questionId, -1);
+              if (nextButton) nextButton.disabled = !getNeighborId(questionId, 1);
+            });
+          };
+
+          const updateShortcutButtons = (answeredSet, flaggedSet) => {
+            const hasPending = orderedIds.some((questionId) => !answeredSet.has(questionId));
+            const hasFlagged = flaggedSet.size > 0;
+
+            jumpPendingButtons.forEach((button) => {
+              button.disabled = !hasPending;
+            });
+
+            jumpFlaggedButtons.forEach((button) => {
+              button.disabled = !hasFlagged;
+            });
+          };
+
+          const syncUi = () => {
+            const answeredSet = getAnsweredSet();
+            const flaggedSet = getFlaggedSet();
+            const activeScreen = getScreen(currentQuestionId) || screens[0];
+
+            screens.forEach((screen) => {
+              screen.classList.toggle('active', screen === activeScreen);
+            });
+
+            navButtons.forEach((button) => {
+              const questionId = button.dataset.goQuestion;
+              button.classList.toggle('current', questionId === String(currentQuestionId));
+              button.classList.toggle('answered', answeredSet.has(questionId));
+              button.classList.toggle('flagged', flaggedSet.has(questionId));
+            });
+
+            flagButtons.forEach((button) => {
+              const questionId = String(button.dataset.flagQuestion);
+              const isFlagged = flaggedSet.has(questionId);
+              const label = button.querySelector('[data-flag-label]');
+              const status = getScreen(questionId)?.querySelector('[data-flag-status]');
+
+              button.classList.toggle('active', isFlagged);
+              button.setAttribute('aria-pressed', isFlagged ? 'true' : 'false');
+              button.setAttribute('aria-label', `${isFlagged ? 'Bỏ gắn cờ' : 'Gắn cờ'} câu ${questionId}`);
+
+              if (label) {
+                label.textContent = isFlagged ? 'Bỏ cờ' : 'Gắn cờ';
+              }
+
+              if (status) {
+                status.textContent = isFlagged
+                  ? 'Đã gắn cờ, nhớ xem lại trước khi nộp.'
+                  : '';
+              }
+            });
+
+            const currentButton = navButtons.find((button) => button.dataset.goQuestion === String(currentQuestionId));
+            if (currentButton) {
+              currentButton.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+
+            if (answeredEl) {
+              answeredEl.textContent = String(answeredSet.size);
+            }
+
+            if (flaggedEl) {
+              flaggedEl.textContent = String(flaggedSet.size);
+            }
+
+            if (activeScreen) {
+              currentQuestionId = String(activeScreen.dataset.questionId);
+              updateFurthestQuestion(currentQuestionId);
+              if (headlineEl) {
+                headlineEl.textContent = activeScreen.dataset.headline || ('Câu ' + currentQuestionId);
+              }
+              if (sublineEl) {
+                const answeredLabel = answeredSet.has(currentQuestionId) ? 'Đã chọn đáp án' : 'Chưa trả lời';
+                const flaggedLabel = flaggedSet.has(currentQuestionId) ? 'Đã gắn cờ xem lại' : 'Không gắn cờ';
+                sublineEl.textContent = (activeScreen.dataset.partTitle || '') + ' | ' + answeredLabel + ' | ' + flaggedLabel;
+              }
+            }
+
+            updateFooterControls();
+            updateShortcutButtons(answeredSet, flaggedSet);
+            writeState();
+          };
+
+          const setCurrentQuestion = (questionId) => {
+            if (!orderedIds.includes(String(questionId))) return;
+            currentQuestionId = String(questionId);
+            syncUi();
+          };
+
+          const jumpToNextPending = () => {
+            const answeredSet = getAnsweredSet();
+            const pendingIds = orderedIds.filter((questionId) => !answeredSet.has(questionId));
+
+            if (!pendingIds.length) {
+              return;
+            }
+
+            const nextPending = lastPendingJumpId
+              ? (pendingIds.find((questionId) => Number(questionId) > Number(lastPendingJumpId)) || pendingIds[0])
+              : pendingIds[0];
+
+            lastPendingJumpId = nextPending;
+            setCurrentQuestion(nextPending);
+          };
+
+          const jumpToNextFlagged = () => {
+            const flaggedIds = orderedIds.filter((questionId) => flaggedQuestionIds.has(questionId));
+
+            if (!flaggedIds.length) {
+              return;
+            }
+
+            const nextFlagged = lastFlaggedJumpId
+              ? (flaggedIds.find((questionId) => Number(questionId) > Number(lastFlaggedJumpId)) || flaggedIds[0])
+              : flaggedIds[0];
+
+            lastFlaggedJumpId = nextFlagged;
+            setCurrentQuestion(nextFlagged);
+          };
+
+          const toggleFlag = (questionId) => {
+            const normalizedQuestionId = String(questionId);
+            if (!orderedIds.includes(normalizedQuestionId)) {
+              return;
+            }
+
+            if (flaggedQuestionIds.has(normalizedQuestionId)) {
+              flaggedQuestionIds.delete(normalizedQuestionId);
+              if (lastFlaggedJumpId === normalizedQuestionId) {
+                lastFlaggedJumpId = null;
+              }
+            } else {
+              flaggedQuestionIds.add(normalizedQuestionId);
+            }
+
+            syncUi();
+          };
+
+          restoreState();
+          syncUi();
+
+          navButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+              setCurrentQuestion(button.dataset.goQuestion);
+            });
+          });
+
+          radioInputs.forEach((input) => {
+            input.addEventListener('change', () => {
+              currentQuestionId = String(input.dataset.questionInput);
+              syncUi();
+            });
+          });
+
+          flagButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+              currentQuestionId = String(button.dataset.flagQuestion);
+              toggleFlag(button.dataset.flagQuestion);
+            });
+          });
+
+          screens.forEach((screen) => {
+            const prevButton = screen.querySelector('[data-direction="-1"]');
+            const nextButton = screen.querySelector('[data-direction="1"]');
+            const questionId = screen.dataset.questionId;
+
+            if (prevButton) {
+              prevButton.addEventListener('click', () => {
+                const prevId = getNeighborId(questionId, -1);
+                if (prevId) {
+                  setCurrentQuestion(prevId);
+                }
+              });
+            }
+
+            if (nextButton) {
+              nextButton.addEventListener('click', () => {
+                const nextId = getNeighborId(questionId, 1);
+                if (nextId) {
+                  setCurrentQuestion(nextId);
+                }
+              });
+            }
+          });
+
+          jumpPendingButtons.forEach((button) => {
+            button.addEventListener('click', jumpToNextPending);
+          });
+
+          jumpFlaggedButtons.forEach((button) => {
+            button.addEventListener('click', jumpToNextFlagged);
+          });
+
+          submitCancelButtons.forEach((button) => {
+            button.addEventListener('click', closeSubmitConfirm);
+          });
+
+          if (submitConfirm) {
+            submitConfirm.addEventListener('click', (event) => {
+              if (event.target === submitConfirm) {
+                closeSubmitConfirm();
+              }
+            });
           }
-        });
-      }
 
-      if (submitAcceptButton) {
-        submitAcceptButton.addEventListener('click', submitExam);
-      }
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && submitConfirm && !submitConfirm.hidden) {
-          closeSubmitConfirm();
-        }
-      });
-
-      form.addEventListener('submit', (event) => {
-        if (!isSubmitConfirmed) {
-          event.preventDefault();
-          openSubmitConfirm();
-          return;
-        }
-
-        if (sessionKey) {
-          sessionStorage.removeItem(sessionKey);
-        }
-      });
-
-      if (timerEl) {
-        let timeLeft = Number(timerEl.dataset.duration || 120) * 60;
-        const renderTimer = () => {
-          const hours = Math.floor(timeLeft / 3600);
-          const minutes = Math.floor((timeLeft % 3600) / 60);
-          const seconds = timeLeft % 60;
-          timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-          if (timeLeft <= 0) {
-            alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.');
-            submitExam();
-            return;
+          if (submitAcceptButton) {
+            submitAcceptButton.addEventListener('click', submitExam);
           }
-          timeLeft -= 1;
-        };
-        renderTimer();
-        setInterval(renderTimer, 1000);
-      }
-    })();
-  </script>
+
+          document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && submitConfirm && !submitConfirm.hidden) {
+              closeSubmitConfirm();
+            }
+          });
+
+          form.addEventListener('submit', (event) => {
+            if (!isSubmitConfirmed) {
+              event.preventDefault();
+              openSubmitConfirm();
+              return;
+            }
+
+            if (sessionKey) {
+              sessionStorage.removeItem(sessionKey);
+            }
+          });
+
+          if (timerEl) {
+            let timeLeft = Number(timerEl.dataset.duration || 120) * 60;
+            const renderTimer = () => {
+              const hours = Math.floor(timeLeft / 3600);
+              const minutes = Math.floor((timeLeft % 3600) / 60);
+              const seconds = timeLeft % 60;
+              timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+              if (timeLeft <= 0) {
+                alert('Hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.');
+                submitExam();
+                return;
+              }
+              timeLeft -= 1;
+            };
+            renderTimer();
+            setInterval(renderTimer, 1000);
+          }
+        })();
+      </script>
 </body>
+
 </html>

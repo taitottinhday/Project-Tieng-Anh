@@ -93,8 +93,8 @@ const feedbackChannels = [
     position: relative;
     overflow: hidden;
     border-radius: 34px;
-    border: 1px solid rgba(17, 24, 39, 0.06);
-    box-shadow: 0 24px 54px rgba(17, 24, 39, 0.08);
+    border: 1px solid var(--line-soft);
+    box-shadow: 0 24px 54px rgba(39, 62, 122, 0.12);
   }
 
   .h-hero {
@@ -104,8 +104,9 @@ const feedbackChannels = [
     align-items: center;
     padding: 72px 70px 0;
     background:
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 34%),
-      linear-gradient(135deg, #d8dde4 0%, #cfd7e7 46%, #dce6f4 100%);
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.88), transparent 32%),
+      radial-gradient(circle at bottom right, rgba(232, 155, 188, 0.16), transparent 28%),
+      linear-gradient(135deg, rgba(223, 236, 255, 0.96) 0%, rgba(244, 248, 255, 0.98) 46%, rgba(255, 232, 242, 0.94) 100%);
   }
 
   .h-copy {
@@ -122,8 +123,8 @@ const feedbackChannels = [
     gap: 10px;
     padding: 11px 18px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.78);
-    color: #1f2937;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.74) 0%, rgba(242, 247, 255, 0.82) 100%);
+    color: var(--text);
     font-weight: 700;
     backdrop-filter: blur(16px);
   }
@@ -133,8 +134,8 @@ const feedbackChannels = [
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #22c55e;
-    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.15);
+    background: var(--brand);
+    box-shadow: 0 0 0 6px rgba(47, 120, 237, 0.14);
   }
 
   .h-hero h1,
@@ -148,7 +149,7 @@ const feedbackChannels = [
     font-weight: 700;
     letter-spacing: -0.035em;
     text-wrap: balance;
-    color: #202939;
+    color: var(--text);
   }
 
   .h-hero h1 {
@@ -162,7 +163,7 @@ const feedbackChannels = [
     margin: 0;
     font-size: 1.14rem;
     line-height: 1.8;
-    color: #344054;
+    color: var(--muted);
   }
 
   .h-actions {
@@ -185,15 +186,15 @@ const feedbackChannels = [
   }
 
   .h-btn {
-    background: #111827;
+    background: linear-gradient(135deg, var(--dark-strong) 0%, var(--brand) 100%);
     color: #ffffff;
-    box-shadow: 0 18px 36px rgba(17, 24, 39, 0.18);
+    box-shadow: 0 18px 36px rgba(47, 120, 237, 0.18);
   }
 
   .h-btn-ghost {
-    background: rgba(255, 255, 255, 0.82);
-    color: #111827;
-    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(248, 250, 255, 0.82) 100%);
+    color: var(--dark-strong);
+    border: 1px solid var(--line-soft);
   }
 
   .h-btn:hover,
@@ -218,7 +219,7 @@ const feedbackChannels = [
 
   .h-shell {
     padding: 34px;
-    background: rgba(255, 255, 255, 0.86);
+    background: rgba(255, 255, 255, 0.88);
   }
 
   .h-shell-head {
@@ -233,8 +234,8 @@ const feedbackChannels = [
     width: fit-content;
     padding: 7px 12px;
     border-radius: 999px;
-    background: rgba(37, 99, 235, 0.08);
-    color: #2563eb;
+    background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%);
+    color: #1d4f8f;
     font-weight: 800;
     font-size: 0.88rem;
   }
@@ -242,7 +243,7 @@ const feedbackChannels = [
   .h-shell-head p {
     margin: 0;
     max-width: 46rem;
-    color: #667085;
+    color: var(--muted);
     line-height: 1.75;
   }
 
@@ -271,7 +272,7 @@ const feedbackChannels = [
     min-height: 250px;
     padding: 24px;
     border-radius: 28px;
-    border: 1px solid rgba(17, 24, 39, 0.05);
+    border: 1px solid var(--line-soft);
     overflow: hidden;
     isolation: isolate;
   }
@@ -298,19 +299,19 @@ const feedbackChannels = [
   }
 
   .h-portal-card.sun::before {
-    background: linear-gradient(135deg, #fff6cf 0%, #ffe08f 100%);
+    background: linear-gradient(135deg, rgba(242, 247, 255, 0.96) 0%, rgba(255, 231, 240, 0.94) 100%);
   }
 
   .h-portal-card.sky::before {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    background: linear-gradient(135deg, rgba(225, 238, 255, 0.96) 0%, rgba(209, 226, 255, 0.94) 100%);
   }
 
   .h-portal-card.rose::before {
-    background: linear-gradient(135deg, #ffe3ea 0%, #fecdd3 100%);
+    background: linear-gradient(135deg, rgba(255, 241, 247, 0.96) 0%, rgba(255, 220, 234, 0.96) 100%);
   }
 
   .h-portal-card.mint::before {
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    background: linear-gradient(135deg, rgba(236, 243, 255, 0.96) 0%, rgba(245, 235, 255, 0.94) 100%);
   }
 
   .h-portal-mark {
@@ -318,8 +319,8 @@ const feedbackChannels = [
     width: fit-content;
     padding: 8px 12px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.74);
-    color: #1f2937;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--text);
     font-size: 0.84rem;
     font-weight: 800;
     letter-spacing: 0.02em;
@@ -331,12 +332,12 @@ const feedbackChannels = [
     font-size: clamp(1.32rem, 1.9vw, 1.64rem);
     line-height: 1.14;
     letter-spacing: -0.03em;
-    color: #1f2937;
+    color: var(--text);
   }
 
   .h-portal-card p {
     margin: 0;
-    color: #475467;
+    color: var(--muted);
     line-height: 1.7;
   }
 
@@ -349,10 +350,10 @@ const feedbackChannels = [
     min-height: 46px;
     padding: 0 18px;
     border-radius: 999px;
-    background: rgba(17, 24, 39, 0.92);
+    background: linear-gradient(135deg, var(--dark-strong) 0%, var(--brand) 100%);
     color: #ffffff;
     font-weight: 800;
-    box-shadow: 0 14px 28px rgba(17, 24, 39, 0.16);
+    box-shadow: 0 14px 28px rgba(47, 120, 237, 0.18);
   }
 
   .h-portal-link::after {
@@ -370,12 +371,12 @@ const feedbackChannels = [
   .h-panel {
     border-radius: 28px;
     background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(17, 24, 39, 0.05);
+    border: 1px solid var(--line-soft);
   }
 
   .h-stat {
     padding: 26px 24px;
-    box-shadow: 0 14px 32px rgba(17, 24, 39, 0.04);
+    box-shadow: 0 14px 32px rgba(39, 62, 122, 0.08);
   }
 
   .h-stat strong {
@@ -383,12 +384,15 @@ const feedbackChannels = [
     margin-bottom: 10px;
     font-family: "Sora", "Be Vietnam Pro", sans-serif;
     font-size: 2.3rem;
-    color: #c91f30;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     letter-spacing: -0.05em;
   }
 
   .h-stat span {
-    color: #475467;
+    color: var(--muted);
     line-height: 1.7;
   }
 
@@ -405,17 +409,17 @@ const feedbackChannels = [
     font-size: clamp(1.14rem, 1.45vw, 1.32rem);
     line-height: 1.22;
     letter-spacing: -0.025em;
-    color: #111827;
+    color: var(--text);
   }
 
   .h-mini p {
     margin: 0 0 16px;
-    color: #475467;
+    color: var(--muted);
     line-height: 1.7;
   }
 
   .h-mini a {
-    color: #2563eb;
+    color: #1d4f8f;
     font-weight: 800;
   }
 
@@ -426,7 +430,9 @@ const feedbackChannels = [
     align-items: center;
     padding: 0 72px;
     color: #ffffff;
-    background: linear-gradient(135deg, #c91f30 0%, #ec5b6a 100%);
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 24%),
+      linear-gradient(135deg, #173f73 0%, #2f78ed 56%, #e89bbc 100%);
   }
 
   .h-offer-copy {
@@ -468,7 +474,7 @@ const feedbackChannels = [
 
   .h-panel {
     padding: 30px;
-    box-shadow: 0 18px 42px rgba(17, 24, 39, 0.06);
+    box-shadow: 0 18px 42px rgba(39, 62, 122, 0.08);
   }
 
   .h-panel h2 {
@@ -480,7 +486,7 @@ const feedbackChannels = [
 
   .h-panel p {
     margin: 0 0 18px;
-    color: #475467;
+    color: var(--muted);
     line-height: 1.75;
   }
 
@@ -496,8 +502,8 @@ const feedbackChannels = [
     gap: 6px;
     padding: 18px 20px;
     border-radius: 22px;
-    background: #f8fafc;
-    border: 1px solid rgba(17, 24, 39, 0.05);
+    background: linear-gradient(180deg, rgba(248, 251, 255, 0.98) 0%, rgba(255, 247, 252, 0.98) 100%);
+    border: 1px solid var(--line-soft);
   }
 
   .h-schedule-date {
@@ -508,18 +514,18 @@ const feedbackChannels = [
     min-width: 80px;
     padding: 7px 12px;
     border-radius: 999px;
-    background: rgba(37, 99, 235, 0.08);
-    color: #2563eb;
+    background: linear-gradient(135deg, var(--brand-soft) 0%, var(--accent-soft) 100%);
+    color: #1d4f8f;
     font-weight: 800;
   }
 
   .h-schedule-item strong {
-    color: #111827;
+    color: var(--text);
   }
 
   .h-schedule-item span,
   .h-feedback-item span {
-    color: #475467;
+    color: var(--muted);
     line-height: 1.6;
   }
 
@@ -535,8 +541,8 @@ const feedbackChannels = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(201, 31, 48, 0.08);
-    color: #c91f30;
+    background: linear-gradient(135deg, rgba(47, 120, 237, 0.12) 0%, rgba(232, 155, 188, 0.14) 100%);
+    color: #1d4f8f;
     font-weight: 800;
   }
 

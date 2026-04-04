@@ -25,6 +25,10 @@ function resolveDatabaseConfig() {
     firstNonEmpty(process.env.DB_NAME, process.env.MYSQLDATABASE) || "student_platform";
   const rawPassword = firstDefined(process.env.DB_PASS, process.env.MYSQLPASSWORD);
   const rawPort = firstNonEmpty(process.env.DB_PORT, process.env.MYSQLPORT) || "3306";
+  const rawConnectTimeout = firstNonEmpty(process.env.DB_CONNECT_TIMEOUT_MS) || "10000";
+  const rawStartupWaitMs = firstNonEmpty(process.env.DB_STARTUP_WAIT_MS) || "60000";
+  const rawStartupRetryDelayMs =
+    firstNonEmpty(process.env.DB_STARTUP_RETRY_DELAY_MS) || "2000";
 
   return {
     host,
@@ -32,6 +36,9 @@ function resolveDatabaseConfig() {
     password: typeof rawPassword === "undefined" ? "" : rawPassword,
     database,
     port: Number(rawPort || 3306),
+    connectTimeout: Number(rawConnectTimeout || 10000),
+    startupWaitMs: Number(rawStartupWaitMs || 60000),
+    startupRetryDelayMs: Number(rawStartupRetryDelayMs || 2000),
   };
 }
 
