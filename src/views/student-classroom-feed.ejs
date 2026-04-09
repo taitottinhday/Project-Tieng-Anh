@@ -2,6 +2,7 @@
 <%
   const safeClassInfo = typeof classInfo !== 'undefined' && classInfo ? classInfo : {};
   const safePosts = Array.isArray(typeof posts !== 'undefined' ? posts : null) ? posts : [];
+  const safeTeacherComments = Array.isArray(typeof teacherComments !== 'undefined' ? teacherComments : null) ? teacherComments : [];
   const formatDate = (value) => {
     if (!value) return 'Chưa cập nhật';
     const parsed = new Date(value);
@@ -25,6 +26,7 @@
       <span class="sc-pill soft">Giáo viên: <%= safeClassInfo.teacher_name || 'Đang cập nhật' %></span>
       <span class="sc-pill blue">Lịch học: <%= safeClassInfo.schedule_text || 'Đang cập nhật' %></span>
       <span class="sc-pill pink"><%= safePosts.filter((item) => item.post_type === 'assignment').length %> bài tập</span>
+      <span class="sc-pill green"><%= safeTeacherComments.length %> nhận xét gần đây</span>
     </div>
   </section>
 
@@ -106,6 +108,29 @@
         <div class="sc-actions">
           <a href="<%= baseUrl %>/student/classroom" class="sc-btn-secondary">Tất cả lớp</a>
         </div>
+      </article>
+
+      <article class="sc-panel">
+        <h2>Nhận xét gần đây</h2>
+        <p>Các nhận xét giáo viên gửi riêng cho bạn trong lớp này sẽ được lưu lại tại đây để tiện xem lại.</p>
+        <% if (safeTeacherComments.length) { %>
+          <div class="sc-note-list" style="margin-top: 18px;">
+            <% safeTeacherComments.forEach((item) => { %>
+              <div class="sc-note-card">
+                <div class="sc-note-head">
+                  <strong><%= item.teacher_name || safeClassInfo.teacher_name || 'Giáo viên' %></strong>
+                  <span class="sc-pill soft"><%= formatDate(item.lesson_date || item.created_at) %></span>
+                </div>
+                <div class="sc-post-meta" style="margin-top: 0;">
+                  <span class="sc-pill pink"><%= item.skill_focus || 'Tổng quát' %></span>
+                </div>
+                <p><%= shortText(item.comment, 220) %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Giáo viên chưa gửi nhận xét nào riêng cho bạn ở lớp này.</div>
+        <% } %>
       </article>
     </aside>
   </section>

@@ -1,4 +1,15 @@
 {
-  "exams": [],
+  "exams": [
+    {
+      "id": "ets-2027-test-1",
+      "year": 2027,
+      "testNumber": 1,
+      "title": "ĐỀ 2027 TEST 1",
+      "bookName": "EST 2027",
+      "dataFilePath": "data/admin-content/exams/exam-data-1775753137697-470884021.js",
+      "answerKeyFilePath": "data/admin-content/exams/answer-key-1775753137711-506980888.js",
+      "createdAt": "2026-04-09T16:45:37.723Z"
+    }
+  ],
   "resources": []
 }

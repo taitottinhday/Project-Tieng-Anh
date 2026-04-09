@@ -7,6 +7,10 @@
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleDateString('vi-VN');
   };
+  const shortText = (value, limit = 150) => {
+    const text = String(value || '').trim();
+    return text.length > limit ? `${text.slice(0, limit)}...` : text || 'Chưa có nhận xét chi tiết.';
+  };
 %>
 
 <div class="sc-page">
@@ -57,6 +61,19 @@
               <span class="sc-pill pink"><%= item.assignment_count || 0 %> bài tập</span>
               <span class="sc-pill green"><%= item.submitted_count || 0 %> đã xử lý</span>
             </div>
+            <% if (Number(item.teacher_comment_count || 0) > 0) { %>
+              <div class="sc-note-card" style="margin-top: 16px;">
+                <div class="sc-note-head">
+                  <strong>Nhận xét mới nhất từ giáo viên</strong>
+                  <span class="sc-pill soft"><%= item.teacher_comment_count %> nhận xét</span>
+                </div>
+                <div class="sc-post-meta" style="margin-top: 0;">
+                  <span class="sc-pill pink"><%= item.last_teacher_comment_skill || 'Tổng quát' %></span>
+                  <span class="sc-pill soft"><%= formatDate(item.last_teacher_comment_at) %></span>
+                </div>
+                <p><%= shortText(item.last_teacher_comment) %></p>
+              </div>
+            <% } %>
             <div class="sc-actions">
               <a href="<%= baseUrl %>/student/classroom/<%= item.id %>" class="sc-btn">Mở lớp học</a>
             </div>

@@ -109,6 +109,27 @@ async function listStudentNotifications(userId, options = {}) {
   return rows.map(mapNotification);
 }
 
+async function getStudentNotificationById(userId, notificationId) {
+  const numericUserId = Number(userId || 0);
+  const numericNotificationId = Number(notificationId || 0);
+
+  if (!numericUserId || !numericNotificationId) {
+    return null;
+  }
+
+  const [rows] = await db.query(
+    `
+      SELECT id, user_id, title, message, href, is_read, read_at, created_at
+      FROM student_notifications
+      WHERE user_id = ? AND id = ?
+      LIMIT 1
+    `,
+    [numericUserId, numericNotificationId]
+  );
+
+  return rows.length ? mapNotification(rows[0]) : null;
+}
+
 async function countUnreadStudentNotifications(userId, options = {}) {
   const numericUserId = Number(userId || 0);
   if (!numericUserId) {
@@ -131,6 +152,26 @@ async function countUnreadStudentNotifications(userId, options = {}) {
   );
 
   return Number(rows[0]?.total || 0);
+}
+
+async function markStudentNotificationReadById(userId, notificationId) {
+  const numericUserId = Number(userId || 0);
+  const numericNotificationId = Number(notificationId || 0);
+
+  if (!numericUserId || !numericNotificationId) {
+    return 0;
+  }
+
+  const [result] = await db.query(
+    `
+      UPDATE student_notifications
+      SET is_read = 1, read_at = COALESCE(read_at, NOW())
+      WHERE user_id = ? AND id = ? AND is_read = 0
+    `,
+    [numericUserId, numericNotificationId]
+  );
+
+  return Number(result.affectedRows || 0);
 }
 
 async function markStudentNotificationsRead(userId, options = {}) {
@@ -165,7 +206,9 @@ async function markAllStudentNotificationsRead(userId) {
 module.exports = {
   countUnreadStudentNotifications,
   createStudentNotification,
+  getStudentNotificationById,
   listStudentNotifications,
+  markStudentNotificationReadById,
   markStudentNotificationsRead,
   markAllStudentNotificationsRead,
 };

@@ -334,6 +334,10 @@
       align-items: start;
     }
 
+    .content-shell.content-shell-grouped {
+      grid-template-columns: minmax(0, 1.38fr) minmax(360px, 0.82fr);
+    }
+
     .question-stage,
     .answer-stage {
       border: 1px solid var(--border-strong);
@@ -352,15 +356,33 @@
       scroll-padding-top: 16px;
     }
 
+    .question-stage.question-stage-reading {
+      padding-right: 12px;
+    }
+
     .answer-stage {
       display: flex;
       flex-direction: column;
       gap: 12px;
+      height: 100%;
+      min-height: 0;
       padding: 16px;
+      overflow: hidden;
       background: #fcfdff;
       position: sticky;
       top: 0;
-      align-self: start;
+      align-self: stretch;
+    }
+
+    .answer-stage-scroll {
+      flex: 1 1 auto;
+      height: 0;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 4px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
     }
 
     .stage-top {
@@ -400,6 +422,7 @@
     }
 
     .audio-block,
+    .info-block,
     .passage-block,
     .prompt-block {
       border: 1px solid var(--border);
@@ -409,12 +432,21 @@
     }
 
     .audio-block strong,
+    .info-block strong,
     .passage-block strong,
     .prompt-block strong {
       display: block;
       margin-bottom: 8px;
       color: #1f3b63;
       font-family: "Plus Jakarta Sans", sans-serif;
+    }
+
+    .info-block-empty {
+      border-style: dashed;
+    }
+
+    .instruction-line-static {
+      margin-bottom: 0;
     }
 
     .audio-block audio {
@@ -433,6 +465,12 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
 
+    .image-stage.image-stage-reading {
+      grid-template-columns: 1fr;
+      gap: 18px;
+      align-content: start;
+    }
+
     .image-stage img {
       width: 100%;
       border-radius: 12px;
@@ -441,6 +479,11 @@
       display: block;
       object-fit: contain;
       max-height: 620px;
+    }
+
+    .image-stage.image-stage-reading img {
+      max-height: none;
+      width: 100%;
     }
 
     .instruction-line {
@@ -539,6 +582,7 @@
 
     .choice {
       display: block;
+      position: relative;
       cursor: pointer;
     }
 
@@ -614,6 +658,38 @@
       margin-top: 8px;
       padding-top: 12px;
       border-top: 1px solid var(--border);
+    }
+
+    .answer-head-screen {
+      gap: 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .question-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #ffffff;
+      padding: 14px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .question-card.current {
+      border-color: #f1b24b;
+      background: #fffaf1;
+      box-shadow: 0 12px 28px rgba(255, 163, 19, 0.12);
+    }
+
+    .question-card-head {
+      margin-bottom: 10px;
+    }
+
+    .question-copy-block {
+      margin-bottom: 12px;
+    }
+
+    .question-copy-block .prompt-text {
+      text-align: left;
     }
 
     .answer-footer {
@@ -704,6 +780,10 @@
 
       .content-shell {
         grid-template-columns: minmax(0, 1fr) 220px;
+      }
+
+      .content-shell.content-shell-grouped {
+        grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.9fr);
       }
     }
 
@@ -805,21 +885,103 @@
     const groups = Array.isArray(examData.groups) ? examData.groups : [];
     const partSummary = Array.isArray(examData.partSummary) ? examData.partSummary : [];
     const durationMinutes = Number(examData.durationMinutes || 120);
+    const formatQuestionLabel = (firstNumber, lastNumber = firstNumber) =>
+      Number(firstNumber) === Number(lastNumber)
+        ? 'Câu ' + firstNumber
+        : 'Câu ' + firstNumber + '-' + lastNumber;
+    const groupMetaByQuestionNumber = new Map();
+    groups.forEach((group, groupIndex) => {
+      const groupQuestions = Array.isArray(group.questions) ? group.questions : [];
+      const questionNumbers = groupQuestions
+        .map((groupQuestion) => Number(groupQuestion.number || 0))
+        .filter((number) => number > 0)
+        .sort((left, right) => left - right);
+      const readingQuestionNumbers = questionNumbers.filter((number) => number >= 101);
+      const meta = {
+        group,
+        groupIndex,
+        questionNumbers,
+        readingQuestionNumbers,
+        hasGroupedReadingLayout: readingQuestionNumbers.length > 1,
+        readingScreenId: readingQuestionNumbers.length
+          ? 'reading-group-' + (groupIndex + 1) + '-' + readingQuestionNumbers[0]
+          : ''
+      };
+
+      questionNumbers.forEach((questionNumber) => {
+        groupMetaByQuestionNumber.set(questionNumber, meta);
+      });
+    });
+
     const questionViews = questions.map((question) => {
-      const group =
-        groups.find(
-          (item) =>
-            Array.isArray(item.questions) &&
-            item.questions.some((groupQuestion) => groupQuestion.number === question.number)
-        ) || {};
+      const questionNumber = Number(question.number || 0);
+      const groupMeta = groupMetaByQuestionNumber.get(questionNumber) || null;
+      const group = groupMeta ? groupMeta.group : {};
       const part = partSummary.find((item) => item.partNumber === question.partNumber) || {};
+
       return Object.assign({}, question, {
+        questionNumber,
         partTitle: part.title || ('Part ' + question.partNumber),
         partInstructions: part.instructions || '',
         sharedContent: group.sharedContent || '',
         sharedAudioUrl: group.sharedAudioUrl || null,
-        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : []
+        sharedImages: Array.isArray(group.sharedImages) ? group.sharedImages : [],
+        isReading: questionNumber >= 101,
+        screenId:
+          questionNumber >= 101 && groupMeta && groupMeta.hasGroupedReadingLayout
+            ? groupMeta.readingScreenId
+            : 'question-' + questionNumber,
+        groupedQuestionNumbers:
+          questionNumber >= 101 && groupMeta && groupMeta.hasGroupedReadingLayout
+            ? groupMeta.readingQuestionNumbers
+            : [questionNumber],
+        groupLabel:
+          questionNumber >= 101 && groupMeta && groupMeta.hasGroupedReadingLayout
+            ? formatQuestionLabel(
+                groupMeta.readingQuestionNumbers[0],
+                groupMeta.readingQuestionNumbers[groupMeta.readingQuestionNumbers.length - 1]
+              )
+            : formatQuestionLabel(questionNumber),
+        usesGroupedReadingLayout:
+          questionNumber >= 101 && groupMeta ? groupMeta.hasGroupedReadingLayout : false
       });
+    });
+    const questionViewByNumber = new Map(
+      questionViews.map((question) => [Number(question.number || 0), question])
+    );
+    const screenViews = [];
+    const addedScreenIds = new Set();
+
+    questionViews.forEach((question) => {
+      if (addedScreenIds.has(question.screenId)) {
+        return;
+      }
+
+      const screenQuestions = question.groupedQuestionNumbers
+        .map((questionNumber) => questionViewByNumber.get(Number(questionNumber)))
+        .filter(Boolean);
+      const primaryQuestion = screenQuestions[0] || question;
+      const lastQuestion = screenQuestions[screenQuestions.length - 1] || primaryQuestion;
+
+      screenViews.push({
+        id: question.screenId,
+        partNumber: primaryQuestion.partNumber,
+        partTitle: primaryQuestion.partTitle,
+        partInstructions: primaryQuestion.partInstructions,
+        sharedContent: primaryQuestion.sharedContent,
+        sharedAudioUrl: primaryQuestion.sharedAudioUrl,
+        sharedImages: primaryQuestion.sharedImages,
+        questionIds: screenQuestions.map((item) => String(item.number)),
+        primaryQuestionId: String(primaryQuestion.number),
+        groupLabel:
+          screenQuestions.length > 1
+            ? formatQuestionLabel(primaryQuestion.number, lastQuestion.number)
+            : formatQuestionLabel(primaryQuestion.number),
+        usesGroupedReadingLayout: question.usesGroupedReadingLayout,
+        questions: screenQuestions
+      });
+
+      addedScreenIds.add(question.screenId);
     });
     const partSections = partSummary
       .map((part) =>
@@ -886,22 +1048,31 @@
                 <div class="empty-state">Chưa có dữ liệu để hiển thị. Kiểm tra lại file đề thi hoặc route đang truyền
                   vào view.</div>
                 <% } else { %>
-                  <% questionViews.forEach((question, index)=> { %>
+                  <% screenViews.forEach((screen, index)=> { %>
+                    <% const question = screen.questions[0]; %>
                     <section class="question-screen<%= index === 0 ? ' active' : '' %>" data-question-screen
-                      data-question-id="<%= question.number %>" data-part-number="<%= question.partNumber %>"
-                      data-part-title="<%= question.partTitle %>"
+                      data-screen-id="<%= screen.id %>" data-primary-question-id="<%= screen.primaryQuestionId %>"
+                      data-question-ids="<%= screen.questionIds.join(',') %>" data-part-number="<%= screen.partNumber %>"
+                      data-part-title="<%= screen.partTitle %>" data-group-label="<%= screen.groupLabel %>"
                       data-headline="Part <%= question.partNumber %> | Câu <%= question.number %>">
-                      <div class="content-shell">
-                        <div class="question-stage">
+                      <div class="content-shell<%= screen.usesGroupedReadingLayout ? ' content-shell-grouped' : '' %>">
+                        <div class="question-stage<%= screen.usesGroupedReadingLayout ? ' question-stage-reading' : '' %>">
                           <div class="stage-top">
                             <div>
-                              <span class="stage-kicker">Part <%= question.partNumber %></span>
+                              <span class="stage-kicker">Part <%= screen.partNumber %></span>
                               <h2>
-                                <%= question.partTitle %>
+                                <%= screen.partTitle %>
                               </h2>
                             </div>
-                            <span class="question-badge">Câu <%= question.number %></span>
+                            <span class="question-badge"><%= screen.groupLabel %></span>
                           </div>
+
+                          <% if (screen.usesGroupedReadingLayout) { %>
+                            <div class="info-block">
+                              <strong>Nhóm câu áp dụng</strong>
+                              <p class="instruction-line instruction-line-static"><%= screen.groupLabel %></p>
+                            </div>
+                          <% } %>
 
                           <% if (question.sharedAudioUrl) { %>
                             <div class="audio-block">
@@ -922,13 +1093,14 @@
                                 <% } %>
 
                                   <% if (question.sharedImages && question.sharedImages.length) { %>
-                                    <div class="image-stage">
+                                    <div class="image-stage<%= screen.usesGroupedReadingLayout ? ' image-stage-reading' : '' %>">
                                       <% question.sharedImages.forEach((imageUrl)=> { %>
                                         <img src="<%= imageUrl %>" alt="Tư liệu câu <%= question.number %>">
                                         <% }) %>
                                     </div>
                                     <% } %>
 
+                                      <% if (!screen.usesGroupedReadingLayout) { %>
                                       <div class="prompt-block">
                                         <strong>Hướng dẫn</strong>
                                         <p class="instruction-line">
@@ -939,9 +1111,11 @@
                                           <%= question.prompt %>
                                         </div>
                                       </div>
+                                      <% } %>
                         </div>
 
                         <aside class="answer-stage">
+                          <% if (!screen.usesGroupedReadingLayout) { %>
                           <div class="answer-head">
                             <div class="answer-head-main">
                               <button type="button" class="flag-toggle" data-flag-question="<%= question.number %>"
@@ -955,7 +1129,60 @@
                             </div>
                             <span class="answer-head-status" data-flag-status></span>
                           </div>
+                          <% } else { %>
+                          <div class="answer-head answer-head-screen">
+                            <div class="answer-head-main">
+                              <span class="answer-number"><%= screen.groupLabel %></span>
+                            </div>
+                          </div>
 
+                          <div class="answer-stage-scroll" data-question-scroll>
+                            <% screen.questions.forEach((groupQuestion)=> { %>
+                              <article class="question-card" id="question-card-<%= groupQuestion.number %>" data-question-card
+                                data-question-id="<%= groupQuestion.number %>" data-part-title="<%= groupQuestion.partTitle %>"
+                                data-group-label="<%= screen.groupLabel %>"
+                                data-headline="Part <%= groupQuestion.partNumber %> | Câu <%= groupQuestion.number %>">
+                                <div class="answer-head question-card-head">
+                                  <div class="answer-head-main">
+                                    <button type="button" class="flag-toggle" data-flag-question="<%= groupQuestion.number %>"
+                                      aria-pressed="false" aria-label="Gắn cờ câu <%= groupQuestion.number %>">
+                                      <span class="answer-flag" aria-hidden="true"></span>
+                                      <span data-flag-label>Gắn cờ</span>
+                                    </button>
+                                    <span class="answer-number"><%= groupQuestion.number %>.</span>
+                                  </div>
+                                  <span class="answer-head-status" data-flag-status></span>
+                                </div>
+
+                                <div class="prompt-block question-copy-block">
+                                  <strong>Câu hỏi</strong>
+                                  <div class="prompt-text<%= screen.sharedImages && screen.sharedImages.length ? ' compact' : '' %>">
+                                    <%= groupQuestion.prompt %>
+                                  </div>
+                                </div>
+
+                                <div class="answer-options">
+                                  <% groupQuestion.options.forEach((option)=> { %>
+                                    <label class="choice">
+                                      <input type="radio" name="<%= groupQuestion.inputName %>" value="<%= option.label %>"
+                                        data-question-input="<%= groupQuestion.number %>">
+                                      <span class="choice-ui">
+                                        <span class="choice-dot"></span>
+                                        <% if (option.isLetterOnly) { %>
+                                          <span class="choice-copy only-letter"><strong><%= option.label %></strong></span>
+                                        <% } else { %>
+                                          <span class="choice-copy"><strong><%= option.label %></strong><%= option.text %></span>
+                                        <% } %>
+                                      </span>
+                                    </label>
+                                  <% }) %>
+                                </div>
+                              </article>
+                            <% }) %>
+                          </div>
+                          <% } %>
+
+                          <% if (!screen.usesGroupedReadingLayout) { %>
                           <div class="answer-options">
                             <% question.options.forEach((option)=> { %>
                               <label class="choice">
@@ -978,6 +1205,7 @@
                               </label>
                               <% }) %>
                           </div>
+                          <% } %>
 
                           <div class="answer-actions">
                             <div class="answer-footer">
@@ -1022,6 +1250,7 @@
           const screens = Array.from(form.querySelectorAll('[data-question-screen]'));
           const navButtons = Array.from(form.querySelectorAll('[data-go-question]'));
           const radioInputs = Array.from(form.querySelectorAll('[data-question-input]'));
+          const questionCards = Array.from(form.querySelectorAll('[data-question-card]'));
           const flagButtons = Array.from(form.querySelectorAll('[data-flag-question]'));
           const timerEl = document.getElementById('timer');
           const answeredEl = document.getElementById('answeredCount');
@@ -1034,7 +1263,27 @@
           const submitConfirm = form.querySelector('[data-submit-confirm]');
           const submitAcceptButton = form.querySelector('[data-submit-accept]');
           const submitCancelButtons = Array.from(form.querySelectorAll('[data-submit-cancel], [data-submit-close]'));
-          const orderedIds = screens.map((screen) => String(screen.dataset.questionId));
+          const orderedIds = Array.from(new Set(
+            radioInputs.map((input) => String(input.dataset.questionInput || ''))
+          )).filter(Boolean);
+          const questionMetaMap = new Map();
+          radioInputs.forEach((input) => {
+            const questionId = String(input.dataset.questionInput || '');
+            if (!questionId || questionMetaMap.has(questionId)) return;
+
+            const screen = input.closest('[data-question-screen]');
+            const card = input.closest('[data-question-card]');
+            const context = card || screen;
+
+            questionMetaMap.set(questionId, {
+              id: questionId,
+              screen,
+              card,
+              partTitle: context?.dataset.partTitle || screen?.dataset.partTitle || '',
+              groupLabel: context?.dataset.groupLabel || screen?.dataset.groupLabel || '',
+              headline: 'Part ' + (screen?.dataset.partNumber || '') + ' | Câu ' + questionId
+            });
+          });
           let currentQuestionId = orderedIds[0] || null;
           let furthestQuestionId = currentQuestionId;
           let lastPendingJumpId = null;
@@ -1119,12 +1368,36 @@
 
           const getFlaggedSet = () => new Set(Array.from(flaggedQuestionIds));
 
-          const getScreen = (questionId) => screens.find((screen) => screen.dataset.questionId === String(questionId));
+          const getQuestionMeta = (questionId) => questionMetaMap.get(String(questionId)) || null;
+          const getScreen = (questionId) => getQuestionMeta(questionId)?.screen || null;
+          const getCard = (questionId) => getQuestionMeta(questionId)?.card || null;
 
           const getNeighborId = (questionId, direction) => {
             const currentIndex = orderedIds.indexOf(String(questionId));
             if (currentIndex === -1) return null;
             return orderedIds[currentIndex + direction] || null;
+          };
+
+          const scrollQuestionIntoView = (questionId) => {
+            const card = getCard(questionId);
+            if (card) {
+              const scrollHost = card.closest('[data-question-scroll]');
+              if (scrollHost) {
+                const nextTop = Math.max(card.offsetTop - scrollHost.offsetTop - 8, 0);
+                scrollHost.scrollTo({
+                  top: nextTop,
+                  behavior: 'smooth'
+                });
+              } else {
+                card.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+              }
+              return;
+            }
+
+            const screen = getScreen(questionId);
+            if (screen) {
+              screen.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
           };
 
           const updateFurthestQuestion = (questionId) => {
@@ -1172,9 +1445,15 @@
             form.submit();
           };
 
-          const updateFooterControls = () => {
+          const updateFooterControls = (activeScreen) => {
             screens.forEach((screen) => {
-              const questionId = screen.dataset.questionId;
+              const questionIds = String(screen.dataset.questionIds || '')
+                .split(',')
+                .map((questionId) => questionId.trim())
+                .filter(Boolean);
+              const questionId = screen === activeScreen
+                ? String(currentQuestionId || screen.dataset.primaryQuestionId || questionIds[0] || '')
+                : String(screen.dataset.primaryQuestionId || questionIds[0] || '');
               const prevButton = screen.querySelector('[data-direction="-1"]');
               const nextButton = screen.querySelector('[data-direction="1"]');
               if (prevButton) prevButton.disabled = !getNeighborId(questionId, -1);
@@ -1195,13 +1474,23 @@
             });
           };
 
-          const syncUi = () => {
+          const syncUi = (options = {}) => {
+            const shouldScrollQuestionIntoView = Boolean(options.scrollQuestionIntoView);
+            const preservedScrollHost = options.preserveScrollHost || null;
+            const preservedScrollTop = Number.isFinite(options.preserveScrollTop)
+              ? options.preserveScrollTop
+              : null;
             const answeredSet = getAnsweredSet();
             const flaggedSet = getFlaggedSet();
             const activeScreen = getScreen(currentQuestionId) || screens[0];
+            const activeMeta = getQuestionMeta(currentQuestionId);
 
             screens.forEach((screen) => {
               screen.classList.toggle('active', screen === activeScreen);
+            });
+
+            questionCards.forEach((card) => {
+              card.classList.toggle('current', card.dataset.questionId === String(currentQuestionId));
             });
 
             navButtons.forEach((button) => {
@@ -1215,7 +1504,7 @@
               const questionId = String(button.dataset.flagQuestion);
               const isFlagged = flaggedSet.has(questionId);
               const label = button.querySelector('[data-flag-label]');
-              const status = getScreen(questionId)?.querySelector('[data-flag-status]');
+              const status = button.closest('[data-question-card], [data-question-screen]')?.querySelector('[data-flag-status]');
 
               button.classList.toggle('active', isFlagged);
               button.setAttribute('aria-pressed', isFlagged ? 'true' : 'false');
@@ -1246,7 +1535,6 @@
             }
 
             if (activeScreen) {
-              currentQuestionId = String(activeScreen.dataset.questionId);
               updateFurthestQuestion(currentQuestionId);
               if (headlineEl) {
                 headlineEl.textContent = activeScreen.dataset.headline || ('Câu ' + currentQuestionId);
@@ -1258,15 +1546,40 @@
               }
             }
 
-            updateFooterControls();
+            if (activeMeta) {
+              if (headlineEl && activeMeta.headline) {
+                headlineEl.textContent = activeMeta.headline;
+              }
+              if (sublineEl && activeMeta.groupLabel) {
+                const safeAnsweredLabel = answeredSet.has(currentQuestionId) ? 'Đã chọn đáp án' : 'Chưa trả lời';
+                const safeFlaggedLabel = flaggedSet.has(currentQuestionId) ? 'Đã gắn cờ xem lại' : 'Không gắn cờ';
+                const answeredLabel = answeredSet.has(currentQuestionId) ? 'ÄÃ£ chá»n Ä‘Ã¡p Ã¡n' : 'ChÆ°a tráº£ lá»i';
+                const flaggedLabel = flaggedSet.has(currentQuestionId) ? 'ÄÃ£ gáº¯n cá» xem láº¡i' : 'KhÃ´ng gáº¯n cá»';
+                sublineEl.textContent = activeMeta.groupLabel + ' | ' + answeredLabel + ' | ' + flaggedLabel;
+                sublineEl.textContent = activeMeta.groupLabel + ' | ' + safeAnsweredLabel + ' | ' + safeFlaggedLabel;
+              }
+            }
+
+            if (preservedScrollHost && preservedScrollTop !== null) {
+              preservedScrollHost.scrollTop = preservedScrollTop;
+            }
+
+            updateFooterControls(activeScreen);
             updateShortcutButtons(answeredSet, flaggedSet);
+            if (shouldScrollQuestionIntoView) {
+              requestAnimationFrame(() => {
+                scrollQuestionIntoView(currentQuestionId);
+              });
+            }
             writeState();
           };
 
-          const setCurrentQuestion = (questionId) => {
+          const setCurrentQuestion = (questionId, options = {}) => {
             if (!orderedIds.includes(String(questionId))) return;
             currentQuestionId = String(questionId);
-            syncUi();
+            syncUi({
+              scrollQuestionIntoView: options.scrollQuestionIntoView !== false
+            });
           };
 
           const jumpToNextPending = () => {
@@ -1329,8 +1642,13 @@
 
           radioInputs.forEach((input) => {
             input.addEventListener('change', () => {
-              currentQuestionId = String(input.dataset.questionInput);
-              syncUi();
+              const scrollHost = input.closest('[data-question-scroll]');
+              const scrollTop = scrollHost ? scrollHost.scrollTop : null;
+              setCurrentQuestion(String(input.dataset.questionInput), {
+                scrollQuestionIntoView: false,
+                preserveScrollHost: scrollHost,
+                preserveScrollTop: scrollTop
+              });
             });
           });
 
@@ -1344,11 +1662,13 @@
           screens.forEach((screen) => {
             const prevButton = screen.querySelector('[data-direction="-1"]');
             const nextButton = screen.querySelector('[data-direction="1"]');
-            const questionId = screen.dataset.questionId;
+            const getScreenQuestionId = () => String(
+              currentQuestionId || screen.dataset.primaryQuestionId || ''
+            );
 
             if (prevButton) {
               prevButton.addEventListener('click', () => {
-                const prevId = getNeighborId(questionId, -1);
+                const prevId = getNeighborId(getScreenQuestionId(), -1);
                 if (prevId) {
                   setCurrentQuestion(prevId);
                 }
@@ -1357,7 +1677,7 @@
 
             if (nextButton) {
               nextButton.addEventListener('click', () => {
-                const nextId = getNeighborId(questionId, 1);
+                const nextId = getNeighborId(getScreenQuestionId(), 1);
                 if (nextId) {
                   setCurrentQuestion(nextId);
                 }

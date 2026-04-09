@@ -3,10 +3,11 @@ const path = require("path");
 const multer = require("multer");
 
 const PROJECT_ROOT = process.cwd();
+const PUBLIC_ROOT = path.join(PROJECT_ROOT, "public");
 const DATA_ROOT = path.join(PROJECT_ROOT, "data", "admin-content");
 const EXAM_UPLOAD_ROOT = path.join(DATA_ROOT, "exams");
+const PUBLIC_RESOURCE_ROOT = path.join(PUBLIC_ROOT, "uploads", "resources");
 const MANIFEST_PATH = path.join(DATA_ROOT, "manifest.json");
-const PUBLIC_RESOURCE_ROOT = path.join(PROJECT_ROOT, "public", "uploads", "resources");
 
 const EXAM_ALLOWED_EXTENSIONS = new Set([".json", ".js"]);
 const RESOURCE_BLOCKED_EXTENSIONS = new Set([
@@ -34,11 +35,7 @@ function ensureAdminContentDirectories() {
   });
 
   if (!fs.existsSync(MANIFEST_PATH)) {
-    fs.writeFileSync(
-      MANIFEST_PATH,
-      JSON.stringify({ exams: [], resources: [] }, null, 2),
-      "utf8"
-    );
+    fs.writeFileSync(MANIFEST_PATH, JSON.stringify({ exams: [], resources: [] }, null, 2), "utf8");
   }
 }
 
@@ -89,8 +86,55 @@ function toProjectRelativePath(filePath) {
 }
 
 function toPublicPath(filePath) {
-  const publicRoot = path.join(PROJECT_ROOT, "public");
-  return `/${path.relative(publicRoot, filePath).replace(/\\/g, "/")}`;
+  return `/${path.relative(PUBLIC_ROOT, filePath).replace(/\\/g, "/")}`;
+}
+
+function normalizeResourceAudience(audience) {
+  return String(audience || "").trim().toLowerCase() === "student" ? "student" : "public";
+}
+
+function isPathInsideRoot(targetPath, rootPath) {
+  const resolvedTarget = path.resolve(targetPath);
+  const resolvedRoot = path.resolve(rootPath);
+  return resolvedTarget === resolvedRoot || resolvedTarget.startsWith(`${resolvedRoot}${path.sep}`);
+}
+
+function resolveManagedAbsolutePath(filePath) {
+  const normalized = String(filePath || "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  let absolutePath = null;
+
+  if (path.isAbsolute(normalized)) {
+    absolutePath = path.resolve(normalized);
+  } else if (normalized.startsWith("/")) {
+    absolutePath = path.resolve(PUBLIC_ROOT, normalized.replace(/^\/+/, ""));
+  } else {
+    absolutePath = path.resolve(PROJECT_ROOT, normalized);
+  }
+
+  if (isPathInsideRoot(absolutePath, EXAM_UPLOAD_ROOT) || isPathInsideRoot(absolutePath, PUBLIC_RESOURCE_ROOT)) {
+    return absolutePath;
+  }
+
+  return null;
+}
+
+function cleanupManagedFile(filePath) {
+  const absolutePath = resolveManagedAbsolutePath(filePath);
+  if (absolutePath && fs.existsSync(absolutePath)) {
+    fs.unlinkSync(absolutePath);
+  }
+}
+
+function cleanupFiles(filePaths = []) {
+  filePaths.forEach((filePath) => cleanupManagedFile(filePath));
+}
+
+function getStoredResourcePath(entry = {}) {
+  return entry.storedFilePath || entry.publicPath || "";
 }
 
 function adminExamFileFilter(req, file, cb) {
@@ -166,23 +210,16 @@ function getPublishedResourceEntries() {
   return readManifest()
     .resources
     .slice()
-    .sort((left, right) => new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime());
-}
-
-function cleanupStoredFile(relativePath) {
-  const normalized = String(relativePath || "").trim();
-  if (!normalized) {
-    return;
-  }
-
-  const absolutePath = path.join(PROJECT_ROOT, normalized);
-  if (absolutePath.startsWith(EXAM_UPLOAD_ROOT) && fs.existsSync(absolutePath)) {
-    fs.unlinkSync(absolutePath);
-  }
+    .sort(
+      (left, right) =>
+        new Date(right.updatedAt || right.createdAt || 0).getTime() -
+        new Date(left.updatedAt || left.createdAt || 0).getTime()
+    );
 }
 
 function registerUploadedExam({ year, testNumber, title, bookName, dataFile, answerKeyFile }) {
   if (!dataFile || !answerKeyFile) {
+    cleanupFiles([dataFile?.path, answerKeyFile?.path]);
     throw new Error("Cần tải lên cả file đề và file answer key.");
   }
 
@@ -190,18 +227,13 @@ function registerUploadedExam({ year, testNumber, title, bookName, dataFile, ans
   const normalizedTestNumber = Number(testNumber);
 
   if (!normalizedYear || !normalizedTestNumber) {
+    cleanupFiles([dataFile.path, answerKeyFile.path]);
     throw new Error("Năm đề và số test không hợp lệ.");
   }
 
   const examId = normalizeExamId(normalizedYear, normalizedTestNumber);
   const manifest = readManifest();
   const existingEntry = manifest.exams.find((item) => item.id === examId);
-
-  if (existingEntry) {
-    cleanupStoredFile(existingEntry.dataFilePath);
-    cleanupStoredFile(existingEntry.answerKeyFilePath);
-  }
-
   const nextEntry = {
     id: examId,
     year: normalizedYear,
@@ -213,11 +245,18 @@ function registerUploadedExam({ year, testNumber, title, bookName, dataFile, ans
     createdAt: new Date().toISOString(),
   };
 
-  manifest.exams = manifest.exams
-    .filter((item) => item.id !== examId)
-    .concat(nextEntry);
+  try {
+    manifest.exams = manifest.exams.filter((item) => item.id !== examId).concat(nextEntry);
+    writeManifest(manifest);
+  } catch (error) {
+    cleanupFiles([dataFile.path, answerKeyFile.path]);
+    throw error;
+  }
 
-  writeManifest(manifest);
+  if (existingEntry) {
+    cleanupFiles([existingEntry.dataFilePath, existingEntry.answerKeyFilePath]);
+  }
+
   return nextEntry;
 }
 
@@ -228,32 +267,107 @@ function registerUploadedResource({ title, description, audience, resourceFile }
 
   const normalizedTitle = String(title || "").trim();
   if (!normalizedTitle) {
+    cleanupManagedFile(resourceFile.path);
     throw new Error("Tiêu đề tài liệu là bắt buộc.");
   }
 
   const manifest = readManifest();
+  const timestamp = new Date().toISOString();
   const nextEntry = {
     id: `resource-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
     title: normalizedTitle,
     description: String(description || "").trim() || "",
-    audience: String(audience || "").trim() || "public",
+    audience: normalizeResourceAudience(audience),
     originalName: resourceFile.originalname,
+    storedFilePath: toProjectRelativePath(resourceFile.path),
     publicPath: toPublicPath(resourceFile.path),
-    createdAt: new Date().toISOString(),
+    mimeType: resourceFile.mimetype || null,
+    sizeBytes: Number(resourceFile.size || 0),
+    createdAt: timestamp,
+    updatedAt: timestamp,
   };
 
-  manifest.resources = [nextEntry, ...manifest.resources];
-  writeManifest(manifest);
+  try {
+    manifest.resources = [nextEntry, ...manifest.resources];
+    writeManifest(manifest);
+  } catch (error) {
+    cleanupManagedFile(resourceFile.path);
+    throw error;
+  }
+
   return nextEntry;
+}
+
+function updateUploadedResource({ id, title, description, audience, resourceFile }) {
+  const normalizedId = String(id || "").trim();
+  const manifest = readManifest();
+  const resourceIndex = manifest.resources.findIndex((item) => item.id === normalizedId);
+
+  if (resourceIndex === -1) {
+    cleanupManagedFile(resourceFile?.path);
+    throw new Error("Không tìm thấy tài liệu cần cập nhật.");
+  }
+
+  const normalizedTitle = String(title || "").trim();
+  if (!normalizedTitle) {
+    cleanupManagedFile(resourceFile?.path);
+    throw new Error("Tiêu đề tài liệu là bắt buộc.");
+  }
+
+  const currentEntry = manifest.resources[resourceIndex];
+  const nextEntry = {
+    ...currentEntry,
+    title: normalizedTitle,
+    description: String(description || "").trim() || "",
+    audience: normalizeResourceAudience(audience || currentEntry.audience),
+    originalName: resourceFile?.originalname || currentEntry.originalName || currentEntry.title,
+    storedFilePath: resourceFile ? toProjectRelativePath(resourceFile.path) : currentEntry.storedFilePath || "",
+    publicPath: resourceFile ? toPublicPath(resourceFile.path) : currentEntry.publicPath,
+    mimeType: resourceFile?.mimetype || currentEntry.mimeType || null,
+    sizeBytes: resourceFile ? Number(resourceFile.size || 0) : Number(currentEntry.sizeBytes || 0),
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    manifest.resources[resourceIndex] = nextEntry;
+    writeManifest(manifest);
+  } catch (error) {
+    cleanupManagedFile(resourceFile?.path);
+    throw error;
+  }
+
+  if (resourceFile) {
+    cleanupManagedFile(getStoredResourcePath(currentEntry));
+  }
+
+  return nextEntry;
+}
+
+function deleteUploadedResource(id) {
+  const normalizedId = String(id || "").trim();
+  const manifest = readManifest();
+  const existingEntry = manifest.resources.find((item) => item.id === normalizedId);
+
+  if (!existingEntry) {
+    throw new Error("Không tìm thấy tài liệu cần xóa.");
+  }
+
+  manifest.resources = manifest.resources.filter((item) => item.id !== normalizedId);
+  writeManifest(manifest);
+  cleanupManagedFile(getStoredResourcePath(existingEntry));
+
+  return existingEntry;
 }
 
 module.exports = {
   MANIFEST_PATH,
-  normalizeExamId,
+  deleteUploadedResource,
   getPublishedResourceEntries,
   getUploadedExamEntries,
+  normalizeExamId,
   registerUploadedExam,
   registerUploadedResource,
+  updateUploadedResource,
   uploadAdminExamAssets,
   uploadAdminResourceAssets,
 };

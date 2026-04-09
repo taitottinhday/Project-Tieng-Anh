@@ -11,6 +11,7 @@ const {
     getTeacherClassroomList,
     saveTeacherReview,
 } = require("../services/classroomService");
+const { createStudentNotification } = require("../services/studentNotificationService");
 const { listTeacherConsultations } = require("../services/consultationService");
 const { resolvePublicErrorMessage, sendPublicError } = require("../utils/publicError");
 const ensureSchemaReady = require("../middleware/ensureSchemaReady");
@@ -1078,21 +1079,29 @@ router.post("/comments", isTeacher, express.urlencoded({ extended: true }), asyn
             return res.send("Thiếu thông tin nhận xét.");
         }
 
-        const [classRows] = await db.query(`
-          SELECT id
-          FROM classes
-          WHERE id = ? AND teacher_id = ?
+        const [classDetailsRows] = await db.query(`
+          SELECT
+            c.id,
+            c.code,
+            co.name AS course_name
+          FROM classes c
+          LEFT JOIN courses co ON co.id = c.course_id
+          WHERE c.id = ? AND c.teacher_id = ?
           LIMIT 1
         `, [classId, teacher.id]);
+        const classDetails = classDetailsRows[0] || null;
 
-        if (!classRows.length) {
+        if (!classDetails) {
             return res.status(403).send("Bạn không có quyền nhận xét lớp này.");
         }
 
         const [studentRows] = await db.query(`
-          SELECT 1
-          FROM enrollments
-          WHERE class_id = ? AND student_id = ? AND status = 'active'
+          SELECT
+            s.user_id,
+            s.full_name
+          FROM enrollments e
+          INNER JOIN students s ON s.id = e.student_id
+          WHERE e.class_id = ? AND e.student_id = ? AND e.status = 'active'
           LIMIT 1
         `, [classId, studentId]);
 
@@ -1100,10 +1109,28 @@ router.post("/comments", isTeacher, express.urlencoded({ extended: true }), asyn
             return res.status(400).send("Học viên không thuộc lớp học này.");
         }
 
+        const studentInfo = studentRows[0];
+
         await db.query(`
           INSERT INTO student_comments (class_id, student_id, teacher_id, lesson_date, skill_focus, comment)
           VALUES (?, ?, ?, ?, ?, ?)
         `, [classId, studentId, teacher.id, lessonDate, skillFocus || null, comment]);
+
+        const targetUserId = Number(studentInfo.user_id || 0);
+        if (targetUserId) {
+            const commentPreview = comment.length > 140 ? `${comment.slice(0, 137)}...` : comment;
+            const teacherName = String(teacher.full_name || teacher.name || "Giáo viên").trim() || "Giáo viên";
+            const classCode = String(classDetails.code || "").trim() || "lớp học";
+            const courseName = String(classDetails.course_name || "").trim() || "khóa học";
+            const studentName = String(studentInfo.full_name || "Học viên").trim() || "Học viên";
+
+            await createStudentNotification({
+                userId: targetUserId,
+                title: "Giáo viên vừa gửi nhận xét mới",
+                message: `${teacherName} vừa gửi nhận xét mới cho ${studentName} ở lớp ${classCode} - ${courseName}. ${commentPreview}`,
+                href: `/student/classroom/${classId}`,
+            });
+        }
 
         return res.redirect(req.baseUrl + `/comments?class_id=${classId}&success=1`);
     } catch (err) {

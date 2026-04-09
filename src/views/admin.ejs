@@ -34,7 +34,7 @@ const adminModuleLinks = [
   { key: "classes", label: "Lớp học", href: `${safeBaseUrl}/admin#classes` },
   { key: "students", label: "Học viên", href: `${safeBaseUrl}/admin/students#students` },
   { key: "teachers", label: "Giáo viên", href: `${safeBaseUrl}/admin/teachers#teachers` },
-  { key: "resources", label: "Tài liệu", href: `${safeBaseUrl}/admin/resources#content` },
+  { key: "resources", label: "Đề thi", href: `${safeBaseUrl}/admin/resources#content` },
 ];
 const adminViewMetaMap = {
   overview: {
@@ -86,21 +86,43 @@ const adminViewMetaMap = {
     ],
   },
   resources: {
-    badge: "Kho tài liệu",
+    badge: "Kho đề thi",
     title:
-      "Tách riêng khu đề thi và tài liệu để admin thêm nội dung mới lên web một cách gọn gàng và dễ kiểm soát phiên bản.",
+      "Tách riêng khu đề thi để admin thêm full test mới lên web một cách gọn gàng và dễ kiểm soát phiên bản.",
     description:
-      "Tại đây bạn có thể đăng đề full test mới, tải tài liệu mới và rà lại toàn bộ kho nội dung đã công bố.",
+      "Tại đây bạn có thể đăng đề full test mới và rà lại toàn bộ danh sách đề đã công bố.",
     primaryLabel: "Đăng đề thi",
     primaryHref: `${safeBaseUrl}/admin/resources#content`,
-    secondaryLabel: "Xem kho tài liệu",
-    secondaryHref: `${safeBaseUrl}/admin/resources#resource-library`,
+    secondaryLabel: "Xem danh sách đề",
+    secondaryHref: `${safeBaseUrl}/admin/resources#exam-library`,
     highlights: [
       { value: safeUploadedExamEntries.length || 0, label: "Đề thi đã đăng" },
-      { value: safeUploadedResourceEntries.length || 0, label: "Tài liệu đã đăng" },
       { value: safeStats.totalMessages || 0, label: "Tin nhắn hệ thống" },
     ],
   },
+};
+adminModuleLinks.forEach((item) => {
+  if (item.key === "resources") {
+    item.label = "Kho nội dung";
+  }
+});
+adminViewMetaMap.resources = {
+  ...adminViewMetaMap.resources,
+  badge: "Kho nội dung",
+  title: "Quản lý đề thi và tài liệu trong một không gian gọn, dễ cập nhật và kiểm soát phiên bản.",
+  description: "Đăng full test, lưu tài liệu tham khảo và xử lý sửa/xóa ngay trong khu admin mà không cần đổi sang màn hình khác.",
+  primaryLabel: "Đăng nội dung",
+  primaryHref: `${safeBaseUrl}/admin/resources#content`,
+  secondaryLabel: "Mở thư viện tài liệu",
+  secondaryHref: `${safeBaseUrl}/admin/resources#resource-library`,
+  highlights: [
+    { value: safeUploadedExamEntries.length || 0, label: "Đề thi đã đăng" },
+    { value: safeUploadedResourceEntries.length || 0, label: "Tài liệu đã lưu" },
+    {
+      value: safeUploadedResourceEntries.filter((item) => String(item.audience || "public") === "public").length || 0,
+      label: "Tài liệu công khai",
+    },
+  ],
 };
 const adminViewMeta = adminViewMetaMap[currentAdminView] || adminViewMetaMap.overview;
 
@@ -159,6 +181,10 @@ const paymentMethodMap = {
   zalo_pay: "ZaloPay",
   card: "Thẻ",
   other: "Khác",
+};
+const resourceAudienceMap = {
+  public: "Công khai",
+  student: "Học viên",
 };
 const alertTitleMap = {
   "New leads waiting": "Yêu cầu tư vấn mới",
@@ -1662,30 +1688,10 @@ const classState = (item) => {
   </section>
 
   <style>
-    .admin-section-grid {
-      display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 18px;
-    }
-
-    .admin-form-card {
-      padding: 20px;
-      border-radius: 22px;
-      border: 1px solid rgba(148, 163, 184, 0.14);
-      background: rgba(248, 251, 255, 0.86);
-    }
-
-    .admin-form-card h3,
     .admin-table-card h3 {
       margin: 0;
       color: #17314c;
       font-size: 1.05rem;
-    }
-
-    .admin-form-card p {
-      margin: 8px 0 0;
-      color: #71859b;
-      line-height: 1.6;
     }
 
     .admin-form-grid {
@@ -1806,12 +1812,6 @@ const classState = (item) => {
       line-height: 1.6;
     }
 
-    @media (max-width: 980px) {
-      .admin-section-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
     @media (max-width: 760px) {
       .admin-form-grid {
         grid-template-columns: 1fr;
@@ -1835,35 +1835,7 @@ const classState = (item) => {
       </div>
     </div>
 
-    <div class="admin-section-grid">
-      <aside class="admin-form-card">
-        <h3>Thêm học sinh mới</h3>
-        <p>Tạo hồ sơ cơ bản để ghi nhận liên hệ và chuẩn bị cho các bước ghi danh tiếp theo.</p>
-
-        <form method="POST" action="<%= safeBaseUrl %>/admin/students/add" class="admin-form-grid">
-          <div class="admin-field full">
-            <label for="student-full-name">Họ và tên</label>
-            <input class="admin-input" id="student-full-name" name="full_name" type="text" placeholder="Nhập họ và tên" required>
-          </div>
-          <div class="admin-field">
-            <label for="student-phone">Số điện thoại</label>
-            <input class="admin-input" id="student-phone" name="phone" type="text" placeholder="Nhập số điện thoại">
-          </div>
-          <div class="admin-field">
-            <label for="student-email">Email</label>
-            <input class="admin-input" id="student-email" name="email" type="email" placeholder="Nhập email">
-          </div>
-          <div class="admin-field full">
-            <label for="student-dob">Ngày sinh</label>
-            <input class="admin-input" id="student-dob" name="dob" type="date">
-          </div>
-          <div class="admin-actions full">
-            <button class="admin-button" type="submit">Thêm học sinh</button>
-          </div>
-        </form>
-      </aside>
-
-      <div class="admin-table-card">
+    <div class="admin-table-card">
         <div class="admin-toolbar">
           <div>
             <h3>Danh sách học sinh</h3>
@@ -1949,7 +1921,6 @@ const classState = (item) => {
             </tbody>
           </table>
         </div>
-      </div>
     </div>
   </section>
 
@@ -1961,31 +1932,7 @@ const classState = (item) => {
       </div>
     </div>
 
-    <div class="admin-section-grid">
-      <aside class="admin-form-card">
-        <h3>Thêm giáo viên mới</h3>
-        <p>Tạo hồ sơ giáo viên để sẵn sàng phân công lớp và đồng bộ liên hệ vận hành.</p>
-
-        <form method="POST" action="<%= safeBaseUrl %>/admin/teachers/add" class="admin-form-grid">
-          <div class="admin-field full">
-            <label for="teacher-full-name">Họ và tên</label>
-            <input class="admin-input" id="teacher-full-name" name="full_name" type="text" placeholder="Nhập họ và tên" required>
-          </div>
-          <div class="admin-field">
-            <label for="teacher-phone">Số điện thoại</label>
-            <input class="admin-input" id="teacher-phone" name="phone" type="text" placeholder="Nhập số điện thoại">
-          </div>
-          <div class="admin-field">
-            <label for="teacher-email">Email</label>
-            <input class="admin-input" id="teacher-email" name="email" type="email" placeholder="Nhập email">
-          </div>
-          <div class="admin-actions full">
-            <button class="admin-button" type="submit">Thêm giáo viên</button>
-          </div>
-        </form>
-      </aside>
-
-      <div class="admin-table-card">
+    <div class="admin-table-card">
         <div class="admin-toolbar">
           <div>
             <h3>Danh sách giáo viên</h3>
@@ -2067,7 +2014,6 @@ const classState = (item) => {
             </tbody>
           </table>
         </div>
-      </div>
     </div>
   </section>
 
@@ -2146,6 +2092,54 @@ const classState = (item) => {
       margin-top: 6px;
       color: #7b8fa3;
       line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .admin-resource-card {
+      display: grid;
+      gap: 14px;
+    }
+
+    .admin-resource-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .admin-resource-card p {
+      margin: 0;
+      color: #6f8499;
+      line-height: 1.6;
+    }
+
+    .admin-resource-card .admin-actions {
+      justify-content: flex-end;
+    }
+
+    .admin-resource-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+      color: #73879d;
+      font-size: 0.88rem;
+    }
+
+    .admin-resource-link {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      color: #2f5377;
+      font-weight: 700;
+    }
+
+    .admin-resource-link:hover {
+      text-decoration: underline;
     }
   </style>
 
@@ -2290,101 +2284,101 @@ const classState = (item) => {
     <article class="admin-panel" id="teacher-resource-ops-panel" data-admin-ops-panel style="<%= (isTeachersView || isResourcesView) ? '' : 'display:none' %>">
       <div class="admin-panel-header">
         <div>
-          <h2>Giao vien va kho noi dung</h2>
-          <p>Quan ly tao giao vien, phan cong lop va dua de thi hoac tai lieu moi len web ngay trong luong admin.</p>
+          <h2>Giáo viên và kho đề thi</h2>
+          <p>Quản lý tạo giáo viên, phân công lớp và đưa đề thi mới lên web ngay trong luồng admin.</p>
         </div>
       </div>
 
       <div class="admin-ops-stack">
         <div class="admin-ops-card" id="teacher-operations" data-admin-card-view="teachers" style="<%= isTeachersView ? '' : 'display:none' %>">
-          <h3>Onboarding giao vien</h3>
-          <p>Tao ho so giao vien, mo tai khoan giao vien va gan ngay vao cac lop dang co.</p>
+          <h3>Onboarding giáo viên</h3>
+          <p>Tạo hồ sơ giáo viên, mở tài khoản giáo viên và gán ngay vào các lớp đang có.</p>
           <form method="POST" action="<%= safeBaseUrl %>/admin/teachers/add" class="admin-form-grid">
             <div class="admin-field full">
-              <label for="ops-teacher-name">Ho va ten</label>
-              <input class="admin-input" id="ops-teacher-name" name="full_name" type="text" placeholder="Nhap ho va ten giao vien" required>
+              <label for="ops-teacher-name">Họ và tên</label>
+              <input class="admin-input" id="ops-teacher-name" name="full_name" type="text" placeholder="Nhập họ và tên giáo viên" required>
             </div>
             <div class="admin-field">
-              <label for="ops-teacher-phone">So dien thoai</label>
-              <input class="admin-input" id="ops-teacher-phone" name="phone" type="text" placeholder="Nhap so dien thoai">
+              <label for="ops-teacher-phone">Số điện thoại</label>
+              <input class="admin-input" id="ops-teacher-phone" name="phone" type="text" placeholder="Nhập số điện thoại">
             </div>
             <div class="admin-field">
-              <label for="ops-teacher-email">Email giao vien</label>
-              <input class="admin-input" id="ops-teacher-email" name="email" type="email" placeholder="Nhap email giao vien">
+              <label for="ops-teacher-email">Email giáo viên</label>
+              <input class="admin-input" id="ops-teacher-email" name="email" type="email" placeholder="Nhập email giáo viên">
             </div>
             <div class="admin-field full">
-              <label for="ops-teacher-password">Mat khau portal giao vien</label>
-              <input class="admin-input" id="ops-teacher-password" name="portal_password" type="text" placeholder="Toi thieu 6 ky tu">
+              <label for="ops-teacher-password">Mật khẩu portal giáo viên</label>
+              <input class="admin-input" id="ops-teacher-password" name="portal_password" type="text" placeholder="Tối thiểu 6 ký tự">
             </div>
             <div class="admin-field full">
-              <label for="ops-teacher-classes">Gan vao cac lop hien co</label>
+              <label for="ops-teacher-classes">Gán vào các lớp hiện có</label>
               <select class="admin-input" id="ops-teacher-classes" name="class_ids" multiple>
                 <% safeClassOptions.forEach((item) => { %>
-                  <option value="<%= item.id %>"><%= item.code %> · <%= item.course_name || 'Chua co khoa hoc' %></option>
+                  <option value="<%= item.id %>"><%= item.code %> · <%= item.course_name || 'Chưa có khóa học' %></option>
                 <% }) %>
               </select>
             </div>
             <div class="admin-field full">
               <label style="display:flex;align-items:center;gap:10px;">
                 <input type="checkbox" name="create_portal_account" value="1" checked>
-                Tao hoac lien ket tai khoan giao vien
+                Tạo hoặc liên kết tài khoản giáo viên
               </label>
             </div>
             <div class="admin-actions full">
-              <button class="admin-button" type="submit">Tao giao vien va gan lop</button>
+              <button class="admin-button" type="submit">Tạo giáo viên và gán lớp</button>
             </div>
           </form>
         </div>
 
         <div class="admin-ops-card" data-admin-card-view="teachers" style="<%= isTeachersView ? '' : 'display:none' %>">
-          <h3>Cap nhat phan cong lop</h3>
-          <p>Chon giao vien va danh sach lop hien tai. He thong se thay toan bo danh sach phan cong bang danh sach ban chon.</p>
+          <h3>Cập nhật phân công lớp</h3>
+          <p>Chọn giáo viên và danh sách lớp hiện tại. Hệ thống sẽ thay toàn bộ danh sách phân công bằng danh sách bạn chọn.</p>
           <form method="POST" action="<%= safeBaseUrl %>/admin/teachers/assign-classes" class="admin-form-grid">
             <div class="admin-field full">
-              <label for="assign-teacher-id">Giao vien</label>
+              <label for="assign-teacher-id">Giáo viên</label>
               <select class="admin-input" id="assign-teacher-id" name="teacher_id" required>
-                <option value="">Chon giao vien</option>
+                <option value="">Chọn giáo viên</option>
                 <% safeTeacherOptions.forEach((item) => { %>
                   <option value="<%= item.id %>"><%= item.full_name %><% if (item.email) { %> · <%= item.email %><% } %></option>
                 <% }) %>
               </select>
             </div>
             <div class="admin-field full">
-              <label for="assign-class-ids">Danh sach lop phu trach</label>
+              <label for="assign-class-ids">Danh sách lớp phụ trách</label>
               <select class="admin-input" id="assign-class-ids" name="class_ids" multiple>
                 <% safeClassOptions.forEach((item) => { %>
-                  <option value="<%= item.id %>"><%= item.code %> · <%= item.course_name || 'Chua co khoa hoc' %></option>
+                  <option value="<%= item.id %>"><%= item.code %> · <%= item.course_name || 'Chưa có khóa học' %></option>
                 <% }) %>
               </select>
             </div>
             <div class="admin-actions full">
-              <button class="admin-button secondary" type="submit">Cap nhat phan cong</button>
+              <button class="admin-button secondary" type="submit">Cập nhật phân công</button>
             </div>
           </form>
         </div>
 
         <div class="admin-ops-card" data-admin-card-view="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
-          <h3>Dang de thi full test moi</h3>
-          <p>Chi can tai file de va answer key, de full test moi se xuat hien o full test, theo part va reading.</p>
+          <h3>Đăng đề thi full test mới</h3>
+          <p>Chỉ cần tải file đề và answer key, đề full test mới sẽ xuất hiện ở full test, theo part và reading.</p>
           <form method="POST" action="<%= safeBaseUrl %>/admin/content/exams/add" enctype="multipart/form-data" class="admin-form-grid">
             <div class="admin-field">
-              <label for="exam-year">Nam de</label>
+              <label for="exam-year">Năm đề</label>
               <input class="admin-input" id="exam-year" name="year" type="number" min="2020" step="1" placeholder="2027" required>
             </div>
             <div class="admin-field">
-              <label for="exam-test-number">So test</label>
+              <label for="exam-test-number">Số test</label>
               <input class="admin-input" id="exam-test-number" name="test_number" type="number" min="1" step="1" placeholder="1" required>
             </div>
             <div class="admin-field full">
-              <label for="exam-title">Tieu de hien thi</label>
-              <input class="admin-input" id="exam-title" name="title" type="text" placeholder="VD: De ETS 2027 Test 1" required>
+              <label for="exam-title">Tiêu đề hiển thị</label>
+              <input class="admin-input" id="exam-title" name="title" type="text" placeholder="VD: Đề ETS 2027 Test 1" required>
             </div>
             <div class="admin-field full">
-              <label for="exam-book-name">Nhan sach / bo de</label>
+              <label for="exam-book-name">Nhãn sách / bộ đề</label>
               <input class="admin-input" id="exam-book-name" name="book_name" type="text" placeholder="VD: ETS 2027">
             </div>
             <div class="admin-field full">
-              <label for="exam-data-file">File de thi (.json / .js)</label>
+              <label for="exam-data-file">File đề thi (.json / .js)</label>
               <input class="admin-file-input" id="exam-data-file" name="exam_data_file" type="file" accept=".json,.js" required>
             </div>
             <div class="admin-field full">
@@ -2392,36 +2386,37 @@ const classState = (item) => {
               <input class="admin-file-input" id="exam-answer-file" name="answer_key_file" type="file" accept=".json,.js" required>
             </div>
             <div class="admin-actions full">
-              <button class="admin-button" type="submit">Dang de thi moi</button>
+              <button class="admin-button" type="submit">Đăng đề thi mới</button>
             </div>
           </form>
         </div>
 
         <div class="admin-ops-card" data-admin-card-view="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
-          <h3>Dang tai lieu len web</h3>
-          <p>Tai lieu duoc dua vao thu vien hoc tap de hoc vien truy cap nhanh ngay tren web.</p>
+          <h3>Đăng tài liệu tham khảo</h3>
+          <p>Lưu file vào kho nội dung để admin có thể sửa thông tin, thay file hoặc xóa tài liệu ngay bên dưới.</p>
           <form method="POST" action="<%= safeBaseUrl %>/admin/content/resources/add" enctype="multipart/form-data" class="admin-form-grid">
             <div class="admin-field full">
-              <label for="resource-title">Tieu de tai lieu</label>
-              <input class="admin-input" id="resource-title" name="title" type="text" placeholder="VD: Bo tai lieu Reading 2027" required>
-            </div>
-            <div class="admin-field full">
-              <label for="resource-description">Mo ta ngan</label>
-              <textarea class="admin-input admin-textarea" id="resource-description" name="description" placeholder="Mo ta ngan de hoc vien biet tai lieu nay dung de lam gi"></textarea>
+              <label for="resource-title">Tiêu đề tài liệu</label>
+              <input class="admin-input" id="resource-title" name="title" type="text" placeholder="VD: Bộ tài liệu Reading 2027" required>
             </div>
             <div class="admin-field">
-              <label for="resource-audience">Doi tuong hien thi</label>
+              <label for="resource-audience">Đối tượng hiển thị</label>
               <select class="admin-input" id="resource-audience" name="audience">
-                <option value="public">Public</option>
-                <option value="student">Student</option>
+                <option value="public">Công khai trên web</option>
+                <option value="student">Lưu cho học viên</option>
               </select>
             </div>
-            <div class="admin-field full">
-              <label for="resource-file">File tai lieu</label>
+            <div class="admin-field">
+              <label for="resource-file">Tệp tài liệu</label>
               <input class="admin-file-input" id="resource-file" name="resource_file" type="file" required>
             </div>
+            <div class="admin-field full">
+              <label for="resource-description">Mô tả ngắn</label>
+              <textarea class="admin-input admin-textarea" id="resource-description" name="description" placeholder="Mô tả ngắn để admin và học viên nhận biết tài liệu này dùng để làm gì"></textarea>
+            </div>
+            <div class="admin-helper-note full">Bạn có thể cập nhật tiêu đề, mô tả, đối tượng hiển thị hoặc thay file sau khi tải lên.</div>
             <div class="admin-actions full">
-              <button class="admin-button secondary" type="submit">Dang tai lieu</button>
+              <button class="admin-button" type="submit">Đăng tài liệu mới</button>
             </div>
           </form>
         </div>
@@ -2429,50 +2424,116 @@ const classState = (item) => {
     </article>
   </section>
 
-  <section class="admin-grid admin-grid-2" id="resource-library" data-admin-block="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
+  <section class="admin-grid admin-grid-2" id="exam-library" data-admin-block="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
     <article class="admin-panel">
       <div class="admin-panel-header">
         <div>
-          <h2>De thi da dang ky</h2>
-          <p>Danh sach full test duoc admin tai len truc tiep. Cac de nay se tu dong di vao thu vien full test va cac thu vien tach theo part/reading.</p>
+          <h2>Đề thi đã đăng ký</h2>
+          <p>Danh sách full test được admin tải lên trực tiếp. Các đề này sẽ tự động đi vào thư viện full test và các thư viện tách theo part/reading.</p>
         </div>
       </div>
 
       <div class="admin-content-list">
         <% if (!safeUploadedExamEntries.length) { %>
-          <div class="admin-empty">Chua co de thi nao duoc dang ky tu khu admin.</div>
+          <div class="admin-empty">Chưa có đề thi nào được đăng ký từ khu admin.</div>
         <% } %>
 
         <% safeUploadedExamEntries.forEach((item) => { %>
           <div class="admin-content-item">
-            <strong><%= item.title || `De ETS ${item.year} Test ${item.testNumber}` %></strong>
-            <small><%= item.bookName || `ETS ${item.year}` %> · Nam <%= item.year %> · Test <%= item.testNumber %></small>
+            <strong><%= item.title || `Đề ETS ${item.year} Test ${item.testNumber}` %></strong>
+            <small><%= item.bookName || `ETS ${item.year}` %> · Năm <%= item.year %> · Test <%= item.testNumber %></small>
             <small>ID: <%= item.id %></small>
           </div>
         <% }) %>
       </div>
     </article>
-
-    <article class="admin-panel">
+    <article class="admin-panel" id="resource-library">
       <div class="admin-panel-header">
         <div>
-          <h2>Tai lieu da dua len web</h2>
-          <p>Cac file tai lieu duoc quan ly tap trung de tranh that lac va de hoc vien truy cap dung phien ban.</p>
+          <h2>Tài liệu đã tải lên</h2>
+          <p>Danh sách tài liệu có thể chỉnh sửa metadata, thay file hoặc xóa khỏi kho nội dung ngay tại đây.</p>
         </div>
+        <input class="admin-input admin-search" type="search" placeholder="Tìm tài liệu..." data-admin-search="resource-library">
       </div>
 
       <div class="admin-content-list">
         <% if (!safeUploadedResourceEntries.length) { %>
-          <div class="admin-empty">Chua co tai lieu nao duoc tai len tu khu admin.</div>
+          <div class="admin-empty">Chưa có tài liệu nào được tải lên từ khu admin.</div>
         <% } %>
 
         <% safeUploadedResourceEntries.forEach((item) => { %>
-          <div class="admin-content-item">
-            <strong><%= item.title || item.originalName || 'Tai lieu moi' %></strong>
-            <small>Doi tuong: <%= item.audience || 'public' %></small>
-            <small><%= item.description || item.originalName || 'Khong co mo ta.' %></small>
-            <small><a href="<%= item.publicPath %>" target="_blank" rel="noreferrer">Mo tai lieu</a></small>
+          <div
+            class="admin-content-item admin-resource-card"
+            data-filter-row="resource-library"
+            data-edit-row="resource-edit-<%= item.id %>"
+            data-filter-text="<%= [item.title, item.originalName, item.description, item.audience].filter(Boolean).join(' ') %>"
+          >
+            <div class="admin-resource-card-head">
+              <div>
+                <strong><%= item.title || "Tài liệu mới" %></strong>
+                <small><%= item.originalName || item.publicPath || "Chưa có tên file" %></small>
+              </div>
+              <span class="admin-status <%= String(item.audience || 'public') === 'public' ? 'status-active' : 'status-unassigned' %>">
+                <%= resourceAudienceMap[String(item.audience || 'public')] || String(item.audience || 'public') %>
+              </span>
+            </div>
+
+            <% if (item.description) { %>
+              <p><%= item.description %></p>
+            <% } else { %>
+              <p>Chưa có mô tả ngắn cho tài liệu này.</p>
+            <% } %>
+
+            <div class="admin-resource-meta">
+              <span>Cập nhật: <%= shortDateTime(item.updatedAt || item.createdAt) %></span>
+              <span>File: <%= item.originalName || "Không rõ" %></span>
+              <% if (item.publicPath) { %>
+                <a class="admin-resource-link" href="<%= safeBaseUrl %><%= item.publicPath %>" target="_blank" rel="noopener">Mở tài liệu</a>
+              <% } %>
+            </div>
+
+            <div class="admin-actions">
+              <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('resource-edit-<%= item.id %>')">Sửa</button>
+              <form method="POST" action="<%= safeBaseUrl %>/admin/content/resources/<%= item.id %>/delete" onsubmit="return confirm('Bạn có chắc muốn xóa tài liệu này khỏi kho nội dung?')">
+                <button class="admin-button danger" type="submit">Xóa</button>
+              </form>
+            </div>
           </div>
+
+          <form
+            id="resource-edit-<%= item.id %>"
+            class="admin-inline-form hidden"
+            method="POST"
+            action="<%= safeBaseUrl %>/admin/content/resources/<%= item.id %>/update"
+            enctype="multipart/form-data"
+          >
+            <div class="admin-form-grid">
+              <div class="admin-field full">
+                <label>Tiêu đề tài liệu</label>
+                <input class="admin-input" name="title" type="text" value="<%= item.title || '' %>" required>
+              </div>
+              <div class="admin-field">
+                <label>Đối tượng hiển thị</label>
+                <select class="admin-input" name="audience">
+                  <option value="public" <%= String(item.audience || 'public') === 'public' ? 'selected' : '' %>>Công khai trên web</option>
+                  <option value="student" <%= String(item.audience || 'public') === 'student' ? 'selected' : '' %>>Lưu cho học viên</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label>Thay file tài liệu</label>
+                <input class="admin-file-input" name="resource_file" type="file">
+              </div>
+              <div class="admin-field full">
+                <label>Mô tả ngắn</label>
+                <textarea class="admin-input admin-textarea" name="description"><%= item.description || '' %></textarea>
+              </div>
+            </div>
+            <div class="admin-helper-note">Nếu không chọn file mới, hệ thống sẽ giữ nguyên file hiện tại và chỉ cập nhật thông tin hiển thị.</div>
+            <div class="admin-actions">
+              <button class="admin-button" type="submit">Lưu thay đổi</button>
+              <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('resource-edit-<%= item.id %>')">Đóng</button>
+            </div>
+          </form>
         <% }) %>
       </div>
     </article>
@@ -2736,14 +2797,25 @@ const classState = (item) => {
           if (panelTitle) panelTitle.textContent = "Điều phối giáo viên";
           if (panelDescription) panelDescription.textContent = "Tạo giáo viên mới, gán lớp phụ trách và quản lý phân công theo đúng luồng vận hành.";
         } else if (adminWorkspaceView === "resources") {
-          if (panelTitle) panelTitle.textContent = "Kho nội dung";
-          if (panelDescription) panelDescription.textContent = "Đăng đề thi mới và tải tài liệu mới lên web mà không cần đi qua các khối quản trị khác.";
+          if (panelTitle) panelTitle.textContent = "Kho đề thi";
+          if (panelDescription) panelDescription.textContent = "Đăng đề thi mới và rà lại danh sách đề đã công bố mà không cần đi qua các khối quản trị khác.";
         }
       }
     }
   }
 
   applyAdminWorkspaceView();
+
+  if (adminWorkspaceView === "resources") {
+    const teacherResourcePanel = document.getElementById("teacher-resource-ops-panel");
+    const panelTitle = teacherResourcePanel?.querySelector(".admin-panel-header h2");
+    const panelDescription = teacherResourcePanel?.querySelector(".admin-panel-header p");
+
+    if (panelTitle) panelTitle.textContent = "Kho nội dung";
+    if (panelDescription) {
+      panelDescription.textContent = "Đăng đề thi, tải tài liệu tham khảo và quản lý sửa/xóa ngay trong một khu admin thống nhất.";
+    }
+  }
 
   document.querySelectorAll("[data-admin-search]").forEach((input) => {
     const group = input.getAttribute("data-admin-search");

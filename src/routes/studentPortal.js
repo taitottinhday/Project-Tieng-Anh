@@ -28,7 +28,9 @@ const {
   listStudentConsultations,
 } = require("../services/consultationService");
 const {
+  getStudentNotificationById,
   markStudentNotificationsRead,
+  markStudentNotificationReadById,
   markAllStudentNotificationsRead,
 } = require("../services/studentNotificationService");
 const {
@@ -197,6 +199,28 @@ router.post("/notifications/read-all", isLoggedIn, isStudent, express.urlencoded
   } catch (error) {
     console.error("student notifications read-all error:", error);
     req.flash("error_msg", "Không thể cập nhật trạng thái thông báo lúc này.");
+    return res.redirect((res.locals.baseUrl || "") + "/");
+  }
+});
+
+router.get("/notifications/:notificationId/open", isLoggedIn, isStudent, async (req, res) => {
+  try {
+    const userId = Number(req.session?.user?.id || 0);
+    const notificationId = Number(req.params.notificationId || 0);
+    const notification = await getStudentNotificationById(userId, notificationId);
+
+    if (notification) {
+      await markStudentNotificationReadById(userId, notificationId);
+
+      if (notification.href) {
+        return res.redirect((res.locals.baseUrl || "") + notification.href);
+      }
+    }
+
+    return res.redirect((res.locals.baseUrl || "") + "/");
+  } catch (error) {
+    console.error("student notification open error:", error);
+    req.flash("error_msg", "Không thể mở thông báo lúc này.");
     return res.redirect((res.locals.baseUrl || "") + "/");
   }
 });
@@ -483,6 +507,7 @@ router.get("/classroom/:classId", isLoggedIn, isStudent, async (req, res) => {
       student,
       classInfo: classroom.classInfo,
       posts: classroom.posts,
+      teacherComments: classroom.teacherComments,
       success: req.query.success || null,
     });
   } catch (err) {

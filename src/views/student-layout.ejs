@@ -1541,7 +1541,7 @@
                                             </div>
                                             <p><%= notification.message || 'Trung tâm vừa cập nhật thông tin mới cho tài khoản học viên của bạn.' %></p>
                                             <% if (notification.href) { %>
-                                                <a href="<%= buildHref(notification.href) %>">Mở chi tiết</a>
+                                                <a href="<%= buildHref(`/student/notifications/${notification.id}/open`) %>">Mở chi tiết</a>
                                             <% } %>
                                         </article>
                                     <% }) %>
@@ -1770,7 +1770,7 @@
                                     <p class="s-notification-body"><%= notification.message || 'Trung tâm vừa cập nhật trạng thái học tập cho bạn.' %></p>
                                     <div class="s-notification-actions">
                                         <% if (notification.href) { %>
-                                            <a href="<%= buildHref(notification.href) %>" class="s-notification-link">Mở ngay</a>
+                                            <a href="<%= buildHref(`/student/notifications/${notification.id}/open`) %>" class="s-notification-link">Mở ngay</a>
                                         <% } else { %>
                                             <span class="s-notification-meta">Đã lưu vào tài khoản học viên</span>
                                         <% } %>

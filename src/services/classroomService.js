@@ -441,7 +441,31 @@ async function getStudentClassroomList(studentId) {
         COUNT(DISTINCT CASE WHEN cp.post_type = 'lecture' THEN cp.id END) AS lecture_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count,
         COUNT(DISTINCT CASE WHEN cs.status IN ('submitted', 'completed', 'reviewed') THEN cp.id END) AS submitted_count,
-        MAX(cp.created_at) AS latest_post_at
+        MAX(cp.created_at) AS latest_post_at,
+        (
+          SELECT COUNT(*)
+          FROM student_comments sc
+          WHERE sc.class_id = c.id AND sc.student_id = ?
+        ) AS teacher_comment_count,
+        (
+          SELECT MAX(sc.created_at)
+          FROM student_comments sc
+          WHERE sc.class_id = c.id AND sc.student_id = ?
+        ) AS last_teacher_comment_at,
+        (
+          SELECT sc.comment
+          FROM student_comments sc
+          WHERE sc.class_id = c.id AND sc.student_id = ?
+          ORDER BY COALESCE(sc.lesson_date, DATE(sc.created_at)) DESC, sc.created_at DESC, sc.id DESC
+          LIMIT 1
+        ) AS last_teacher_comment,
+        (
+          SELECT COALESCE(NULLIF(sc.skill_focus, ''), 'Tổng quát')
+          FROM student_comments sc
+          WHERE sc.class_id = c.id AND sc.student_id = ?
+          ORDER BY COALESCE(sc.lesson_date, DATE(sc.created_at)) DESC, sc.created_at DESC, sc.id DESC
+          LIMIT 1
+        ) AS last_teacher_comment_skill
       FROM enrollments e
       INNER JOIN classes c ON c.id = e.class_id
       LEFT JOIN courses co ON co.id = c.course_id
@@ -463,7 +487,7 @@ async function getStudentClassroomList(studentId) {
         t.full_name
       ORDER BY COALESCE(c.start_date, c.created_at) DESC, c.id DESC
     `,
-    [studentId, studentId]
+    [studentId, studentId, studentId, studentId, studentId, studentId]
   );
 
   return rows.map((row) => ({
@@ -471,6 +495,9 @@ async function getStudentClassroomList(studentId) {
     lecture_count: toNumber(row.lecture_count),
     assignment_count: toNumber(row.assignment_count),
     submitted_count: toNumber(row.submitted_count),
+    teacher_comment_count: toNumber(row.teacher_comment_count),
+    last_teacher_comment: String(row.last_teacher_comment || "").trim(),
+    last_teacher_comment_skill: String(row.last_teacher_comment_skill || "").trim(),
   }));
 }
 
@@ -548,6 +575,24 @@ async function getStudentClassroomFeed(studentId, classId) {
     [studentId, classId]
   );
 
+  const [commentRows] = await db.query(
+    `
+      SELECT
+        sc.id,
+        sc.lesson_date,
+        COALESCE(NULLIF(sc.skill_focus, ''), 'Tổng quát') AS skill_focus,
+        sc.comment,
+        sc.created_at,
+        t.full_name AS teacher_name
+      FROM student_comments sc
+      LEFT JOIN teachers t ON t.id = sc.teacher_id
+      WHERE sc.class_id = ? AND sc.student_id = ?
+      ORDER BY COALESCE(sc.lesson_date, DATE(sc.created_at)) DESC, sc.created_at DESC, sc.id DESC
+      LIMIT 6
+    `,
+    [classId, studentId]
+  );
+
   const materialsMap = await getMaterialsByPostIds(postRows.map((row) => row.id));
 
   const posts = postRows.map((row) => ({
@@ -560,6 +605,10 @@ async function getStudentClassroomFeed(studentId, classId) {
   return {
     classInfo,
     posts,
+    teacherComments: commentRows.map((row) => ({
+      ...row,
+      id: toNumber(row.id),
+    })),
   };
 }
 

@@ -217,7 +217,8 @@
 
   .sc-attachment-list,
   .sc-post-list,
-  .sc-side-list {
+  .sc-side-list,
+  .sc-note-list {
     display: grid;
     gap: 12px;
   }
@@ -325,6 +326,34 @@
     min-height: 120px;
     padding: 14px 16px;
     resize: vertical;
+  }
+
+  .sc-note-card {
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(241, 246, 252, 0.96) 0%, rgba(255, 244, 248, 0.96) 100%);
+    border: 1px solid rgba(89, 106, 191, 0.12);
+  }
+
+  .sc-note-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .sc-note-card strong {
+    color: #1f344a;
+    font-size: 1rem;
+  }
+
+  .sc-note-card p {
+    margin: 0;
+    color: var(--sc-ink-soft);
+    line-height: 1.72;
   }
 
   .sc-empty {

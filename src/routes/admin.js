@@ -11,10 +11,12 @@ const {
   replaceTeacherAssignments,
 } = require("../services/adminManagementService");
 const {
+  deleteUploadedResource,
   getUploadedExamEntries,
   getPublishedResourceEntries,
   registerUploadedExam,
   registerUploadedResource,
+  updateUploadedResource,
   uploadAdminExamAssets,
   uploadAdminResourceAssets,
 } = require("../services/adminContentService");
@@ -72,6 +74,10 @@ function getAdminWorkspacePath(view) {
 function getAdminWorkspaceTitle(view) {
   const normalizedView = normalizeAdminWorkspaceView(view);
 
+  if (normalizedView === "resources") {
+    return "Quản lý kho nội dung";
+  }
+
   if (normalizedView === "students") {
     return "Quản lý học viên";
   }
@@ -81,7 +87,7 @@ function getAdminWorkspaceTitle(view) {
   }
 
   if (normalizedView === "resources") {
-    return "Tài liệu và đề thi";
+    return "Quản lý đề thi";
   }
 
   return "Trung tâm điều hành";
@@ -771,7 +777,7 @@ router.get("/admin/resources", isLoggedIn, isAdmin, async (req, res) => {
     return renderAdminWorkspace(req, res, "resources");
   } catch (err) {
     console.error("[admin resources] Error:", err);
-    return sendPublicError(res, err, 500, "Khong the tai trang tai lieu luc nay.");
+    return sendPublicError(res, err, 500, "Không thể tải trang kho nội dung lúc này.");
   }
 });
 
@@ -1039,5 +1045,40 @@ router.post(
     }
   }
 );
+
+router.post(
+  "/admin/content/resources/:id/update",
+  isLoggedIn,
+  isAdmin,
+  handleAdminUpload(uploadAdminResourceAssets.single("resource_file"), "content"),
+  async (req, res) => {
+    try {
+      const entry = updateUploadedResource({
+        id: req.params.id,
+        title: req.body.title,
+        description: req.body.description,
+        audience: req.body.audience,
+        resourceFile: req.file,
+      });
+
+      setFlash(req, "success_msg", `Đã cập nhật tài liệu ${entry.title}.`);
+      return res.redirect(adminRedirect(req, "content"));
+    } catch (err) {
+      setFlash(req, "error_msg", err.message || "Không thể cập nhật tài liệu lúc này.");
+      return res.redirect(adminRedirect(req, "content"));
+    }
+  }
+);
+
+router.post("/admin/content/resources/:id/delete", isLoggedIn, isAdmin, async (req, res) => {
+  try {
+    const entry = deleteUploadedResource(req.params.id);
+    setFlash(req, "success_msg", `Đã xóa tài liệu ${entry.title || req.params.id}.`);
+    return res.redirect(adminRedirect(req, "content"));
+  } catch (err) {
+    setFlash(req, "error_msg", err.message || "Không thể xóa tài liệu lúc này.");
+    return res.redirect(adminRedirect(req, "content"));
+  }
+});
 
 module.exports = router;
