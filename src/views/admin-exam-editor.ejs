@@ -1,0 +1,358 @@
+<%
+const safeBaseUrl = typeof baseUrl !== "undefined" ? baseUrl : "";
+const exam = examEditorEntry || {};
+const backHref = `${safeBaseUrl}/admin/resources#exam-library`;
+const editorDateTime = (value) => {
+  if (!value) return "Chưa cập nhật";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
+  return new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+};
+%>
+
+<style>
+  .exam-editor-page {
+    display: grid;
+    gap: 22px;
+    color: #18324a;
+  }
+
+  .exam-editor-hero,
+  .exam-editor-panel {
+    border-radius: 28px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 252, 0.94));
+    box-shadow: 0 24px 48px rgba(97, 122, 150, 0.12);
+  }
+
+  .exam-editor-hero {
+    display: grid;
+    gap: 16px;
+    padding: 30px;
+    background:
+      radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 24%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(23, 57, 90, 0.94));
+    color: #eff6ff;
+  }
+
+  .exam-editor-back,
+  .exam-editor-link {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .exam-editor-back {
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #dbeafe;
+  }
+
+  .exam-editor-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(191, 219, 254, 0.14);
+    color: #dbeafe;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .exam-editor-hero h1,
+  .exam-editor-panel h2 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.04em;
+  }
+
+  .exam-editor-hero h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+    max-width: 16ch;
+  }
+
+  .exam-editor-hero p,
+  .exam-editor-panel p,
+  .exam-editor-panel li {
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  .exam-editor-meta,
+  .exam-editor-grid,
+  .exam-editor-fields,
+  .exam-editor-stack,
+  .exam-editor-actions {
+    display: grid;
+    gap: 16px;
+  }
+
+  .exam-editor-meta {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .exam-editor-meta span {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(239, 246, 255, 0.9);
+  }
+
+  .exam-editor-grid {
+    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.7fr);
+    align-items: start;
+  }
+
+  .exam-editor-panel {
+    padding: 24px;
+  }
+
+  .exam-editor-form,
+  .exam-editor-side {
+    display: grid;
+    gap: 18px;
+  }
+
+  .exam-editor-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .exam-editor-field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .exam-editor-field.full {
+    grid-column: 1 / -1;
+  }
+
+  .exam-editor-field label {
+    color: #345778;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  .exam-editor-input,
+  .exam-editor-textarea,
+  .exam-editor-file {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid rgba(191, 219, 254, 0.72);
+    background: rgba(255, 255, 255, 0.98);
+    color: #17314c;
+  }
+
+  .exam-editor-input,
+  .exam-editor-file {
+    padding: 13px 14px;
+  }
+
+  .exam-editor-textarea {
+    min-height: 280px;
+    padding: 16px;
+    resize: vertical;
+    font: 0.9rem/1.55 "Cascadia Code", "Consolas", "SFMono-Regular", monospace;
+    white-space: pre;
+  }
+
+  .exam-editor-note,
+  .exam-editor-block {
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(248, 251, 255, 0.9);
+  }
+
+  .exam-editor-note {
+    padding: 14px 16px;
+    color: #48627d;
+  }
+
+  .exam-editor-stack {
+    gap: 18px;
+  }
+
+  .exam-editor-block {
+    padding: 18px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .exam-editor-block-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .exam-editor-block-head span,
+  .exam-editor-helper {
+    color: #6f8499;
+    font-size: 0.9rem;
+  }
+
+  .exam-editor-actions {
+    grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
+  }
+
+  .exam-editor-button,
+  .exam-editor-link {
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, #466a98 0%, #6f93c2 100%);
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .exam-editor-link.secondary,
+  .exam-editor-button.secondary {
+    background: rgba(95, 132, 194, 0.12);
+    color: #32577b;
+    border-color: rgba(148, 163, 184, 0.16);
+  }
+
+  .exam-editor-button.danger {
+    background: rgba(244, 63, 94, 0.12);
+    color: #be123c;
+    border-color: rgba(244, 63, 94, 0.18);
+  }
+
+  .exam-editor-tips {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 10px;
+    color: #60758c;
+  }
+
+  .exam-editor-code {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(95, 132, 194, 0.12);
+    color: #2f5377;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 980px) {
+    .exam-editor-grid,
+    .exam-editor-fields {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="exam-editor-page">
+  <section class="exam-editor-hero">
+    <a class="exam-editor-back" href="<%= backHref %>">Quay lại kho nội dung</a>
+    <span class="exam-editor-badge">Đề thi public</span>
+    <h1><%= exam.title || `Đề ETS ${exam.year} Test ${exam.testNumber}` %></h1>
+    <p>Sửa metadata, nội dung file đề và answer key. Sau khi lưu, thay đổi sẽ áp dụng trực tiếp cho đề đang public trên web.</p>
+
+    <div class="exam-editor-meta">
+      <span>ID: <strong><%= exam.id || "Không xác định" %></strong></span>
+      <span>Năm đề: <strong><%= exam.year || "?" %></strong></span>
+      <span>Test: <strong><%= exam.testNumber || "?" %></strong></span>
+      <span>Cập nhật: <strong><%= editorDateTime(exam.updatedAt || exam.createdAt) %></strong></span>
+    </div>
+  </section>
+
+  <section class="exam-editor-grid">
+    <article class="exam-editor-panel">
+      <form class="exam-editor-form" method="POST" action="<%= safeBaseUrl %>/admin/content/exams/<%= exam.id %>/update" enctype="multipart/form-data">
+        <div class="exam-editor-fields">
+          <div class="exam-editor-field">
+            <label for="exam-title">Tiêu đề hiển thị</label>
+            <input class="exam-editor-input" id="exam-title" name="title" type="text" value="<%= exam.title || '' %>" required>
+          </div>
+          <div class="exam-editor-field">
+            <label for="exam-book-name">Nhãn sách / bộ đề</label>
+            <input class="exam-editor-input" id="exam-book-name" name="book_name" type="text" value="<%= exam.bookName || '' %>">
+          </div>
+        </div>
+
+        <div class="exam-editor-note">
+          Muốn sửa một câu hỏi cụ thể, bạn chỉ cần chỉnh trực tiếp trong phần <strong>File đề thi</strong> rồi lưu lại.
+        </div>
+
+        <div class="exam-editor-stack">
+          <section class="exam-editor-block">
+            <div class="exam-editor-block-head">
+              <div>
+                <h2>File đề thi</h2>
+                <p class="exam-editor-helper">Hỗ trợ JSON hoặc <span class="exam-editor-code">module.exports = {...}</span>.</p>
+              </div>
+              <span><%= exam.dataFileName || "Chưa có file đề" %></span>
+            </div>
+
+            <div class="exam-editor-field full">
+              <label for="exam-data-content">Nội dung file đề</label>
+              <textarea class="exam-editor-textarea" id="exam-data-content" name="exam_data_content" spellcheck="false"><%= exam.dataFileContent || '' %></textarea>
+            </div>
+
+            <div class="exam-editor-field full">
+              <label for="exam-data-file">Hoặc thay bằng file đề mới</label>
+              <input class="exam-editor-file" id="exam-data-file" name="exam_data_file" type="file" accept=".json,.js">
+            </div>
+          </section>
+
+          <section class="exam-editor-block">
+            <div class="exam-editor-block-head">
+              <div>
+                <h2>Answer key</h2>
+                <p class="exam-editor-helper">Giữ nguyên định dạng answer key hiện tại khi sửa bằng tay để tránh sai cú pháp.</p>
+              </div>
+              <span><%= exam.answerKeyFileName || "Chưa có answer key" %></span>
+            </div>
+
+            <div class="exam-editor-field full">
+              <label for="answer-key-content">Nội dung answer key</label>
+              <textarea class="exam-editor-textarea" id="answer-key-content" name="answer_key_content" spellcheck="false"><%= exam.answerKeyFileContent || '' %></textarea>
+            </div>
+
+            <div class="exam-editor-field full">
+              <label for="answer-key-file">Hoặc thay bằng file answer key mới</label>
+              <input class="exam-editor-file" id="answer-key-file" name="answer_key_file" type="file" accept=".json,.js">
+            </div>
+          </section>
+        </div>
+
+        <div class="exam-editor-actions">
+          <button class="exam-editor-button" type="submit">Lưu thay đổi đề thi</button>
+          <a class="exam-editor-link secondary" href="<%= backHref %>">Quay lại danh sách đề</a>
+        </div>
+      </form>
+    </article>
+
+    <aside class="exam-editor-panel exam-editor-side">
+      <h2>Gợi ý thao tác</h2>
+      <ul class="exam-editor-tips">
+        <li>Sửa 1 câu hỏi: chỉnh ngay trong textarea của file đề rồi bấm lưu.</li>
+        <li>Thay cả bộ đề: chọn file đề mới và/hoặc answer key mới, hệ thống sẽ thay file cũ sau khi lưu thành công.</li>
+        <li>Nếu chỉ đổi tiêu đề hoặc nhãn sách, bạn không cần thay file.</li>
+        <li>Mọi thay đổi lưu ở đây sẽ phản ánh lên đề đang public vì full test đang đọc trực tiếp từ các file này.</li>
+      </ul>
+
+      <form method="POST" action="<%= safeBaseUrl %>/admin/content/exams/<%= exam.id %>/delete" onsubmit="return confirm('Bạn có chắc muốn xóa đề thi này khỏi web?')">
+        <button class="exam-editor-button danger" type="submit">Xóa đề khỏi web</button>
+      </form>
+    </aside>
+  </section>
+</div>

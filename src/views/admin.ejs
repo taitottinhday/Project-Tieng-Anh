@@ -2443,6 +2443,13 @@ const classState = (item) => {
             <strong><%= item.title || `Đề ETS ${item.year} Test ${item.testNumber}` %></strong>
             <small><%= item.bookName || `ETS ${item.year}` %> · Năm <%= item.year %> · Test <%= item.testNumber %></small>
             <small>ID: <%= item.id %></small>
+            <small>Cập nhật: <%= shortDateTime(item.updatedAt || item.createdAt) %></small>
+            <div class="admin-actions" style="margin-top:12px;">
+              <a class="admin-button secondary" href="<%= safeBaseUrl %>/admin/content/exams/<%= item.id %>/edit">Sửa đề</a>
+              <form method="POST" action="<%= safeBaseUrl %>/admin/content/exams/<%= item.id %>/delete" onsubmit="return confirm('Bạn có chắc muốn xóa đề thi này khỏi web?')">
+                <button class="admin-button danger" type="submit">Xóa</button>
+              </form>
+            </div>
           </div>
         <% }) %>
       </div>

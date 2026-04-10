@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 const multer = require("multer");
 
 const PROJECT_ROOT = process.cwd();
@@ -133,8 +134,87 @@ function cleanupFiles(filePaths = []) {
   filePaths.forEach((filePath) => cleanupManagedFile(filePath));
 }
 
+function readManagedTextFile(filePath) {
+  const absolutePath = resolveManagedAbsolutePath(filePath);
+
+  if (!absolutePath || !fs.existsSync(absolutePath)) {
+    throw new Error("Không tìm thấy file nội dung tương ứng.");
+  }
+
+  return fs.readFileSync(absolutePath, "utf8");
+}
+
+function writeManagedTextFile(filePath, content) {
+  const absolutePath = resolveManagedAbsolutePath(filePath);
+
+  if (!absolutePath) {
+    throw new Error("Đường dẫn file nội dung không hợp lệ.");
+  }
+
+  fs.writeFileSync(absolutePath, String(content ?? ""), "utf8");
+}
+
 function getStoredResourcePath(entry = {}) {
   return entry.storedFilePath || entry.publicPath || "";
+}
+
+function parseExamPayloadContent(rawContent) {
+  const normalized = String(rawContent ?? "").replace(/^\uFEFF/, "").trim();
+
+  if (!normalized) {
+    throw new Error("Nội dung file đề không được để trống.");
+  }
+
+  try {
+    JSON.parse(normalized);
+    return;
+  } catch (jsonError) {
+    const exportPrefix = "module.exports =";
+    if (normalized.startsWith(exportPrefix)) {
+      try {
+        JSON.parse(normalized.slice(exportPrefix.length).trim().replace(/;$/, ""));
+        return;
+      } catch (exportError) {
+        throw new Error("File đề phải là JSON hoặc module.exports = {...} hợp lệ.");
+      }
+    }
+
+    throw new Error("File đề phải là JSON hoặc module.exports = {...} hợp lệ.");
+  }
+}
+
+function validateAnswerKeyContent(rawContent, extension) {
+  const normalized = String(rawContent ?? "").replace(/^\uFEFF/, "").trim();
+
+  if (!normalized) {
+    throw new Error("Nội dung answer key không được để trống.");
+  }
+
+  if (extension === ".json") {
+    JSON.parse(normalized);
+    return;
+  }
+
+  if (extension === ".js") {
+    const sandbox = {
+      module: { exports: {} },
+      exports: {},
+    };
+    sandbox.exports = sandbox.module.exports;
+
+    vm.runInNewContext(normalized, sandbox, { timeout: 1000 });
+    return;
+  }
+
+  throw new Error("Answer key chỉ hỗ trợ định dạng .json hoặc .js.");
+}
+
+function readUploadedTextFile(uploadedFile) {
+  if (!uploadedFile?.path) {
+    return "";
+  }
+
+  return fs.readFileSync(uploadedFile.path, "utf8");
 }
 
 function adminExamFileFilter(req, file, cb) {
@@ -202,8 +282,39 @@ function getUploadedExamEntries() {
         return yearGap;
       }
 
-      return Number(left.testNumber || 0) - Number(right.testNumber || 0);
+      const testGap = Number(left.testNumber || 0) - Number(right.testNumber || 0);
+      if (testGap !== 0) {
+        return testGap;
+      }
+
+      return (
+        new Date(right.updatedAt || right.createdAt || 0).getTime() -
+        new Date(left.updatedAt || left.createdAt || 0).getTime()
+      );
     });
+}
+
+function getUploadedExamEntryById(id) {
+  const normalizedId = String(id || "").trim();
+  return readManifest().exams.find((item) => item.id === normalizedId) || null;
+}
+
+function getUploadedExamEditorEntry(id) {
+  const entry = getUploadedExamEntryById(id);
+
+  if (!entry) {
+    throw new Error("Không tìm thấy đề thi cần chỉnh sửa.");
+  }
+
+  return {
+    ...entry,
+    dataFileName: path.basename(String(entry.dataFilePath || "")),
+    answerKeyFileName: path.basename(String(entry.answerKeyFilePath || "")),
+    dataFileExtension: getSafeExtension(entry.dataFilePath),
+    answerKeyFileExtension: getSafeExtension(entry.answerKeyFilePath),
+    dataFileContent: readManagedTextFile(entry.dataFilePath),
+    answerKeyFileContent: readManagedTextFile(entry.answerKeyFilePath),
+  };
 }
 
 function getPublishedResourceEntries() {
@@ -234,6 +345,7 @@ function registerUploadedExam({ year, testNumber, title, bookName, dataFile, ans
   const examId = normalizeExamId(normalizedYear, normalizedTestNumber);
   const manifest = readManifest();
   const existingEntry = manifest.exams.find((item) => item.id === examId);
+  const timestamp = new Date().toISOString();
   const nextEntry = {
     id: examId,
     year: normalizedYear,
@@ -242,7 +354,8 @@ function registerUploadedExam({ year, testNumber, title, bookName, dataFile, ans
     bookName: String(bookName || "").trim() || `ETS ${normalizedYear}`,
     dataFilePath: toProjectRelativePath(dataFile.path),
     answerKeyFilePath: toProjectRelativePath(answerKeyFile.path),
-    createdAt: new Date().toISOString(),
+    createdAt: existingEntry?.createdAt || timestamp,
+    updatedAt: timestamp,
   };
 
   try {
@@ -258,6 +371,97 @@ function registerUploadedExam({ year, testNumber, title, bookName, dataFile, ans
   }
 
   return nextEntry;
+}
+
+function updateUploadedExam({
+  id,
+  title,
+  bookName,
+  examDataContent,
+  answerKeyContent,
+  examDataFile,
+  answerKeyFile,
+}) {
+  const normalizedId = String(id || "").trim();
+  const manifest = readManifest();
+  const examIndex = manifest.exams.findIndex((item) => item.id === normalizedId);
+
+  if (examIndex === -1) {
+    cleanupFiles([examDataFile?.path, answerKeyFile?.path]);
+    throw new Error("Không tìm thấy đề thi cần chỉnh sửa.");
+  }
+
+  const currentEntry = manifest.exams[examIndex];
+  const currentDataExtension = getSafeExtension(currentEntry.dataFilePath);
+  const currentAnswerKeyExtension = getSafeExtension(currentEntry.answerKeyFilePath);
+  const nextDataExtension = examDataFile ? getSafeExtension(examDataFile.originalname) : currentDataExtension;
+  const nextAnswerKeyExtension = answerKeyFile ? getSafeExtension(answerKeyFile.originalname) : currentAnswerKeyExtension;
+  const nextExamDataContent = examDataFile ? readUploadedTextFile(examDataFile) : String(examDataContent ?? "");
+  const nextAnswerKeyContent = answerKeyFile ? readUploadedTextFile(answerKeyFile) : String(answerKeyContent ?? "");
+
+  parseExamPayloadContent(nextExamDataContent);
+  validateAnswerKeyContent(nextAnswerKeyContent, nextAnswerKeyExtension);
+
+  const previousExamDataContent = !examDataFile ? readManagedTextFile(currentEntry.dataFilePath) : null;
+  const previousAnswerKeyContent = !answerKeyFile ? readManagedTextFile(currentEntry.answerKeyFilePath) : null;
+  const nextEntry = {
+    ...currentEntry,
+    title: String(title || "").trim() || currentEntry.title || `Đề ETS ${currentEntry.year} Test ${currentEntry.testNumber}`,
+    bookName: String(bookName || "").trim() || currentEntry.bookName || `ETS ${currentEntry.year}`,
+    dataFilePath: examDataFile ? toProjectRelativePath(examDataFile.path) : currentEntry.dataFilePath,
+    answerKeyFilePath: answerKeyFile ? toProjectRelativePath(answerKeyFile.path) : currentEntry.answerKeyFilePath,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    if (!examDataFile) {
+      writeManagedTextFile(currentEntry.dataFilePath, nextExamDataContent);
+    }
+
+    if (!answerKeyFile) {
+      writeManagedTextFile(currentEntry.answerKeyFilePath, nextAnswerKeyContent);
+    }
+
+    manifest.exams[examIndex] = nextEntry;
+    writeManifest(manifest);
+  } catch (error) {
+    if (!examDataFile && previousExamDataContent !== null) {
+      writeManagedTextFile(currentEntry.dataFilePath, previousExamDataContent);
+    }
+
+    if (!answerKeyFile && previousAnswerKeyContent !== null) {
+      writeManagedTextFile(currentEntry.answerKeyFilePath, previousAnswerKeyContent);
+    }
+
+    cleanupFiles([examDataFile?.path, answerKeyFile?.path]);
+    throw error;
+  }
+
+  if (examDataFile) {
+    cleanupManagedFile(currentEntry.dataFilePath);
+  }
+
+  if (answerKeyFile) {
+    cleanupManagedFile(currentEntry.answerKeyFilePath);
+  }
+
+  return nextEntry;
+}
+
+function deleteUploadedExam(id) {
+  const normalizedId = String(id || "").trim();
+  const manifest = readManifest();
+  const existingEntry = manifest.exams.find((item) => item.id === normalizedId);
+
+  if (!existingEntry) {
+    throw new Error("Không tìm thấy đề thi cần xóa.");
+  }
+
+  manifest.exams = manifest.exams.filter((item) => item.id !== normalizedId);
+  writeManifest(manifest);
+  cleanupFiles([existingEntry.dataFilePath, existingEntry.answerKeyFilePath]);
+
+  return existingEntry;
 }
 
 function registerUploadedResource({ title, description, audience, resourceFile }) {
@@ -361,12 +565,15 @@ function deleteUploadedResource(id) {
 
 module.exports = {
   MANIFEST_PATH,
+  deleteUploadedExam,
   deleteUploadedResource,
   getPublishedResourceEntries,
+  getUploadedExamEditorEntry,
   getUploadedExamEntries,
   normalizeExamId,
   registerUploadedExam,
   registerUploadedResource,
+  updateUploadedExam,
   updateUploadedResource,
   uploadAdminExamAssets,
   uploadAdminResourceAssets,

@@ -11,11 +11,14 @@ const {
   replaceTeacherAssignments,
 } = require("../services/adminManagementService");
 const {
+  deleteUploadedExam,
   deleteUploadedResource,
+  getUploadedExamEditorEntry,
   getUploadedExamEntries,
   getPublishedResourceEntries,
   registerUploadedExam,
   registerUploadedResource,
+  updateUploadedExam,
   updateUploadedResource,
   uploadAdminExamAssets,
   uploadAdminResourceAssets,
@@ -781,6 +784,22 @@ router.get("/admin/resources", isLoggedIn, isAdmin, async (req, res) => {
   }
 });
 
+router.get("/admin/content/exams/:id/edit", isLoggedIn, isAdmin, async (req, res) => {
+  try {
+    const examEditorEntry = getUploadedExamEditorEntry(req.params.id);
+
+    return renderWithLayout(res, "admin-exam-editor", {
+      title: `Chỉnh sửa đề thi ${examEditorEntry.title || req.params.id}`,
+      username: req.session.user?.username,
+      examEditorEntry,
+    });
+  } catch (err) {
+    console.error("[admin exam editor] Error:", err);
+    const statusCode = err.message && err.message.includes("Không tìm thấy") ? 404 : 500;
+    return sendPublicError(res, err, statusCode, err.message || "Không thể tải trình sửa đề thi lúc này.");
+  }
+});
+
 router.post("/admin/classes/add", isLoggedIn, isAdmin, express.urlencoded({ extended: true }), async (req, res) => {
   try {
     const createdClass = await createManagedClass({
@@ -1022,6 +1041,51 @@ router.post(
     }
   }
 );
+
+router.post(
+  "/admin/content/exams/:id/update",
+  isLoggedIn,
+  isAdmin,
+  handleAdminUpload(
+    uploadAdminExamAssets.fields([
+      { name: "exam_data_file", maxCount: 1 },
+      { name: "answer_key_file", maxCount: 1 },
+    ]),
+    "content"
+  ),
+  async (req, res) => {
+    try {
+      const examDataFile = Array.isArray(req.files?.exam_data_file) ? req.files.exam_data_file[0] : null;
+      const answerKeyFile = Array.isArray(req.files?.answer_key_file) ? req.files.answer_key_file[0] : null;
+      const entry = updateUploadedExam({
+        id: req.params.id,
+        title: req.body.title,
+        bookName: req.body.book_name,
+        examDataContent: req.body.exam_data_content,
+        answerKeyContent: req.body.answer_key_content,
+        examDataFile,
+        answerKeyFile,
+      });
+
+      setFlash(req, "success_msg", `Đã cập nhật đề thi ${entry.title}.`);
+      return res.redirect(`${req.baseUrl}/admin/content/exams/${encodeURIComponent(entry.id)}/edit`);
+    } catch (err) {
+      setFlash(req, "error_msg", err.message || "Không thể cập nhật đề thi lúc này.");
+      return res.redirect(`${req.baseUrl}/admin/content/exams/${encodeURIComponent(req.params.id)}/edit`);
+    }
+  }
+);
+
+router.post("/admin/content/exams/:id/delete", isLoggedIn, isAdmin, async (req, res) => {
+  try {
+    const entry = deleteUploadedExam(req.params.id);
+    setFlash(req, "success_msg", `Đã xóa đề thi ${entry.title || req.params.id}.`);
+    return res.redirect(adminRedirect(req, "content"));
+  } catch (err) {
+    setFlash(req, "error_msg", err.message || "Không thể xóa đề thi lúc này.");
+    return res.redirect(adminRedirect(req, "content"));
+  }
+});
 
 router.post(
   "/admin/content/resources/add",
