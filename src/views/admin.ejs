@@ -440,9 +440,14 @@ const classState = (item) => {
     margin-bottom: 20px;
   }
 
+  .admin-panel-header > div {
+    min-width: 0;
+  }
+
   .admin-panel-header p {
     margin: 8px 0 0;
     color: #698096;
+    overflow-wrap: anywhere;
   }
 
   .admin-panel-link {
@@ -1352,6 +1357,8 @@ const classState = (item) => {
 
     .admin-table-wrap {
       overflow: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
     }
 
     .admin-table {
@@ -1448,6 +1455,21 @@ const classState = (item) => {
       .admin-panel,
       .admin-hero {
         padding: 22px;
+      }
+
+      .admin-panel-header,
+      .admin-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .admin-hero h1 {
+        max-width: 100%;
+      }
+
+      .admin-hero-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .admin-anchorbar {
@@ -1729,6 +1751,11 @@ const classState = (item) => {
       gap: 10px;
     }
 
+    .admin-actions > *,
+    .admin-toolbar > * {
+      max-width: 100%;
+    }
+
     .admin-toolbar {
       justify-content: space-between;
       margin-bottom: 16px;
@@ -1746,6 +1773,7 @@ const classState = (item) => {
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
+      max-width: 100%;
     }
 
     .admin-button.secondary {
@@ -1770,6 +1798,33 @@ const classState = (item) => {
 
     .admin-edit-row.hidden {
       display: none;
+    }
+
+    .admin-clickable-row {
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .admin-clickable-row:hover td,
+    .admin-clickable-row:focus-visible td {
+      background: rgba(92, 132, 194, 0.06);
+    }
+
+    .admin-clickable-row:focus-visible {
+      outline: 2px solid rgba(92, 132, 194, 0.24);
+      outline-offset: -2px;
+    }
+
+    .admin-row-link {
+      color: #17314c;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .admin-row-link:hover,
+    .admin-row-link:focus-visible {
+      color: #29558e;
+      text-decoration: underline;
     }
 
     .admin-inline-form {
@@ -1808,12 +1863,67 @@ const classState = (item) => {
         grid-template-columns: 1fr;
       }
 
+      .admin-panel-header,
       .admin-toolbar {
         align-items: stretch;
       }
 
+      .admin-hero {
+        gap: 20px;
+      }
+
+      .admin-hero-actions,
+      .admin-anchorbar {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-hero-action,
+      .admin-anchor,
+      .admin-panel-link,
+      .admin-button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .admin-actions > * {
+        flex: 1 1 100%;
+      }
+
+      .admin-actions form,
+      .admin-actions form .admin-button {
+        width: 100%;
+      }
+
+      .admin-toolbar > * {
+        width: 100%;
+      }
+
+      .admin-table-wrap {
+        margin: 0 -6px;
+        padding: 0 6px 6px;
+      }
+
+      .admin-table {
+        min-width: 640px;
+      }
+
       .admin-search {
         min-width: 100%;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .admin-panel,
+      .admin-hero {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .admin-hero-highlights,
+      .admin-hero-pulse,
+      .admin-kpi-grid,
+      .admin-health-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -1856,12 +1966,16 @@ const classState = (item) => {
 
               <% safeStudents.forEach((item) => { %>
                 <tr
+                  class="admin-clickable-row"
+                  tabindex="0"
+                  role="link"
                   data-filter-row="students-table"
                   data-edit-row="student-edit-<%= item.id %>"
+                  data-admin-row-href="<%= safeBaseUrl %>/admin/students/<%= item.id %>"
                   data-filter-text="<%= [item.full_name, item.phone, item.email].filter(Boolean).join(' ') %>"
                 >
                   <td>
-                    <strong><%= item.full_name || "Chưa cập nhật tên" %></strong>
+                    <a class="admin-row-link" href="<%= safeBaseUrl %>/admin/students/<%= item.id %>"><%= item.full_name || "Chưa cập nhật tên" %></a>
                     <small>Ngày sinh: <%= shortDate(item.dob) %></small>
                   </td>
                   <td>
@@ -1953,12 +2067,16 @@ const classState = (item) => {
 
               <% safeTeachers.forEach((item) => { %>
                 <tr
+                  class="admin-clickable-row"
+                  tabindex="0"
+                  role="link"
                   data-filter-row="teachers-table"
                   data-edit-row="teacher-edit-<%= item.id %>"
+                  data-admin-row-href="<%= safeBaseUrl %>/admin/teachers/<%= item.id %>"
                   data-filter-text="<%= [item.full_name, item.phone, item.email].filter(Boolean).join(' ') %>"
                 >
                   <td>
-                    <strong><%= item.full_name || "Chưa cập nhật tên" %></strong>
+                    <a class="admin-row-link" href="<%= safeBaseUrl %>/admin/teachers/<%= item.id %>"><%= item.full_name || "Chưa cập nhật tên" %></a>
                     <small>Ngày tạo: <%= shortDate(item.created_at) %></small>
                   </td>
                   <td>
@@ -2673,6 +2791,27 @@ const classState = (item) => {
           }
         }
       });
+    });
+  });
+
+  document.querySelectorAll("[data-admin-row-href]").forEach((row) => {
+    const href = row.getAttribute("data-admin-row-href");
+    if (!href) return;
+
+    const shouldIgnore = (target) => Boolean(
+      target && target.closest("a, button, form, input, select, textarea, label")
+    );
+
+    row.addEventListener("click", (event) => {
+      if (shouldIgnore(event.target)) return;
+      window.location.href = href;
+    });
+
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      if (shouldIgnore(event.target)) return;
+      event.preventDefault();
+      window.location.href = href;
     });
   });
 </script>

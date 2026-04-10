@@ -343,6 +343,27 @@ async function ensureCoreTables() {
   `);
 
   await db.query(`
+    CREATE TABLE IF NOT EXISTS teacher_attendance (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      teacher_id INT NOT NULL,
+      class_id INT NOT NULL,
+      lesson_date DATE NOT NULL,
+      status ENUM('present','absent','late','excused') DEFAULT 'present',
+      note VARCHAR(255),
+      checked_in_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_teacher_attendance_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT fk_teacher_attendance_class FOREIGN KEY (class_id) REFERENCES classes(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+      UNIQUE KEY uniq_teacher_class_lesson (teacher_id, class_id, lesson_date),
+      INDEX idx_teacher_attendance_lesson (lesson_date),
+      INDEX idx_teacher_attendance_status (status)
+    )
+  `);
+
+  await db.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id INT AUTO_INCREMENT PRIMARY KEY,
       user_id INT NULL,

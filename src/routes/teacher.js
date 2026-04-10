@@ -74,6 +74,27 @@ async function ensureTeacherSupportTables() {
       )
     `);
 
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS teacher_attendance (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        teacher_id INT NOT NULL,
+        class_id INT NOT NULL,
+        lesson_date DATE NOT NULL,
+        status ENUM('present','absent','late','excused') DEFAULT 'present',
+        note VARCHAR(255),
+        checked_in_at DATETIME NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_teacher_attendance_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+          ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT fk_teacher_attendance_class FOREIGN KEY (class_id) REFERENCES classes(id)
+          ON DELETE CASCADE ON UPDATE CASCADE,
+        UNIQUE KEY uniq_teacher_class_lesson (teacher_id, class_id, lesson_date),
+        INDEX idx_teacher_attendance_lesson (lesson_date),
+        INDEX idx_teacher_attendance_status (status)
+      )
+    `);
+
     teacherSupportTablesReady = true;
 }
 
@@ -118,12 +139,22 @@ function parseDate(value) {
 }
 
 function formatDateLabel(value, options = { day: "2-digit", month: "2-digit", year: "numeric" }) {
-    const parsed = parseDate(value);
+  const parsed = parseDate(value);
     if (!parsed) {
         return null;
     }
 
     return new Intl.DateTimeFormat("vi-VN", options).format(parsed);
+}
+
+function formatDateTimeLabel(value) {
+    return formatDateLabel(value, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
 }
 
 function diffInDays(fromValue, toValue) {
@@ -148,6 +179,25 @@ function extractScheduleDays(scheduleText) {
     return DAY_DEFINITIONS
         .filter((item) => item.patterns.some((pattern) => pattern.test(text)))
         .map((item) => item.label);
+}
+
+function getScheduleDayLabel(dateValue) {
+    const parsed = parseDate(dateValue);
+    if (!parsed) {
+        return null;
+    }
+
+    const weekdayLabels = [
+        "Chủ nhật",
+        "Thứ 2",
+        "Thứ 3",
+        "Thứ 4",
+        "Thứ 5",
+        "Thứ 6",
+        "Thứ 7"
+    ];
+
+    return weekdayLabels[parsed.getDay()] || null;
 }
 
 function computeClassPhase(item, todayIso) {
@@ -231,6 +281,12 @@ function decorateClass(item, todayIso) {
         start_label: formatDateLabel(item.start_date),
         end_label: formatDateLabel(item.end_date),
         last_attendance_label: formatDateLabel(item.last_attendance_date),
+        teacher_check_in_status: ATTENDANCE_STATUSES.has(String(item.teacher_check_in_status || ""))
+            ? String(item.teacher_check_in_status)
+            : null,
+        teacher_checked_in_at: item.teacher_checked_in_at || null,
+        teacher_checked_in_label: formatDateTimeLabel(item.teacher_checked_in_at),
+        last_teacher_check_in_label: formatDateLabel(item.last_teacher_check_in_date),
         attention_flags: [
             !item.schedule_text ? "Thiếu lịch học" : null,
             !item.room ? "Thiếu phòng học" : null,
@@ -248,6 +304,18 @@ function buildWeekdayLoad(classes) {
             count
         };
     }).filter((item) => item.count > 0);
+}
+
+function buildTodayTeachingClasses(classes, todayIso) {
+    const activeClasses = classes.filter((item) => item.phase.key !== "completed");
+    const todayLabel = getScheduleDayLabel(todayIso);
+
+    if (!todayLabel) {
+        return activeClasses.slice(0, 5);
+    }
+
+    const scheduledClasses = activeClasses.filter((item) => item.schedule_days.includes(todayLabel));
+    return (scheduledClasses.length ? scheduledClasses : activeClasses).slice(0, 5);
 }
 
 function buildScheduleGroups(schedule) {
@@ -393,6 +461,26 @@ function summarizeAttendanceRows(rows) {
     return summary;
 }
 
+function normalizeTeacherCheckIn(record) {
+    const status = ATTENDANCE_STATUSES.has(String(record?.status || "")) ? String(record.status) : null;
+
+    return {
+        status,
+        note: String(record?.note || ""),
+        checked_in_at: record?.checked_in_at || null,
+        has_saved: Boolean(status),
+        checked_in_label: formatDateTimeLabel(record?.checked_in_at)
+    };
+}
+
+function resolveTeacherCheckInRedirect(baseUrl, classId, lessonDate, source) {
+    if (String(source || "").trim().toLowerCase() === "dashboard") {
+        return `${baseUrl}/dashboard?teacher_checkin=1`;
+    }
+
+    return `${baseUrl}/attendance/${classId}?date=${lessonDate}&teacher_success=1`;
+}
+
 function decorateStudentsForDetail(rows) {
     return rows.map((item) => ({
         ...item,
@@ -484,6 +572,28 @@ async function getTeacherClassCards(teacherId, todayIso) {
           WHERE sc.class_id = c.id AND sc.teacher_id = ?
         ) AS total_comments,
         (
+          SELECT ta.status
+          FROM teacher_attendance ta
+          WHERE ta.class_id = c.id
+            AND ta.teacher_id = ?
+            AND ta.lesson_date = ?
+          LIMIT 1
+        ) AS teacher_check_in_status,
+        (
+          SELECT ta.checked_in_at
+          FROM teacher_attendance ta
+          WHERE ta.class_id = c.id
+            AND ta.teacher_id = ?
+            AND ta.lesson_date = ?
+          LIMIT 1
+        ) AS teacher_checked_in_at,
+        (
+          SELECT MAX(ta.lesson_date)
+          FROM teacher_attendance ta
+          WHERE ta.class_id = c.id
+            AND ta.teacher_id = ?
+        ) AS last_teacher_check_in_date,
+        (
           SELECT MAX(a.lesson_date)
           FROM attendance a
           WHERE a.class_id = c.id
@@ -495,7 +605,7 @@ async function getTeacherClassCards(teacherId, todayIso) {
         CASE WHEN c.start_date IS NULL THEN 1 ELSE 0 END,
         c.start_date ASC,
         c.id DESC
-    `, [teacherId, teacherId], []);
+    `, [teacherId, teacherId, todayIso, teacherId, todayIso, teacherId, teacherId], []);
 
     return rows.map((item) => decorateClass(item, todayIso));
 }
@@ -511,7 +621,7 @@ router.get("/dashboard", isTeacher, async (req, res) => {
 
         const todayIso = getTodayIso();
         const classCards = await getTeacherClassCards(teacher.id, todayIso);
-        const todayClasses = classCards.filter((item) => item.phase.key !== "completed").slice(0, 5);
+        const todayClasses = buildTodayTeachingClasses(classCards, todayIso);
         const weeklyLoad = buildWeekdayLoad(classCards);
         const attendanceRows = await safeQuery(`
           SELECT a.status, COUNT(*) AS total
@@ -536,6 +646,13 @@ router.get("/dashboard", isTeacher, async (req, res) => {
           FROM attendance a
           INNER JOIN classes c ON c.id = a.class_id
           WHERE c.teacher_id = ? AND a.lesson_date = ?
+        `, [teacher.id, todayIso], 0);
+        const todayTeacherCheckInCount = await safeScalar(`
+          SELECT COUNT(*) AS total
+          FROM teacher_attendance ta
+          WHERE ta.teacher_id = ?
+            AND ta.lesson_date = ?
+            AND ta.status IN ('present', 'late', 'excused')
         `, [teacher.id, todayIso], 0);
         const recentComments = await safeQuery(`
           SELECT
@@ -563,6 +680,7 @@ router.get("/dashboard", isTeacher, async (req, res) => {
             attendanceRate: attendanceSummary.engagementRate,
             recentCommentsCount,
             todayAttendanceCount,
+            todayTeacherCheckInCount,
             studentsWithFeedback,
             activeClasses: classCards.filter((item) => item.phase.key === "active").length
         };
@@ -579,7 +697,8 @@ router.get("/dashboard", isTeacher, async (req, res) => {
                 attendanceTotal: attendanceSummary.total,
                 recentCommentsCount
             }),
-            todayIso
+            todayIso,
+            teacherCheckInSuccess: req.query.teacher_checkin || null
         });
     } catch (err) {
         console.error("teacher dashboard error:", err);
@@ -778,9 +897,8 @@ router.get("/profile", isTeacher, async (req, res) => {
         );
         const attendanceRecords = await safeScalar(`
           SELECT COUNT(*) AS total
-          FROM attendance a
-          INNER JOIN classes c ON c.id = a.class_id
-          WHERE c.teacher_id = ?
+          FROM teacher_attendance ta
+          WHERE ta.teacher_id = ?
         `, [teacher.id], 0);
         const uniqueStudents = await safeScalar(`
           SELECT COUNT(DISTINCT e.student_id) AS total
@@ -838,6 +956,8 @@ router.get("/attendance", isTeacher, async (req, res) => {
             students: [],
             lessonDate: todayIso,
             success: req.query.success || null,
+            teacherSuccess: req.query.teacher_success || null,
+            teacherCheckIn: normalizeTeacherCheckIn(null),
             attendanceSummary: {
                 present: 0,
                 absent: 0,
@@ -892,6 +1012,18 @@ router.get("/attendance/:classId", isTeacher, async (req, res) => {
         `, [lessonDate, classId], []);
 
         const students = normalizeAttendanceStudents(studentRows);
+        const teacherCheckInRows = await safeQuery(`
+          SELECT
+            ta.status,
+            ta.note,
+            ta.checked_in_at,
+            ta.updated_at
+          FROM teacher_attendance ta
+          WHERE ta.teacher_id = ?
+            AND ta.class_id = ?
+            AND ta.lesson_date = ?
+          LIMIT 1
+        `, [teacher.id, classId, lessonDate], []);
 
         renderWithLayout(res, "teacher-attendance", {
             title: "Điểm danh học viên",
@@ -901,11 +1033,55 @@ router.get("/attendance/:classId", isTeacher, async (req, res) => {
             students,
             lessonDate,
             success: req.query.success || null,
+            teacherSuccess: req.query.teacher_success || null,
+            teacherCheckIn: normalizeTeacherCheckIn(teacherCheckInRows[0] || null),
             attendanceSummary: summarizeAttendanceStudents(students)
         });
     } catch (err) {
         console.error("teacher attendance detail error:", err);
         return sendPublicError(res, err, 500, "Không thể tải dữ liệu điểm danh lúc này.");
+    }
+});
+
+router.post("/attendance/:classId/teacher-check-in", isTeacher, express.urlencoded({ extended: true }), async (req, res) => {
+    try {
+        const teacher = await getTeacherByUser(req);
+        const classId = Number(req.params.classId);
+        const lessonDate = /^\d{4}-\d{2}-\d{2}$/.test(req.body.lesson_date || "")
+            ? req.body.lesson_date
+            : getTodayIso();
+        const rawStatus = String(req.body.status || "").trim().toLowerCase();
+        const status = ATTENDANCE_STATUSES.has(rawStatus) ? rawStatus : "present";
+        const note = String(req.body.note || "").trim();
+
+        if (!teacher) {
+            return res.send("Không tìm thấy thông tin giáo viên.");
+        }
+
+        const [classRows] = await db.query(`
+          SELECT id
+          FROM classes
+          WHERE id = ? AND teacher_id = ?
+          LIMIT 1
+        `, [classId, teacher.id]);
+
+        if (!classRows.length) {
+            return res.status(403).send("Bạn không có quyền cập nhật check-in cho lớp này.");
+        }
+
+        await db.query(`
+          INSERT INTO teacher_attendance (teacher_id, class_id, lesson_date, status, note, checked_in_at)
+          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON DUPLICATE KEY UPDATE
+            status = VALUES(status),
+            note = VALUES(note),
+            checked_in_at = CURRENT_TIMESTAMP
+        `, [teacher.id, classId, lessonDate, status, note]);
+
+        return res.redirect(resolveTeacherCheckInRedirect(req.baseUrl, classId, lessonDate, req.body.source));
+    } catch (err) {
+        console.error("teacher check-in save error:", err);
+        return sendPublicError(res, err, 500, "Không thể lưu trạng thái có mặt của giáo viên lúc này.");
     }
 });
 

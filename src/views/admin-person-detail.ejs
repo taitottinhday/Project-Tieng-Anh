@@ -1,0 +1,957 @@
+<%
+const detail = personDetail || {};
+const isStudent = personType === "student";
+const profile = detail.profile || {};
+const summary = detail.summary || {};
+const enrollments = Array.isArray(detail.enrollments) ? detail.enrollments : [];
+const payments = Array.isArray(detail.payments) ? detail.payments : [];
+const attendanceEntries = Array.isArray(detail.attendanceEntries) ? detail.attendanceEntries : [];
+const comments = Array.isArray(detail.comments) ? detail.comments : [];
+const classroomSubmissions = Array.isArray(detail.classroomSubmissions) ? detail.classroomSubmissions : [];
+const classAssignments = Array.isArray(detail.classes) ? detail.classes : [];
+const classroomPosts = Array.isArray(detail.classroomPosts) ? detail.classroomPosts : [];
+
+const toneMap = {
+  success: "is-success",
+  warning: "is-warning",
+  danger: "is-danger",
+  info: "is-info",
+  muted: "is-muted",
+  brand: "is-brand"
+};
+
+function formatDate(value, withTime = false) {
+  if (!value) return "Chưa cập nhật";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
+  return new Intl.DateTimeFormat("vi-VN", withTime
+    ? { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }
+    : { day: "2-digit", month: "2-digit", year: "numeric" }
+  ).format(date);
+}
+
+function formatMoney(value) {
+  const amount = Number(value || 0);
+  return `${amount.toLocaleString("vi-VN")} ₫`;
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("vi-VN");
+}
+
+function calcAge(value) {
+  if (!value) return null;
+  const dob = new Date(value);
+  if (Number.isNaN(dob.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const monthDelta = now.getMonth() - dob.getMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < dob.getDate())) age -= 1;
+  return age >= 0 ? age : null;
+}
+
+function pickStatus(map, value, fallbackLabel) {
+  const key = String(value || "").toLowerCase();
+  return map[key] || { label: fallbackLabel || (value || "Chưa cập nhật"), tone: "muted" };
+}
+
+const enrollmentStatusMap = {
+  active: { label: "Đang học", tone: "success" },
+  pending: { label: "Chờ kích hoạt", tone: "warning" },
+  completed: { label: "Hoàn thành", tone: "brand" },
+  cancelled: { label: "Đã hủy", tone: "danger" }
+};
+
+const paymentStatusMap = {
+  confirmed: { label: "Đã xác nhận", tone: "success" },
+  pending: { label: "Chờ xác nhận", tone: "warning" },
+  rejected: { label: "Từ chối", tone: "danger" }
+};
+
+const paymentMethodMap = {
+  cash: "Tiền mặt",
+  bank_transfer: "Chuyển khoản",
+  transfer: "Chuyển khoản",
+  momo: "Ví điện tử",
+  card: "Thẻ",
+  other: "Khác"
+};
+
+const attendanceStatusMap = {
+  present: { label: "Có mặt", tone: "success" },
+  absent: { label: "Vắng", tone: "danger" },
+  late: { label: "Đi muộn", tone: "warning" },
+  excused: { label: "Có phép", tone: "info" }
+};
+
+const classStatusMap = {
+  active: { label: "Đang mở", tone: "success" },
+  completed: { label: "Đã đóng", tone: "muted" },
+  archived: { label: "Đã lưu trữ", tone: "muted" }
+};
+
+const submissionStatusMap = {
+  assigned: { label: "Đã giao", tone: "info" },
+  submitted: { label: "Đã nộp", tone: "warning" },
+  completed: { label: "Hoàn thành", tone: "success" },
+  reviewed: { label: "Đã chấm", tone: "brand" }
+};
+
+const postTypeMap = {
+  announcement: { label: "Thông báo", tone: "info" },
+  assignment: { label: "Bài tập", tone: "warning" },
+  material: { label: "Tài liệu", tone: "brand" }
+};
+
+const roleLabelMap = {
+  admin: "Quản trị viên",
+  teacher: "Giáo viên",
+  student: "Học viên"
+};
+
+const displayName = profile.full_name || (isStudent ? "Học viên chưa cập nhật tên" : "Giáo viên chưa cập nhật tên");
+const initials = displayName
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(-2)
+  .map((part) => part.charAt(0).toUpperCase())
+  .join("") || (isStudent ? "HV" : "GV");
+const age = calcAge(profile.dob);
+const backHref = `${baseUrl || ""}/admin/${isStudent ? "students" : "teachers"}`;
+const primaryStats = isStudent
+  ? [
+      { label: "Ghi danh", value: formatNumber(summary.enrollmentCount) },
+      { label: "Lớp đang hoạt động", value: formatNumber(summary.activeClassCount) },
+      { label: "Đã thu", value: formatMoney(summary.confirmedPaid) },
+      { label: "Bài đã chấm", value: formatNumber(summary.reviewedSubmissionCount) }
+    ]
+  : [
+      { label: "Lớp phụ trách", value: formatNumber(summary.classCount) },
+      { label: "Lớp đang hoạt động", value: formatNumber(summary.activeClassCount) },
+      { label: "Tải học viên", value: formatNumber(summary.studentLoad) },
+      { label: "Doanh thu xác nhận", value: formatMoney(summary.confirmedRevenue) }
+    ];
+const attendanceByStatus = summary.attendanceByStatus || {};
+const overviewChips = isStudent
+  ? [
+      `Số điện thoại: ${profile.phone || "Chưa cập nhật"}`,
+      `Email: ${profile.email || "Chưa cập nhật"}`,
+      `Tuổi: ${age !== null ? `${age} tuổi` : "Chưa cập nhật"}`
+    ]
+  : [
+      `Số điện thoại: ${profile.phone || "Chưa cập nhật"}`,
+      `Email: ${profile.email || "Chưa cập nhật"}`,
+      `Đang phụ trách: ${formatNumber(summary.activeClassCount)} lớp`
+    ];
+const personalFacts = isStudent
+  ? [
+      { label: "Ngày sinh", value: formatDate(profile.dob) },
+      { label: "Tuổi", value: age !== null ? `${age} tuổi` : "Chưa cập nhật" },
+      { label: "Số điện thoại", value: profile.phone || "Chưa cập nhật" },
+      { label: "Email liên hệ", value: profile.email || "Chưa cập nhật" },
+      { label: "Ngày tạo hồ sơ", value: formatDate(profile.created_at, true) },
+      { label: "Lớp đang hoạt động", value: summary.activeClassCodes || "Chưa có lớp đang học" }
+    ]
+  : [
+      { label: "Số điện thoại", value: profile.phone || "Chưa cập nhật" },
+      { label: "Email liên hệ", value: profile.email || "Chưa cập nhật" },
+      { label: "Ngày tạo hồ sơ", value: formatDate(profile.created_at, true) },
+      { label: "Lớp đang hoạt động", value: formatNumber(summary.activeClassCount) },
+      { label: "Tải học viên", value: formatNumber(summary.activeStudentLoad) },
+      { label: "Học viên đã nhận xét", value: formatNumber(summary.commentedStudentCount) }
+    ];
+const systemFacts = [
+  { label: "Tài khoản portal", value: profile.account_username || "Chưa liên kết" },
+  { label: "Email đăng nhập", value: profile.account_email || "Chưa cập nhật" },
+  { label: "Vai trò", value: roleLabelMap[profile.account_role] || "Chưa liên kết" },
+  { label: "Ngày tạo tài khoản", value: formatDate(profile.account_created_at, true) },
+  { label: "Liên kết người dùng", value: profile.user_id ? `Đã liên kết (#${profile.user_id})` : "Chưa liên kết" },
+  { label: "Nguồn dữ liệu", value: isStudent ? "students + enrollments + classroom" : "teachers + classes + classroom" }
+];
+%>
+
+<style>
+  .admin-profile-page {
+    display: grid;
+    gap: 24px;
+    padding: 8px 0 28px;
+  }
+
+  .admin-profile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    padding: 12px 18px;
+    border: 1px solid rgba(124, 157, 211, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #2b4771;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .admin-profile-hero,
+  .admin-profile-card,
+  .admin-profile-panel {
+    border: 1px solid rgba(124, 157, 211, 0.18);
+    border-radius: 28px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.92));
+    box-shadow: 0 18px 48px rgba(63, 88, 139, 0.1);
+  }
+
+  .admin-profile-hero {
+    padding: 30px;
+    display: grid;
+    gap: 24px;
+  }
+
+  .admin-profile-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .admin-profile-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .admin-profile-avatar {
+    width: 78px;
+    height: 78px;
+    border-radius: 24px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #1f4f90, #7b9fda);
+    color: #fff;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    box-shadow: 0 18px 34px rgba(42, 76, 129, 0.22);
+  }
+
+  .admin-profile-eyebrow,
+  .admin-profile-summary-label,
+  .admin-profile-section-title p,
+  .admin-profile-fact-label,
+  .admin-profile-list-meta,
+  .admin-profile-empty {
+    color: #6e84a7;
+  }
+
+  .admin-profile-copy h1,
+  .admin-profile-card h2,
+  .admin-profile-section-title h2,
+  .admin-profile-list-title {
+    margin: 0;
+    color: #20324f;
+  }
+
+  .admin-profile-copy p,
+  .admin-profile-summary-value,
+  .admin-profile-fact-value,
+  .admin-profile-list-copy,
+  .admin-profile-note {
+    margin: 0;
+    color: #395173;
+  }
+
+  .admin-profile-chip-row,
+  .admin-profile-summary-grid,
+  .admin-profile-facts,
+  .admin-profile-section-stack,
+  .admin-profile-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .admin-profile-chip-row {
+    grid-template-columns: repeat(auto-fit, minmax(150px, max-content));
+  }
+
+  .admin-profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(123, 159, 218, 0.12);
+    color: #38547a;
+    font-weight: 700;
+  }
+
+  .admin-profile-chip::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.65;
+  }
+
+  .admin-profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .admin-profile-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .admin-profile-action.primary {
+    background: linear-gradient(135deg, #2b5e9f, #6f92cc);
+    color: #fff;
+    box-shadow: 0 16px 30px rgba(57, 91, 143, 0.22);
+  }
+
+  .admin-profile-action.secondary {
+    border: 1px solid rgba(124, 157, 211, 0.25);
+    background: rgba(255, 255, 255, 0.88);
+    color: #37537a;
+  }
+
+  .admin-profile-summary-grid,
+  .admin-profile-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .admin-profile-summary-grid {
+    display: grid;
+  }
+
+  .admin-profile-summary-card,
+  .admin-profile-card,
+  .admin-profile-panel {
+    padding: 22px;
+  }
+
+  .admin-profile-summary-card {
+    grid-column: span 3;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(124, 157, 211, 0.14);
+  }
+
+  .admin-profile-summary-value {
+    font-size: clamp(1.35rem, 1.8vw, 1.8rem);
+    font-weight: 800;
+  }
+
+  .admin-profile-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .admin-profile-main {
+    grid-column: span 8;
+    display: grid;
+    gap: 20px;
+  }
+
+  .admin-profile-side {
+    grid-column: span 4;
+    display: grid;
+    gap: 20px;
+  }
+
+  .admin-profile-card h2,
+  .admin-profile-section-title h2 {
+    font-size: 1.06rem;
+  }
+
+  .admin-profile-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-profile-fact {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(244, 248, 255, 0.92);
+    border: 1px solid rgba(124, 157, 211, 0.14);
+  }
+
+  .admin-profile-fact-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .admin-profile-fact-value {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .admin-profile-section-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .admin-profile-list-item {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 20px;
+    background: rgba(248, 251, 255, 0.92);
+    border: 1px solid rgba(124, 157, 211, 0.14);
+  }
+
+  .admin-profile-list-top,
+  .admin-profile-list-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .admin-profile-list-copy {
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .admin-profile-list-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    font-size: 0.94rem;
+  }
+
+  .admin-profile-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .admin-profile-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+  }
+
+  .admin-profile-pill.is-success { background: rgba(86, 177, 124, 0.14); color: #196d3b; border-color: rgba(86, 177, 124, 0.2); }
+  .admin-profile-pill.is-warning { background: rgba(244, 188, 78, 0.18); color: #9a6500; border-color: rgba(244, 188, 78, 0.22); }
+  .admin-profile-pill.is-danger { background: rgba(235, 94, 124, 0.14); color: #b12244; border-color: rgba(235, 94, 124, 0.2); }
+  .admin-profile-pill.is-info { background: rgba(112, 154, 218, 0.16); color: #24538f; border-color: rgba(112, 154, 218, 0.2); }
+  .admin-profile-pill.is-muted { background: rgba(136, 150, 173, 0.16); color: #50607a; border-color: rgba(136, 150, 173, 0.18); }
+  .admin-profile-pill.is-brand { background: rgba(123, 159, 218, 0.18); color: #355789; border-color: rgba(123, 159, 218, 0.22); }
+
+  .admin-profile-note {
+    line-height: 1.7;
+  }
+
+  .admin-profile-empty {
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px dashed rgba(124, 157, 211, 0.3);
+    background: rgba(247, 250, 255, 0.84);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1120px) {
+    .admin-profile-summary-card {
+      grid-column: span 6;
+    }
+
+    .admin-profile-main,
+    .admin-profile-side {
+      grid-column: span 12;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .admin-profile-page {
+      gap: 18px;
+    }
+
+    .admin-profile-hero,
+    .admin-profile-card,
+    .admin-profile-panel,
+    .admin-profile-summary-card {
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .admin-profile-summary-card {
+      grid-column: span 12;
+    }
+
+    .admin-profile-head {
+      align-items: flex-start;
+    }
+
+    .admin-profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      font-size: 24px;
+    }
+
+    .admin-profile-facts {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-profile-chip-row,
+    .admin-profile-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-profile-action {
+      width: 100%;
+    }
+  }
+</style>
+
+<section class="admin-profile-page">
+  <a class="admin-profile-back" href="<%= backHref %>">← Quay lại danh sách</a>
+
+  <section class="admin-profile-hero">
+    <div class="admin-profile-hero-top">
+      <div class="admin-profile-head">
+        <div class="admin-profile-avatar"><%= initials %></div>
+        <div class="admin-profile-copy">
+          <div class="admin-profile-eyebrow"><%= isStudent ? "Hồ sơ học viên" : "Hồ sơ giáo viên" %></div>
+          <h1><%= displayName %></h1>
+          <p><%= isStudent ? "Trang điều hành chi tiết để admin nắm tình trạng học, thanh toán, điểm danh, nhận xét và bài tập của học viên." : "Trang điều hành chi tiết để admin nắm tải lớp, doanh thu, hoạt động classroom và chất lượng vận hành của giáo viên." %></p>
+          <div class="admin-profile-chip-row">
+            <% overviewChips.forEach((chip) => { %>
+              <span class="admin-profile-chip"><%= chip %></span>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-profile-actions">
+        <a class="admin-profile-action primary" href="<%= backHref %>">Về màn quản lý</a>
+        <% if (profile.email) { %>
+          <a class="admin-profile-action secondary" href="mailto:<%= profile.email %>">Gửi email</a>
+        <% } %>
+        <% if (profile.phone) { %>
+          <a class="admin-profile-action secondary" href="tel:<%= profile.phone %>">Gọi nhanh</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="admin-profile-summary-grid">
+      <% primaryStats.forEach((item) => { %>
+        <article class="admin-profile-summary-card">
+          <div class="admin-profile-summary-label"><%= item.label %></div>
+          <div class="admin-profile-summary-value"><%= item.value %></div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="admin-profile-grid">
+    <div class="admin-profile-main">
+      <article class="admin-profile-card">
+        <div class="admin-profile-section-title">
+          <div>
+            <h2>Thông tin cá nhân</h2>
+            <p>Tổng hợp những dữ liệu gốc quan trọng nhất để admin tra cứu nhanh.</p>
+          </div>
+        </div>
+        <div class="admin-profile-facts">
+          <% personalFacts.forEach((fact) => { %>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label"><%= fact.label %></span>
+              <div class="admin-profile-fact-value"><%= fact.value %></div>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+
+      <article class="admin-profile-card">
+        <div class="admin-profile-section-title">
+          <div>
+            <h2>Tài khoản hệ thống</h2>
+            <p>Kiểm tra trạng thái liên kết với portal và lịch sử tạo tài khoản.</p>
+          </div>
+        </div>
+        <div class="admin-profile-facts">
+          <% systemFacts.forEach((fact) => { %>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label"><%= fact.label %></span>
+              <div class="admin-profile-fact-value"><%= fact.value %></div>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+
+      <% if (isStudent) { %>
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Lớp và ghi danh</h2>
+              <p>Danh sách lớp đã hoặc đang học, kèm giáo viên, học phí và tiến độ ghi danh.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!enrollments.length) { %>
+              <div class="admin-profile-empty">Học viên này chưa có dữ liệu ghi danh nào.</div>
+            <% } %>
+            <% enrollments.forEach((item) => {
+              const enrollmentMeta = pickStatus(enrollmentStatusMap, item.status, "Chưa cập nhật");
+            %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <div>
+                    <h3 class="admin-profile-list-title"><%= item.class_code || "Chưa gán lớp" %> · <%= item.course_name || "Chưa có khóa học" %></h3>
+                    <p class="admin-profile-list-copy">Giáo viên: <%= item.teacher_name || "Chưa phân công" %> · Phòng/kênh: <%= item.room || "Chưa cập nhật" %></p>
+                  </div>
+                  <div class="admin-profile-pills">
+                    <span class="admin-profile-pill <%= toneMap[enrollmentMeta.tone] %>"><%= enrollmentMeta.label %></span>
+                  </div>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Lịch học: <%= item.schedule_text || "Chưa cập nhật" %></span>
+                  <span>Bắt đầu: <%= formatDate(item.start_date) %></span>
+                  <span>Kết thúc: <%= formatDate(item.end_date) %></span>
+                  <span>Học phí: <%= formatMoney(item.course_fee) %></span>
+                  <span>Đã xác nhận thu: <%= formatMoney(item.confirmed_paid) %></span>
+                  <span>Lần ghi danh gần nhất: <%= formatDate(item.enrolled_at, true) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Thanh toán gần đây</h2>
+              <p>Theo dõi tình trạng xác nhận và số tiền đã ghi nhận trên từng lần thu.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!payments.length) { %>
+              <div class="admin-profile-empty">Chưa có giao dịch thanh toán nào được ghi nhận cho học viên này.</div>
+            <% } %>
+            <% payments.forEach((item) => {
+              const paymentMeta = pickStatus(paymentStatusMap, item.status, "Chưa cập nhật");
+            %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <h3 class="admin-profile-list-title"><%= formatMoney(item.amount) %></h3>
+                  <div class="admin-profile-pills">
+                    <span class="admin-profile-pill <%= toneMap[paymentMeta.tone] %>"><%= paymentMeta.label %></span>
+                    <span class="admin-profile-pill is-muted"><%= paymentMethodMap[item.method] || item.method || "Khác" %></span>
+                  </div>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Lớp: <%= item.class_code || "Chưa gán lớp" %></span>
+                  <span>Khóa học: <%= item.course_name || "Chưa cập nhật" %></span>
+                  <span>Ngày thu: <%= formatDate(item.paid_at, true) %></span>
+                  <span>Ghi chú: <%= item.note || "Không có ghi chú" %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Nhận xét từ giáo viên</h2>
+              <p>Tập trung toàn bộ feedback mới nhất để admin thấy rõ tiến độ và chất lượng học.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!comments.length) { %>
+              <div class="admin-profile-empty">Chưa có nhận xét nào từ giáo viên cho học viên này.</div>
+            <% } %>
+            <% comments.forEach((item) => { %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <div>
+                    <h3 class="admin-profile-list-title"><%= item.teacher_name || "Giáo viên chưa xác định" %></h3>
+                    <p class="admin-profile-list-copy"><%= item.comment || "Chưa có nội dung nhận xét." %></p>
+                  </div>
+                  <% if (item.skill_focus) { %>
+                    <div class="admin-profile-pills">
+                      <span class="admin-profile-pill is-brand"><%= item.skill_focus %></span>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Lớp: <%= item.class_code || "Chưa gán lớp" %></span>
+                  <span>Khóa học: <%= item.course_name || "Chưa cập nhật" %></span>
+                  <span>Buổi học: <%= formatDate(item.lesson_date) %></span>
+                  <span>Tạo lúc: <%= formatDate(item.created_at, true) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Bài tập classroom</h2>
+              <p>Cho admin thấy trạng thái nộp, chấm và phản hồi trên luồng bài tập.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!classroomSubmissions.length) { %>
+              <div class="admin-profile-empty">Học viên này chưa có dữ liệu classroom submission.</div>
+            <% } %>
+            <% classroomSubmissions.forEach((item) => {
+              const submissionMeta = pickStatus(submissionStatusMap, item.status, "Chưa cập nhật");
+            %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <div>
+                    <h3 class="admin-profile-list-title"><%= item.post_title || "Bài đăng classroom" %></h3>
+                    <p class="admin-profile-list-copy"><%= item.teacher_feedback || item.student_note || "Chưa có ghi chú hoặc phản hồi." %></p>
+                  </div>
+                  <div class="admin-profile-pills">
+                    <span class="admin-profile-pill <%= toneMap[submissionMeta.tone] %>"><%= submissionMeta.label %></span>
+                    <% if (item.teacher_score !== null && item.teacher_score !== undefined) { %>
+                      <span class="admin-profile-pill is-brand">Điểm: <%= formatNumber(item.teacher_score) %></span>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Lớp: <%= item.class_code || "Chưa gán lớp" %></span>
+                  <span>Khóa học: <%= item.course_name || "Chưa cập nhật" %></span>
+                  <span>Hạn nộp: <%= formatDate(item.due_date, true) %></span>
+                  <span>Nộp lúc: <%= formatDate(item.submitted_at, true) %></span>
+                  <span>Chấm lúc: <%= formatDate(item.reviewed_at || item.completed_at, true) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+      <% } else { %>
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Lớp phụ trách</h2>
+              <p>Hiển thị rõ lớp đang phụ trách, số học viên, doanh thu xác nhận và nhịp classroom.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!classAssignments.length) { %>
+              <div class="admin-profile-empty">Giáo viên này chưa được phân công lớp nào.</div>
+            <% } %>
+            <% classAssignments.forEach((item) => {
+              const classMeta = pickStatus(classStatusMap, item.class_status, "Đã đóng");
+            %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <div>
+                    <h3 class="admin-profile-list-title"><%= item.class_code || "Lớp chưa có mã" %> · <%= item.course_name || "Chưa có khóa học" %></h3>
+                    <p class="admin-profile-list-copy">Phòng/kênh: <%= item.room || "Chưa cập nhật" %> · Lịch học: <%= item.schedule_text || "Chưa cập nhật" %></p>
+                  </div>
+                  <div class="admin-profile-pills">
+                    <span class="admin-profile-pill <%= toneMap[classMeta.tone] %>"><%= classMeta.label %></span>
+                  </div>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Học viên đăng ký: <%= formatNumber(item.enrollment_count) %></span>
+                  <span>Học viên đang học: <%= formatNumber(item.active_student_count) %></span>
+                  <span>Doanh thu xác nhận: <%= formatMoney(item.confirmed_revenue) %></span>
+                  <span>Buổi đã check-in: <%= formatNumber(item.teacher_checkin_count) %></span>
+                  <span>Bài đăng classroom: <%= formatNumber(item.classroom_post_count) %></span>
+                  <span>Bài tập: <%= formatNumber(item.assignment_post_count) %></span>
+                  <span>Bắt đầu: <%= formatDate(item.start_date) %></span>
+                  <span>Check-in gần nhất: <%= formatDate(item.last_teacher_checkin_at, true) %></span>
+                </div>
+                <% if (item.student_names) { %>
+                  <p class="admin-profile-note">Học viên nổi bật: <%= item.student_names %></p>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Bài đăng classroom gần đây</h2>
+              <p>Toàn bộ hoạt động bài đăng để admin theo dõi tần suất giao bài và nhịp lớp.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!classroomPosts.length) { %>
+              <div class="admin-profile-empty">Giáo viên này chưa có bài đăng classroom nào.</div>
+            <% } %>
+            <% classroomPosts.forEach((item) => {
+              const postMeta = pickStatus(postTypeMap, item.post_type, "Bài đăng");
+            %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <div>
+                    <h3 class="admin-profile-list-title"><%= item.title || "Bài đăng classroom" %></h3>
+                    <p class="admin-profile-list-copy"><%= item.content || "Chưa có phần mô tả nội dung." %></p>
+                  </div>
+                  <div class="admin-profile-pills">
+                    <span class="admin-profile-pill <%= toneMap[postMeta.tone] %>"><%= postMeta.label %></span>
+                  </div>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Lớp: <%= item.class_code || "Chưa gán lớp" %></span>
+                  <span>Khóa học: <%= item.course_name || "Chưa cập nhật" %></span>
+                  <span>Hạn nộp: <%= formatDate(item.due_date, true) %></span>
+                  <span>Tạo lúc: <%= formatDate(item.created_at, true) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="admin-profile-card">
+          <div class="admin-profile-section-title">
+            <div>
+              <h2>Nhận xét gần đây</h2>
+              <p>Admin có thể xem trực tiếp giáo viên đã phản hồi gì cho học viên ở từng lớp.</p>
+            </div>
+          </div>
+          <div class="admin-profile-list">
+            <% if (!comments.length) { %>
+              <div class="admin-profile-empty">Giáo viên này chưa có nhận xét nào được ghi nhận.</div>
+            <% } %>
+            <% comments.forEach((item) => { %>
+              <div class="admin-profile-list-item">
+                <div class="admin-profile-list-top">
+                  <div>
+                    <h3 class="admin-profile-list-title"><%= item.student_name || "Học viên chưa xác định" %></h3>
+                    <p class="admin-profile-list-copy"><%= item.comment || "Chưa có nội dung nhận xét." %></p>
+                  </div>
+                  <% if (item.skill_focus) { %>
+                    <div class="admin-profile-pills">
+                      <span class="admin-profile-pill is-brand"><%= item.skill_focus %></span>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="admin-profile-list-meta">
+                  <span>Lớp: <%= item.class_code || "Chưa gán lớp" %></span>
+                  <span>Khóa học: <%= item.course_name || "Chưa cập nhật" %></span>
+                  <span>Buổi học: <%= formatDate(item.lesson_date) %></span>
+                  <span>Tạo lúc: <%= formatDate(item.created_at, true) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+      <% } %>
+    </div>
+
+    <aside class="admin-profile-side">
+      <article class="admin-profile-panel">
+        <div class="admin-profile-section-title">
+          <div>
+            <h2><%= isStudent ? "Điểm danh gần đây" : "Check-in giảng dạy gần đây" %></h2>
+            <p><%= isStudent ? "Tổng quan trạng thái hiện diện để admin đọc nhanh chất lượng theo lớp." : "Theo dõi giáo viên đã có mặt dạy lớp hay chưa theo từng buổi học." %></p>
+          </div>
+        </div>
+        <div class="admin-profile-pills">
+          <% Object.keys(attendanceByStatus).forEach((statusKey) => {
+            const attendanceMeta = pickStatus(attendanceStatusMap, statusKey, statusKey);
+          %>
+            <span class="admin-profile-pill <%= toneMap[attendanceMeta.tone] %>"><%= attendanceMeta.label %>: <%= formatNumber(attendanceByStatus[statusKey]) %></span>
+          <% }) %>
+          <% if (!Object.keys(attendanceByStatus).length) { %>
+            <span class="admin-profile-pill is-muted"><%= isStudent ? "Chưa có dữ liệu điểm danh" : "Chưa có dữ liệu check-in giảng dạy" %></span>
+          <% } %>
+        </div>
+        <div class="admin-profile-section-stack">
+          <% if (!attendanceEntries.length) { %>
+            <div class="admin-profile-empty"><%= isStudent ? "Chưa có dòng điểm danh nào để hiển thị." : "Chưa có buổi check-in giảng dạy nào để hiển thị." %></div>
+          <% } %>
+          <% attendanceEntries.forEach((item) => {
+            const attendanceMeta = pickStatus(attendanceStatusMap, item.status, "Chưa cập nhật");
+          %>
+            <div class="admin-profile-list-item">
+              <div class="admin-profile-list-top">
+                <h3 class="admin-profile-list-title"><%= item.class_code || "Chưa gán lớp" %></h3>
+                <span class="admin-profile-pill <%= toneMap[attendanceMeta.tone] %>"><%= attendanceMeta.label %></span>
+              </div>
+              <div class="admin-profile-list-meta">
+                <span>Ngày học: <%= formatDate(item.lesson_date) %></span>
+                <% if (item.course_name) { %><span>Khóa học: <%= item.course_name %></span><% } %>
+                <% if (item.note) { %><span>Ghi chú: <%= item.note %></span><% } %>
+                <% if (item.checked_in_at) { %><span>Check-in: <%= formatDate(item.checked_in_at, true) %></span><% } %>
+                <% if (item.updated_at) { %><span>Cập nhật: <%= formatDate(item.updated_at, true) %></span><% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+
+      <article class="admin-profile-panel">
+        <div class="admin-profile-section-title">
+          <div>
+            <h2>Chỉ báo điều hành</h2>
+            <p>Những điểm cần chú ý nhanh để admin xử lý tiếp theo.</p>
+          </div>
+        </div>
+        <div class="admin-profile-facts">
+          <% if (isStudent) { %>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Nhận xét gần nhất</span>
+              <div class="admin-profile-fact-value"><%= formatDate(summary.lastCommentAt, true) %></div>
+            </div>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Bài được giao</span>
+              <div class="admin-profile-fact-value"><%= formatNumber(summary.assignedSubmissionCount) %></div>
+            </div>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Bài đã nộp</span>
+              <div class="admin-profile-fact-value"><%= formatNumber(summary.submittedSubmissionCount) %></div>
+            </div>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Điểm trung bình</span>
+              <div class="admin-profile-fact-value"><%= summary.averageSubmissionScore !== null && summary.averageSubmissionScore !== undefined ? formatNumber(Number(summary.averageSubmissionScore).toFixed(1)) : "Chưa có điểm" %></div>
+            </div>
+          <% } else { %>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Nhận xét gần nhất</span>
+              <div class="admin-profile-fact-value"><%= formatDate(summary.lastCommentAt, true) %></div>
+            </div>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Bài đăng classroom</span>
+              <div class="admin-profile-fact-value"><%= formatNumber(summary.classroomPostCount) %></div>
+            </div>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Bài tập đã giao</span>
+              <div class="admin-profile-fact-value"><%= formatNumber(summary.assignmentPostCount) %></div>
+            </div>
+            <div class="admin-profile-fact">
+              <span class="admin-profile-fact-label">Check-in gần nhất</span>
+              <div class="admin-profile-fact-value"><%= formatDate(summary.lastTeacherCheckInAt || summary.lastPostAt, true) %></div>
+            </div>
+          <% } %>
+        </div>
+      </article>
+    </aside>
+  </section>
+</section>

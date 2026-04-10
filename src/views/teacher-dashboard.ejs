@@ -31,6 +31,17 @@
   };
   const attendanceRateLabel = typeof safeStats.attendanceRate === 'number' ? `${safeStats.attendanceRate}%` : 'Chưa có';
   const weeklyPeak = safeWeeklyLoad.length ? Math.max(...safeWeeklyLoad.map((item) => item.count), 1) : 1;
+  const teacherPresenceMetaMap = {
+    present: { label: 'Đã có mặt', tone: 'green' },
+    late: { label: 'Đi muộn', tone: 'gold' },
+    absent: { label: 'Vắng mặt', tone: 'pink' },
+    excused: { label: 'Có phép', tone: 'blue' }
+  };
+  const formatDateTime = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleString('vi-VN');
+  };
 %>
 
 <div class="teacher-shell">
@@ -47,6 +58,7 @@
           <span class="teacher-pill soft">Ngày làm việc: <%= shortDate(safeTodayIso) %></span>
           <span class="teacher-pill soft"><%= Number(safeStats.activeClasses || 0) %> lớp đang vận hành</span>
           <span class="teacher-pill soft"><%= Number(safeStats.studentsWithFeedback || 0) %> học viên đã có nhận xét</span>
+          <span class="teacher-pill soft"><%= Number(safeStats.todayTeacherCheckInCount || 0) %> lớp đã check-in hôm nay</span>
         </div>
       </div>
 
@@ -79,6 +91,10 @@
     </div>
   </section>
 
+  <% if (teacherCheckInSuccess) { %>
+    <div class="teacher-alert">Đã ghi nhận trạng thái có mặt của giáo viên cho buổi dạy. Admin sẽ thấy log này trong hồ sơ giáo viên.</div>
+  <% } %>
+
   <section class="teacher-grid four">
     <article class="teacher-stat-card">
       <span class="teacher-stat-label">Lớp đang dạy</span>
@@ -93,9 +109,9 @@
     </article>
 
     <article class="teacher-stat-card">
-      <span class="teacher-stat-label">Điểm danh hôm nay</span>
-      <strong class="teacher-stat-value"><%= Number(safeStats.todayAttendanceCount || 0) %></strong>
-      <p class="teacher-stat-note">Số lượt điểm danh đã được ghi trong ngày học hiện tại.</p>
+      <span class="teacher-stat-label">Check-in hôm nay</span>
+      <strong class="teacher-stat-value"><%= Number(safeStats.todayTeacherCheckInCount || 0) %></strong>
+      <p class="teacher-stat-note">Số lớp bạn đã xác nhận có mặt để dạy trong hôm nay.</p>
     </article>
 
     <article class="teacher-stat-card">
@@ -128,8 +144,8 @@
     <article class="teacher-panel highlight">
       <div class="teacher-panel-head">
         <div>
-          <h2 class="teacher-panel-title">Lịch dạy gần nhất</h2>
-          <p class="teacher-panel-desc">Các lớp đang hoạt động hoặc chuẩn bị bắt đầu trong giai đoạn hiện tại.</p>
+          <h2 class="teacher-panel-title">Lớp dạy cần check-in hôm nay</h2>
+          <p class="teacher-panel-desc">Xác nhận nhanh việc bạn đã có mặt dạy lớp, đồng thời mở ngay luồng điểm danh học viên.</p>
         </div>
       </div>
 
@@ -147,16 +163,33 @@
               <div class="teacher-class-meta" style="margin-top: 14px;">
                 <p class="teacher-muted">Lịch học: <%= item.schedule_text || 'Chưa cập nhật' %></p>
                 <p class="teacher-muted">Thời gian: <%= item.start_label || 'Chưa có ngày bắt đầu' %> đến <%= item.end_label || 'Chưa có ngày kết thúc' %></p>
+                <% if (item.teacher_check_in_status) { %>
+                  <% const presenceMeta = teacherPresenceMetaMap[item.teacher_check_in_status] || teacherPresenceMetaMap.present; %>
+                  <p class="teacher-muted">Check-in hôm nay: <span class="teacher-pill <%= presenceMeta.tone %>"><%= presenceMeta.label %></span> · <%= item.teacher_checked_in_label || 'Đã ghi nhận' %></p>
+                <% } else { %>
+                  <p class="teacher-muted">Check-in hôm nay: Chưa đánh dấu có mặt cho buổi dạy này.</p>
+                <% } %>
               </div>
               <div class="teacher-progress">
                 <div class="teacher-progress-bar" style="width: <%= item.phase.progress || 18 %>%;"></div>
               </div>
               <p class="teacher-note" style="margin-top: 12px;"><%= item.phase.supportingText %></p>
+              <div class="teacher-card-actions" style="margin-top: 16px;">
+                <% if (!item.teacher_check_in_status || item.teacher_check_in_status !== 'present') { %>
+                  <form method="POST" action="<%= baseUrl %>/teacher/attendance/<%= item.id %>/teacher-check-in">
+                    <input type="hidden" name="lesson_date" value="<%= safeTodayIso %>">
+                    <input type="hidden" name="status" value="present">
+                    <input type="hidden" name="source" value="dashboard">
+                    <button class="teacher-link-button secondary" type="submit">Tôi đã có mặt</button>
+                  </form>
+                <% } %>
+                <a href="<%= baseUrl %>/teacher/attendance/<%= item.id %>?date=<%= safeTodayIso %>" class="teacher-link-button">Mở điểm danh lớp</a>
+              </div>
             </article>
           <% }) %>
         </div>
       <% } else { %>
-        <div class="teacher-empty" style="margin-top: 18px;">Chưa có lớp học nào được phân công cho bạn ở thời điểm hiện tại.</div>
+        <div class="teacher-empty" style="margin-top: 18px;">Hôm nay chưa có lớp nào nổi bật để check-in, hoặc lịch dạy chưa đủ dữ liệu ngày trong tuần.</div>
       <% } %>
     </article>
 

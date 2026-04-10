@@ -216,6 +216,12 @@
     gap: 16px;
   }
 
+  .teacher-panel-head > *,
+  .teacher-class-top > *,
+  .teacher-student-head > * {
+    min-width: 0;
+  }
+
   .teacher-panel-title,
   .teacher-card-title {
     margin: 0;
@@ -233,6 +239,16 @@
     font-size: 0.96rem;
     line-height: 1.72;
     color: var(--teacher-muted);
+  }
+
+  .teacher-panel-title,
+  .teacher-card-title,
+  .teacher-panel-desc,
+  .teacher-card-text,
+  .teacher-muted,
+  .teacher-note,
+  .teacher-empty {
+    overflow-wrap: anywhere;
   }
 
   .teacher-stat-card {
@@ -354,6 +370,7 @@
     cursor: pointer;
     transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
     box-shadow: 0 16px 28px rgba(31, 95, 191, 0.22);
+    max-width: 100%;
   }
 
   .teacher-link-button:hover,
@@ -553,6 +570,14 @@
     .teacher-student-grid {
       grid-template-columns: 1fr;
     }
+
+    .teacher-panel-head,
+    .teacher-class-top,
+    .teacher-student-head,
+    .teacher-bar-top {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 
   @media (max-width: 640px) {
@@ -576,6 +601,24 @@
 
     .teacher-hero {
       border-radius: 28px;
+    }
+
+    .teacher-shell {
+      gap: 18px;
+    }
+
+    .teacher-hero-actions,
+    .teacher-panel-actions,
+    .teacher-card-actions,
+    .teacher-template-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      width: 100%;
+    }
+
+    .teacher-link-button,
+    .teacher-button {
+      width: 100%;
     }
   }
 </style>
