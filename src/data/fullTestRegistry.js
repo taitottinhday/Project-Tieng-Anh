@@ -66,7 +66,7 @@ function buildManagedExamDefinition(config) {
     actionLabel: "Làm bài",
     statusTone: exam.isDemo ? "demo" : "ready",
     statusText: exam.isDemo
-      ? "Đề thi đã sẵn sàng để trải nghiệm giao diện và cấu trúc bài làm."
+      ? "Đề demo đã sẵn sàng."
       : "Đề đã sẵn sàng để làm bài ngay.",
     durationMinutes: card.durationMinutes || DEFAULT_TEST_META.durationMinutes,
     totalQuestions: card.expectedTotalQuestions || card.totalQuestions || DEFAULT_TEST_META.totalQuestions,
@@ -98,7 +98,7 @@ function buildManagedExamOrPlaceholder(config) {
       collectionKey: config.collectionKey,
       collectionLabel: config.collectionLabel,
       badgeLabel: config.badgeLabel,
-      statusText: `File đề chưa hợp lệ: ${error.message}`,
+      statusText: "Đề này tạm thời chưa khả dụng.",
     });
   }
 }
@@ -110,8 +110,8 @@ function createPlaceholderExam(config) {
     isAvailable: false,
     actionLabel: "Sắp cập nhật",
     statusTone: "coming-soon",
-    statusText: "Khung đề đã sẵn sàng, chỉ cần nối thêm file JS/API 200 câu là dùng được.",
-    description: "Bạn có thể gắn file đề 200 câu vào card này mà không cần làm lại giao diện.",
+    statusText: "Đề này đang được cập nhật.",
+    description: "Nội dung đề sẽ sớm có mặt trong thư viện.",
     ...config,
   };
 }
@@ -131,8 +131,8 @@ function createYearPlaceholderExam(year, testNumber, override = {}) {
 
   return createPlaceholderExam({
     ...identity,
-    description: `Khung này đã sẵn cho ${identity.badgeLabel} Test ${testNumber}. Khi bạn thêm file đề 200 câu và answer key, card sẽ dùng lại ngay.`,
-    statusText: `Chưa gắn dữ liệu cho ${identity.badgeLabel} Test ${testNumber}. Bạn có thể thêm file đề sau mà không cần làm lại giao diện.`,
+    description: `${identity.badgeLabel} Test ${testNumber} đang được cập nhật.`,
+    statusText: "Đề này hiện chưa mở làm bài.",
     ...override,
   });
 }
@@ -181,22 +181,22 @@ function resolveSpecialSlotDefinition(year, testNumber) {
 
   if (!fs.existsSync(dataFilePath)) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `Slot này đang chờ file ${slotConfig.dataFileName} để bật đề thật.`,
-      statusText: `Chưa tìm thấy file ${slotConfig.dataFileName} cho ${identity.badgeLabel} Test ${testNumber}.`,
+      description: `${identity.badgeLabel} Test ${testNumber} đang được cập nhật.`,
+      statusText: "Đề này hiện chưa khả dụng.",
     });
   }
 
   if (fs.statSync(dataFilePath).size === 0) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `File ${slotConfig.dataFileName} đã được tạo nhưng chưa có nội dung JSON 200 câu.`,
-      statusText: `File ${slotConfig.dataFileName} đang trống nên chưa thể render đề này.`,
+      description: `${identity.badgeLabel} Test ${testNumber} đang được cập nhật.`,
+      statusText: "Đề này hiện chưa khả dụng.",
     });
   }
 
   if (!fs.existsSync(answerKeyFilePath)) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `Đã có file ${slotConfig.dataFileName}, chỉ còn thiếu answer key để bật nút làm bài.`,
-      statusText: `Chưa tìm thấy ${slotConfig.answerKeyFileName} cho ${identity.badgeLabel} Test ${testNumber}.`,
+      description: `${identity.badgeLabel} Test ${testNumber} đang được cập nhật.`,
+      statusText: "Đề này hiện chưa khả dụng.",
     });
   }
 
@@ -216,15 +216,15 @@ function resolveStandardSlotDefinition(year, testNumber) {
 
   if (fs.statSync(dataFilePath).size === 0) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `File ${dataFileName} đã được tạo nhưng hiện vẫn chưa có nội dung JSON 200 câu.`,
-      statusText: `File ${dataFileName} đang trống nên hệ thống giữ slot này ở trạng thái chờ.`,
+      description: `${identity.badgeLabel} Test ${testNumber} đang được cập nhật.`,
+      statusText: "Đề này hiện chưa khả dụng.",
     });
   }
 
   if (!fs.existsSync(answerKeyFilePath)) {
     return createYearPlaceholderExam(year, testNumber, {
-      description: `Đã có file ${dataFileName}, chỉ còn thiếu answer key để bật đề thật.`,
-      statusText: `Chưa có ${answerKeyFileName} nên ${identity.badgeLabel} Test ${testNumber} chưa thể chấm điểm.`,
+      description: `${identity.badgeLabel} Test ${testNumber} đang được cập nhật.`,
+      statusText: "Đề này hiện chưa khả dụng.",
     });
   }
 
@@ -256,8 +256,8 @@ function buildUploadedExamDefinition(entry = {}) {
       collectionKey,
       collectionLabel,
       badgeLabel,
-      statusText: "Bộ file upload của đề thi này đang thiếu hoặc đã bị di chuyển.",
-      description: "Admin cần tải lại file đề và answer key để kích hoạt đề thi này.",
+      statusText: "Đề này tạm thời chưa khả dụng.",
+      description: "Vui lòng quay lại sau.",
     });
   }
 

@@ -1,0 +1,234 @@
+<%- include('partials/student-classroom-style') %>
+<%
+  const safeHub = typeof progressHub !== 'undefined' && progressHub ? progressHub : {};
+  const safeStudent = safeHub.student || (typeof student !== 'undefined' ? student : {}) || {};
+  const summary = safeHub.summary || {};
+  const classroomProgress = Array.isArray(safeHub.classroomProgress) ? safeHub.classroomProgress : [];
+  const upcomingLiveSessions = Array.isArray(safeHub.upcomingLiveSessions) ? safeHub.upcomingLiveSessions : [];
+  const recentTeacherNotes = Array.isArray(safeHub.recentTeacherNotes) ? safeHub.recentTeacherNotes : [];
+  const recentSubmissions = Array.isArray(safeHub.recentSubmissions) ? safeHub.recentSubmissions : [];
+  const recentExamSessions = Array.isArray(safeHub.recentExamSessions) ? safeHub.recentExamSessions : [];
+  const recentDictationSessions = Array.isArray(safeHub.recentDictationSessions) ? safeHub.recentDictationSessions : [];
+  const formatDate = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleString('vi-VN');
+  };
+%>
+
+<div class="sc-page">
+  <section class="sc-hero">
+    <span class="sc-kicker">Learning Progress</span>
+    <h1><%= safeStudent.full_name || studentName || 'Học viên' %></h1>
+    <p>
+      Bảng này tổng hợp tiến độ học tập của bạn từ điểm danh, bài tập, các phiên luyện tập và nhận xét giáo viên để biết mình đang mạnh ở đâu và cần tăng cường phần nào.
+    </p>
+    <div class="sc-post-meta" style="margin-top: 18px;">
+      <span class="sc-pill soft">Điểm tổng hợp: <%= summary.overallScore !== null && typeof summary.overallScore !== 'undefined' ? summary.overallScore : '-' %></span>
+      <span class="sc-pill <%= summary.riskKey === 'high' ? 'pink' : (summary.riskKey === 'medium' ? 'soft' : 'green') %>"><%= summary.riskLabel || 'Đang cập nhật' %></span>
+      <span class="sc-pill blue"><%= summary.trendLabel || 'Ổn định' %></span>
+      <span class="sc-pill pink"><%= summary.readinessLabel || 'Đang đánh giá' %></span>
+    </div>
+    <div class="sc-actions">
+      <a href="<%= baseUrl %>/student/classroom" class="sc-btn">Về classroom</a>
+      <a href="<%= baseUrl %>/student/profile" class="sc-btn-secondary">Hồ sơ học viên</a>
+    </div>
+  </section>
+
+  <section class="sc-grid three">
+    <article class="sc-panel">
+      <h2><%= summary.attendanceRate !== null && typeof summary.attendanceRate !== 'undefined' ? summary.attendanceRate : '-' %></h2>
+      <p>Kỷ luật học tập: phản ánh mức độ đi học và bám lớp.</p>
+    </article>
+    <article class="sc-panel">
+      <h2><%= summary.assignmentCompletionRate !== null && typeof summary.assignmentCompletionRate !== 'undefined' ? summary.assignmentCompletionRate : '-' %></h2>
+      <p>Hoàn thành bài tập: phản ánh mức độ theo kịp yêu cầu của lớp.</p>
+    </article>
+    <article class="sc-panel">
+      <h2><%= summary.learningScore !== null && typeof summary.learningScore !== 'undefined' ? summary.learningScore : '-' %></h2>
+      <p>Năng lực luyện tập: tổng hợp từ practice, full test và dictation gần đây.</p>
+    </article>
+  </section>
+
+  <section class="sc-feed-layout">
+    <div class="sc-panel">
+      <h2>Phân tích tiến độ theo lớp</h2>
+      <p>Mỗi lớp đang học sẽ có một ảnh chụp nhanh về điểm danh, bài tập và nhận xét mới nhất.</p>
+
+      <% if (classroomProgress.length) { %>
+        <div class="sc-card-grid" style="margin-top: 22px;">
+          <% classroomProgress.forEach((item) => { %>
+            <article class="sc-card">
+              <span class="sc-pill blue"><%= item.class_code %></span>
+              <h3 style="margin-top: 14px;"><%= item.course_name || 'Lớp học' %></h3>
+              <p>
+                <strong style="color:#1a3552;">Giáo viên chính:</strong> <%= item.teacher_name || 'Đang cập nhật' %><br>
+                <strong style="color:#1a3552;">Lịch học:</strong> <%= item.schedule_text || 'Đang cập nhật' %>
+              </p>
+              <div class="sc-post-meta">
+                <span class="sc-pill soft">Điểm danh: <%= item.attendanceRate !== null && typeof item.attendanceRate !== 'undefined' ? item.attendanceRate : '-' %></span>
+                <span class="sc-pill pink">Bài tập: <%= item.assignmentCompletionRate !== null && typeof item.assignmentCompletionRate !== 'undefined' ? item.assignmentCompletionRate : '-' %></span>
+                <span class="sc-pill green">Đúng hạn: <%= item.onTimeRate !== null && typeof item.onTimeRate !== 'undefined' ? item.onTimeRate : '-' %></span>
+              </div>
+              <% if (item.lastTeacherComment) { %>
+                <div class="sc-note-card" style="margin-top: 16px;">
+                  <div class="sc-note-head">
+                    <strong>Nhận xét gần nhất</strong>
+                    <span class="sc-pill soft"><%= formatDate(item.lastTeacherComment.createdAt) %></span>
+                  </div>
+                  <% if (item.lastTeacherComment.skillFocus) { %>
+                    <div class="sc-post-meta" style="margin-top: 0;">
+                      <span class="sc-pill pink"><%= item.lastTeacherComment.skillFocus %></span>
+                    </div>
+                  <% } %>
+                  <p><%= item.lastTeacherComment.message %></p>
+                </div>
+              <% } %>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="sc-empty" style="margin-top: 22px;">Chưa có dữ liệu lớp để phân tích.</div>
+      <% } %>
+
+      <section class="sc-panel" style="margin-top: 22px; padding: 0; border: 0; box-shadow: none; background: transparent;">
+        <h2>Phiên luyện tập gần đây</h2>
+        <p>Những phiên làm bài và dictation mới nhất đang góp vào điểm tiến độ của bạn.</p>
+        <% if (recentExamSessions.length || recentDictationSessions.length) { %>
+          <div class="sc-post-list" style="margin-top: 18px;">
+            <% recentExamSessions.slice(0, 4).forEach((item) => { %>
+              <article class="sc-post-card">
+                <span class="sc-pill blue"><%= item.badgeLabel || 'Session' %></span>
+                <h3><%= item.title %></h3>
+                <div class="sc-post-meta">
+                  <span class="sc-pill soft">Độ chính xác: <%= item.accuracy !== null && typeof item.accuracy !== 'undefined' ? item.accuracy : '-' %></span>
+                  <span class="sc-pill pink">Điểm: <%= item.scoreValue !== null && typeof item.scoreValue !== 'undefined' ? item.scoreValue : '-' %><% if (item.scoreMax) { %>/<%= item.scoreMax %><% } %></span>
+                </div>
+                <div class="sc-actions">
+                  <a href="<%= item.actionHref %>" class="sc-btn-secondary"><%= item.actionLabel || 'Mở lại' %></a>
+                </div>
+              </article>
+            <% }) %>
+
+            <% recentDictationSessions.slice(0, 3).forEach((item) => { %>
+              <article class="sc-post-card">
+                <span class="sc-pill pink"><%= item.badgeLabel || 'Dictation' %></span>
+                <h3><%= item.title %></h3>
+                <div class="sc-post-meta">
+                  <span class="sc-pill soft">Độ chính xác: <%= item.accuracy !== null && typeof item.accuracy !== 'undefined' ? item.accuracy : '-' %></span>
+                  <span class="sc-pill blue">Hoàn thành: <%= item.completedCount || 0 %>/<%= item.totalCount || 0 %></span>
+                </div>
+                <div class="sc-actions">
+                  <a href="<%= item.actionHref %>" class="sc-btn-secondary"><%= item.actionLabel || 'Mở lại' %></a>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Chưa có phiên luyện tập nào đủ dữ liệu để phân tích.</div>
+        <% } %>
+      </section>
+    </div>
+
+    <aside class="sc-grid">
+      <article class="sc-panel">
+        <h2>Điểm nổi bật</h2>
+        <p>Điểm mạnh và trọng tâm cải thiện của bạn trong giai đoạn hiện tại.</p>
+        <div class="sc-note-list" style="margin-top: 18px;">
+          <div class="sc-note-card">
+            <div class="sc-note-head">
+              <strong>Điểm mạnh</strong>
+              <span class="sc-pill green"><%= summary.strongestAreaLabel || 'Đang cập nhật' %></span>
+            </div>
+          </div>
+          <div class="sc-note-card">
+            <div class="sc-note-head">
+              <strong>Trọng tâm cải thiện</strong>
+              <span class="sc-pill pink"><%= summary.focusAreaLabel || 'Đang cập nhật' %></span>
+            </div>
+          </div>
+          <div class="sc-note-card">
+            <div class="sc-note-head">
+              <strong>Độ đều 30 ngày</strong>
+              <span class="sc-pill soft"><%= summary.consistencySummary && typeof summary.consistencySummary.activeDaysLast30 !== 'undefined' ? summary.consistencySummary.activeDaysLast30 : 0 %> ngày hoạt động</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="sc-panel">
+        <h2>Lịch online sắp tới</h2>
+        <p>Các buổi online gần nhất của những lớp bạn đang học.</p>
+        <% if (upcomingLiveSessions.length) { %>
+          <div class="sc-note-list" style="margin-top: 18px;">
+            <% upcomingLiveSessions.forEach((item) => { %>
+              <div class="sc-note-card">
+                <div class="sc-note-head">
+                  <strong><%= item.title %></strong>
+                  <span class="sc-pill soft"><%= formatDate(item.scheduled_start) %></span>
+                </div>
+                <div class="sc-post-meta" style="margin-top: 0;">
+                  <span class="sc-pill blue"><%= (item.classInfo && (item.classInfo.class_code || item.classInfo.code)) || 'Classroom' %></span>
+                  <span class="sc-pill pink"><%= item.host_teacher_name || 'Giáo viên' %></span>
+                </div>
+                <div class="sc-actions" style="margin-top: 10px;">
+                  <a href="<%= item.meeting_url %>" target="_blank" rel="noopener" class="sc-btn-secondary">Vào lớp</a>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Chưa có lịch online nào sắp tới.</div>
+        <% } %>
+      </article>
+
+      <article class="sc-panel">
+        <h2>Nhận xét giáo viên</h2>
+        <p>Các nhận xét mới nhất đang tác động trực tiếp tới cách trung tâm theo dõi tiến độ của bạn.</p>
+        <% if (recentTeacherNotes.length) { %>
+          <div class="sc-note-list" style="margin-top: 18px;">
+            <% recentTeacherNotes.forEach((item) => { %>
+              <div class="sc-note-card">
+                <div class="sc-note-head">
+                  <strong><%= item.teacher_name || 'Giáo viên' %></strong>
+                  <span class="sc-pill soft"><%= formatDate(item.lesson_date || item.created_at) %></span>
+                </div>
+                <% if (item.skill_focus) { %>
+                  <div class="sc-post-meta" style="margin-top: 0;">
+                    <span class="sc-pill pink"><%= item.skill_focus %></span>
+                  </div>
+                <% } %>
+                <p><%= item.comment %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Chưa có nhận xét giáo viên gần đây.</div>
+        <% } %>
+      </article>
+
+      <article class="sc-panel">
+        <h2>Bài tập mới xử lý</h2>
+        <p>Bảng này giúp bạn xem lại bài đã nộp và điểm giáo viên vừa phản hồi.</p>
+        <% if (recentSubmissions.length) { %>
+          <div class="sc-note-list" style="margin-top: 18px;">
+            <% recentSubmissions.forEach((item) => { %>
+              <div class="sc-note-card">
+                <div class="sc-note-head">
+                  <strong><%= item.post_title %></strong>
+                  <span class="sc-pill soft"><%= item.class_code %></span>
+                </div>
+                <div class="sc-post-meta" style="margin-top: 0;">
+                  <span class="sc-pill blue"><%= item.status %></span>
+                  <span class="sc-pill pink">Điểm: <%= item.teacher_score !== null && typeof item.teacher_score !== 'undefined' ? item.teacher_score : '-' %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Chưa có bài tập nào được ghi nhận gần đây.</div>
+        <% } %>
+      </article>
+    </aside>
+  </section>
+</div>

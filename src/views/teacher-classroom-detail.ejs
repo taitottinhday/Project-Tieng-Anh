@@ -3,7 +3,12 @@
   const safeClassInfo = typeof classInfo !== 'undefined' && classInfo ? classInfo : {};
   const safePosts = Array.isArray(typeof posts !== 'undefined' ? posts : null) ? posts : [];
   const safeStudents = Array.isArray(typeof students !== 'undefined' ? students : null) ? students : [];
+  const safeTeachingTeam = Array.isArray(typeof teachingTeam !== 'undefined' ? teachingTeam : null) ? teachingTeam : [];
+  const safeLiveSessions = Array.isArray(typeof liveSessions !== 'undefined' ? liveSessions : null) ? liveSessions : [];
+  const safeTeacherUpdates = Array.isArray(typeof teacherUpdates !== 'undefined' ? teacherUpdates : null) ? teacherUpdates : [];
+  const safeAssignableTeachers = Array.isArray(typeof assignableTeachers !== 'undefined' ? assignableTeachers : null) ? assignableTeachers : [];
   const stats = typeof postStats !== 'undefined' && postStats ? postStats : { lectures: 0, assignments: 0, pendingReviewCount: 0 };
+  const membership = typeof teacherPermission !== 'undefined' && teacherPermission ? teacherPermission : {};
   const formatDateTime = (value) => {
     if (!value) return 'Chưa cập nhật';
     const parsed = new Date(value);
@@ -16,131 +21,83 @@
     const localTime = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
     return localTime.toISOString().slice(0, 16);
   };
-  const shortText = (value, limit = 170) => {
+  const shortText = (value, limit = 180) => {
     const text = String(value || '').trim();
-    return text.length > limit ? `${text.slice(0, limit)}...` : (text || 'Không có mô tả bổ sung.');
+    return text.length > limit ? `${text.slice(0, limit)}...` : (text || 'Chưa có mô tả bổ sung.');
   };
+  const upcomingSessions = safeLiveSessions.filter((item) => ['scheduled', 'live'].includes(item.status));
 %>
 
 <style>
-  .teacher-composer-grid {
+  .tcollab-grid {
     display: grid;
     gap: 18px;
-    grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .teacher-composer-note {
-    padding: 18px;
-    border-radius: 24px;
-    background: rgba(233, 243, 255, 0.88);
-    border: 1px solid rgba(123, 156, 210, 0.16);
-  }
-
-  .teacher-composer-note strong {
-    display: block;
-    font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
-    font-size: 1.16rem;
-    letter-spacing: -0.03em;
-    color: #16304a;
-  }
-
-  .teacher-composer-note p {
-    margin: 10px 0 0;
-    color: #60758c;
-    line-height: 1.75;
-  }
-
-  .teacher-post-list {
-    display: grid;
-    gap: 18px;
-  }
-
-  .teacher-post-card {
-    position: relative;
-    overflow: hidden;
-    padding: 22px;
-    border-radius: 28px;
-    border: 1px solid rgba(136, 166, 215, 0.18);
-    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,250,255,0.94));
-    box-shadow: 0 24px 54px rgba(53, 92, 153, 0.12);
-  }
-
-  .teacher-post-card::after {
-    content: "";
-    position: absolute;
-    inset: auto -40px -58px auto;
-    width: 150px;
-    height: 150px;
-    border-radius: 999px;
-    background: radial-gradient(circle, rgba(255, 177, 74, 0.14), transparent 72%);
-    pointer-events: none;
-  }
-
-  .teacher-post-card h3 {
-    margin: 0;
-    font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
-    font-size: 1.42rem;
-    letter-spacing: -0.04em;
-    color: #16304a;
-  }
-
-  .teacher-post-meta {
-    margin-top: 14px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .teacher-file-list {
-    margin-top: 16px;
-    display: grid;
-    gap: 10px;
-  }
-
-  .teacher-file-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: 18px;
-    background: rgba(233, 243, 255, 0.82);
-    border: 1px solid rgba(136, 166, 215, 0.16);
-    color: #18416e;
-    text-decoration: none;
-    font-weight: 700;
-  }
-
-  .teacher-roster-grid {
+  .tcollab-list,
+  .tpost-list {
     display: grid;
     gap: 16px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .teacher-roster-card {
+  .tcollab-card,
+  .tpost-card,
+  .troster-card {
     padding: 20px;
     border-radius: 24px;
     border: 1px solid rgba(136, 166, 215, 0.16);
-    background: rgba(255,255,255,0.92);
+    background: rgba(255,255,255,0.95);
     box-shadow: 0 18px 40px rgba(53, 92, 153, 0.1);
   }
 
-  .teacher-roster-card strong {
-    display: block;
-    font-size: 1.08rem;
+  .tcollab-card strong,
+  .tpost-card strong,
+  .troster-card strong {
     color: #16304a;
   }
 
-  .teacher-roster-card span {
+  .tcollab-copy,
+  .troster-card span,
+  .tmeta-note {
     display: block;
     margin-top: 8px;
     color: #60758c;
-    line-height: 1.65;
+    line-height: 1.68;
   }
 
-  @media (max-width: 960px) {
-    .teacher-composer-grid,
-    .teacher-roster-grid {
+  .tmeta-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tmeta-box {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(234, 243, 255, 0.84);
+    border: 1px solid rgba(136, 166, 215, 0.14);
+  }
+
+  .tmeta-box strong {
+    display: block;
+    font-size: 1.02rem;
+  }
+
+  .tmeta-box span {
+    display: block;
+    margin-top: 6px;
+    color: #60758c;
+    font-size: 0.86rem;
+  }
+
+  .teacher-shell .teacher-form-grid.cols-3.tcols-flex {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.05fr);
+  }
+
+  @media (max-width: 1200px) {
+    .tcollab-grid,
+    .teacher-shell .teacher-form-grid.cols-3.tcols-flex {
       grid-template-columns: 1fr;
     }
   }
@@ -150,15 +107,15 @@
   <section class="teacher-hero">
     <div class="teacher-hero-grid">
       <div>
-        <p class="teacher-hero-kicker">Teacher Classroom</p>
-        <h1 class="teacher-hero-title"><%= safeClassInfo.course_name || 'Lớp học' %> · <%= safeClassInfo.code || 'Chưa cập nhật mã lớp' %></h1>
+        <p class="teacher-hero-kicker">Classroom Operations</p>
+        <h1 class="teacher-hero-title"><%= safeClassInfo.course_name || 'Lớp học' %> · <%= safeClassInfo.code || 'Chưa có mã lớp' %></h1>
         <p class="teacher-hero-text">
-          Tại đây giáo viên đăng bài giảng, giao bài tập, đính kèm tài liệu và mở bảng chấm bài theo từng học viên.
+          Workspace này gom toàn bộ vận hành lớp: đội ngũ giảng dạy, lịch online, bảng tin bài học, chấm bài và ghi chú phối hợp giữa các giáo viên.
         </p>
         <div class="teacher-hero-badges">
           <span class="teacher-pill soft"><%= safeClassInfo.student_count || 0 %> học viên</span>
-          <span class="teacher-pill pink"><%= stats.assignments %> bài tập</span>
-          <span class="teacher-pill blue"><%= stats.lectures %> bài giảng</span>
+          <span class="teacher-pill blue"><%= safeTeachingTeam.length %> giáo viên</span>
+          <span class="teacher-pill pink"><%= upcomingSessions.length %> buổi online sắp tới</span>
           <span class="teacher-pill gold"><%= stats.pendingReviewCount %> lượt cần đánh giá</span>
         </div>
       </div>
@@ -167,12 +124,13 @@
         <h2 class="teacher-panel-title" style="color:white;">Thông tin lớp</h2>
         <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.84);">
           <strong style="color:white;">Lịch:</strong> <%= safeClassInfo.schedule_text || 'Đang bổ sung' %><br>
-          <strong style="color:white;">Phòng:</strong> <%= safeClassInfo.room || 'Đang bổ sung' %><br>
-          <strong style="color:white;">Khối học:</strong> <%= safeClassInfo.category || 'Tổng hợp' %>
+          <strong style="color:white;">Phòng / kênh:</strong> <%= safeClassInfo.room || 'Đang bổ sung' %><br>
+          <strong style="color:white;">Khối học:</strong> <%= safeClassInfo.category || 'Tổng hợp' %><br>
+          <strong style="color:white;">Giáo viên chính:</strong> <%= safeClassInfo.primary_teacher_name || 'Đang cập nhật' %>
         </p>
         <div class="teacher-hero-actions" style="margin-top:18px;">
-          <a href="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>" class="teacher-link-button secondary">Ở lại classroom</a>
-          <a href="<%= baseUrl %>/teacher/classes/<%= safeClassInfo.id %>" class="teacher-link-button ghost" style="background: rgba(255,255,255,0.18); color:white; border-color: rgba(255,255,255,0.16);">Thông tin lớp</a>
+          <a href="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>/progress" class="teacher-link-button">Bảng tiến độ</a>
+          <a href="<%= baseUrl %>/teacher/classes/<%= safeClassInfo.id %>" class="teacher-link-button secondary">Thông tin lớp</a>
         </div>
       </div>
     </div>
@@ -180,24 +138,268 @@
 
   <section class="teacher-grid four">
     <article class="teacher-stat-card">
-      <span class="teacher-stat-label">Học viên</span>
-      <strong class="teacher-stat-value"><%= safeClassInfo.student_count || 0 %></strong>
-      <p class="teacher-stat-note">Sĩ số đang nhận dữ liệu bài giảng và bài tập.</p>
-    </article>
-    <article class="teacher-stat-card">
       <span class="teacher-stat-label">Bài giảng</span>
       <strong class="teacher-stat-value"><%= stats.lectures %></strong>
-      <p class="teacher-stat-note">Số bài giảng và thông báo đã phát đến học viên.</p>
+      <p class="teacher-stat-note">Số bài giảng và thông báo đã phát tới lớp.</p>
     </article>
     <article class="teacher-stat-card">
       <span class="teacher-stat-label">Bài tập</span>
       <strong class="teacher-stat-value"><%= stats.assignments %></strong>
-      <p class="teacher-stat-note">Tổng bài tập có thể nhận file nộp từ học viên.</p>
+      <p class="teacher-stat-note">Bài tập đã giao và đang có luồng nộp bài.</p>
     </article>
     <article class="teacher-stat-card">
-      <span class="teacher-stat-label">Cần đánh giá</span>
-      <strong class="teacher-stat-value"><%= stats.pendingReviewCount %></strong>
-      <p class="teacher-stat-note">Lượt nộp bài đang chờ giáo viên phản hồi.</p>
+      <span class="teacher-stat-label">Buổi online</span>
+      <strong class="teacher-stat-value"><%= upcomingSessions.length %></strong>
+      <p class="teacher-stat-note">Lịch học online đang chờ diễn ra hoặc đang mở.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Vai trò của bạn</span>
+      <strong class="teacher-stat-value" style="font-size:1.35rem;"><%= membership.role_label || 'Giáo viên' %></strong>
+      <p class="teacher-stat-note">Quyền hiện có: <%= membership.can_manage_team ? 'quản trị team' : 'thao tác học vụ' %>.</p>
+    </article>
+  </section>
+
+  <section class="teacher-panel highlight">
+    <div class="teacher-panel-head">
+      <div>
+        <h2 class="teacher-panel-title">Điều phối lớp học</h2>
+        <p class="teacher-panel-desc">Thêm giáo viên phối hợp, lên lịch học online và lưu handoff note nội bộ ngay trong workspace lớp.</p>
+      </div>
+    </div>
+
+    <div class="teacher-form-grid cols-3 tcols-flex" style="margin-top: 22px;">
+      <div class="teacher-panel">
+        <div class="teacher-panel-head">
+          <div>
+            <h3 class="teacher-card-title">Đội ngũ giảng dạy</h3>
+            <p class="teacher-card-text">Phân quyền theo vai trò để nhiều giáo viên cùng phối hợp trong một lớp.</p>
+          </div>
+        </div>
+
+        <div class="tcollab-list" style="margin-top: 18px;">
+          <% safeTeachingTeam.forEach((item) => { %>
+            <article class="tcollab-card">
+              <span class="teacher-pill <%= item.role === 'lead' ? 'navy' : 'soft' %>"><%= item.role_label %></span>
+              <strong style="display:block; margin-top: 12px;"><%= item.full_name %></strong>
+              <span class="tcollab-copy"><%= item.email || 'Chưa cập nhật email' %></span>
+              <span class="tcollab-copy">Quyền: <%= item.can_publish_posts ? 'đăng bài' : 'xem bài' %>, <%= item.can_review_submissions ? 'chấm bài' : 'không chấm bài' %>, <%= item.can_schedule_sessions ? 'lên lịch online' : 'không lên lịch' %></span>
+            </article>
+          <% }) %>
+        </div>
+
+        <% if (membership.can_manage_team) { %>
+          <form action="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>/team" method="POST" class="teacher-form-grid" style="margin-top: 18px;">
+            <div class="teacher-field">
+              <label class="teacher-label">Giáo viên thêm vào lớp</label>
+              <select class="teacher-select" name="teacher_id" <%= safeAssignableTeachers.length ? '' : 'disabled' %>>
+                <% if (safeAssignableTeachers.length) { %>
+                  <% safeAssignableTeachers.forEach((item) => { %>
+                    <option value="<%= item.id %>"><%= item.full_name %> · <%= item.email || 'Chưa có email' %></option>
+                  <% }) %>
+                <% } else { %>
+                  <option value="">Không còn giáo viên để thêm</option>
+                <% } %>
+              </select>
+            </div>
+            <div class="teacher-field">
+              <label class="teacher-label">Vai trò</label>
+              <select class="teacher-select" name="role">
+                <option value="co_teacher">Giáo viên phối hợp</option>
+                <option value="mentor">Giáo viên theo dõi</option>
+                <option value="reviewer">Giáo viên chấm bài</option>
+              </select>
+            </div>
+            <div class="teacher-panel-actions">
+              <button type="submit" class="teacher-button" <%= safeAssignableTeachers.length ? '' : 'disabled' %>>Cập nhật team</button>
+            </div>
+          </form>
+        <% } %>
+      </div>
+
+      <div class="teacher-panel">
+        <div class="teacher-panel-head">
+          <div>
+            <h3 class="teacher-card-title">Lên lịch lớp online</h3>
+            <p class="teacher-card-text">Đặt lịch, gắn host và lưu link phòng học cho đúng lớp ngay tại đây.</p>
+          </div>
+        </div>
+
+        <% if (membership.can_schedule_sessions) { %>
+          <form action="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>/live-sessions" method="POST" class="teacher-form-grid" style="margin-top: 18px;">
+            <div class="teacher-field">
+              <label class="teacher-label">Tiêu đề buổi học</label>
+              <input class="teacher-input" type="text" name="title" placeholder="Ví dụ: Speaking clinic tuần 3" required>
+            </div>
+            <div class="teacher-form-grid cols-2">
+              <div class="teacher-field">
+                <label class="teacher-label">Ngày bắt đầu</label>
+                <input class="teacher-input" type="date" name="scheduled_start_date" required>
+              </div>
+              <div class="teacher-field">
+                <label class="teacher-label">Giờ bắt đầu</label>
+                <input class="teacher-input" type="time" name="scheduled_start_time" required>
+              </div>
+            </div>
+            <div class="teacher-form-grid cols-2">
+              <div class="teacher-field">
+                <label class="teacher-label">Ngày kết thúc</label>
+                <input class="teacher-input" type="date" name="scheduled_end_date">
+              </div>
+              <div class="teacher-field">
+                <label class="teacher-label">Giờ kết thúc</label>
+                <input class="teacher-input" type="time" name="scheduled_end_time">
+              </div>
+            </div>
+            <p class="teacher-note">Nếu chưa chốt giờ kết thúc, bạn có thể để trống 2 ô kết thúc.</p>
+            <div class="teacher-form-grid cols-2">
+              <div class="teacher-field">
+                <label class="teacher-label">Nền tảng</label>
+                <select class="teacher-select" name="meeting_provider">
+                  <option value="google_meet">Google Meet</option>
+                  <option value="zoom">Zoom</option>
+                  <option value="teams">Microsoft Teams</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+              <div class="teacher-field">
+                <label class="teacher-label">Giáo viên host</label>
+                <select class="teacher-select" name="host_teacher_id">
+                  <% safeTeachingTeam.forEach((item) => { %>
+                    <option value="<%= item.teacher_id %>"><%= item.full_name %> · <%= item.role_label %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="teacher-field">
+              <label class="teacher-label">Link phòng học</label>
+              <input class="teacher-input" type="url" name="meeting_url" placeholder="https://..." required>
+            </div>
+            <div class="teacher-field">
+              <label class="teacher-label">Ghi chú truy cập</label>
+              <input class="teacher-input" type="text" name="access_note" placeholder="Ví dụ: vào trước 10 phút, bật camera đầu giờ">
+            </div>
+            <div class="teacher-field">
+              <label class="teacher-label">Mô tả nhanh</label>
+              <textarea class="teacher-textarea" name="description" placeholder="Mục tiêu buổi học, nội dung trọng tâm, yêu cầu chuẩn bị trước..."></textarea>
+            </div>
+            <div class="teacher-panel-actions">
+              <button type="submit" class="teacher-button pink">Tạo buổi online</button>
+            </div>
+          </form>
+        <% } else { %>
+          <div class="teacher-empty" style="margin-top: 18px;">Tài khoản này chưa được cấp quyền lên lịch lớp online.</div>
+        <% } %>
+      </div>
+
+      <div class="teacher-panel">
+        <div class="teacher-panel-head">
+          <div>
+            <h3 class="teacher-card-title">Ghi chú phối hợp nội bộ</h3>
+            <p class="teacher-card-text">Lưu handoff note cho cả đội dạy để không mất mạch theo dõi học viên.</p>
+          </div>
+        </div>
+
+        <form action="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>/team-updates" method="POST" class="teacher-form-grid" style="margin-top: 18px;">
+          <div class="teacher-field">
+            <label class="teacher-label">Tiêu đề ghi chú</label>
+            <input class="teacher-input" type="text" name="title" placeholder="Ví dụ: Cần theo sát nhóm yếu Reading Part 7" required>
+          </div>
+          <div class="teacher-form-grid cols-2">
+            <div class="teacher-field">
+              <label class="teacher-label">Mức độ</label>
+              <select class="teacher-select" name="importance">
+                <option value="normal">Thông thường</option>
+                <option value="priority">Ưu tiên</option>
+                <option value="urgent">Khẩn</option>
+              </select>
+            </div>
+            <div class="teacher-field">
+              <label class="teacher-label">Học viên liên quan</label>
+              <select class="teacher-select" name="related_student_id">
+                <option value="">Không gắn riêng học viên</option>
+                <% safeStudents.forEach((item) => { %>
+                  <option value="<%= item.id %>"><%= item.full_name %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+          <div class="teacher-field">
+            <label class="teacher-label">Nội dung</label>
+            <textarea class="teacher-textarea" name="message" placeholder="Nêu bối cảnh, điều giáo viên sau cần tiếp nối, điểm phải lưu ý trong buổi tiếp theo..." required></textarea>
+          </div>
+          <div class="teacher-panel-actions">
+            <button type="submit" class="teacher-button secondary">Lưu ghi chú nội bộ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid two">
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Lịch lớp online</h2>
+          <p class="teacher-panel-desc">Danh sách các buổi học online của lớp, bao gồm host, link vào lớp và thời gian dự kiến.</p>
+        </div>
+      </div>
+
+      <% if (safeLiveSessions.length) { %>
+        <div class="tcollab-list" style="margin-top: 22px;">
+          <% safeLiveSessions.forEach((item) => { %>
+            <article class="tcollab-card">
+              <div class="teacher-panel-head">
+                <div>
+                  <span class="teacher-pill <%= item.status === 'completed' ? 'soft' : (item.status === 'live' ? 'red' : 'blue') %>">
+                    <%= item.status === 'completed' ? 'Đã diễn ra' : (item.status === 'live' ? 'Đang diễn ra' : 'Sắp tới') %>
+                  </span>
+                  <strong style="display:block; margin-top: 12px;"><%= item.title %></strong>
+                </div>
+                <a href="<%= item.meeting_url %>" target="_blank" rel="noopener" class="teacher-link-button secondary">Vào lớp</a>
+              </div>
+              <span class="tcollab-copy">Host: <%= item.host_teacher_name || 'Giáo viên' %> · <%= item.meeting_provider_label %></span>
+              <span class="tcollab-copy">Thời gian: <%= formatDateTime(item.scheduled_start) %><% if (item.scheduled_end) { %> - <%= formatDateTime(item.scheduled_end) %><% } %></span>
+              <% if (item.access_note) { %>
+                <span class="tcollab-copy">Lưu ý: <%= item.access_note %></span>
+              <% } %>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 22px;">Lớp này chưa có buổi học online nào được lên lịch.</div>
+      <% } %>
+    </article>
+
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Nhật ký phối hợp giáo viên</h2>
+          <p class="teacher-panel-desc">Các ghi chú nội bộ để giáo viên tiếp theo nắm được mạch lớp và từng học viên cần lưu ý.</p>
+        </div>
+      </div>
+
+      <% if (safeTeacherUpdates.length) { %>
+        <div class="tcollab-list" style="margin-top: 22px;">
+          <% safeTeacherUpdates.forEach((item) => { %>
+            <article class="tcollab-card">
+              <div class="teacher-panel-head">
+                <div>
+                  <span class="teacher-pill <%= item.importance === 'urgent' ? 'red' : (item.importance === 'priority' ? 'gold' : 'soft') %>"><%= item.importance_label %></span>
+                  <strong style="display:block; margin-top: 12px;"><%= item.title %></strong>
+                </div>
+                <span class="tmeta-note"><%= formatDateTime(item.created_at) %></span>
+              </div>
+              <span class="tcollab-copy">Người ghi: <%= item.author_teacher_name || 'Giáo viên' %></span>
+              <% if (item.related_student_name) { %>
+                <span class="tcollab-copy">Liên quan: <%= item.related_student_name %></span>
+              <% } %>
+              <span class="tcollab-copy"><%= shortText(item.message, 220) %></span>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 22px;">Chưa có handoff note nào trong lớp này.</div>
+      <% } %>
     </article>
   </section>
 
@@ -205,28 +407,28 @@
     <div class="teacher-panel-head">
       <div>
         <h2 class="teacher-panel-title">Đăng bài giảng hoặc bài tập mới</h2>
-        <p class="teacher-panel-desc">Mỗi bài đăng sẽ được đẩy đến luồng học viên của lớp này ngay sau khi giáo viên đăng lên.</p>
+        <p class="teacher-panel-desc">Mỗi bài đăng sẽ đi thẳng vào luồng học viên và liên kết với bảng chấm bài nếu là bài tập.</p>
       </div>
     </div>
 
-    <div class="teacher-composer-grid" style="margin-top: 22px;">
+    <div class="teacher-form-grid cols-2" style="margin-top: 22px;">
       <form action="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>/posts" method="POST" enctype="multipart/form-data" class="teacher-form-grid">
         <div class="teacher-form-grid cols-2">
           <div class="teacher-field">
             <label class="teacher-label">Tiêu đề</label>
-            <input class="teacher-input" type="text" name="title" placeholder="Ví dụ: Day 27 - Reading homework" required>
+            <input class="teacher-input" type="text" name="title" placeholder="Ví dụ: Homework tuần 5 - Reading" required>
           </div>
           <div class="teacher-field">
             <label class="teacher-label">Loại bài đăng</label>
             <select class="teacher-select" name="post_type">
-              <option value="lecture">Bài giảng / Tài liệu</option>
+              <option value="lecture">Bài giảng / thông báo</option>
               <option value="assignment">Bài tập có nộp bài</option>
             </select>
           </div>
         </div>
         <div class="teacher-form-grid cols-2">
           <div class="teacher-field">
-            <label class="teacher-label">Hạn nộp (nếu là bài tập)</label>
+            <label class="teacher-label">Hạn nộp</label>
             <input class="teacher-input" type="datetime-local" name="due_date">
           </div>
           <div class="teacher-field">
@@ -236,21 +438,33 @@
         </div>
         <div class="teacher-field">
           <label class="teacher-label">Mô tả / hướng dẫn</label>
-          <textarea class="teacher-textarea" name="description" placeholder="Mô tả bài giảng, link tham khảo, hướng dẫn nộp bài, tiêu chí đánh giá..."></textarea>
+          <textarea class="teacher-textarea" name="description" placeholder="Mục tiêu bài học, tiêu chí chấm, link bổ trợ, yêu cầu chuẩn bị..."></textarea>
         </div>
         <div class="teacher-panel-actions">
           <button type="submit" class="teacher-button pink">Đăng lên classroom</button>
         </div>
       </form>
 
-      <aside class="teacher-composer-note">
-        <strong>Gợi ý vận hành classroom</strong>
-        <p>
-          Bài giảng phù hợp để gửi PDF, audio, video và hướng dẫn học. Bài tập phù hợp để nhận file bài làm, cho học viên đánh dấu hoàn thành và mở bảng chấm bài riêng.
-        </p>
-        <p>
-          Khi giáo viên đăng bài tập, hệ thống sẽ tạo sẵn luồng nộp bài cho học viên trong lớp này để theo dõi trạng thái từng người.
-        </p>
+      <aside class="teacher-panel">
+        <h3 class="teacher-card-title">Chuỗi thao tác logic</h3>
+        <div class="tmeta-grid" style="margin-top: 18px;">
+          <div class="tmeta-box">
+            <strong>1. Team dạy</strong>
+            <span>Phân vai giáo viên để rõ người đăng bài, chấm bài và lên lớp online.</span>
+          </div>
+          <div class="tmeta-box">
+            <strong>2. Lịch online</strong>
+            <span>Đặt lịch học sớm để học viên thấy ngay trên classroom của lớp.</span>
+          </div>
+          <div class="tmeta-box">
+            <strong>3. Bài đăng</strong>
+            <span>Tài liệu và bài tập được lưu ngay vào cùng một dòng hoạt động của lớp.</span>
+          </div>
+          <div class="tmeta-box">
+            <strong>4. Tiến độ</strong>
+            <span>Bảng phân tích dùng dữ liệu thật để nhận diện học viên cần theo sát.</span>
+          </div>
+        </div>
       </aside>
     </div>
   </section>
@@ -260,44 +474,44 @@
       <div class="teacher-panel-head">
         <div>
           <h2 class="teacher-panel-title">Bảng tin lớp học</h2>
-          <p class="teacher-panel-desc">Danh sách bài giảng và bài tập đã phát tới học viên.</p>
+          <p class="teacher-panel-desc">Danh sách bài giảng, thông báo và bài tập đang vận hành trong lớp này.</p>
         </div>
       </div>
 
       <% if (safePosts.length) { %>
-        <div class="teacher-post-list" style="margin-top: 22px;">
+        <div class="tpost-list" style="margin-top: 22px;">
           <% safePosts.forEach((item) => { %>
-            <article class="teacher-post-card">
-              <div class="teacher-class-top">
+            <article class="tpost-card">
+              <div class="teacher-panel-head">
                 <div>
                   <span class="teacher-pill <%= item.post_type === 'assignment' ? 'pink' : 'blue' %>"><%= item.post_type === 'assignment' ? 'Bài tập' : 'Bài giảng' %></span>
-                  <h3 style="margin-top: 14px;"><%= item.title %></h3>
+                  <strong style="display:block; margin-top: 12px; font-size: 1.12rem;"><%= item.title %></strong>
                 </div>
                 <% if (item.post_type === 'assignment') { %>
                   <a href="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>/posts/<%= item.id %>" class="teacher-link-button">Chấm bài</a>
                 <% } %>
               </div>
 
-              <p class="teacher-card-text"><%= shortText(item.description) %></p>
+              <span class="tmeta-note">Người đăng: <%= item.author_teacher_name || 'Giáo viên' %> · <%= formatDateTime(item.created_at) %></span>
+              <span class="tcollab-copy"><%= shortText(item.description, 220) %></span>
 
-              <div class="teacher-post-meta">
-                <span class="teacher-pill soft">Đăng: <%= formatDateTime(item.created_at) %></span>
+              <div class="teacher-hero-badges" style="margin-top: 14px;">
+                <span class="teacher-pill soft"><%= item.material_count || 0 %> tài liệu</span>
                 <% if (item.post_type === 'assignment' && item.due_date) { %>
                   <span class="teacher-pill gold">Hạn nộp: <%= formatDateTime(item.due_date) %></span>
                 <% } %>
-                <span class="teacher-pill blue"><%= item.material_count || 0 %> tài liệu</span>
                 <% if (item.post_type === 'assignment') { %>
-                  <span class="teacher-pill pink"><%= item.turned_in_count || 0 %> đã nộp</span>
+                  <span class="teacher-pill blue"><%= item.turned_in_count || 0 %> đã nộp</span>
                   <span class="teacher-pill green"><%= item.reviewed_count || 0 %> đã đánh giá</span>
                 <% } %>
               </div>
 
               <% if (item.materials && item.materials.length) { %>
-                <div class="teacher-file-list">
-                  <% item.materials.forEach((file) => { %>
-                    <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="teacher-file-link">
+                <div class="tcollab-list" style="margin-top: 16px;">
+                  <% item.materials.slice(0, 3).forEach((file) => { %>
+                    <a href="<%= file.public_path %>" target="_blank" rel="noopener" class="teacher-link-button secondary" style="justify-content: space-between;">
                       <span><%= file.original_name %></span>
-                      <span>Xem tệp</span>
+                      <span>Mở</span>
                     </a>
                   <% }) %>
                 </div>
@@ -306,35 +520,31 @@
           <% }) %>
         </div>
       <% } else { %>
-        <div class="teacher-empty" style="margin-top: 22px;">
-          Chưa có bài đăng nào trong classroom này. Hãy đăng bài giảng đầu tiên hoặc giao bài tập để học viên nhận tài liệu ngay.
-        </div>
+        <div class="teacher-empty" style="margin-top: 22px;">Chưa có bài đăng nào trong lớp này.</div>
       <% } %>
     </article>
 
     <article class="teacher-panel">
       <div class="teacher-panel-head">
         <div>
-          <h2 class="teacher-panel-title">Học viên trong luồng classroom</h2>
-          <p class="teacher-panel-desc">Danh sách học viên đang được nhận bài giảng, bài tập và luồng nộp bài.</p>
+          <h2 class="teacher-panel-title">Học viên đang theo lớp</h2>
+          <p class="teacher-panel-desc">Danh sách học viên đang nhận bài, lịch online và đánh giá tiến độ trong lớp.</p>
         </div>
       </div>
 
       <% if (safeStudents.length) { %>
-        <div class="teacher-roster-grid" style="margin-top: 22px;">
-          <% safeStudents.forEach((studentItem) => { %>
-            <article class="teacher-roster-card">
-              <strong><%= studentItem.full_name %></strong>
-              <span><%= studentItem.email || 'Chưa cập nhật email' %></span>
-              <span><%= studentItem.phone || 'Chưa cập nhật số điện thoại' %></span>
-              <span>Trạng thái ghi danh: <strong style="color:#173f73;"><%= studentItem.enrollment_status || 'active' %></strong></span>
+        <div class="tcollab-list" style="margin-top: 22px;">
+          <% safeStudents.forEach((item) => { %>
+            <article class="troster-card">
+              <strong><%= item.full_name %></strong>
+              <span><%= item.email || 'Chưa cập nhật email' %></span>
+              <span><%= item.phone || 'Chưa cập nhật số điện thoại' %></span>
+              <span>Trạng thái ghi danh: <strong style="color:#1b4377;"><%= item.enrollment_status || 'active' %></strong></span>
             </article>
           <% }) %>
         </div>
       <% } else { %>
-        <div class="teacher-empty" style="margin-top: 22px;">
-          Lớp này chưa có học viên nào được gắn vào hệ thống nộp bài.
-        </div>
+        <div class="teacher-empty" style="margin-top: 22px;">Lớp này chưa có học viên nào đang active.</div>
       <% } %>
     </article>
   </section>

@@ -464,6 +464,7 @@ router.post("/feedback", isLoggedIn, isStudent, express.urlencoded({ extended: t
 });
 
 router.get("/profile", isLoggedIn, isStudent, studentProfileController.showStudentProfile);
+router.get("/progress", isLoggedIn, isStudent, studentProfileController.showStudentProgress);
 
 router.get("/classroom", isLoggedIn, isStudent, async (req, res) => {
   try {
@@ -508,6 +509,8 @@ router.get("/classroom/:classId", isLoggedIn, isStudent, async (req, res) => {
       classInfo: classroom.classInfo,
       posts: classroom.posts,
       teacherComments: classroom.teacherComments,
+      teachingTeam: classroom.teachingTeam,
+      liveSessions: classroom.liveSessions,
       success: req.query.success || null,
     });
   } catch (err) {

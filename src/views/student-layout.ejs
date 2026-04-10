@@ -383,7 +383,9 @@
             transform: translateY(12px);
             transition: opacity .18s ease, transform .18s ease;
             z-index: 60;
-            max-height: min(420px, calc(100vh - 120px))
+            max-height: min(420px, calc(100vh - 120px));
+            grid-template-rows: auto minmax(0, 1fr);
+            overflow: hidden
         }
 
         .s-bell-wrap.is-open .s-notify-panel,
@@ -419,9 +421,13 @@
         .s-notify-list {
             display: grid;
             gap: 10px;
-            max-height: 420px;
+            min-height: 0;
+            max-height: none;
             overflow-y: auto;
-            padding-right: 2px
+            overflow-x: hidden;
+            padding-right: 6px;
+            align-content: start;
+            overscroll-behavior: contain
         }
 
         .s-notify-item {
@@ -430,7 +436,8 @@
             padding: 15px 16px;
             border-radius: 22px;
             border: 1px solid var(--line-soft);
-            background: rgba(255, 255, 255, .96)
+            background: rgba(255, 255, 255, .96);
+            min-width: 0
         }
 
         .s-notify-item.is-new {
@@ -443,13 +450,16 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            flex-wrap: wrap
+            flex-wrap: wrap;
+            min-width: 0
         }
 
         .s-notify-item-head strong {
             color: #0f172a;
             font-size: .95rem;
-            line-height: 1.45
+            line-height: 1.45;
+            min-width: 0;
+            overflow-wrap: anywhere
         }
 
         .s-notify-meta {
@@ -479,7 +489,8 @@
             margin: 0;
             color: #475569;
             line-height: 1.72;
-            font-size: .88rem
+            font-size: .88rem;
+            overflow-wrap: anywhere
         }
 
         .s-notify-item a,

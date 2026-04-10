@@ -11,6 +11,12 @@ const {
     getTeacherClassroomList,
     saveTeacherReview,
 } = require("../services/classroomService");
+const {
+    assignTeacherToClass,
+    createLiveSession,
+    createTeacherUpdate,
+} = require("../services/classroomCollaborationService");
+const { getClassProgressBoard } = require("../services/studentProgressService");
 const { createStudentNotification } = require("../services/studentNotificationService");
 const { listTeacherConsultations } = require("../services/consultationService");
 const { resolvePublicErrorMessage, sendPublicError } = require("../utils/publicError");
@@ -136,6 +142,21 @@ function parseDate(value) {
     const parsed = new Date(normalized);
 
     return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function combineDateTimeParts(dateValue, timeValue) {
+    const safeDate = String(dateValue || "").trim();
+    const safeTime = String(timeValue || "").trim();
+
+    if (!safeDate && !safeTime) {
+        return "";
+    }
+
+    if (!safeDate || !safeTime) {
+        return "";
+    }
+
+    return `${safeDate}T${safeTime}`;
 }
 
 function formatDateLabel(value, options = { day: "2-digit", month: "2-digit", year: "numeric" }) {
@@ -1331,12 +1352,16 @@ router.get("/classroom", isTeacher, async (req, res) => {
             lectures: summary.lectures + Number(item.lecture_count || 0),
             assignments: summary.assignments + Number(item.assignment_count || 0),
             submissions: summary.submissions + Number(item.submission_count || 0),
+            teamMembers: summary.teamMembers + Number(item.team_count || 0),
+            liveSessions: summary.liveSessions + Number(item.upcoming_live_count || 0),
         }), {
             classes: 0,
             students: 0,
             lectures: 0,
             assignments: 0,
             submissions: 0,
+            teamMembers: 0,
+            liveSessions: 0,
         });
 
         renderWithLayout(res, "teacher-classroom", {
@@ -1378,6 +1403,11 @@ router.get("/classroom/:classId", isTeacher, async (req, res) => {
             classInfo: classroom.classInfo,
             posts: classroom.posts,
             students: classroom.students,
+            teachingTeam: classroom.teachingTeam,
+            liveSessions: classroom.liveSessions,
+            teacherUpdates: classroom.teacherUpdates,
+            assignableTeachers: classroom.assignableTeachers,
+            teacherPermission: classroom.teacherPermission,
             postStats: {
                 lectures: lecturePosts.length,
                 assignments: assignmentPosts.length,
@@ -1388,6 +1418,161 @@ router.get("/classroom/:classId", isTeacher, async (req, res) => {
     } catch (err) {
         console.error("teacher classroom detail error:", err);
         return sendPublicError(res, err, 500, "Không thể tải chi tiết lớp học số lúc này.");
+    }
+});
+
+router.get("/classroom/:classId/progress", isTeacher, async (req, res) => {
+    try {
+        const teacher = await getTeacherByUser(req);
+        const classId = Number(req.params.classId);
+
+        if (!teacher) {
+            return res.send("KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin giÃ¡o viÃªn.");
+        }
+
+        const progressBoard = await getClassProgressBoard(teacher.id, classId);
+        if (!progressBoard) {
+            return res.status(404).send("KhÃ´ng tÃ¬m tháº¥y báº£ng tiáº¿n Ä‘á»™ lá»›p.");
+        }
+
+        renderWithLayout(res, "teacher-classroom-progress", {
+            title: "Tiáº¿n Ä‘á»™ há»c viÃªn",
+            teacher,
+            classInfo: progressBoard.classInfo,
+            boardSummary: progressBoard.summary,
+            teachingTeam: progressBoard.teachingTeam,
+            liveSessions: progressBoard.liveSessions,
+            teacherUpdates: progressBoard.teacherUpdates,
+            students: progressBoard.students,
+            success: req.query.success || null,
+        });
+    } catch (err) {
+        console.error("teacher classroom progress error:", err);
+        return sendPublicError(res, err, 500, "KhÃ´ng thá»ƒ táº£i báº£ng tiáº¿n Ä‘á»™ lÃºc nÃ y.");
+    }
+});
+
+router.post("/classroom/:classId/team", isTeacher, express.urlencoded({ extended: true }), async (req, res) => {
+    try {
+        const teacher = await getTeacherByUser(req);
+        const classId = Number(req.params.classId);
+
+        if (!teacher) {
+            return res.send("KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin giÃ¡o viÃªn.");
+        }
+
+        await assignTeacherToClass({
+            actingTeacherId: teacher.id,
+            classId,
+            teacherId: Number(req.body.teacher_id),
+            role: req.body.role,
+        });
+
+        return res.redirect(req.baseUrl + `/classroom/${classId}?success=team`);
+    } catch (err) {
+        req.flash("error_msg", resolvePublicErrorMessage(err, "KhÃ´ng thá»ƒ cáº­p nháº­t Ä‘á»™i ngÅ© lá»›p lÃºc nÃ y."));
+        return res.redirect(req.baseUrl + `/classroom/${req.params.classId}`);
+    }
+});
+
+router.post("/classroom/:classId/live-sessions", isTeacher, express.urlencoded({ extended: true }), async (req, res) => {
+    try {
+        const teacher = await getTeacherByUser(req);
+        const classId = Number(req.params.classId);
+
+        if (!teacher) {
+            return res.send("Khong tim thay thong tin giao vien.");
+        }
+
+        await createLiveSession({
+            actingTeacherId: teacher.id,
+            classId,
+            title: req.body.title,
+            description: req.body.description,
+            meetingProvider: req.body.meeting_provider,
+            meetingUrl: req.body.meeting_url,
+            accessNote: req.body.access_note,
+            scheduledStart: combineDateTimeParts(req.body.scheduled_start_date, req.body.scheduled_start_time),
+            scheduledEnd: combineDateTimeParts(req.body.scheduled_end_date, req.body.scheduled_end_time),
+            hostTeacherId: req.body.host_teacher_id,
+            recordingUrl: req.body.recording_url,
+        });
+
+        const [classResult, studentResult] = await Promise.all([
+            db.query(
+                `
+                  SELECT c.code, co.name AS course_name
+                  FROM classes c
+                  LEFT JOIN courses co ON co.id = c.course_id
+                  WHERE c.id = ?
+                  LIMIT 1
+                `,
+                [classId]
+            ),
+            db.query(
+                `
+                  SELECT s.user_id
+                  FROM enrollments e
+                  INNER JOIN students s ON s.id = e.student_id
+                  WHERE e.class_id = ? AND e.status = 'active' AND s.user_id IS NOT NULL
+                `,
+                [classId]
+            ),
+        ]);
+
+        const [classRows] = classResult;
+        const [studentRows] = studentResult;
+        const classMeta = classRows[0] || {};
+        const teacherName = String(teacher.full_name || teacher.name || "Giao vien").trim() || "Giao vien";
+        const classCode = String(classMeta.code || "lop hoc").trim() || "lop hoc";
+        const courseName = String(classMeta.course_name || "khoa hoc").trim() || "khoa hoc";
+        const sessionTitle = String(req.body.title || "Buoi hoc online").trim() || "Buoi hoc online";
+
+        await Promise.allSettled(
+            studentRows.map((row) => {
+                const userId = Number(row.user_id || 0);
+                if (!userId) {
+                    return Promise.resolve(null);
+                }
+
+                return createStudentNotification({
+                    userId,
+                    title: "Lop vua co buoi hoc online moi",
+                    message: `${teacherName} vua len lich ${sessionTitle} cho ${classCode} - ${courseName}. Kiem tra classroom de vao lop dung gio.`,
+                    href: `/student/classroom/${classId}`,
+                });
+            })
+        );
+
+        return res.redirect(req.baseUrl + `/classroom/${classId}?success=live`);
+    } catch (err) {
+        req.flash("error_msg", resolvePublicErrorMessage(err, "Khong the tao buoi hoc online luc nay."));
+        return res.redirect(req.baseUrl + `/classroom/${req.params.classId}`);
+    }
+});
+
+router.post("/classroom/:classId/team-updates", isTeacher, express.urlencoded({ extended: true }), async (req, res) => {
+    try {
+        const teacher = await getTeacherByUser(req);
+        const classId = Number(req.params.classId);
+
+        if (!teacher) {
+            return res.send("KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin giÃ¡o viÃªn.");
+        }
+
+        await createTeacherUpdate({
+            actingTeacherId: teacher.id,
+            classId,
+            title: req.body.title,
+            message: req.body.message,
+            importance: req.body.importance,
+            relatedStudentId: req.body.related_student_id,
+        });
+
+        return res.redirect(req.baseUrl + `/classroom/${classId}?success=update`);
+    } catch (err) {
+        req.flash("error_msg", resolvePublicErrorMessage(err, "KhÃ´ng thá»ƒ lÆ°u ghi chÃº phá»‘i há»£p lÃºc nÃ y."));
+        return res.redirect(req.baseUrl + `/classroom/${req.params.classId}`);
     }
 });
 

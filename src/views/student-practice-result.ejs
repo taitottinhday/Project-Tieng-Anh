@@ -250,10 +250,7 @@ const reviewAvailable = Boolean(data.review && data.review.available && Array.is
     <div class="pres-hero-grid">
       <div>
         <h1><%= data.title || 'Kết quả luyện tập' %></h1>
-        <p>
-          Bộ luyện lấy từ <strong style="color:#132238"><%= data.sourceLabel || 'Practice Library' %></strong>.
-          Kết quả bên dưới ưu tiên cho việc chữa lỗi và cải thiện độ chính xác thay vì chỉ nhìn điểm cuối.
-        </p>
+        <p>Xem nhanh độ chính xác, số câu đúng và phần cần ôn thêm.</p>
       </div>
       <div class="pres-score">
         <span>Tỷ lệ chính xác</span>
@@ -300,7 +297,6 @@ const reviewAvailable = Boolean(data.review && data.review.available && Array.is
 
   <section class="pres-panel pres-note">
     <h2>Nhận xét nhanh</h2>
-    <p>Kết quả này được tính trực tiếp từ bộ câu hỏi và đáp án đã tách ra từ API full test gốc.</p>
     <div class="pres-note-box">
       <p><%= data.focusMessage || 'Tiếp tục luyện đều để giữ độ ổn định ở các dạng câu hỏi bạn đang làm tốt.' %></p>
     </div>

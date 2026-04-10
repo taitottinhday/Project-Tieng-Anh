@@ -272,28 +272,28 @@ const coursePages = {
     title: "TOEIC 4 kỹ năng",
     eyebrow: "Khóa học TOEIC",
     placeholder: true,
-    summary: "Trang chi tiết cho TOEIC 4 kỹ năng sẽ được dựng tiếp ở bước sau. Hiện tại bạn có thể xem overview khóa học hoặc đăng ký tư vấn trước.",
+    summary: "Trang chi tiết đang được cập nhật. Bạn có thể đăng ký tư vấn trước để nhận lộ trình phù hợp.",
   },
   "khoa-hoc-cap-toc": {
     slug: "khoa-hoc-cap-toc",
     title: "Khóa học cấp tốc",
     eyebrow: "Khóa học TOEIC",
     placeholder: true,
-    summary: "Phần landing page cấp tốc sẽ được bổ sung sau khi bạn gửi mẫu tiếp theo.",
+    summary: "Nội dung khóa học đang được cập nhật. Bạn có thể để lại thông tin để được tư vấn trước.",
   },
   "tieng-anh-doanh-nghiep": {
     slug: "tieng-anh-doanh-nghiep",
     title: "Tiếng Anh doanh nghiệp",
     eyebrow: "Khóa học TOEIC",
     placeholder: true,
-    summary: "Landing page tiếng Anh doanh nghiệp đang chờ bộ ảnh và định hướng nội dung tiếp theo của bạn.",
+    summary: "Trang chi tiết đang được cập nhật. Vui lòng liên hệ để nhận thông tin khóa học sớm.",
   },
   "khoa-toeic-online": {
     slug: "khoa-toeic-online",
     title: "Khóa TOEIC online",
     eyebrow: "Khóa học TOEIC",
     placeholder: true,
-    summary: "Landing page khóa TOEIC online sẽ được triển khai tiếp ở vòng sau để đồng bộ với các chương trình còn lại.",
+    summary: "Thông tin khóa học online đang được cập nhật. Bạn có thể đăng ký tư vấn để nhận lịch mở lớp.",
   },
 };
 

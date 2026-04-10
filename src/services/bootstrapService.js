@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const db = require("../models/db");
 const { ensurePlatformSupport } = require("./platformSupport");
 const { ensureStudentActivitySupport } = require("./studentActivityService");
+const { ensureClassroomCollaborationSupport } = require("./classroomCollaborationService");
 const { DEMO_TEACHERS, DEMO_TEACHER_PASSWORD } = require("./demoSeedService");
 
 let bootstrapReady = false;
@@ -606,6 +607,7 @@ async function ensureApplicationSchema() {
       await ensureLegacySchemaCompatibility();
       await ensureDefaultAccessUsers();
       await ensurePlatformSupport();
+      await ensureClassroomCollaborationSupport();
       await ensureStudentActivitySupport();
       bootstrapReady = true;
     })().catch((error) => {

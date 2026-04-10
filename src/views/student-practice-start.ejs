@@ -10,12 +10,12 @@ const noteItems = practice.mode === 'mock_full_test'
   ? [
       'Hãy dùng Google Chrome để bài nghe, ảnh và thao tác chuyển câu ổn định hơn.',
       'Đồng hồ sẽ bắt đầu chạy ngay khi bạn nhấn nút vào làm bài ở bên dưới.',
-      'Bộ Reading này được tách trực tiếp từ full test đang có trong hệ thống.'
+      'Làm trọn bộ Part 5, 6, 7 trong một phiên Reading hoàn chỉnh.'
     ]
   : [
       'Hãy dùng Google Chrome để làm bài ổn định hơn trên cả desktop và laptop.',
       'Thời gian sẽ bắt đầu tính ngay khi bạn bấm nút vào luyện tập.',
-      'Bộ Part này được tách trực tiếp từ full test hiện có để bạn ôn đúng phần đang yếu.'
+      'Chọn đúng Part bạn muốn ôn để luyện tập tập trung hơn.'
     ];
 %>
 
@@ -321,10 +321,6 @@ const noteItems = practice.mode === 'mock_full_test'
     <div class="pps-actions">
       <a href="<%= practice.takeHref || '#' %>" class="pps-btn primary"><%= practice.ctaLabel || 'Bắt đầu làm bài' %></a>
       <a href="<%= practice.libraryHref || '#' %>" class="pps-btn secondary"><%= practice.libraryLabel || 'Về thư viện' %></a>
-    </div>
-
-    <div class="pps-sub">
-      Nguồn đề: <strong style="color:#334155"><%= practice.sourceLabel || practice.bookName || 'Practice Library' %></strong>
     </div>
   </section>
 

@@ -221,9 +221,6 @@ const backHref = practice.libraryHref || data.backHref || "#";
 
       <h3><%= current.title %></h3>
       <a href="<%= practice.takeHref || '#' %>" class="p56detail-cta">Start Quiz</a>
-      <% if (showSource && (current.subtitle || practice.sourceLabel)) { %>
-        <div class="p56detail-source">Nguồn đề: <strong><%= current.subtitle || practice.sourceLabel || "" %></strong></div>
-      <% } %>
     </section>
   </div>
 </div>

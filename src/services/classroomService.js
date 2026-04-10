@@ -5,6 +5,12 @@ const {
   persistMaterialFiles,
   persistSubmissionFiles,
 } = require("./platformSupport");
+const {
+  assertTeacherPermission,
+  getClassroomCollaborationData,
+  getTeacherClassroomPermission,
+  syncPrimaryTeacherAssignments,
+} = require("./classroomCollaborationService");
 
 function toNumber(value, fallback = 0) {
   const numericValue = Number(value);
@@ -77,6 +83,7 @@ async function getSubmissionFilesBySubmissionIds(submissionIds = []) {
 
 async function getTeacherClassroomList(teacherId) {
   await ensurePlatformSupport();
+  await syncPrimaryTeacherAssignments();
 
   const [rows] = await db.query(
     `
@@ -89,18 +96,64 @@ async function getTeacherClassroomList(teacherId) {
         c.end_date,
         co.name AS course_name,
         co.category,
+        cta.role AS teacher_role,
         COUNT(DISTINCT CASE WHEN e.status = 'active' THEN e.id END) AS student_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'lecture' THEN cp.id END) AS lecture_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count,
         COUNT(DISTINCT CASE WHEN cs.status IN ('submitted', 'completed', 'reviewed') THEN cs.id END) AS submission_count,
         COUNT(DISTINCT CASE WHEN cs.status = 'reviewed' THEN cs.id END) AS reviewed_count,
-        MAX(cp.created_at) AS latest_post_at
-      FROM classes c
+        MAX(cp.created_at) AS latest_post_at,
+        (
+          SELECT COUNT(*)
+          FROM class_teacher_assignments cta2
+          WHERE cta2.class_id = c.id
+        ) AS team_count,
+        (
+          SELECT COUNT(*)
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+        ) AS upcoming_live_count,
+        (
+          SELECT MIN(cls.scheduled_start)
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+        ) AS next_live_at,
+        (
+          SELECT GROUP_CONCAT(
+            CONCAT(
+              COALESCE(t2.full_name, 'Giáo viên'),
+              ' (',
+              CASE cta2.role
+                WHEN 'lead' THEN 'chính'
+                WHEN 'mentor' THEN 'theo dõi'
+                WHEN 'reviewer' THEN 'chấm bài'
+                ELSE 'phối hợp'
+              END,
+              ')'
+            )
+            ORDER BY
+              CASE cta2.role
+                WHEN 'lead' THEN 0
+                WHEN 'co_teacher' THEN 1
+                WHEN 'mentor' THEN 2
+                ELSE 3
+              END,
+              t2.full_name ASC
+            SEPARATOR ' • '
+          )
+          FROM class_teacher_assignments cta2
+          LEFT JOIN teachers t2 ON t2.id = cta2.teacher_id
+          WHERE cta2.class_id = c.id
+        ) AS team_summary
+      FROM class_teacher_assignments cta
+      INNER JOIN classes c ON c.id = cta.class_id
       LEFT JOIN courses co ON co.id = c.course_id
       LEFT JOIN enrollments e ON e.class_id = c.id
       LEFT JOIN classroom_posts cp ON cp.class_id = c.id
       LEFT JOIN classroom_submissions cs ON cs.post_id = cp.id
-      WHERE c.teacher_id = ?
+      WHERE cta.teacher_id = ?
       GROUP BY
         c.id,
         c.code,
@@ -109,7 +162,8 @@ async function getTeacherClassroomList(teacherId) {
         c.start_date,
         c.end_date,
         co.name,
-        co.category
+        co.category,
+        cta.role
       ORDER BY COALESCE(c.start_date, c.created_at) DESC, c.id DESC
     `,
     [teacherId]
@@ -122,11 +176,18 @@ async function getTeacherClassroomList(teacherId) {
     assignment_count: toNumber(row.assignment_count),
     submission_count: toNumber(row.submission_count),
     reviewed_count: toNumber(row.reviewed_count),
+    team_count: toNumber(row.team_count),
+    upcoming_live_count: toNumber(row.upcoming_live_count),
   }));
 }
 
 async function getTeacherClassroomHome(teacherId, classId) {
   await ensurePlatformSupport();
+  const permission = await getTeacherClassroomPermission(teacherId, classId);
+
+  if (!permission) {
+    return null;
+  }
 
   const [classRows] = await db.query(
     `
@@ -139,14 +200,33 @@ async function getTeacherClassroomHome(teacherId, classId) {
         c.end_date,
         co.name AS course_name,
         co.category,
+        primary_teacher.full_name AS primary_teacher_name,
         COUNT(DISTINCT CASE WHEN e.status = 'active' THEN e.id END) AS student_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'lecture' THEN cp.id END) AS lecture_count,
-        COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count
+        COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count,
+        (
+          SELECT COUNT(*)
+          FROM class_teacher_assignments cta2
+          WHERE cta2.class_id = c.id
+        ) AS team_count,
+        (
+          SELECT COUNT(*)
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+        ) AS upcoming_live_count,
+        (
+          SELECT MIN(cls.scheduled_start)
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+        ) AS next_live_at
       FROM classes c
       LEFT JOIN courses co ON co.id = c.course_id
+      LEFT JOIN teachers primary_teacher ON primary_teacher.id = c.teacher_id
       LEFT JOIN enrollments e ON e.class_id = c.id
       LEFT JOIN classroom_posts cp ON cp.class_id = c.id
-      WHERE c.id = ? AND c.teacher_id = ?
+      WHERE c.id = ?
       GROUP BY
         c.id,
         c.code,
@@ -155,10 +235,11 @@ async function getTeacherClassroomHome(teacherId, classId) {
         c.start_date,
         c.end_date,
         co.name,
-        co.category
+        co.category,
+        primary_teacher.full_name
       LIMIT 1
     `,
-    [classId, teacherId]
+    [classId]
   );
 
   const classInfo = classRows[0] || null;
@@ -170,6 +251,8 @@ async function getTeacherClassroomHome(teacherId, classId) {
     `
       SELECT
         cp.id,
+        cp.teacher_id,
+        author.full_name AS author_teacher_name,
         cp.title,
         cp.description,
         cp.post_type,
@@ -181,11 +264,14 @@ async function getTeacherClassroomHome(teacherId, classId) {
         COUNT(DISTINCT CASE WHEN cs.status = 'reviewed' THEN cs.id END) AS reviewed_count,
         MAX(cs.submitted_at) AS latest_submission_at
       FROM classroom_posts cp
+      LEFT JOIN teachers author ON author.id = cp.teacher_id
       LEFT JOIN classroom_materials cm ON cm.post_id = cp.id
       LEFT JOIN classroom_submissions cs ON cs.post_id = cp.id
       WHERE cp.class_id = ?
       GROUP BY
         cp.id,
+        cp.teacher_id,
+        author.full_name,
         cp.title,
         cp.description,
         cp.post_type,
@@ -214,13 +300,9 @@ async function getTeacherClassroomHome(teacherId, classId) {
   );
 
   const materialsMap = await getMaterialsByPostIds(postRows.map((row) => row.id));
-  const posts = postRows.map((row) => ({
-    ...row,
-    material_count: toNumber(row.material_count),
-    turned_in_count: toNumber(row.turned_in_count),
-    reviewed_count: toNumber(row.reviewed_count),
-    materials: materialsMap.get(row.id) || [],
-  }));
+  const collaboration = await getClassroomCollaborationData(classId, {
+    includeAssignableTeachers: permission.can_manage_team,
+  });
 
   return {
     classInfo: {
@@ -228,9 +310,22 @@ async function getTeacherClassroomHome(teacherId, classId) {
       student_count: toNumber(classInfo.student_count),
       lecture_count: toNumber(classInfo.lecture_count),
       assignment_count: toNumber(classInfo.assignment_count),
+      team_count: toNumber(classInfo.team_count),
+      upcoming_live_count: toNumber(classInfo.upcoming_live_count),
     },
-    posts,
+    posts: postRows.map((row) => ({
+      ...row,
+      material_count: toNumber(row.material_count),
+      turned_in_count: toNumber(row.turned_in_count),
+      reviewed_count: toNumber(row.reviewed_count),
+      materials: materialsMap.get(row.id) || [],
+    })),
     students: studentRows,
+    teachingTeam: collaboration.teachingTeam,
+    liveSessions: collaboration.liveSessions,
+    teacherUpdates: collaboration.teacherUpdates,
+    assignableTeachers: collaboration.assignableTeachers,
+    teacherPermission: permission,
   };
 }
 
@@ -244,20 +339,7 @@ async function createClassroomPost({
   files = [],
 }) {
   await ensurePlatformSupport();
-
-  const [classRows] = await db.query(
-    `
-      SELECT id
-      FROM classes
-      WHERE id = ? AND teacher_id = ?
-      LIMIT 1
-    `,
-    [classId, teacherId]
-  );
-
-  if (!classRows.length) {
-    throw new Error("Ban khong co quyen dang bai cho lop hoc nay.");
-  }
+  await assertTeacherPermission(teacherId, classId, "can_publish_posts");
 
   const normalizedPostType = postType === "assignment" ? "assignment" : "lecture";
   const [result] = await db.query(
@@ -304,11 +386,13 @@ async function createClassroomPost({
 
 async function getTeacherAssignmentBoard(teacherId, classId, postId) {
   await ensurePlatformSupport();
+  await assertTeacherPermission(teacherId, classId, "can_review_submissions");
 
   const [postRows] = await db.query(
     `
       SELECT
         cp.*,
+        author.full_name AS author_teacher_name,
         c.code AS class_code,
         c.room,
         c.schedule_text,
@@ -316,10 +400,11 @@ async function getTeacherAssignmentBoard(teacherId, classId, postId) {
       FROM classroom_posts cp
       INNER JOIN classes c ON c.id = cp.class_id
       LEFT JOIN courses co ON co.id = c.course_id
-      WHERE cp.id = ? AND cp.class_id = ? AND c.teacher_id = ?
+      LEFT JOIN teachers author ON author.id = cp.teacher_id
+      WHERE cp.id = ? AND cp.class_id = ?
       LIMIT 1
     `,
-    [postId, classId, teacherId]
+    [postId, classId]
   );
 
   const post = postRows[0] || null;
@@ -359,18 +444,17 @@ async function getTeacherAssignmentBoard(teacherId, classId, postId) {
     .map((row) => toNumber(row.submission_id))
     .filter((value) => value > 0);
   const submissionFilesMap = await getSubmissionFilesBySubmissionIds(submissionIds);
-  const students = studentRows.map((row) => ({
-    ...row,
-    submission_id: toNumber(row.submission_id),
-    files: submissionFilesMap.get(toNumber(row.submission_id)) || [],
-  }));
 
   return {
     post: {
       ...post,
       materials,
     },
-    students,
+    students: studentRows.map((row) => ({
+      ...row,
+      submission_id: toNumber(row.submission_id),
+      files: submissionFilesMap.get(toNumber(row.submission_id)) || [],
+    })),
   };
 }
 
@@ -383,20 +467,20 @@ async function saveTeacherReview({
   teacherScore,
 }) {
   await ensurePlatformSupport();
+  await assertTeacherPermission(teacherId, classId, "can_review_submissions");
 
   const [postRows] = await db.query(
     `
       SELECT cp.id
       FROM classroom_posts cp
-      INNER JOIN classes c ON c.id = cp.class_id
-      WHERE cp.id = ? AND cp.class_id = ? AND c.teacher_id = ?
+      WHERE cp.id = ? AND cp.class_id = ?
       LIMIT 1
     `,
-    [postId, classId, teacherId]
+    [postId, classId]
   );
 
   if (!postRows.length) {
-    throw new Error("Ban khong co quyen cham bai nay.");
+    throw new Error("Không tìm thấy bài tập cần đánh giá.");
   }
 
   const submission = await ensureStudentSubmissionRecord(postId, studentId);
@@ -425,6 +509,7 @@ async function saveTeacherReview({
 
 async function getStudentClassroomList(studentId) {
   await ensurePlatformSupport();
+  await syncPrimaryTeacherAssignments();
 
   const [rows] = await db.query(
     `
@@ -437,7 +522,7 @@ async function getStudentClassroomList(studentId) {
         c.end_date,
         co.name AS course_name,
         co.category,
-        t.full_name AS teacher_name,
+        primary_teacher.full_name AS teacher_name,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'lecture' THEN cp.id END) AS lecture_count,
         COUNT(DISTINCT CASE WHEN cp.post_type = 'assignment' THEN cp.id END) AS assignment_count,
         COUNT(DISTINCT CASE WHEN cs.status IN ('submitted', 'completed', 'reviewed') THEN cp.id END) AS submitted_count,
@@ -465,11 +550,53 @@ async function getStudentClassroomList(studentId) {
           WHERE sc.class_id = c.id AND sc.student_id = ?
           ORDER BY COALESCE(sc.lesson_date, DATE(sc.created_at)) DESC, sc.created_at DESC, sc.id DESC
           LIMIT 1
-        ) AS last_teacher_comment_skill
+        ) AS last_teacher_comment_skill,
+        (
+          SELECT COUNT(*)
+          FROM class_teacher_assignments cta2
+          WHERE cta2.class_id = c.id
+        ) AS team_count,
+        (
+          SELECT GROUP_CONCAT(
+            COALESCE(t2.full_name, 'Giáo viên')
+            ORDER BY
+              CASE cta2.role
+                WHEN 'lead' THEN 0
+                WHEN 'co_teacher' THEN 1
+                WHEN 'mentor' THEN 2
+                ELSE 3
+              END,
+              t2.full_name ASC
+            SEPARATOR ', '
+          )
+          FROM class_teacher_assignments cta2
+          LEFT JOIN teachers t2 ON t2.id = cta2.teacher_id
+          WHERE cta2.class_id = c.id
+        ) AS teaching_team_summary,
+        (
+          SELECT COUNT(*)
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+        ) AS upcoming_live_count,
+        (
+          SELECT MIN(cls.scheduled_start)
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+        ) AS next_live_at,
+        (
+          SELECT cls.title
+          FROM classroom_live_sessions cls
+          WHERE cls.class_id = c.id
+            AND cls.status IN ('scheduled', 'live')
+          ORDER BY cls.scheduled_start ASC, cls.id ASC
+          LIMIT 1
+        ) AS next_live_title
       FROM enrollments e
       INNER JOIN classes c ON c.id = e.class_id
       LEFT JOIN courses co ON co.id = c.course_id
-      LEFT JOIN teachers t ON t.id = c.teacher_id
+      LEFT JOIN teachers primary_teacher ON primary_teacher.id = c.teacher_id
       LEFT JOIN classroom_posts cp ON cp.class_id = c.id
       LEFT JOIN classroom_submissions cs
         ON cs.post_id = cp.id
@@ -484,7 +611,7 @@ async function getStudentClassroomList(studentId) {
         c.end_date,
         co.name,
         co.category,
-        t.full_name
+        primary_teacher.full_name
       ORDER BY COALESCE(c.start_date, c.created_at) DESC, c.id DESC
     `,
     [studentId, studentId, studentId, studentId, studentId, studentId]
@@ -496,6 +623,8 @@ async function getStudentClassroomList(studentId) {
     assignment_count: toNumber(row.assignment_count),
     submitted_count: toNumber(row.submitted_count),
     teacher_comment_count: toNumber(row.teacher_comment_count),
+    team_count: toNumber(row.team_count),
+    upcoming_live_count: toNumber(row.upcoming_live_count),
     last_teacher_comment: String(row.last_teacher_comment || "").trim(),
     last_teacher_comment_skill: String(row.last_teacher_comment_skill || "").trim(),
   }));
@@ -503,6 +632,7 @@ async function getStudentClassroomList(studentId) {
 
 async function getStudentClassroomFeed(studentId, classId) {
   await ensurePlatformSupport();
+  await syncPrimaryTeacherAssignments(classId);
 
   const [classRows] = await db.query(
     `
@@ -515,11 +645,33 @@ async function getStudentClassroomFeed(studentId, classId) {
         c.end_date,
         co.name AS course_name,
         co.category,
-        t.full_name AS teacher_name
+        primary_teacher.full_name AS teacher_name,
+        (
+          SELECT COUNT(*)
+          FROM class_teacher_assignments cta2
+          WHERE cta2.class_id = c.id
+        ) AS team_count,
+        (
+          SELECT GROUP_CONCAT(
+            COALESCE(t2.full_name, 'Giáo viên')
+            ORDER BY
+              CASE cta2.role
+                WHEN 'lead' THEN 0
+                WHEN 'co_teacher' THEN 1
+                WHEN 'mentor' THEN 2
+                ELSE 3
+              END,
+              t2.full_name ASC
+            SEPARATOR ', '
+          )
+          FROM class_teacher_assignments cta2
+          LEFT JOIN teachers t2 ON t2.id = cta2.teacher_id
+          WHERE cta2.class_id = c.id
+        ) AS teaching_team_summary
       FROM enrollments e
       INNER JOIN classes c ON c.id = e.class_id
       LEFT JOIN courses co ON co.id = c.course_id
-      LEFT JOIN teachers t ON t.id = c.teacher_id
+      LEFT JOIN teachers primary_teacher ON primary_teacher.id = c.teacher_id
       WHERE e.class_id = ? AND e.student_id = ? AND e.status = 'active'
       LIMIT 1
     `,
@@ -535,6 +687,8 @@ async function getStudentClassroomFeed(studentId, classId) {
     `
       SELECT
         cp.id,
+        cp.teacher_id,
+        author.full_name AS author_teacher_name,
         cp.title,
         cp.description,
         cp.post_type,
@@ -550,6 +704,7 @@ async function getStudentClassroomFeed(studentId, classId) {
         cs.completed_at,
         cs.reviewed_at
       FROM classroom_posts cp
+      LEFT JOIN teachers author ON author.id = cp.teacher_id
       LEFT JOIN classroom_materials cm ON cm.post_id = cp.id
       LEFT JOIN classroom_submissions cs
         ON cs.post_id = cp.id
@@ -557,6 +712,8 @@ async function getStudentClassroomFeed(studentId, classId) {
       WHERE cp.class_id = ?
       GROUP BY
         cp.id,
+        cp.teacher_id,
+        author.full_name,
         cp.title,
         cp.description,
         cp.post_type,
@@ -594,21 +751,25 @@ async function getStudentClassroomFeed(studentId, classId) {
   );
 
   const materialsMap = await getMaterialsByPostIds(postRows.map((row) => row.id));
-
-  const posts = postRows.map((row) => ({
-    ...row,
-    material_count: toNumber(row.material_count),
-    submission_id: toNumber(row.submission_id),
-    materials: materialsMap.get(row.id) || [],
-  }));
+  const collaboration = await getClassroomCollaborationData(classId);
 
   return {
-    classInfo,
-    posts,
+    classInfo: {
+      ...classInfo,
+      team_count: toNumber(classInfo.team_count),
+    },
+    posts: postRows.map((row) => ({
+      ...row,
+      material_count: toNumber(row.material_count),
+      submission_id: toNumber(row.submission_id),
+      materials: materialsMap.get(row.id) || [],
+    })),
     teacherComments: commentRows.map((row) => ({
       ...row,
       id: toNumber(row.id),
     })),
+    teachingTeam: collaboration.teachingTeam,
+    liveSessions: collaboration.liveSessions.filter((item) => ["scheduled", "live"].includes(item.status)),
   };
 }
 
@@ -619,16 +780,18 @@ async function getStudentPostDetail(studentId, classId, postId) {
     `
       SELECT
         cp.*,
+        author.full_name AS author_teacher_name,
         c.code AS class_code,
         c.room,
         c.schedule_text,
         co.name AS course_name,
-        t.full_name AS teacher_name
+        primary_teacher.full_name AS teacher_name
       FROM enrollments e
       INNER JOIN classes c ON c.id = e.class_id
       INNER JOIN classroom_posts cp ON cp.class_id = c.id
       LEFT JOIN courses co ON co.id = c.course_id
-      LEFT JOIN teachers t ON t.id = c.teacher_id
+      LEFT JOIN teachers primary_teacher ON primary_teacher.id = c.teacher_id
+      LEFT JOIN teachers author ON author.id = cp.teacher_id
       WHERE e.student_id = ? AND e.class_id = ? AND cp.id = ? AND e.status = 'active'
       LIMIT 1
     `,

@@ -1,6 +1,7 @@
 const renderWithLayout = require("../utils/renderHelper");
 const { syncStudentProfileFromUser } = require("../services/platformSupport");
 const { getStudentActivityProfile } = require("../services/studentActivityService");
+const { getStudentProgressHub } = require("../services/studentProgressService");
 const { sendPublicError } = require("../utils/publicError");
 
 function toNumber(value, fallback = 0) {
@@ -38,6 +39,31 @@ async function showStudentProfile(req, res) {
   }
 }
 
+async function showStudentProgress(req, res) {
+  try {
+    const student = await syncStudentProfileFromUser(req.session?.user);
+
+    if (!student) {
+      return res.status(404).send("Không tìm thấy hồ sơ học viên.");
+    }
+
+    const progressHub = await getStudentProgressHub(student.id, {
+      baseUrl: res.locals.baseUrl || "",
+    });
+
+    return renderWithLayout(res, "student-progress", {
+      title: "Tiến độ học tập",
+      studentName: student.full_name || req.session?.user?.username || "Học viên",
+      student,
+      progressHub,
+    });
+  } catch (error) {
+    console.error("showStudentProgress error:", error);
+    return sendPublicError(res, error, 500, "Không thể tải tiến độ học tập.");
+  }
+}
+
 module.exports = {
   showStudentProfile,
+  showStudentProgress,
 };

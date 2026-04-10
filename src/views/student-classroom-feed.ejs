@@ -3,6 +3,8 @@
   const safeClassInfo = typeof classInfo !== 'undefined' && classInfo ? classInfo : {};
   const safePosts = Array.isArray(typeof posts !== 'undefined' ? posts : null) ? posts : [];
   const safeTeacherComments = Array.isArray(typeof teacherComments !== 'undefined' ? teacherComments : null) ? teacherComments : [];
+  const safeTeachingTeam = Array.isArray(typeof teachingTeam !== 'undefined' ? teachingTeam : null) ? teachingTeam : [];
+  const safeLiveSessions = Array.isArray(typeof liveSessions !== 'undefined' ? liveSessions : null) ? liveSessions : [];
   const formatDate = (value) => {
     if (!value) return 'Chưa cập nhật';
     const parsed = new Date(value);
@@ -17,40 +19,47 @@
 
 <div class="sc-page">
   <section class="sc-hero">
-    <span class="sc-kicker">Bảng tin lớp học</span>
-    <h1><%= safeClassInfo.code || 'Classroom' %> - <%= safeClassInfo.course_name || 'Lớp học' %></h1>
+    <span class="sc-kicker">Classroom Feed</span>
+    <h1><%= safeClassInfo.code || 'Classroom' %> · <%= safeClassInfo.course_name || 'Lớp học' %></h1>
     <p>
-      Đây là bảng tin classroom của lớp. Mỗi bài giảng và bài tập từ giáo viên sẽ xuất hiện tại đây ngay khi được đăng lên.
+      Đây là bảng tin chính của lớp: bài giảng, bài tập, đội ngũ giảng dạy và lịch học online đều được cập nhật liên tục ở đây.
     </p>
     <div class="sc-post-meta" style="margin-top: 18px;">
-      <span class="sc-pill soft">Giáo viên: <%= safeClassInfo.teacher_name || 'Đang cập nhật' %></span>
-      <span class="sc-pill blue">Lịch học: <%= safeClassInfo.schedule_text || 'Đang cập nhật' %></span>
-      <span class="sc-pill pink"><%= safePosts.filter((item) => item.post_type === 'assignment').length %> bài tập</span>
+      <span class="sc-pill soft">Giáo viên chính: <%= safeClassInfo.teacher_name || 'Đang cập nhật' %></span>
+      <span class="sc-pill blue"><%= safeTeachingTeam.length %> giáo viên hỗ trợ</span>
+      <span class="sc-pill pink"><%= safeLiveSessions.length %> buổi online</span>
       <span class="sc-pill green"><%= safeTeacherComments.length %> nhận xét gần đây</span>
+    </div>
+    <div class="sc-actions">
+      <a href="<%= baseUrl %>/student/progress" class="sc-btn">Xem tiến độ học tập</a>
+      <a href="<%= baseUrl %>/student/classroom" class="sc-btn-secondary">Tất cả lớp</a>
     </div>
   </section>
 
   <section class="sc-feed-layout">
     <div class="sc-panel">
-      <h2>Bảng tin classroom</h2>
-      <p>Chọn từng bài đăng để xem tài liệu, nộp bài, đánh dấu hoàn thành và xem nhận xét từ giáo viên.</p>
+      <h2>Bảng tin lớp học</h2>
+      <p>Chọn từng bài đăng để xem tài liệu, nộp bài, đánh dấu hoàn thành và xem phản hồi từ giáo viên.</p>
 
       <% if (safePosts.length) { %>
         <div class="sc-post-list" style="margin-top: 22px;">
           <% safePosts.forEach((item) => { %>
             <article class="sc-post-card">
-              <span class="sc-pill <%= item.post_type === 'assignment' ? 'pink' : 'blue' %>"><%= item.post_type === 'assignment' ? 'Bài tập trên lớp' : 'Thông báo / Bài giảng' %></span>
+              <span class="sc-pill <%= item.post_type === 'assignment' ? 'pink' : 'blue' %>"><%= item.post_type === 'assignment' ? 'Bài tập' : 'Bài giảng / thông báo' %></span>
               <h3><%= item.title %></h3>
               <p><%= shortText(item.description) %></p>
 
               <div class="sc-post-meta">
-                <span class="sc-pill soft">Đăng: <%= formatDate(item.created_at) %></span>
-                <span class="sc-pill blue"><%= item.material_count || 0 %> tài liệu</span>
+                <span class="sc-pill soft">Đăng bởi: <%= item.author_teacher_name || safeClassInfo.teacher_name || 'Giáo viên' %></span>
+                <span class="sc-pill blue">Đăng: <%= formatDate(item.created_at) %></span>
+                <span class="sc-pill soft"><%= item.material_count || 0 %> tài liệu</span>
                 <% if (item.post_type === 'assignment' && item.due_date) { %>
                   <span class="sc-pill pink">Hạn nộp: <%= formatDate(item.due_date) %></span>
                 <% } %>
                 <% if (item.post_type === 'assignment') { %>
-                  <span class="sc-pill <%= item.my_status === 'reviewed' ? 'green' : (['submitted', 'completed'].includes(item.my_status) ? 'blue' : 'soft') %>">Trạng thái: <%= item.my_status %></span>
+                  <span class="sc-pill <%= item.my_status === 'reviewed' ? 'green' : (['submitted', 'completed'].includes(item.my_status) ? 'blue' : 'soft') %>">
+                    Trạng thái: <%= item.my_status %>
+                  </span>
                 <% } %>
               </div>
 
@@ -75,7 +84,7 @@
         </div>
       <% } else { %>
         <div class="sc-empty" style="margin-top: 22px;">
-          Giáo viên chưa đăng bài nào cho lớp này. Khi có bài giảng hoặc bài tập mới, bảng tin sẽ cập nhật tại đây.
+          Giáo viên chưa đăng bài nào cho lớp này.
         </div>
       <% } %>
     </div>
@@ -83,7 +92,7 @@
     <aside class="sc-grid">
       <article class="sc-panel">
         <h2>Việc cần làm</h2>
-        <p>Những bài tập học viên chưa nộp hoặc chưa đánh dấu hoàn thành.</p>
+        <p>Những bài tập bạn chưa nộp hoặc chưa đánh dấu hoàn thành.</p>
         <% if (pendingAssignments.length) { %>
           <div class="sc-side-list" style="margin-top: 18px;">
             <% pendingAssignments.slice(0, 5).forEach((item) => { %>
@@ -94,25 +103,62 @@
             <% }) %>
           </div>
         <% } else { %>
-          <div class="sc-empty" style="margin-top: 18px;">Tuyệt vời, hiện tại không có bài tập nào đang chờ xử lý.</div>
+          <div class="sc-empty" style="margin-top: 18px;">Hiện tại không có bài tập nào đang chờ xử lý.</div>
         <% } %>
       </article>
 
       <article class="sc-panel">
-        <h2>Thông tin lớp</h2>
-        <p>
-          <strong style="color:#1a3552;">Giáo viên:</strong> <%= safeClassInfo.teacher_name || 'Đang cập nhật' %><br>
-          <strong style="color:#1a3552;">Phòng / kênh:</strong> <%= safeClassInfo.room || 'Đang cập nhật' %><br>
-          <strong style="color:#1a3552;">Khối học:</strong> <%= safeClassInfo.category || 'Tổng hợp' %>
-        </p>
-        <div class="sc-actions">
-          <a href="<%= baseUrl %>/student/classroom" class="sc-btn-secondary">Tất cả lớp</a>
-        </div>
+        <h2>Lịch học online</h2>
+        <p>Các buổi học online của lớp sẽ hiện tại đây để bạn vào lớp đúng giờ.</p>
+        <% if (safeLiveSessions.length) { %>
+          <div class="sc-note-list" style="margin-top: 18px;">
+            <% safeLiveSessions.slice(0, 4).forEach((item) => { %>
+              <div class="sc-note-card">
+                <div class="sc-note-head">
+                  <strong><%= item.title %></strong>
+                  <span class="sc-pill soft"><%= formatDate(item.scheduled_start) %></span>
+                </div>
+                <div class="sc-post-meta" style="margin-top: 0;">
+                  <span class="sc-pill blue"><%= item.host_teacher_name || 'Giáo viên' %></span>
+                  <span class="sc-pill soft"><%= item.meeting_provider_label %></span>
+                </div>
+                <% if (item.access_note) { %>
+                  <p><%= item.access_note %></p>
+                <% } %>
+                <div class="sc-actions" style="margin-top: 10px;">
+                  <a href="<%= item.meeting_url %>" target="_blank" rel="noopener" class="sc-btn-secondary">Vào lớp</a>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Lớp này chưa có buổi online nào được lên lịch.</div>
+        <% } %>
+      </article>
+
+      <article class="sc-panel">
+        <h2>Đội ngũ giảng dạy</h2>
+        <p>Những giáo viên đang cùng phụ trách lớp này.</p>
+        <% if (safeTeachingTeam.length) { %>
+          <div class="sc-note-list" style="margin-top: 18px;">
+            <% safeTeachingTeam.forEach((item) => { %>
+              <div class="sc-note-card">
+                <div class="sc-note-head">
+                  <strong><%= item.full_name %></strong>
+                  <span class="sc-pill soft"><%= item.role_label %></span>
+                </div>
+                <p><%= item.email || 'Chưa cập nhật email' %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="sc-empty" style="margin-top: 18px;">Đội ngũ giảng dạy đang được cập nhật.</div>
+        <% } %>
       </article>
 
       <article class="sc-panel">
         <h2>Nhận xét gần đây</h2>
-        <p>Các nhận xét giáo viên gửi riêng cho bạn trong lớp này sẽ được lưu lại tại đây để tiện xem lại.</p>
+        <p>Các nhận xét giáo viên gửi riêng cho bạn trong lớp này sẽ được lưu tại đây.</p>
         <% if (safeTeacherComments.length) { %>
           <div class="sc-note-list" style="margin-top: 18px;">
             <% safeTeacherComments.forEach((item) => { %>
@@ -129,7 +175,7 @@
             <% }) %>
           </div>
         <% } else { %>
-          <div class="sc-empty" style="margin-top: 18px;">Giáo viên chưa gửi nhận xét nào riêng cho bạn ở lớp này.</div>
+          <div class="sc-empty" style="margin-top: 18px;">Giáo viên chưa gửi nhận xét riêng nào cho bạn ở lớp này.</div>
         <% } %>
       </article>
     </aside>

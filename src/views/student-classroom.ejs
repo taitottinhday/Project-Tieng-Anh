@@ -7,6 +7,11 @@
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleDateString('vi-VN');
   };
+  const formatDateTime = (value) => {
+    if (!value) return 'Chưa có lịch';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa có lịch' : parsed.toLocaleString('vi-VN');
+  };
   const shortText = (value, limit = 150) => {
     const text = String(value || '').trim();
     return text.length > limit ? `${text.slice(0, limit)}...` : text || 'Chưa có nhận xét chi tiết.';
@@ -15,35 +20,35 @@
 
 <div class="sc-page">
   <section class="sc-hero">
-    <span class="sc-kicker">Classroom của học viên</span>
+    <span class="sc-kicker">Student Classroom</span>
     <h1><%= safeStudent.full_name || studentName || 'Học viên' %></h1>
     <p>
-      Tất cả bài giảng, bài tập, tài liệu và luồng nộp bài được gom vào một khu classroom riêng theo từng lớp, giống trải nghiệm classroom để theo dõi rõ hơn.
+      Classroom của bạn giờ gắn chặt với lớp đang học: đội ngũ giáo viên, lịch học online, bài đăng, bài tập và các nhận xét gần nhất đều nằm trong cùng một luồng.
     </p>
     <div class="sc-actions">
-      <a href="<%= baseUrl %>/student/classroom" class="sc-btn-secondary">Lớp của tôi</a>
-      <a href="<%= baseUrl %>/student/contact" class="sc-btn">Cần hỗ trợ nhanh</a>
+      <a href="<%= baseUrl %>/student/progress" class="sc-btn">Xem tiến độ học tập</a>
+      <a href="<%= baseUrl %>/student/contact" class="sc-btn-secondary">Cần hỗ trợ nhanh</a>
     </div>
   </section>
 
   <section class="sc-grid three">
     <article class="sc-panel">
-      <h2><%= safeClassrooms.length %> lớp đang hiện</h2>
-      <p>Mỗi lớp sẽ tự động nhận bài giảng và bài tập khi giáo viên đăng lên.</p>
+      <h2><%= safeClassrooms.length %> lớp đang theo</h2>
+      <p>Số lớp active đang đồng bộ bài giảng, lịch online và bài tập cho tài khoản này.</p>
     </article>
     <article class="sc-panel">
-      <h2><%= safeClassrooms.reduce((sum, item) => sum + Number(item.assignment_count || 0), 0) %> bài tập</h2>
-      <p>Số bài tập đang được giao trên toàn bộ các lớp của học viên.</p>
+      <h2><%= safeClassrooms.reduce((sum, item) => sum + Number(item.team_count || 0), 0) %> giáo viên</h2>
+      <p>Tổng số giáo viên đang tham gia giảng dạy và hỗ trợ trong các lớp của bạn.</p>
     </article>
     <article class="sc-panel">
-      <h2><%= safeClassrooms.reduce((sum, item) => sum + Number(item.submitted_count || 0), 0) %> đã xử lý</h2>
-      <p>Số bài tập học viên đã nộp, hoàn thành hoặc đã được giáo viên đánh giá.</p>
+      <h2><%= safeClassrooms.reduce((sum, item) => sum + Number(item.upcoming_live_count || 0), 0) %> buổi online</h2>
+      <p>Số buổi online đang lên lịch hoặc sắp diễn ra trong tất cả lớp đang học.</p>
     </article>
   </section>
 
   <section class="sc-panel">
     <h2>Danh sách lớp học đang tham gia</h2>
-    <p>Chọn từng lớp để vào bảng tin classroom và xem chi tiết bài giảng, bài tập đang được giao.</p>
+    <p>Chọn từng lớp để xem bảng tin, lịch online, đội ngũ giảng dạy và các bài tập cần xử lý.</p>
 
     <% if (safeClassrooms.length) { %>
       <div class="sc-card-grid" style="margin-top: 22px;">
@@ -52,19 +57,30 @@
             <span class="sc-pill blue"><%= item.code %></span>
             <h3 style="margin-top: 14px;"><%= item.course_name || 'Lớp học' %></h3>
             <p>
-              <strong style="color:#1a3552;">Giáo viên:</strong> <%= item.teacher_name || 'Đang cập nhật' %><br>
-              <strong style="color:#1a3552;">Lịch học:</strong> <%= item.schedule_text || 'Đang cập nhật' %><br>
-              <strong style="color:#1a3552;">Bài mới nhất:</strong> <%= formatDate(item.latest_post_at) %>
+              <strong style="color:#1a3552;">Giáo viên chính:</strong> <%= item.teacher_name || 'Đang cập nhật' %><br>
+              <strong style="color:#1a3552;">Đội ngũ:</strong> <%= item.teaching_team_summary || 'Đang cập nhật' %><br>
+              <strong style="color:#1a3552;">Lịch học:</strong> <%= item.schedule_text || 'Đang cập nhật' %>
             </p>
+
             <div class="sc-post-meta">
               <span class="sc-pill soft"><%= item.lecture_count || 0 %> bài giảng</span>
               <span class="sc-pill pink"><%= item.assignment_count || 0 %> bài tập</span>
               <span class="sc-pill green"><%= item.submitted_count || 0 %> đã xử lý</span>
+              <span class="sc-pill blue"><%= item.upcoming_live_count || 0 %> buổi online</span>
             </div>
+
+            <div class="sc-note-card" style="margin-top: 16px;">
+              <div class="sc-note-head">
+                <strong>Buổi học online kế tiếp</strong>
+                <span class="sc-pill soft"><%= formatDateTime(item.next_live_at) %></span>
+              </div>
+              <p><%= item.next_live_title || 'Lớp này chưa có lịch online mới.' %></p>
+            </div>
+
             <% if (Number(item.teacher_comment_count || 0) > 0) { %>
               <div class="sc-note-card" style="margin-top: 16px;">
                 <div class="sc-note-head">
-                  <strong>Nhận xét mới nhất từ giáo viên</strong>
+                  <strong>Nhận xét gần nhất</strong>
                   <span class="sc-pill soft"><%= item.teacher_comment_count %> nhận xét</span>
                 </div>
                 <div class="sc-post-meta" style="margin-top: 0;">
@@ -74,6 +90,7 @@
                 <p><%= shortText(item.last_teacher_comment) %></p>
               </div>
             <% } %>
+
             <div class="sc-actions">
               <a href="<%= baseUrl %>/student/classroom/<%= item.id %>" class="sc-btn">Mở lớp học</a>
             </div>
@@ -82,7 +99,7 @@
       </div>
     <% } else { %>
       <div class="sc-empty" style="margin-top: 22px;">
-        Tài khoản này chưa có lớp nào được đồng bộ. Khi trung tâm gắn email của bạn vào lớp học, classroom sẽ hiển thị tại đây.
+        Tài khoản này chưa có lớp nào được đồng bộ. Khi trung tâm gắn email của bạn vào lớp, classroom sẽ hiện ở đây.
       </div>
     <% } %>
   </section>

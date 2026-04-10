@@ -1,0 +1,272 @@
+<%- include('partials/teacher-workspace-style') %>
+<%
+  const safeClassInfo = typeof classInfo !== 'undefined' && classInfo ? classInfo : {};
+  const safeSummary = typeof boardSummary !== 'undefined' && boardSummary ? boardSummary : {};
+  const safeStudents = Array.isArray(typeof students !== 'undefined' ? students : null) ? students : [];
+  const safeTeachingTeam = Array.isArray(typeof teachingTeam !== 'undefined' ? teachingTeam : null) ? teachingTeam : [];
+  const safeLiveSessions = Array.isArray(typeof liveSessions !== 'undefined' ? liveSessions : null) ? liveSessions : [];
+  const safeTeacherUpdates = Array.isArray(typeof teacherUpdates !== 'undefined' ? teacherUpdates : null) ? teacherUpdates : [];
+  const formatDateTime = (value) => {
+    if (!value) return 'Chưa cập nhật';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Chưa cập nhật' : parsed.toLocaleString('vi-VN');
+  };
+%>
+
+<style>
+  .tprog-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+
+  .tprog-list {
+    display: grid;
+    gap: 16px;
+  }
+
+  .tprog-card {
+    padding: 22px;
+    border-radius: 26px;
+    border: 1px solid rgba(136, 166, 215, 0.16);
+    background: rgba(255,255,255,0.96);
+    box-shadow: 0 18px 40px rgba(53, 92, 153, 0.1);
+  }
+
+  .tprog-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .tprog-name {
+    margin: 12px 0 0;
+    font-family: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+    font-size: 1.34rem;
+    letter-spacing: -0.04em;
+    color: #16304a;
+  }
+
+  .tprog-copy {
+    margin-top: 8px;
+    color: #60758c;
+    line-height: 1.68;
+  }
+
+  .tprog-kpis {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 18px;
+  }
+
+  .tprog-kpi {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(234, 243, 255, 0.84);
+    border: 1px solid rgba(136, 166, 215, 0.16);
+  }
+
+  .tprog-kpi strong {
+    display: block;
+    font-size: 1.04rem;
+    color: #17324f;
+  }
+
+  .tprog-kpi span {
+    display: block;
+    margin-top: 6px;
+    color: #60758c;
+    font-size: 0.84rem;
+  }
+
+  .tprog-note {
+    margin-top: 16px;
+    padding: 16px 18px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(241,246,252,0.96) 0%, rgba(255,244,248,0.96) 100%);
+    border: 1px solid rgba(89, 106, 191, 0.12);
+    color: #58708a;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1180px) {
+    .tprog-grid,
+    .tprog-kpis {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="teacher-shell">
+  <section class="teacher-hero">
+    <div class="teacher-hero-grid">
+      <div>
+        <p class="teacher-hero-kicker">Progress Intelligence</p>
+        <h1 class="teacher-hero-title"><%= safeClassInfo.code || 'Classroom' %> · Bảng tiến độ học viên</h1>
+        <p class="teacher-hero-text">
+          Bảng này tổng hợp điểm danh, bài tập, tốc độ luyện tập và xu hướng gần đây để giúp giáo viên nhận diện học viên cần can thiệp sớm.
+        </p>
+        <div class="teacher-hero-badges">
+          <span class="teacher-pill soft"><%= safeSummary.studentCount || 0 %> học viên active</span>
+          <span class="teacher-pill blue">TB tiến độ: <%= safeSummary.averageOverall !== null && typeof safeSummary.averageOverall !== 'undefined' ? safeSummary.averageOverall : '-' %></span>
+          <span class="teacher-pill pink"><%= safeSummary.improvingCount || 0 %> đang cải thiện</span>
+          <span class="teacher-pill gold"><%= safeSummary.highRiskCount || 0 %> cần theo sát</span>
+        </div>
+      </div>
+
+      <div class="teacher-panel" style="background: rgba(255,255,255,0.16); color: white; border-color: rgba(255,255,255,0.18);">
+        <h2 class="teacher-panel-title" style="color:white;">Cách đọc bảng</h2>
+        <p class="teacher-panel-desc" style="color: rgba(255,255,255,0.84);">
+          Điểm tổng hợp là chỉ số điều hành nội bộ. Khi học viên vừa có attendance thấp, completion thấp hoặc trend giảm, hệ thống sẽ tự đẩy về nhóm cần can thiệp sớm.
+        </p>
+        <div class="teacher-hero-actions" style="margin-top:18px;">
+          <a href="<%= baseUrl %>/teacher/classroom/<%= safeClassInfo.id %>" class="teacher-link-button secondary">Quay lại workspace</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="teacher-grid four">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">TB điểm danh</span>
+      <strong class="teacher-stat-value"><%= safeSummary.averageAttendance !== null && typeof safeSummary.averageAttendance !== 'undefined' ? safeSummary.averageAttendance : '-' %></strong>
+      <p class="teacher-stat-note">Tỷ lệ kỷ luật học tập trung bình trong lớp.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">TB bài tập</span>
+      <strong class="teacher-stat-value"><%= safeSummary.averageAssignment !== null && typeof safeSummary.averageAssignment !== 'undefined' ? safeSummary.averageAssignment : '-' %></strong>
+      <p class="teacher-stat-note">Mức hoàn thành và đúng hạn của bài tập lớp.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">TB luyện tập</span>
+      <strong class="teacher-stat-value"><%= safeSummary.averageLearning !== null && typeof safeSummary.averageLearning !== 'undefined' ? safeSummary.averageLearning : '-' %></strong>
+      <p class="teacher-stat-note">Chỉ số phản ánh nhịp luyện tập của học viên ngoài lớp.</p>
+    </article>
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-label">Buổi online</span>
+      <strong class="teacher-stat-value"><%= safeSummary.upcomingLiveCount || 0 %></strong>
+      <p class="teacher-stat-note">Số buổi online đang lên lịch cho lớp này.</p>
+    </article>
+  </section>
+
+  <section class="tprog-grid">
+    <article class="teacher-panel">
+      <div class="teacher-panel-head">
+        <div>
+          <h2 class="teacher-panel-title">Danh sách học viên theo mức ưu tiên</h2>
+          <p class="teacher-panel-desc">Các học viên được sắp theo mức rủi ro để giáo viên biết ai cần follow up trước.</p>
+        </div>
+      </div>
+
+      <% if (safeStudents.length) { %>
+        <div class="tprog-list" style="margin-top: 22px;">
+          <% safeStudents.forEach((item) => { %>
+            <article class="tprog-card">
+              <div class="tprog-head">
+                <div>
+                  <span class="teacher-pill <%= item.riskKey === 'high' ? 'red' : (item.riskKey === 'medium' ? 'gold' : 'green') %>"><%= item.riskLabel %></span>
+                  <h3 class="tprog-name"><%= item.fullName %></h3>
+                </div>
+                <span class="teacher-pill navy"><%= item.overallScore !== null && typeof item.overallScore !== 'undefined' ? item.overallScore : '-' %> điểm</span>
+              </div>
+
+              <div class="tprog-copy">
+                <strong style="color:#17324f;"><%= item.readinessLabel %></strong><br>
+                Điểm mạnh: <%= item.strongestAreaLabel %> · Trọng tâm: <%= item.focusAreaLabel %> · Xu hướng: <%= item.trendLabel %>
+              </div>
+
+              <div class="tprog-kpis">
+                <div class="tprog-kpi">
+                  <strong><%= item.attendanceRate !== null && typeof item.attendanceRate !== 'undefined' ? item.attendanceRate : '-' %></strong>
+                  <span>Điểm danh</span>
+                </div>
+                <div class="tprog-kpi">
+                  <strong><%= item.assignmentCompletionRate !== null && typeof item.assignmentCompletionRate !== 'undefined' ? item.assignmentCompletionRate : '-' %></strong>
+                  <span>Hoàn thành bài tập</span>
+                </div>
+                <div class="tprog-kpi">
+                  <strong><%= item.learningScore !== null && typeof item.learningScore !== 'undefined' ? item.learningScore : '-' %></strong>
+                  <span>Luyện tập</span>
+                </div>
+                <div class="tprog-kpi">
+                  <strong><%= item.consistencyScore !== null && typeof item.consistencyScore !== 'undefined' ? item.consistencyScore : '-' %></strong>
+                  <span>Độ đều</span>
+                </div>
+              </div>
+
+              <div class="teacher-progress">
+                <div class="teacher-progress-bar" style="width:<%= Math.max(Number(item.overallScore || 0), 4) %>%"></div>
+              </div>
+
+              <% if (item.lastTeacherComment && item.lastTeacherComment.message) { %>
+                <div class="tprog-note">
+                  <strong style="color:#17324f;">Nhận xét gần nhất</strong><br>
+                  <%= item.lastTeacherComment.message %>
+                </div>
+              <% } %>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="teacher-empty" style="margin-top: 22px;">Lớp này chưa có học viên active để phân tích.</div>
+      <% } %>
+    </article>
+
+    <aside class="teacher-grid">
+      <article class="teacher-panel">
+        <h2 class="teacher-panel-title">Đội ngũ lớp</h2>
+        <p class="teacher-panel-desc"><%= safeTeachingTeam.length %> giáo viên đang cùng vận hành lớp này.</p>
+        <% if (safeTeachingTeam.length) { %>
+          <div class="teacher-card-list" style="margin-top: 18px;">
+            <% safeTeachingTeam.forEach((item) => { %>
+              <article class="tprog-card">
+                <span class="teacher-pill <%= item.role === 'lead' ? 'navy' : 'soft' %>"><%= item.role_label %></span>
+                <strong style="display:block; margin-top: 12px;"><%= item.full_name %></strong>
+                <span class="tprog-copy">Bài đăng: <%= item.post_count || 0 %> · Buổi online: <%= item.live_session_count || 0 %></span>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="teacher-panel">
+        <h2 class="teacher-panel-title">Lịch online gần nhất</h2>
+        <p class="teacher-panel-desc">Theo dõi lịch lớp để gắn nhịp hỗ trợ với mức tiến độ hiện tại.</p>
+        <% if (safeLiveSessions.length) { %>
+          <div class="teacher-card-list" style="margin-top: 18px;">
+            <% safeLiveSessions.slice(0, 5).forEach((item) => { %>
+              <article class="tprog-card">
+                <span class="teacher-pill <%= item.status === 'completed' ? 'soft' : 'blue' %>"><%= item.status === 'completed' ? 'Đã diễn ra' : 'Sắp tới' %></span>
+                <strong style="display:block; margin-top: 12px;"><%= item.title %></strong>
+                <span class="tprog-copy"><%= item.host_teacher_name || 'Giáo viên' %> · <%= formatDateTime(item.scheduled_start) %></span>
+              </article>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="teacher-empty" style="margin-top: 18px;">Chưa có lịch online.</div>
+        <% } %>
+      </article>
+
+      <article class="teacher-panel">
+        <h2 class="teacher-panel-title">Handoff note</h2>
+        <p class="teacher-panel-desc">Các ghi chú nội bộ gần nhất của đội ngũ giảng dạy.</p>
+        <% if (safeTeacherUpdates.length) { %>
+          <div class="teacher-card-list" style="margin-top: 18px;">
+            <% safeTeacherUpdates.slice(0, 5).forEach((item) => { %>
+              <article class="tprog-card">
+                <span class="teacher-pill <%= item.importance === 'urgent' ? 'red' : (item.importance === 'priority' ? 'gold' : 'soft') %>"><%= item.importance_label %></span>
+                <strong style="display:block; margin-top: 12px;"><%= item.title %></strong>
+                <span class="tprog-copy"><%= item.author_teacher_name || 'Giáo viên' %> · <%= formatDateTime(item.created_at) %></span>
+              </article>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="teacher-empty" style="margin-top: 18px;">Chưa có ghi chú nội bộ.</div>
+        <% } %>
+      </article>
+    </aside>
+  </section>
+</div>
