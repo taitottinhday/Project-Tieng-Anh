@@ -15,7 +15,6 @@ const safeCourseOptions = Array.isArray(courseOptions) ? courseOptions : [];
 const safeClassOptions = Array.isArray(classOptions) ? classOptions : [];
 const safeTeacherOptions = Array.isArray(teacherOptions) ? teacherOptions : [];
 const safeUploadedExamEntries = Array.isArray(uploadedExamEntries) ? uploadedExamEntries : [];
-const safeUploadedResourceEntries = Array.isArray(uploadedResourceEntries) ? uploadedResourceEntries : [];
 const enrollmentTrend = Array.isArray(safeAnalytics.enrollmentTrend) ? safeAnalytics.enrollmentTrend : [];
 const revenueTrend = Array.isArray(safeAnalytics.revenueTrend) ? safeAnalytics.revenueTrend : [];
 const roleMix = Array.isArray(safeAnalytics.roleMix) ? safeAnalytics.roleMix : [];
@@ -103,25 +102,21 @@ const adminViewMetaMap = {
 };
 adminModuleLinks.forEach((item) => {
   if (item.key === "resources") {
-    item.label = "Kho nội dung";
+    item.label = "Đề thi";
   }
 });
 adminViewMetaMap.resources = {
   ...adminViewMetaMap.resources,
-  badge: "Kho nội dung",
-  title: "Quản lý đề thi và tài liệu trong một không gian gọn, dễ cập nhật và kiểm soát phiên bản.",
-  description: "Đăng full test, lưu tài liệu tham khảo và xử lý sửa/xóa ngay trong khu admin mà không cần đổi sang màn hình khác.",
-  primaryLabel: "Đăng nội dung",
+  badge: "Kho đề thi",
+  title: "Quản lý đề thi full test trong một không gian gọn, dễ cập nhật và kiểm soát phiên bản.",
+  description: "Đăng full test mới và xử lý sửa/xóa ngay trong khu admin mà không cần đổi sang màn hình khác.",
+  primaryLabel: "Đăng đề thi",
   primaryHref: `${safeBaseUrl}/admin/resources#content`,
-  secondaryLabel: "Mở thư viện tài liệu",
-  secondaryHref: `${safeBaseUrl}/admin/resources#resource-library`,
+  secondaryLabel: "Xem danh sách đề",
+  secondaryHref: `${safeBaseUrl}/admin/resources#exam-library`,
   highlights: [
     { value: safeUploadedExamEntries.length || 0, label: "Đề thi đã đăng" },
-    { value: safeUploadedResourceEntries.length || 0, label: "Tài liệu đã lưu" },
-    {
-      value: safeUploadedResourceEntries.filter((item) => String(item.audience || "public") === "public").length || 0,
-      label: "Tài liệu công khai",
-    },
+    { value: safeStats.totalMessages || 0, label: "Tin nhắn hệ thống" },
   ],
 };
 const adminViewMeta = adminViewMetaMap[currentAdminView] || adminViewMetaMap.overview;
@@ -181,10 +176,6 @@ const paymentMethodMap = {
   zalo_pay: "ZaloPay",
   card: "Thẻ",
   other: "Khác",
-};
-const resourceAudienceMap = {
-  public: "Công khai",
-  student: "Học viên",
 };
 const alertTitleMap = {
   "New leads waiting": "Yêu cầu tư vấn mới",
@@ -2098,49 +2089,6 @@ const classState = (item) => {
       display: none !important;
     }
 
-    .admin-resource-card {
-      display: grid;
-      gap: 14px;
-    }
-
-    .admin-resource-card-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .admin-resource-card p {
-      margin: 0;
-      color: #6f8499;
-      line-height: 1.6;
-    }
-
-    .admin-resource-card .admin-actions {
-      justify-content: flex-end;
-    }
-
-    .admin-resource-meta {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px 10px;
-      color: #73879d;
-      font-size: 0.88rem;
-    }
-
-    .admin-resource-link {
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-      color: #2f5377;
-      font-weight: 700;
-    }
-
-    .admin-resource-link:hover {
-      text-decoration: underline;
-    }
   </style>
 
   <section class="admin-grid admin-grid-2" id="content">
@@ -2202,81 +2150,81 @@ const classState = (item) => {
         </div>
 
         <div class="admin-ops-card" id="student-operations" data-admin-card-view="students" style="<%= isStudentsView ? '' : 'display:none' %>">
-          <h3>Ghi danh offline + mo classroom</h3>
-          <p>Khi admin tao ghi danh offline, hoc vien duoc luu vao database, gan vao lop va co the vao classroom ngay neu da co tai khoan portal.</p>
+          <h3>Ghi danh offline + mở classroom</h3>
+          <p>Khi admin tạo ghi danh offline, học viên được lưu vào database, gán vào lớp và có thể vào classroom ngay nếu đã có tài khoản portal.</p>
           <form method="POST" action="<%= safeBaseUrl %>/admin/students/add" class="admin-form-grid">
             <div class="admin-field full">
-              <label for="offline-student-name">Hoc vien</label>
-              <input class="admin-input" id="offline-student-name" name="full_name" type="text" placeholder="Nhap ho va ten hoc vien" required>
+              <label for="offline-student-name">Học viên</label>
+              <input class="admin-input" id="offline-student-name" name="full_name" type="text" placeholder="Nhập họ và tên học viên" required>
             </div>
             <div class="admin-field">
-              <label for="offline-student-phone">So dien thoai</label>
-              <input class="admin-input" id="offline-student-phone" name="phone" type="text" placeholder="Nhap so dien thoai">
+              <label for="offline-student-phone">Số điện thoại</label>
+              <input class="admin-input" id="offline-student-phone" name="phone" type="text" placeholder="Nhập số điện thoại">
             </div>
             <div class="admin-field">
-              <label for="offline-student-email">Email dang nhap</label>
-              <input class="admin-input" id="offline-student-email" name="email" type="email" placeholder="Nhap email cua hoc vien">
+              <label for="offline-student-email">Email đăng nhập</label>
+              <input class="admin-input" id="offline-student-email" name="email" type="email" placeholder="Nhập email của học viên">
             </div>
             <div class="admin-field">
-              <label for="offline-student-dob">Ngay sinh</label>
+              <label for="offline-student-dob">Ngày sinh</label>
               <input class="admin-input" id="offline-student-dob" name="dob" type="date">
             </div>
             <div class="admin-field">
-              <label for="offline-student-password">Mat khau portal</label>
-              <input class="admin-input" id="offline-student-password" name="portal_password" type="text" placeholder="Toi thieu 6 ky tu">
+              <label for="offline-student-password">Mật khẩu portal</label>
+              <input class="admin-input" id="offline-student-password" name="portal_password" type="text" placeholder="Tối thiểu 6 ký tự">
             </div>
             <div class="admin-field full">
-              <label for="offline-student-class">Lop hoc se gan</label>
+              <label for="offline-student-class">Lớp học sẽ gán</label>
               <select class="admin-input" id="offline-student-class" name="class_id" required>
-                <option value="">Chon lop hoc</option>
+                <option value="">Chọn lớp học</option>
                 <% safeClassOptions.forEach((item) => { %>
-                  <option value="<%= item.id %>"><%= item.code %> · <%= item.course_name || 'Chua co khoa hoc' %><% if (item.teacher_name) { %> · <%= item.teacher_name %><% } %></option>
+                  <option value="<%= item.id %>"><%= item.code %> · <%= item.course_name || 'Chưa có khóa học' %><% if (item.teacher_name) { %> · <%= item.teacher_name %><% } %></option>
                 <% }) %>
               </select>
             </div>
             <div class="admin-field">
-              <label for="offline-enrollment-status">Trang thai ghi danh</label>
+              <label for="offline-enrollment-status">Trạng thái ghi danh</label>
               <select class="admin-input" id="offline-enrollment-status" name="enrollment_status">
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
+                <option value="active">Đang học</option>
+                <option value="pending">Chờ xác nhận</option>
               </select>
             </div>
             <div class="admin-field">
-              <label for="offline-payment-status">Trang thai thanh toan</label>
+              <label for="offline-payment-status">Trạng thái thanh toán</label>
               <select class="admin-input" id="offline-payment-status" name="payment_status">
-                <option value="confirmed">Confirmed</option>
-                <option value="pending">Pending</option>
-                <option value="rejected">Rejected</option>
+                <option value="confirmed">Đã xác nhận</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="rejected">Từ chối</option>
               </select>
             </div>
             <div class="admin-field">
-              <label for="offline-payment-method">Kenh thu</label>
+              <label for="offline-payment-method">Kênh thu</label>
               <select class="admin-input" id="offline-payment-method" name="payment_method">
-                <option value="cash">Tien mat</option>
-                <option value="bank">Ngan hang</option>
+                <option value="cash">Tiền mặt</option>
+                <option value="bank">Ngân hàng</option>
                 <option value="momo">MoMo</option>
-                <option value="other">Khac</option>
+                <option value="other">Khác</option>
               </select>
             </div>
             <div class="admin-field">
-              <label for="offline-payment-amount">So tien</label>
-              <input class="admin-input" id="offline-payment-amount" name="payment_amount" type="number" min="0" step="1000" placeholder="Neu de trong se lay hoc phi khoa hoc">
+              <label for="offline-payment-amount">Số tiền</label>
+              <input class="admin-input" id="offline-payment-amount" name="payment_amount" type="number" min="0" step="1000" placeholder="Nếu để trống sẽ lấy học phí khóa học">
             </div>
             <div class="admin-field full">
-              <label for="offline-payment-note">Ghi chu thanh toan</label>
-              <textarea class="admin-input admin-textarea" id="offline-payment-note" name="payment_note" placeholder="VD: Dang ky tai trung tam, thu tien mat, can bo sung bien lai"></textarea>
+              <label for="offline-payment-note">Ghi chú thanh toán</label>
+              <textarea class="admin-input admin-textarea" id="offline-payment-note" name="payment_note" placeholder="VD: Đăng ký tại trung tâm, thu tiền mặt, cần bổ sung biên lai"></textarea>
             </div>
             <div class="admin-field full">
               <label style="display:flex;align-items:center;gap:10px;">
                 <input type="checkbox" name="create_portal_account" value="1" checked>
-                Tao hoac lien ket tai khoan portal de hoc vien thay lop trong classroom
+                Tạo hoặc liên kết tài khoản portal để học viên thấy lớp trong classroom
               </label>
             </div>
             <div class="admin-actions full">
               <button class="admin-button" type="submit">Ghi danh offline</button>
             </div>
           </form>
-          <div class="admin-helper-note" data-admin-card-view="students" style="<%= isStudentsView ? '' : 'display:none' %>">Neu lop da co bai assignment trong classroom, he thong se tao san record nop bai cho hoc vien moi duoc them.</div>
+          <div class="admin-helper-note" data-admin-card-view="students" style="<%= isStudentsView ? '' : 'display:none' %>">Nếu lớp đã có bài assignment trong classroom, hệ thống sẽ tạo sẵn record nộp bài cho học viên mới được thêm.</div>
         </div>
       </div>
     </article>
@@ -2391,40 +2339,11 @@ const classState = (item) => {
           </form>
         </div>
 
-        <div class="admin-ops-card" data-admin-card-view="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
-          <h3>Đăng tài liệu tham khảo</h3>
-          <p>Lưu file vào kho nội dung để admin có thể sửa thông tin, thay file hoặc xóa tài liệu ngay bên dưới.</p>
-          <form method="POST" action="<%= safeBaseUrl %>/admin/content/resources/add" enctype="multipart/form-data" class="admin-form-grid">
-            <div class="admin-field full">
-              <label for="resource-title">Tiêu đề tài liệu</label>
-              <input class="admin-input" id="resource-title" name="title" type="text" placeholder="VD: Bộ tài liệu Reading 2027" required>
-            </div>
-            <div class="admin-field">
-              <label for="resource-audience">Đối tượng hiển thị</label>
-              <select class="admin-input" id="resource-audience" name="audience">
-                <option value="public">Công khai trên web</option>
-                <option value="student">Lưu cho học viên</option>
-              </select>
-            </div>
-            <div class="admin-field">
-              <label for="resource-file">Tệp tài liệu</label>
-              <input class="admin-file-input" id="resource-file" name="resource_file" type="file" required>
-            </div>
-            <div class="admin-field full">
-              <label for="resource-description">Mô tả ngắn</label>
-              <textarea class="admin-input admin-textarea" id="resource-description" name="description" placeholder="Mô tả ngắn để admin và học viên nhận biết tài liệu này dùng để làm gì"></textarea>
-            </div>
-            <div class="admin-helper-note full">Bạn có thể cập nhật tiêu đề, mô tả, đối tượng hiển thị hoặc thay file sau khi tải lên.</div>
-            <div class="admin-actions full">
-              <button class="admin-button" type="submit">Đăng tài liệu mới</button>
-            </div>
-          </form>
-        </div>
       </div>
     </article>
   </section>
 
-  <section class="admin-grid admin-grid-2" id="exam-library" data-admin-block="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
+  <section class="admin-grid" id="exam-library" data-admin-block="resources" style="<%= isResourcesView ? '' : 'display:none' %>">
     <article class="admin-panel">
       <div class="admin-panel-header">
         <div>
@@ -2451,96 +2370,6 @@ const classState = (item) => {
               </form>
             </div>
           </div>
-        <% }) %>
-      </div>
-    </article>
-    <article class="admin-panel" id="resource-library">
-      <div class="admin-panel-header">
-        <div>
-          <h2>Tài liệu đã tải lên</h2>
-          <p>Danh sách tài liệu có thể chỉnh sửa metadata, thay file hoặc xóa khỏi kho nội dung ngay tại đây.</p>
-        </div>
-        <input class="admin-input admin-search" type="search" placeholder="Tìm tài liệu..." data-admin-search="resource-library">
-      </div>
-
-      <div class="admin-content-list">
-        <% if (!safeUploadedResourceEntries.length) { %>
-          <div class="admin-empty">Chưa có tài liệu nào được tải lên từ khu admin.</div>
-        <% } %>
-
-        <% safeUploadedResourceEntries.forEach((item) => { %>
-          <div
-            class="admin-content-item admin-resource-card"
-            data-filter-row="resource-library"
-            data-edit-row="resource-edit-<%= item.id %>"
-            data-filter-text="<%= [item.title, item.originalName, item.description, item.audience].filter(Boolean).join(' ') %>"
-          >
-            <div class="admin-resource-card-head">
-              <div>
-                <strong><%= item.title || "Tài liệu mới" %></strong>
-                <small><%= item.originalName || item.publicPath || "Chưa có tên file" %></small>
-              </div>
-              <span class="admin-status <%= String(item.audience || 'public') === 'public' ? 'status-active' : 'status-unassigned' %>">
-                <%= resourceAudienceMap[String(item.audience || 'public')] || String(item.audience || 'public') %>
-              </span>
-            </div>
-
-            <% if (item.description) { %>
-              <p><%= item.description %></p>
-            <% } else { %>
-              <p>Chưa có mô tả ngắn cho tài liệu này.</p>
-            <% } %>
-
-            <div class="admin-resource-meta">
-              <span>Cập nhật: <%= shortDateTime(item.updatedAt || item.createdAt) %></span>
-              <span>File: <%= item.originalName || "Không rõ" %></span>
-              <% if (item.publicPath) { %>
-                <a class="admin-resource-link" href="<%= safeBaseUrl %><%= item.publicPath %>" target="_blank" rel="noopener">Mở tài liệu</a>
-              <% } %>
-            </div>
-
-            <div class="admin-actions">
-              <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('resource-edit-<%= item.id %>')">Sửa</button>
-              <form method="POST" action="<%= safeBaseUrl %>/admin/content/resources/<%= item.id %>/delete" onsubmit="return confirm('Bạn có chắc muốn xóa tài liệu này khỏi kho nội dung?')">
-                <button class="admin-button danger" type="submit">Xóa</button>
-              </form>
-            </div>
-          </div>
-
-          <form
-            id="resource-edit-<%= item.id %>"
-            class="admin-inline-form hidden"
-            method="POST"
-            action="<%= safeBaseUrl %>/admin/content/resources/<%= item.id %>/update"
-            enctype="multipart/form-data"
-          >
-            <div class="admin-form-grid">
-              <div class="admin-field full">
-                <label>Tiêu đề tài liệu</label>
-                <input class="admin-input" name="title" type="text" value="<%= item.title || '' %>" required>
-              </div>
-              <div class="admin-field">
-                <label>Đối tượng hiển thị</label>
-                <select class="admin-input" name="audience">
-                  <option value="public" <%= String(item.audience || 'public') === 'public' ? 'selected' : '' %>>Công khai trên web</option>
-                  <option value="student" <%= String(item.audience || 'public') === 'student' ? 'selected' : '' %>>Lưu cho học viên</option>
-                </select>
-              </div>
-              <div class="admin-field">
-                <label>Thay file tài liệu</label>
-                <input class="admin-file-input" name="resource_file" type="file">
-              </div>
-              <div class="admin-field full">
-                <label>Mô tả ngắn</label>
-                <textarea class="admin-input admin-textarea" name="description"><%= item.description || '' %></textarea>
-              </div>
-            </div>
-            <div class="admin-helper-note">Nếu không chọn file mới, hệ thống sẽ giữ nguyên file hiện tại và chỉ cập nhật thông tin hiển thị.</div>
-            <div class="admin-actions">
-              <button class="admin-button" type="submit">Lưu thay đổi</button>
-              <button class="admin-button secondary" type="button" onclick="toggleAdminEditor('resource-edit-<%= item.id %>')">Đóng</button>
-            </div>
-          </form>
         <% }) %>
       </div>
     </article>
@@ -2818,9 +2647,9 @@ const classState = (item) => {
     const panelTitle = teacherResourcePanel?.querySelector(".admin-panel-header h2");
     const panelDescription = teacherResourcePanel?.querySelector(".admin-panel-header p");
 
-    if (panelTitle) panelTitle.textContent = "Kho nội dung";
+    if (panelTitle) panelTitle.textContent = "Kho đề thi";
     if (panelDescription) {
-      panelDescription.textContent = "Đăng đề thi, tải tài liệu tham khảo và quản lý sửa/xóa ngay trong một khu admin thống nhất.";
+      panelDescription.textContent = "Đăng đề thi, chỉnh sửa nội dung và quản lý xóa ngay trong một khu admin thống nhất.";
     }
   }
 
